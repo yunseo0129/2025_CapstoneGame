@@ -7,9 +7,9 @@
     월드컵은 전 세계적으로 가장 큰 스포츠 이벤트 중 하나로, 전 세계 수많은 사람들이 경기를 시청하고 응원한다.
     우리나라에서도 지난 22년 월드컵 당시 중계 시청률은 최고 41.7%를 기록하며 국민적 관심이 매우 높았다.
 
-    google link: https://www.chosun.com/sports/football/2025/06/06/3CGWSPIAT5AAHIPI6E6DTXXQ7I/ [이영빈 기자."한국 축구, 11회 연속 월드컵 본선 진출 확정... 잉글랜드, 프랑스도 못한 대기록".2025.조선일보]
+    출처: https://www.chosun.com/sports/football/2025/06/06/3CGWSPIAT5AAHIPI6E6DTXXQ7I/ [이영빈 기자."한국 축구, 11회 연속 월드컵 본선 진출 확정... 잉글랜드, 프랑스도 못한 대기록".2025.조선일보]
 
-    google link: https://www.yna.co.kr/view/AKR20221125072000005 [강애란 기자."월드컵 방송3사 시청률 40%대...역대 최고는 74.7%.2022.연합뉴스]
+    출처: https://www.yna.co.kr/view/AKR20221125072000005 [강애란 기자."월드컵 방송3사 시청률 40%대...역대 최고는 74.7%.2022.연합뉴스]
 
 - **2026년 동계 올림픽 (2026.02.06~2026.02.22)**
 
@@ -21,8 +21,10 @@
 
     이스라엘-하마스 전쟁이 장기화되면서 전쟁에 대한 국민의 관심도가 높아지고 있다.
     한국리서치의 여론 조사에 따르면 이스라엘-하마스 전쟁이 우리나라 안보에 영향을 준다고 생각하는 비율이 60%를 넘겼다.
+    
     ![그림1](https://i0.wp.com/hrcopinion.co.kr/wp-content/uploads/2024/10/hrcopinion_theme_241002_08.png?ssl=1)
-    google link: https://hrcopinion.co.kr/archives/31002# [이동한."이스라엘- 하마스 전쟁 1년, 한국인들의 생각은?".한국리서치]
+    
+    출처: https://hrcopinion.co.kr/archives/31002# [이동한."이스라엘- 하마스 전쟁 1년, 한국인들의 생각은?".한국리서치]
 
 - **현재 Z세대의 주요 게임**
     
@@ -31,26 +33,27 @@
     또한 한국콘텐츠진흥원의 "2024아동청소년 게임행동 종합 실태조사"를 살펴보면 청소년이 가장 많이 이용하는 게임 장르 1.FPS/TPS (31.3%), 2.샌드박스(21.3%), 3.기타(15.9%)로 나타났다.
     따라서 현재 Z세대는 FPS/TPS 장르의 게임을 주로 즐기고 있으며, 발로란트, 배틀그라운드가 대표적인 게임으로 자리잡고 있다.
 
-    google link: https://www.thelog.co.kr/index.do [더로그.피시방 점유율.2025]
+    출처: https://www.thelog.co.kr/index.do [더로그.피시방 점유율.2025]
 
-    google link: https://sns.kocca.kr/kocca/bbs/view/B0000147/2007925.do?searchCnd=&searchWrd=&cateTp1=&cateTp2=&useYn=&menuNo=204153&categorys=0&subcate=0&cateCode=&type=&instNo=0&questionTp=&ufSetting=&recovery=&option1=&option2=&year=&morePage=&qtp=&domainId=&sortCode=&pageIndex=7 [한국콘텐츠진흥원."2024 아동청소년 게임행동 종합 실태 조사".2025]
+    출처: https://sns.kocca.kr/kocca/bbs/view/B0000147/2007925.do?searchCnd=&searchWrd=&cateTp1=&cateTp2=&useYn=&menuNo=204153&categorys=0&subcate=0&cateCode=&type=&instNo=0&questionTp=&ufSetting=&recovery=&option1=&option2=&year=&morePage=&qtp=&domainId=&sortCode=&pageIndex=7 [한국콘텐츠진흥원."2024 아동청소년 게임행동 종합 실태 조사".2025]
 
 ## Technological (기술적 요인)
 
 - **생성형 AI(Generative AI)의 발전**
   
-  NVIDIA는 게임 NPC에 생동감을 불어넣는 생성형 AI 기술 'ACE(Avatar Cloud Engine)'를 공개했으며, 게임 엔진의 양대 산맥인 Unity 또한 AI를 활용해 텍스처, 애니메이션 등을 제작하는 'Muse'를 출시했다. 이는 메이저 기술 기업들이 게임 개발 파이프라인에 AI를 통합하려는 구체적인 움직임을 보여주는 사례이다. 또한 최근 생성형 AI 발전 속도가 매우 빨라 현재는 생성형 AI가 개발자를 보조하는 도구로만 사용되지만 향후 2, 3년 안에 생성형 AI로만 게임을 만들 가능성도 보인다. 따라서 졸업작품을 제작시에 생성형 AI를 적극 활용할 필요가 있어 보인다. 
+    NVIDIA는 게임 NPC에 생동감을 불어넣는 생성형 AI 기술 'ACE(Avatar Cloud Engine)'를 공개했으며, 게임 엔진의 양대 산맥인 Unity 또한 AI를 활용해 텍스처, 애니메이션 등을 제작하는 'Muse'를 출시했다. 이는 메이저 기술 기업들이 게임 개발 파이프라인에 AI를 통합하려는 구체적인 움직임을 보여주는 사례이다. 또한 최근 생성형 AI 발전 속도가 매우 빨라 현재는 생성형 AI가 개발자를 보조하는 도구로만 사용되지만 향후 2, 3년 안에 생성형 AI로만 게임을 만들 가능성도 보인다. 따라서 졸업작품을 제작시에 생성형 AI를 적극 활용할 필요가 있어 보인다. 
   
-  링크 : https://www.nvidia.com/ko-kr/solutions/ai/generative-ai/
-  링크 : https://www.dbpia.co.kr/pdf/pdfView.do?nodeId=NODE12083196&width=1284
+    출처 : https://www.nvidia.com/ko-kr/solutions/ai/generative-ai/ [NVIDIA."생성형AI 솔루션"]
+  
+    출처 : https://www.dbpia.co.kr/pdf/pdfView.do?nodeId=NODE12083196&width=1284 [정관수외 2명."생성형 AI의 역사와 현재 그리고 미래".2024.한국컴퓨터정보학회]
 
 ## Economic (경제적 요인)
 
 - **관세 증가로 인한 게임산업의 변화**
  
- 관세 증가는 게임 산업에 콘솔 기기 가격 인상, 패키지 게임 시장 위축, 한국 게임사들의 판로 개척 필요성 증대 등 부정적 영향을 끼친다. 부정적인 영향의 대표적인 예로 닌텐도 스위치, 플레이스테이션 5 등 콘솔 기기에 최대 25%의 관세가 부과 되어 소비자들은 기기구매에 대한 부담이 늘 수 있다. 그러나 콘솔 시장의 위축은 기존 콘솔 게임 시장의 경쟁을 완화시켜 국내 게임사들이 상대적으로 경쟁력 있는 콘솔 게임을 출시할 수 있는 기회가 될 수 있다. 우리는 이러한 변화에 대응하여 게임을 제작하거나, 디지털 게임과 같이 관세 영향을 덜 받는 분야를 고려하여 게임을 제작해야 한다.
+    관세 증가는 게임 산업에 콘솔 기기 가격 인상, 패키지 게임 시장 위축, 한국 게임사들의 판로 개척 필요성 증대 등 부정적 영향을 끼친다. 부정적인 영향의 대표적인 예로 닌텐도 스위치, 플레이스테이션 5 등 콘솔 기기에 최대 25%의 관세가 부과 되어 소비자들은 기기구매에 대한 부담이 늘 수 있다. 그러나 콘솔 시장의 위축은 기존 콘솔 게임 시장의 경쟁을 완화시켜 국내 게임사들이 상대적으로 경쟁력 있는 콘솔 게임을 출시할 수 있는 기회가 될 수 있다. 우리는 이러한 변화에 대응하여 게임을 제작하거나, 디지털 게임과 같이 관세 영향을 덜 받는 분야를 고려하여 게임을 제작해야 한다.
 
- 링크 : https://www.mk.co.kr/news/world/11308711
+    출처 : https://www.mk.co.kr/news/world/11308711 [이영욱 기자."‘트럼프 관세’에 취미생활도 비상…소니, 닌텐도 이어 MS까지 콘솔 가격 줄줄이 인상".2025.매일경제]
 
 
 ## Environmental (환경적 요인)
@@ -73,6 +76,6 @@
     북한 관련 정보는 국민들의 불안한 심리를 자극할 수 있으며, 이는 정치적 양극화를 심화시킬 수 있다.
     따라서 제9회 전국동시지방선거기간 동안 북한과 관련된 정보들이 확산될 가능성이 있다.
 
-    google link: https://dcollection.cau.ac.kr/public_resource/pdf/000000241172_20251014152658.pdf [전강현. "SNS를 활용한 정치 콘텐츠 이용경험이 온라인 정치참여에 미치는 영향에 관한 연구." 국내석사학위논문 중앙대학교 신문방송대학원, 2024. 서울]
+    출처: https://dcollection.cau.ac.kr/public_resource/pdf/000000241172_20251014152658.pdf [전강현. "SNS를 활용한 정치 콘텐츠 이용경험이 온라인 정치참여에 미치는 영향에 관한 연구." 국내석사학위논문 중앙대학교 신문방송대학원, 2024. 서울]
     
-    google link: https://dcollection.cau.ac.kr/public_resource/pdf/000000241172_20251014152658.pdf [태정은. "정권교체에 따른 북한관련 보도성향의 변화에 관한 연구." 국내석사학위논문 연세대학교 대학원, 2000. 서울]
+    출처: https://dcollection.cau.ac.kr/public_resource/pdf/000000241172_20251014152658.pdf [태정은. "정권교체에 따른 북한관련 보도성향의 변화에 관한 연구." 국내석사학위논문 연세대학교 대학원, 2000. 서울]
