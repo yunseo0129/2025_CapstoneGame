@@ -6,8 +6,9 @@
     월드컵은 전 세계적으로 가장 큰 스포츠 이벤트 중 하나로, 전 세계 수많은 사람들이 경기를 시청하고 응원한다.
     우리나라에서도 지난 22년 월드컵 당시 중계 시청률은 최고 41.7%를 기록하며 국민적 관심이 매우 높았다.
 
-    google link: https://www.chosun.com/sports/football/2025/06/06/3CGWSPIAT5AAHIPI6E6DTXXQ7I/ [이영빈 기자."한국 축구, 11회 연속 월드컵 본선 진출 확정... 잉글랜드, 프랑스도 못한 대기록".조선일보]
-    google link: https://www.yna.co.kr/view/AKR20221125072000005 [강애란 기자."월드컵 방송3사 시청률 40%대...역대 최고는 74.7%.연합뉴스]
+    google link: https://www.chosun.com/sports/football/2025/06/06/3CGWSPIAT5AAHIPI6E6DTXXQ7I/ [이영빈 기자."한국 축구, 11회 연속 월드컵 본선 진출 확정... 잉글랜드, 프랑스도 못한 대기록".2025.조선일보]
+
+    google link: https://www.yna.co.kr/view/AKR20221125072000005 [강애란 기자."월드컵 방송3사 시청률 40%대...역대 최고는 74.7%.2022.연합뉴스]
 
 - **2026년 동계 올림픽 (2026.02.06~2026.02.22)**
 
@@ -17,10 +18,21 @@
 
 - **전쟁에 대한 관심도**
 
-    이라엘-하마스 전쟁이 장기화되면서 전쟁에 대한 국민의 관심도가 높아지고 있다.
-    
+    이스라엘-하마스 전쟁이 장기화되면서 전쟁에 대한 국민의 관심도가 높아지고 있다.
+    한국리서치의 여론 조사에 따르면 이스라엘-하마스 전쟁이 우리나라 안보에 영향을 준다고 생각하는 비율이 60%를 넘겼다.
+    ![그림1](https://i0.wp.com/hrcopinion.co.kr/wp-content/uploads/2024/10/hrcopinion_theme_241002_08.png?ssl=1)
+    google link: https://hrcopinion.co.kr/archives/31002# [이동한."이스라엘- 하마스 전쟁 1년, 한국인들의 생각은?".한국리서치]
 
-- 현재 z세대의 주요 게임
+- **현재 Z세대의 주요 게임**
+    
+    라이엇 게임즈의 '발로란트'는 피시방 점유율이 평일 7%, 주말 10%로  차이가 거의 없는 타 게임들에 비해 3%의 큰 차이를 보이고 방학 시즌에 꾸준히 높은 점유율을 보인다.
+    이는 발로란트가 10대와 20대 초반 세대에게 인기 있는 게임이라는 것을 간접적으로 보여준다.
+    또한 한국콘텐츠진흥원의 "2024아동청소년 게임행동 종합 실태조사"를 살펴보면 청소년이 가장 많이 이용하는 게임 장르 1.FPS/TPS (31.3%), 2.샌드박스(21.3%), 3.기타(15.9%)로 나타났다.
+    따라서 현재 Z세대는 FPS/TPS 장르의 게임을 주로 즐기고 있으며, 발로란트, 배틀그라운드가 대표적인 게임으로 자리잡고 있다.
+
+    google link: https://www.thelog.co.kr/index.do [더로그.피시방 점유율.2025]
+
+    google link: https://sns.kocca.kr/kocca/bbs/view/B0000147/2007925.do?searchCnd=&searchWrd=&cateTp1=&cateTp2=&useYn=&menuNo=204153&categorys=0&subcate=0&cateCode=&type=&instNo=0&questionTp=&ufSetting=&recovery=&option1=&option2=&year=&morePage=&qtp=&domainId=&sortCode=&pageIndex=7 [한국콘텐츠진흥원."2024 아동청소년 게임행동 종합 실태 조사".2025]
 
 ## Technological (기술적 요인)
 ## Economic (경제적 요인)
