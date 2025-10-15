@@ -57,6 +57,13 @@
 
 
 ## Environmental (환경적 요인)
+- **DMZ / 접경지역의 생태 시스템 및 지속가능성**
+
+    Spatial Sustainability and the Application of Social-Ecological Systems Framework in the Korean DMZ Area 논문에서는 DMZ 지역이 군사적 & 생태적 시스템이 겹쳐 있는 사회-생태 시스템 (SES) 이며, 지속가능성 확보를 위해 메타 거버넌스나 생태 보전 방안 등이 필요하다고 분석함.
+
+    DMZ가 단순한 군사 분단 공간이 아니라 사회적 요인(정치, 경제, 문화) + 생태적 요인이 상호작용하는 시스템임. 이 안에서 지속가능성 확보하려면 메타‐거버넌스(adaptive meta-governance), 지역 간 협력, 공유자원(common-pool resource)의 관리 원칙 등이 중요하다고 분석됨.
+
+    출처 : https://journal.kgeography.or.kr/articles/xml/bYjZ/?utm_source=chatgpt.com [대한지리학회지. DMZ 일원의 공간적 지속가능성과 사회-생태 시스템 프레임워크의 적용방안에 관한 고찰. 2025.06.30]
 
 ## Political (정치적 요인)
 - **대한민국 제9회 전국동시지방선거 (2026.06.03)**
