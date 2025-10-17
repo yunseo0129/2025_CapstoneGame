@@ -101,9 +101,9 @@
     북한 관련 정보는 국민들의 불안한 심리를 자극할 수 있으며, 이는 정치적 양극화를 심화시킬 수 있다.
     따라서 제9회 전국동시지방선거기간 동안 북한과 관련된 정보들이 확산될 가능성이 있다.
 
-    출처: https://dcollection.cau.ac.kr/public_resource/pdf/000000241172_20251014152658.pdf [전강현. "SNS를 활용한 정치 콘텐츠 이용경험이 온라인 정치참여에 미치는 영향에 관한 연구." 국내석사학위논문 중앙대학교 신문방송대학원, 2024. 서울]
+    출처: https://www.riss.kr/search/detail/DetailView.do?p_mat_type=be54d9b8bc7cdb09&control_no=71ca37d488f3bfa4ffe0bdc3ef48d419&outLink=K [전강현. "SNS를 활용한 정치 콘텐츠 이용경험이 온라인 정치참여에 미치는 영향에 관한 연구." 국내석사학위논문 중앙대학교 신문방송대학원, 2024. 서울]
     
-    출처: https://dcollection.cau.ac.kr/public_resource/pdf/000000241172_20251014152658.pdf [태정은. "정권교체에 따른 북한관련 보도성향의 변화에 관한 연구." 국내석사학위논문 연세대학교 대학원, 2000. 서울]
+    출처: https://www.riss.kr/search/detail/DetailView.do?p_mat_type=be54d9b8bc7cdb09&control_no=2241444ec6820ebc&keyword=%EC%A0%95%EA%B6%8C%EA%B5%90%EC%B2%B4%EC%97%90%20%EB%94%B0%EB%A5%B8%20%EB%B6%81%ED%95%9C%EA%B4%80%EB%A0%A8%20%EB%B3%B4%EB%8F%84%EC%84%B1%ED%96%A5%EC%9D%98%20%EB%B3%80%ED%99%94%EC%97%90%20%EA%B4%80%ED%95%9C%20%EC%97%B0%EA%B5%AC [태정은. "정권교체에 따른 북한관련 보도성향의 변화에 관한 연구." 국내석사학위논문 연세대학교 대학원, 2000. 서울]
 
 - **북한 제9차 당대회 (2026.01)**
     
