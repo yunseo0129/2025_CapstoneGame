@@ -7,7 +7,16 @@
 
 ## 분석 대상 게임
 
-1. 유사 게임: Homefront
+<figure>
+  <img src="../image/images1_1.jpg">
+  <figcaption style="font-size: 13px;">[ 그림 1-1 ] 홈프런트</figcaption>
+</figure>
+<figure>
+  <img src="../image/images1_2.jpg">
+  <figcaption style="font-size: 13px;">[ 그림 1-2 ] 홈프런트 게임플레이</figcaption>
+</figure>
+
+1. 유사 게임: Homefrontzz
 	
 	게임 장르 : FPS
 
@@ -26,6 +35,14 @@
     	- BP 시스템 (드론, 장갑차, 헬기, 공습)
 
 
+<figure>
+  <img src="../image/images2_1.jpg">
+  <figcaption style="font-size: 13px;">[ 그림 2-1 ] 발로란트</figcaption>
+</figure>
+<figure>
+  <img src="../image/images2_2.jpg">
+  <figcaption style="font-size: 13px;">[ 그림 2-2 ] 발로란트 게임플레이</figcaption>
+</figure>
 
 2. 인기 게임: Valorant - 5대5 전술 슈팅게임
 	
@@ -55,6 +72,15 @@
 	https://www.sbnation.com/2020/4/28/21209730/valorant-esports-future-hype-riot-games
 
 
+	
+<figure>
+  <img src="../image/images3_1.jpg">
+  <figcaption style="font-size: 13px;">[ 그림 3-1 ] VEILED EXPERTS</figcaption>
+</figure>
+<figure>
+  <img src="../image/images3_2.jpg">
+  <figcaption style="font-size: 13px;">[ 그림 3-2 ] VEILED EXPERTS 게임플레이</figcaption>
+</figure>
 
 3. 흥행 실패 게임: VEILED EXPERTS
 	
