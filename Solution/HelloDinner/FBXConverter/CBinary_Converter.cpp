@@ -21,10 +21,41 @@ HRESULT CBinary_Converter::Convert_to_Binary(MODEL_TYPE eModelType, const _char*
 
 	if (0 == m_pAIScene)
 	{
-		cout << "FBX파일 읽기 실패" << endl;
+		cout << "파일 읽기 실패" << endl;
 		return E_FAIL;
 	}
 	
+	// 애니메이션 있는 모델의 경우 뼈도 저장해야함
+	if (m_eType == TYPE_ANIM)
+	{
+		if (FAILED(Ready_Bone(m_pAIScene->mRootNode, -1)))
+		{
+			cout << "뼈 정보 저장 실패" << endl;
+			return E_FAIL;
+		}
+	}
+
+	if (FAILED(Ready_Meshes()))
+	{
+		cout << "메쉬 정보 저장 실패" << endl;
+		return E_FAIL;
+	}
+
+	if (FAILED(Ready_Materials(pModelFilePath, true)))
+	{
+		cout << "텍스쳐 정보 저장 실패" << endl;
+		return E_FAIL;
+	}
+
+	if (m_eType == TYPE_ANIM)
+	{
+		if (FAILED(Ready_Animation()))
+		{
+			cout << "애니메이션 정보 저장 실패" << endl;
+			return E_FAIL;
+		}
+	}
+
 	std::filesystem::path filePath = pModelFilePath;
 	string strDirectory = filePath.parent_path().string();
 	wstring comName = ConvertToWString(strDirectory) + L"/" + pComponentTag + L".txt";
@@ -38,7 +69,7 @@ HRESULT CBinary_Converter::Convert_to_Binary(MODEL_TYPE eModelType, const _char*
 	
 	if (FAILED(hr))
 	{
-		cout << "저장 실패" << endl;
+		cout << "파일 쓰기 실패" << endl;
 		return E_FAIL;
 	}
 
@@ -53,6 +84,26 @@ HRESULT CBinary_Converter::Save_Data_NonAnim(const _tchar* pComponentTag)
 }
 
 HRESULT CBinary_Converter::Save_Data_Anim(const _tchar* pComponentTag)
+{
+	return S_OK;
+}
+
+HRESULT CBinary_Converter::Ready_Bone(const aiNode* pAINode, _int iParentBoneIndex)
+{
+	return S_OK;
+}
+
+HRESULT CBinary_Converter::Ready_Meshes()
+{
+	return S_OK;
+}
+
+HRESULT CBinary_Converter::Ready_Materials(const _char* pModelFilePath, _bool jys)
+{
+	return S_OK;
+}
+
+HRESULT CBinary_Converter::Ready_Animation()
 {
 	return S_OK;
 }

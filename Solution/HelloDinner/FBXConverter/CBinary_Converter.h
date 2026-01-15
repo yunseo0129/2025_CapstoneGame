@@ -18,6 +18,12 @@ public:
 	HRESULT Save_Data_Anim(const _tchar* pComponentTag);
 
 private:
+	HRESULT	Ready_Bone(const aiNode* pAINode, _int iParentBoneIndex);
+	HRESULT Ready_Meshes();
+	HRESULT Ready_Materials(const _char* pModelFilePath, _bool jys = false);
+	HRESULT	Ready_Animation();
+
+private:
 	string ConvertToString(wstring strName) {
 		string ConvertName(strName.begin(), strName.end());
 		return ConvertName;
