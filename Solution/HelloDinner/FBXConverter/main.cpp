@@ -1,7 +1,6 @@
-#include "stdafx.h"
+#include "CBinary_Converter.h"
 
 int main()
 {
-	int a = 1;
-	cout << a;
+	CBinary_Converter converter;
 }
