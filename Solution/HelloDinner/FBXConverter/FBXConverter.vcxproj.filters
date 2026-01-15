@@ -29,7 +29,7 @@
     <ClInclude Include="CBinary_Converter.h">
       <Filter>소스 파일</Filter>
     </ClInclude>
-    <ClInclude Include="typedef.h">
+    <ClInclude Include="Mytypedef.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

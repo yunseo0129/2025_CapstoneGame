@@ -1,9 +1,11 @@
 #pragma once
-#include "typedef.h"
 
+#define NOMINMAX
+#include "Mytypedef.h"
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <Windows.h>
 #include <winnt.h>
 #include <winerror.h>
 #include <filesystem>
@@ -19,7 +21,7 @@ typedef		wstring						_wstring;
 
 enum MODEL_TYPE { TYPE_NONANIM, TYPE_ANIM, TYPE_END };
 
-typedef	struct
+struct MESH_INFO
 {
 	unsigned int			mMeshMaterials;	//메쉬에 적용된 메테리얼 개수
 	char					szMeshName[256];		//메쉬의 이름
@@ -38,19 +40,19 @@ typedef	struct
 	_uint						miNumBones{};
 	vector<_uint>				mBoneIndices;
 	vector<XMFLOAT4X4>			mOffsetMatrix;
-}MESH_INFO;
+};
 
-typedef struct
+struct MAX_CHAR
 {
 	char		mTexPath[256];
-}MAX_CHAR;
+};
 
-typedef	struct
+struct TEXTURE_INFO
 {
 	vector<MAX_CHAR>		mTexture[25];	//fbx의 텍스쳐 정보
-}TEXTURE_INFO;
+};
 
-typedef struct NODE_INFO
+struct NODE_INFO
 {
 	char					mName[256];
 	XMFLOAT4X4				mTransformation{};
@@ -60,15 +62,15 @@ typedef struct NODE_INFO
 	vector<NODE_INFO>		mChildren;
 };
 
-typedef struct
+struct KEYFRAME
 {
 	XMFLOAT3		vScale;
 	XMFLOAT4		vRotation;
 	XMFLOAT3		vPosition;
 	float			fKeyFramePosition;
-}KEYFRAME;
+};
 
-typedef struct
+struct CHANNEL_INFO
 {
 	_char					mszName[256];
 	_uint					miNumScaleFrameKeys;
@@ -78,9 +80,9 @@ typedef struct
 	vector<KEYFRAME>		mKeyFrame;
 	_uint					miBoneIndex{};
 
-}CHANNEL_INFO;
+};
 
-typedef struct
+struct ANIMATION_INFO
 {
 	_char					mszName[256];
 	_uint					miNumChannels{};
@@ -88,9 +90,9 @@ typedef struct
 	_float					mDuration{};
 	_float					mfTickPerSecond{};
 
-}ANIMATION_INFO;
+};
 
-typedef struct
+struct MODEL_INFO
 {
 	unsigned int				mMeshCnt;		//메쉬의 개수
 	vector<MESH_INFO>			mMeshes;		//메쉬의 정보
@@ -102,4 +104,4 @@ typedef struct
 
 	_uint						miNumAnimation{};
 	vector<ANIMATION_INFO>		mAnim;
-}MODEL_INFO;
+};
