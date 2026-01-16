@@ -21,6 +21,17 @@ typedef		wstring						_wstring;
 
 enum MODEL_TYPE { TYPE_NONANIM, TYPE_ANIM, TYPE_END };
 
+
+template<typename T>
+void	Safe_Delete_Array(T& Pointer)
+{
+	if (nullptr != Pointer)
+	{
+		delete[] Pointer;
+		Pointer = nullptr;
+	}
+}
+
 struct MESH_INFO
 {
 	unsigned int			mMeshMaterials;	//메쉬에 적용된 메테리얼 개수

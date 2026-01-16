@@ -8,14 +8,29 @@ public:
 	~CBinary_Converter();
 
 public:
+	enum PATH_STATE { DIRECTORY, FILEPATH, FILENAME, COMPONETTAG };
+
+public:
 	_uint Get_NumMeshes() const {
 		return m_iNumMeshes;
 	}
+
+	HRESULT Convert(MODEL_TYPE eType, const _tchar* _path);
+	HRESULT Find_Directories(const _tchar* _path, vector<const _tchar*>& Directories);
+	_char* GetFileExtension(_char* file_name);
 
 	HRESULT Convert_to_Binary(MODEL_TYPE eModelType, const _char* pModelFilePath, const _tchar* pComponentTag);
 
 	HRESULT Save_Data_NonAnim(const _tchar* pComponentTag);
 	HRESULT Save_Data_Anim(const _tchar* pComponentTag);
+
+	HRESULT Save_Mesh_Info(const aiMesh* pAIMesh);
+	HRESULT	Save_Mesh_Info_Anim(const aiMesh* pAIMesh);
+	_uint Get_BoneIndex(const _char* pBoneName);
+	HRESULT ModifyFileSuffixAndCheckExistence(const _char* szFullPath, const _char* newSuffix, _char* outFullPath);
+	ANIMATION_INFO	Create_Animation(const aiAnimation* pAIAnimation);
+	CHANNEL_INFO	Create_Channel(const aiNodeAnim* pAIChannel);
+	NODE_INFO Create_Node(const aiNode* pAINode, _int iParentBoneIndex);
 
 private:
 	HRESULT	Ready_Bone(const aiNode* pAINode, _int iParentBoneIndex);
