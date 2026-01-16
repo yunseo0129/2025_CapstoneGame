@@ -38,12 +38,12 @@ private:
 	NODE_INFO		Create_Node(const aiNode* pAINode, _int iParentBoneIndex);
 
 private:
-	string ConvertToString(wstring strName) {
+	string			ConvertToString(wstring strName) {
 		string ConvertName(strName.begin(), strName.end());
 		return ConvertName;
 	}
 
-	wstring ConvertToWString(string strName) {
+	wstring			ConvertToWString(string strName) {
 		wstring ConvertName(strName.begin(), strName.end());
 		return ConvertName;
 	}
