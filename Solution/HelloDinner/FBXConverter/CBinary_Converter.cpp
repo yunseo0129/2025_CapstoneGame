@@ -6,6 +6,10 @@ CBinary_Converter::CBinary_Converter()
 
 CBinary_Converter::~CBinary_Converter()
 {
+	for (auto p : m_Meshes)
+		delete p; 
+	m_Meshes.clear();
+
 	m_Importer.FreeScene();
 }
 
