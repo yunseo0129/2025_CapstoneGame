@@ -1,3 +1,1 @@
-﻿  MainApp.cpp
-C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\MainApp.cpp(95,9): warning C4305: '인수': 'double'에서 'float'(으)로 잘립니다.
-  HelloDinner.vcxproj -> C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\x64\Debug\HelloDinner.exe
+﻿  HelloDinner.vcxproj -> S:\CapstoneGame\Solution\HelloDinner\x64\Debug\HelloDinner.exe

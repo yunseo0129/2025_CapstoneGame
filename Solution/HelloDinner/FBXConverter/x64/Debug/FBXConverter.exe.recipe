@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>S:\CapstoneGame\Solution\HelloDinner\x64\Debug\FBXConverter.exe</FullPath>
+      <FullPath>S:\CapstoneGame\Solution\HelloDinner\FBXConverter\x64\Debug\FBXConverter.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />

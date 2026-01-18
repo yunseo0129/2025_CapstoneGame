@@ -56,7 +56,7 @@ HRESULT CBinary_Converter::Convert(MODEL_TYPE eType, const _tchar* _path)
 					return E_FAIL;
 				}
 
-				if (!strcmp("fbx", GetFileExtension(temp)))
+				if (!strcmp(".fbx", GetFileExtension(temp)))
 				{
 					_tchar szFilePath[256] = L"";
 					_tchar* szFileName = new _tchar[256];
@@ -72,11 +72,6 @@ HRESULT CBinary_Converter::Convert(MODEL_TYPE eType, const _tchar* _path)
 					wcscat_s(strProtoTag, 256, szFileName);
 					Convert_to_Binary(eType, ConvertToString(strFilePath).c_str(), strProtoTag);
 					Safe_Delete_Array(szFileName);
-				}
-				else
-				{
-					cout << "확장자 추출 실패" << endl;
-					return E_FAIL;
 				}
 			}
 			else if (FileFinde.cFileName[0] != '.')
@@ -218,7 +213,7 @@ HRESULT CBinary_Converter::Convert_to_Binary(MODEL_TYPE eModelType, const _char*
 
 HRESULT CBinary_Converter::Save_Data_NonAnim(const _tchar* pComponentTag)
 {
-	_tchar FilePath[256] = L"../../Data/";
+	_tchar FilePath[256] = L"../";
 	_tchar Ext[256] = L".txt";
 
 	wcscat_s(FilePath, pComponentTag);
@@ -292,13 +287,13 @@ HRESULT CBinary_Converter::Save_Data_NonAnim(const _tchar* pComponentTag)
 
 HRESULT CBinary_Converter::Save_Data_Anim(const _tchar* pComponentTag)
 {
-	_tchar FilePath[256] = L"../../Data/";
+	_tchar FilePath[256] = L"../";
 	_tchar Ext[256] = L".txt";
 
 	wcscat_s(FilePath, pComponentTag);
 	wcscat_s(FilePath, Ext);
 	ofstream FileStream(pComponentTag, ios_base::out | ios_base::binary);
-
+	
 	if (!FileStream.is_open())
 		return E_FAIL;
 
