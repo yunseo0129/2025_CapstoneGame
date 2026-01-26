@@ -1,0 +1,17 @@
+﻿  Base.cpp
+  Camera.cpp
+  DDSTextureLoader12.cpp
+  HelloDinner.cpp
+  MainApp.cpp
+  Mesh.cpp
+  Object.cpp
+  Player.cpp
+  Scene.cpp
+  Shader.cpp
+  Texture.cpp
+  Timer.cpp
+  코드를 생성하고 있습니다.
+  Previous IPDB not found, fall back to full compilation.
+  All 1553 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  코드를 생성했습니다.
+  HelloDinner.vcxproj -> C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\x64\Release\HelloDinner.exe
