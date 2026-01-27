@@ -165,7 +165,7 @@ CCubeMesh::CCubeMesh(const ComPtr<ID3D12Device>& _device, const ComPtr<ID3D12Gra
 CCubeIndexMesh::CCubeIndexMesh(const ComPtr<ID3D12Device>& _device, const ComPtr<ID3D12GraphicsCommandList>& _commandList)
 {
 	vector<tVertex> vertices;
-
+	
 	const XMFLOAT3 LEFTDOWNFRONT = { -1.f, -1.f, -1.f };
 	const XMFLOAT3 LEFTDOWNBACK = { -1.f, -1.f, +1.f };
 	const XMFLOAT3 LEFTUPFRONT = { -1.f, +1.f, -1.f };

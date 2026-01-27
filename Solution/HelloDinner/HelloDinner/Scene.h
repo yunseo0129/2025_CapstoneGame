@@ -6,6 +6,7 @@
 #include "player.h"
 #include "camera.h"
 #include "texture.h"
+
 class CScene 
 {
 public:
