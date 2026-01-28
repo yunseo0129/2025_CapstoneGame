@@ -43,3 +43,13 @@
 # Yunseo
 *.vsidx
 *.vs/
+*.tlog
+*.log
+*.idb
+*.pdb
+*.exe.recipe
+*.recipe
+*.lastbuildstate
+*.ipch
+*.VC.opendb
+*.VC.db
