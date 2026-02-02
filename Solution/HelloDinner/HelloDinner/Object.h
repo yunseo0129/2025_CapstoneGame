@@ -1,14 +1,28 @@
 #pragma once
-#include "stdafx.h"
+#include "Base.h"
 #include "mesh.h"
 #include "Texture.h"
 
-class CGameObject
+class CGameObject abstract : public CBase
 {
 public:
-	CGameObject();
+	typedef struct : public CTransform::TRANSFORM_DESC
+	{
+		_uint			iData;
+	}GAMEOBJECT_DESC;
+protected:
+	CGameObject(); // 디바이스와 컨텍스트 넣어주기
+	CGameObject(const CGameObject& Prototype);
 	~CGameObject() = default;
 
+public:
+	virtual HRESULT Initialize_Prototype();
+	virtual HRESULT Initialize(void* pArg);
+	virtual void Priority_Update(_float fTimeDelta);
+	virtual void Update(_float fTimeDelta);
+	virtual void Late_Update(_float fTimeDelta);
+	virtual HRESULT Render();
+	// ---------------------------------------------------------------------------
 	virtual void Update(FLOAT _timeElapsed);
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& _commandList) const;
 	virtual void UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& _commandList) const;
