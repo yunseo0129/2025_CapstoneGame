@@ -54,6 +54,9 @@
     <Filter Include="소스 파일\02. Game\01. Player">
       <UniqueIdentifier>{89d733c0-4a84-4ae4-89cb-a81bd5c1b95a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\01. Engine\06. Prototype">
+      <UniqueIdentifier>{94ac9699-79f6-485b-885e-c874ee561016}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -110,6 +113,9 @@
     <ClInclude Include="Player.h">
       <Filter>소스 파일\02. Game\01. Player</Filter>
     </ClInclude>
+    <ClInclude Include="Prototype_Manager.h">
+      <Filter>소스 파일\01. Engine\06. Prototype</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -147,6 +153,9 @@
     </ClCompile>
     <ClCompile Include="Player.cpp">
       <Filter>소스 파일\02. Game\01. Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Prototype_Manager.cpp">
+      <Filter>소스 파일\01. Engine\06. Prototype</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

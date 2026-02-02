@@ -19,3 +19,15 @@ namespace DescriptorRange
     constexpr UINT Texture = 0;
     constexpr UINT TextureCube = 1;
 }
+
+namespace Engine
+{
+    enum class PROTOTYPE { PROTO_GAMEOBJ, PROTO_COMPONENT };
+
+    enum MOUSEKEYSTATE { DIM_LB, DIM_RB, DIM_MB, DIM_END };
+    enum MOUSEMOVESTATE { DIMS_X, DIMS_Y, DIMS_Z, DIMS_END };
+}
+
+#ifndef			MSG_BOX
+#define			MSG_BOX(_message)			MessageBox(NULL, TEXT(_message), L"System Message", MB_OK)
+#endif
