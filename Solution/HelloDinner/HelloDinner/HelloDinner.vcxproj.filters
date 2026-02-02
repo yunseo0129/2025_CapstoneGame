@@ -18,26 +18,41 @@
     <Filter Include="소스 파일\99.Defines">
       <UniqueIdentifier>{c9d543d2-dc7a-411d-9650-216ac7af758a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\00.Framework">
-      <UniqueIdentifier>{5bca7c55-2ccc-4034-a53e-9e7967c846df}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\01.GameObject">
-      <UniqueIdentifier>{9d2b40a9-d53c-4edd-9577-af6c489e842e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\02.Mesh">
-      <UniqueIdentifier>{e2d8d40a-7283-4b2a-a18a-6accb8d0b665}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\03.Buffer">
-      <UniqueIdentifier>{23654880-601c-4052-aa92-86c54e9b9a65}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\04.Scene">
-      <UniqueIdentifier>{446fbe64-2145-4f1e-8678-ef60221a47da}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\97.System">
-      <UniqueIdentifier>{6d971a2e-82d1-4fad-a966-4993f08a1cc3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\98.Utility">
       <UniqueIdentifier>{53639c2f-f005-4f8f-ae9b-dfb0e91f172b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\00.Main">
+      <UniqueIdentifier>{5bca7c55-2ccc-4034-a53e-9e7967c846df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine">
+      <UniqueIdentifier>{10fa4d8e-ed1c-4d14-8a6c-eef70705968e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\04.Scene">
+      <UniqueIdentifier>{446fbe64-2145-4f1e-8678-ef60221a47da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\03.Buffer">
+      <UniqueIdentifier>{23654880-601c-4052-aa92-86c54e9b9a65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\02.Mesh">
+      <UniqueIdentifier>{e2d8d40a-7283-4b2a-a18a-6accb8d0b665}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game">
+      <UniqueIdentifier>{bb6c1f39-a506-4212-ad95-af84e6cbf75e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\00. Base">
+      <UniqueIdentifier>{943c87b1-d326-4195-a7e0-16d91b68fa08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\01. Camera">
+      <UniqueIdentifier>{cb8ff52d-3025-41fd-822e-cf8c5c47dafb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\05.. Timer">
+      <UniqueIdentifier>{75730003-6d70-432d-84d8-eef4ac13ee3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\00.GameObject">
+      <UniqueIdentifier>{9d2b40a9-d53c-4edd-9577-af6c489e842e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\01. Player">
+      <UniqueIdentifier>{89d733c0-4a84-4ae4-89cb-a81bd5c1b95a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -48,10 +63,10 @@
       <Filter>외부 파일</Filter>
     </ClInclude>
     <ClInclude Include="MainApp.h">
-      <Filter>소스 파일\00.Framework</Filter>
+      <Filter>소스 파일\00.Main</Filter>
     </ClInclude>
     <ClInclude Include="HelloDinner.h">
-      <Filter>소스 파일\00.Framework</Filter>
+      <Filter>소스 파일\00.Main</Filter>
     </ClInclude>
     <ClInclude Include="Defines.h">
       <Filter>소스 파일\99.Defines</Filter>
@@ -60,19 +75,16 @@
       <Filter>소스 파일\99.Defines</Filter>
     </ClInclude>
     <ClInclude Include="Mesh.h">
-      <Filter>소스 파일\02.Mesh</Filter>
+      <Filter>소스 파일\01. Engine\02.Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Object.h">
-      <Filter>소스 파일\01.GameObject</Filter>
-    </ClInclude>
-    <ClInclude Include="Player.h">
-      <Filter>소스 파일\01.GameObject</Filter>
+      <Filter>소스 파일\02. Game\00.GameObject</Filter>
     </ClInclude>
     <ClInclude Include="Shader.h">
-      <Filter>소스 파일\03.Buffer</Filter>
+      <Filter>소스 파일\01. Engine\03.Buffer</Filter>
     </ClInclude>
     <ClInclude Include="Texture.h">
-      <Filter>소스 파일\03.Buffer</Filter>
+      <Filter>소스 파일\01. Engine\03.Buffer</Filter>
     </ClInclude>
     <ClInclude Include="Resource.h">
       <Filter>소스 파일\99.Defines</Filter>
@@ -81,19 +93,22 @@
       <Filter>소스 파일\99.Defines</Filter>
     </ClInclude>
     <ClInclude Include="Scene.h">
-      <Filter>소스 파일\04.Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Timer.h">
-      <Filter>소스 파일\97.System</Filter>
-    </ClInclude>
-    <ClInclude Include="Base.h">
-      <Filter>소스 파일\97.System</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>소스 파일\97.System</Filter>
+      <Filter>소스 파일\01. Engine\04.Scene</Filter>
     </ClInclude>
     <ClInclude Include="Utiles.h">
       <Filter>소스 파일\98.Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Base.h">
+      <Filter>소스 파일\01. Engine\00. Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>소스 파일\01. Engine\01. Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>소스 파일\01. Engine\05.. Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>소스 파일\02. Game\01. Player</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -101,37 +116,37 @@
       <Filter>외부 파일</Filter>
     </ClCompile>
     <ClCompile Include="MainApp.cpp">
-      <Filter>소스 파일\00.Framework</Filter>
+      <Filter>소스 파일\00.Main</Filter>
     </ClCompile>
     <ClCompile Include="HelloDinner.cpp">
-      <Filter>소스 파일\00.Framework</Filter>
+      <Filter>소스 파일\00.Main</Filter>
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
-      <Filter>소스 파일\02.Mesh</Filter>
+      <Filter>소스 파일\01. Engine\02.Mesh</Filter>
     </ClCompile>
     <ClCompile Include="Object.cpp">
-      <Filter>소스 파일\01.GameObject</Filter>
-    </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>소스 파일\01.GameObject</Filter>
+      <Filter>소스 파일\02. Game\00.GameObject</Filter>
     </ClCompile>
     <ClCompile Include="Shader.cpp">
-      <Filter>소스 파일\03.Buffer</Filter>
+      <Filter>소스 파일\01. Engine\03.Buffer</Filter>
     </ClCompile>
     <ClCompile Include="Texture.cpp">
-      <Filter>소스 파일\03.Buffer</Filter>
+      <Filter>소스 파일\01. Engine\03.Buffer</Filter>
     </ClCompile>
     <ClCompile Include="Scene.cpp">
-      <Filter>소스 파일\04.Scene</Filter>
+      <Filter>소스 파일\01. Engine\04.Scene</Filter>
     </ClCompile>
     <ClCompile Include="Base.cpp">
-      <Filter>소스 파일\97.System</Filter>
+      <Filter>소스 파일\01. Engine\00. Base</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
-      <Filter>소스 파일\97.System</Filter>
+      <Filter>소스 파일\01. Engine\01. Camera</Filter>
     </ClCompile>
     <ClCompile Include="Timer.cpp">
-      <Filter>소스 파일\97.System</Filter>
+      <Filter>소스 파일\01. Engine\05.. Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>소스 파일\02. Game\01. Player</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
