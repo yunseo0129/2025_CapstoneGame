@@ -57,11 +57,17 @@
     <Filter Include="소스 파일\01. Engine\06. Prototype">
       <UniqueIdentifier>{94ac9699-79f6-485b-885e-c874ee561016}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\01. Engine\07. Component">
-      <UniqueIdentifier>{2d9a3835-ccad-4ad8-90a2-27b2a3c63e61}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\01. Engine\99. GameInstance">
       <UniqueIdentifier>{e85a2808-8da5-4a6e-b5a4-4ecf3890a81e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\07. Components">
+      <UniqueIdentifier>{2d9a3835-ccad-4ad8-90a2-27b2a3c63e61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\07. Components\00. Component">
+      <UniqueIdentifier>{cffcaa07-e4bb-4fad-8389-e368769752cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\07. Components\01. Transform">
+      <UniqueIdentifier>{fcd81d4a-caee-4134-998c-8dc00c520cd3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -122,11 +128,14 @@
     <ClInclude Include="Prototype_Manager.h">
       <Filter>소스 파일\01. Engine\06. Prototype</Filter>
     </ClInclude>
-    <ClInclude Include="Component.h">
-      <Filter>소스 파일\01. Engine\07. Component</Filter>
-    </ClInclude>
     <ClInclude Include="GameInstance.h">
       <Filter>소스 파일\01. Engine\99. GameInstance</Filter>
+    </ClInclude>
+    <ClInclude Include="Component.h">
+      <Filter>소스 파일\01. Engine\07. Components\00. Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>소스 파일\01. Engine\07. Components\01. Transform</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -169,11 +178,14 @@
     <ClCompile Include="Prototype_Manager.cpp">
       <Filter>소스 파일\01. Engine\06. Prototype</Filter>
     </ClCompile>
-    <ClCompile Include="Component.cpp">
-      <Filter>소스 파일\01. Engine\07. Component</Filter>
-    </ClCompile>
     <ClCompile Include="GameInstance.cpp">
       <Filter>소스 파일\01. Engine\99. GameInstance</Filter>
+    </ClCompile>
+    <ClCompile Include="Component.cpp">
+      <Filter>소스 파일\01. Engine\07. Components\00. Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>소스 파일\01. Engine\07. Components\01. Transform</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
