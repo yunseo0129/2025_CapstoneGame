@@ -1,7 +1,6 @@
 #pragma once
 #include "Base.h"
-#include "mesh.h"
-#include "Texture.h"
+// 컴포넌트, 트랜스폼 컴포넌트 만들고 포함하기
 
 class CGameObject abstract : public CBase
 {
@@ -16,45 +15,26 @@ protected:
 	~CGameObject() = default;
 
 public:
-	virtual HRESULT Initialize_Prototype();
-	virtual HRESULT Initialize(void* pArg);
-	virtual void Priority_Update(_float fTimeDelta);
-	virtual void Update(_float fTimeDelta);
-	virtual void Late_Update(_float fTimeDelta);
-	virtual HRESULT Render();
-	// ---------------------------------------------------------------------------
-	virtual void Update(FLOAT _timeElapsed);
-	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& _commandList) const;
-	virtual void UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& _commandList) const;
+	virtual HRESULT		Initialize_Prototype();
+	virtual HRESULT		Initialize(void* pArg);
+	virtual void		Priority_Update(_float fTimeDelta);
+	virtual void		Update(_float fTimeDelta);
+	virtual void		Late_Update(_float fTimeDelta);
+	virtual HRESULT		Render(const ComPtr<ID3D12GraphicsCommandList>& _commandList);
 
-	void Transform(XMFLOAT3 _shift);
-	void Rotate(FLOAT _pitch, FLOAT _yaw, FLOAT _roll);
+public:
+	virtual CGameObject*	Clone(void* pArg) = 0;
+	virtual void			Free() override;
 
-	void SetMesh(const shared_ptr<CMesh>& _mesh);
-	void SetTexture(const shared_ptr<CTexture>& _texture);
-
-	void SetPosition(XMFLOAT3 _position);
-	XMFLOAT3 GetPosition() const;
+public:
+	class CComponent*	Find_Component(const _wstring& strComponentTag);
 
 protected:
-	XMFLOAT4X4			m_xmf4x4WorldMatrix;
+	HRESULT				Add_Component(_uint iPrototypeLevelIndex, const _wstring& strPrototypeTag, const _wstring& strComponentTag, CComponent** ppOut, void* pArg = nullptr);
 
-	XMFLOAT3			m_xmf3Right;
-	XMFLOAT3			m_xmf3Up;
-	XMFLOAT3			m_xmf3Front;
-
-	shared_ptr<CMesh>	m_pMesh;
-	shared_ptr<CTexture>	m_pTexture;
-};
-
-class CRotatingObject : public CGameObject
-{
-public:
-	CRotatingObject();
-	~CRotatingObject() = default;
-
-	void Update(FLOAT _timeElapsed) override;
-
-private:
-	FLOAT m_fRotatingSpeed;
+protected:
+	class CTransform*							m_pTransformCom = { nullptr };
+	class CGameInstance*						m_pGameInstance = { nullptr };
+	map<const _wstring, class CComponent*>		m_Components;
+	_uint										m_iData = {};
 };
