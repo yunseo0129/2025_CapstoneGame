@@ -1,14 +1,20 @@
 #include "Object.h"
-// 엔진헤더 추가해주고 실제 엔진 생성자에서 복사해서 사용
+#include "GameInstance.h"
 
-CGameObject::CGameObject()
+CGameObject::CGameObject(EngineContext* _pcontext)
+	: m_pContext{ _pcontext }
+	, m_pGameInstance{ CGameInstance::GetInstance() }
 {
 	Safe_AddRef(m_pGameInstance);
+	Safe_AddRef(m_pContext);
 }
 
 CGameObject::CGameObject(const CGameObject& Prototype)
+	: m_pContext{ Prototype.m_pContext }
+	, m_pGameInstance{ Prototype.m_pGameInstance }
 {
 	Safe_AddRef(m_pGameInstance);
+	Safe_AddRef(m_pContext);
 }
 
 HRESULT CGameObject::Initialize_Prototype()
@@ -61,6 +67,7 @@ void CGameObject::Free()
 
 	Safe_Release(m_pTransformCom);
 	Safe_Release(m_pGameInstance);
+	Safe_Release(m_pContext);
 }
 
 CComponent* CGameObject::Find_Component(const _wstring& strComponentTag)

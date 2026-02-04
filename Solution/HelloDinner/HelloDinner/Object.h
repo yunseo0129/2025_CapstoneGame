@@ -10,7 +10,7 @@ public:
 		_uint			iData;
 	}GAMEOBJECT_DESC;
 protected:
-	CGameObject(); // 디바이스와 컨텍스트 넣어주기
+	CGameObject(EngineContext* _pcontext);
 	CGameObject(const CGameObject& Prototype);
 	~CGameObject() = default;
 
@@ -35,6 +35,7 @@ protected:
 protected:
 	class CTransform*							m_pTransformCom = { nullptr };
 	class CGameInstance*						m_pGameInstance = { nullptr };
+	EngineContext*								m_pContext = { nullptr };
 	map<const _wstring, class CComponent*>		m_Components;
 	_uint										m_iData = {};
 };
