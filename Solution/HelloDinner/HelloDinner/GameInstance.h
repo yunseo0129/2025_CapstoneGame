@@ -9,12 +9,13 @@ private:
 	virtual ~CGameInstance() = default;
 
 public: /* For.GameInstance */
-	HRESULT Initialize_Engine(const ENGINE_DESC& EngineDesc, ID3D11Device** ppDevice, ID3D11DeviceContext** ppContext);
+	HRESULT Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineContext* _pcontext);
 	void Update_Engine(_float fTimeDelta);
-	HRESULT Render_Begin(const _float4& vClearColor = _float4(0.f, 0.f, 1.f, 1.f));
-	HRESULT Draw();
-	HRESULT Render_End();
-	void Clear(_int iLevelID);
+	//HRESULT Render_Begin(const _float4& vClearColor = _float4(0.f, 0.f, 1.f, 1.f));
+	//HRESULT Draw();
+	//HRESULT Render_End();
+	//void Clear(_int iLevelID);
+
 	_float Compute_Random_Normal();
 	_float Compute_Random(_float fMin, _float fMax);
 

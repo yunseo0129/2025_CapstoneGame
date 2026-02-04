@@ -1,5 +1,6 @@
 #include "Prototype_Manager.h"
 #include"Object.h"
+#include "GameInstance.h"
 
 CPrototype_Manager::CPrototype_Manager()
 {
@@ -15,6 +16,16 @@ HRESULT CPrototype_Manager::Initialize(_uint iNumLevels)
 	m_iNumLevels = iNumLevels;
 
 	return S_OK;
+}
+
+_float CGameInstance::Compute_Random_Normal()
+{
+	return (_float)rand() / RAND_MAX;
+}
+
+_float CGameInstance::Compute_Random(_float fMin, _float fMax)
+{
+	return fMin + (fMax - fMin) * Compute_Random_Normal();	return _float();
 }
 
 HRESULT CPrototype_Manager::Add_Prototype(_uint iLevelIndex, const _wstring& strPrototypeTag, CBase* pPrototype)

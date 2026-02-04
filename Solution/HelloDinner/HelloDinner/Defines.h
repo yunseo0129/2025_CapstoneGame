@@ -39,6 +39,16 @@ struct EngineContext
     ID3D12DescriptorHeap* dsvHeap;
 };
 
+typedef struct
+{
+	HINSTANCE		hInstance;
+	HWND			hWnd;
+	bool			isWindowed;
+	unsigned int	iNumLevels;
+	unsigned int	iViewportWidth;
+	unsigned int	iViewportHeight;
+}ENGINE_DESC;
+
 #define NO_COPY(CLASSNAME)											\
 			private:												\
 			CLASSNAME(const CLASSNAME&) = delete;					\
