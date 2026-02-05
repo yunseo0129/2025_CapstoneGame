@@ -1,7 +1,5 @@
 #include "Transform.h"
 
-//#include "Shader.h"
-
 CTransform::CTransform(EngineContext* _pcontext)
 	: CComponent{ _pcontext }
 {
