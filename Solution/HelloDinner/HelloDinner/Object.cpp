@@ -1,72 +1,99 @@
 #include "Object.h"
+#include "GameInstance.h"
 
-CGameObject::CGameObject() : m_xmf3Right{ 1.f, 0.f, 0.f }, m_xmf3Up{ 0.f, 1.f, 0.f }, m_xmf3Front{ 0.f, 0.f, 1.f }
+CGameObject::CGameObject(EngineContext* _pcontext)
+	: m_pContext{ _pcontext }
+	, m_pGameInstance{ CGameInstance::GetInstance() }
 {
-	XMStoreFloat4x4(&m_xmf4x4WorldMatrix, XMMatrixIdentity());
+	Safe_AddRef(m_pGameInstance);
+	Safe_AddRef(m_pContext);
 }
 
-void CGameObject::Update(FLOAT _timeElapsed)
+CGameObject::CGameObject(const CGameObject& Prototype)
+	: m_pContext{ Prototype.m_pContext }
+	, m_pGameInstance{ Prototype.m_pGameInstance }
 {
-
+	Safe_AddRef(m_pGameInstance);
+	Safe_AddRef(m_pContext);
 }
 
-void CGameObject::Render(const ComPtr<ID3D12GraphicsCommandList>& _commandList) const
+HRESULT CGameObject::Initialize_Prototype()
 {
-	UpdateShaderVariable(_commandList);
-	m_pMesh->Render(_commandList);
+	return S_OK;
 }
 
-void CGameObject::UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& _commandList) const
+HRESULT CGameObject::Initialize(void* pArg)
 {
-	XMFLOAT4X4 worldMatrix;
-	XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4WorldMatrix)));
-	_commandList->SetGraphicsRoot32BitConstants(0, 16, &worldMatrix, 0);
+	if (nullptr != pArg)
+	{
+		GAMEOBJECT_DESC* pDesc = static_cast<GAMEOBJECT_DESC*>(pArg);
+		m_iData = pDesc->iData;
+	}
 
-	if (m_pTexture) m_pTexture->UpdateShaderVariable(_commandList);
+	m_pTransformCom = CTransform::Create(m_pContext);
+	if (nullptr == m_pTransformCom)
+		return E_FAIL;
+
+	if (FAILED(m_pTransformCom->Initialize(pArg)))
+		return E_FAIL;
+
+	return S_OK;
 }
 
-void CGameObject::Transform(XMFLOAT3 _shift)
-{
-	SetPosition(Vector3::Add(GetPosition(), _shift));
-}
-
-void CGameObject::Rotate(FLOAT _pitch, FLOAT _yaw, FLOAT _roll)
-{
-	XMMATRIX rotate{ XMMatrixRotationRollPitchYaw(XMConvertToRadians(_pitch), XMConvertToRadians(_yaw), XMConvertToRadians(_roll)) };
-	XMStoreFloat4x4(&m_xmf4x4WorldMatrix, rotate * XMLoadFloat4x4(&m_xmf4x4WorldMatrix));
-
-	XMStoreFloat3(&m_xmf3Right, XMVector3TransformNormal(XMLoadFloat3(&m_xmf3Right), rotate));
-	XMStoreFloat3(&m_xmf3Up, XMVector3TransformNormal(XMLoadFloat3(&m_xmf3Up), rotate));
-	XMStoreFloat3(&m_xmf3Front, XMVector3TransformNormal(XMLoadFloat3(&m_xmf3Front), rotate));
-}
-
-void CGameObject::SetMesh(const shared_ptr<CMesh>& _mesh)
-{
-	m_pMesh = _mesh;
-}
-
-void CGameObject::SetTexture(const shared_ptr<CTexture>& _texture)
-{
-	m_pTexture = _texture;
-}
-
-void CGameObject::SetPosition(XMFLOAT3 _position)
-{
-	m_xmf4x4WorldMatrix._41 = _position.x;
-	m_xmf4x4WorldMatrix._42 = _position.y;
-	m_xmf4x4WorldMatrix._43 = _position.z;
-}
-
-XMFLOAT3 CGameObject::GetPosition() const
-{
-	return XMFLOAT3{ m_xmf4x4WorldMatrix._41, m_xmf4x4WorldMatrix._42, m_xmf4x4WorldMatrix._43 };
-}
-
-CRotatingObject::CRotatingObject() : CGameObject(), m_fRotatingSpeed{ }
+void CGameObject::Priority_Update(_float fTimeDelta)
 {
 }
 
-void CRotatingObject::Update(FLOAT _timeElapsed)
+void CGameObject::Update(_float fTimeDelta)
 {
-	Rotate(0.f, m_fRotatingSpeed * _timeElapsed, 0.f);
+}
+
+void CGameObject::Late_Update(_float fTimeDelta)
+{
+}
+
+HRESULT CGameObject::Render(const ComPtr<ID3D12GraphicsCommandList>& _commandList)
+{
+	return S_OK;
+}
+
+void CGameObject::Free()
+{
+	__super::Free();
+
+	for (auto& Pair : m_Components)
+		Safe_Release(Pair.second);
+	m_Components.clear();
+
+	Safe_Release(m_pTransformCom);
+	Safe_Release(m_pGameInstance);
+	Safe_Release(m_pContext);
+}
+
+CComponent* CGameObject::Find_Component(const _wstring& strComponentTag)
+{
+	auto	iter = m_Components.find(strComponentTag);
+
+	if (iter == m_Components.end())
+		return nullptr;
+
+	return iter->second;
+}
+
+HRESULT CGameObject::Add_Component(_uint iPrototypeLevelIndex, const _wstring& strPrototypeTag, const _wstring& strComponentTag, CComponent** ppOut, void* pArg)
+{
+	if (nullptr != Find_Component(strComponentTag))
+		return E_FAIL;
+
+	CComponent* pComponent = static_cast<CComponent*>(m_pGameInstance->Clone_Prototype(Engine::PROTOTYPE::PROTO_COMPONENT, iPrototypeLevelIndex, strPrototypeTag, pArg));
+	if (nullptr == pComponent)
+		return E_FAIL;
+
+	m_Components.emplace(strComponentTag, pComponent);
+
+	*ppOut = pComponent;
+
+	Safe_AddRef(pComponent);
+
+	return S_OK;
 }

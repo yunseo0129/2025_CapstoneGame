@@ -127,11 +127,19 @@
   <ItemGroup>
     <ClInclude Include="Base.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Component.h" />
     <ClInclude Include="Defines.h" />
     <ClInclude Include="Common\d3dx12.h" />
     <ClInclude Include="Common\DDSTextureLoader12.h" />
+    <ClInclude Include="GameInstance.h" />
+    <ClInclude Include="Prototype_Manager.h" />
+    <ClInclude Include="Transform.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Utiles.h" />
-    <ClInclude Include="HelloDinner.h" />
+    <ClInclude Include="HelloDinner.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="MainApp.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Object.h" />
@@ -152,15 +160,21 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Common\DDSTextureLoader12.cpp" />
+    <ClCompile Include="Component.cpp" />
+    <ClCompile Include="GameInstance.cpp" />
     <ClCompile Include="HelloDinner.cpp" />
-    <ClCompile Include="MainApp.cpp" />
+    <ClCompile Include="MainApp.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Prototype_Manager.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="HelloDinner.rc" />

@@ -19,3 +19,67 @@ namespace DescriptorRange
     constexpr UINT Texture = 0;
     constexpr UINT TextureCube = 1;
 }
+
+namespace Engine
+{
+    enum class PROTOTYPE { PROTO_GAMEOBJ, PROTO_COMPONENT };
+
+    enum MOUSEKEYSTATE { DIM_LB, DIM_RB, DIM_MB, DIM_END };
+    enum MOUSEMOVESTATE { DIMS_X, DIMS_Y, DIMS_Z, DIMS_END };
+}
+
+struct EngineContext
+{
+    ID3D12Device* device;
+    ID3D12GraphicsCommandList* cmdList;
+    ID3D12CommandQueue* cmdQueue;
+
+    ID3D12DescriptorHeap* srvHeap;
+    ID3D12DescriptorHeap* rtvHeap;
+    ID3D12DescriptorHeap* dsvHeap;
+};
+
+typedef struct
+{
+	HINSTANCE		hInstance;
+	HWND			hWnd;
+	bool			isWindowed;
+	unsigned int	iNumLevels;
+	unsigned int	iViewportWidth;
+	unsigned int	iViewportHeight;
+}ENGINE_DESC;
+
+#define NO_COPY(CLASSNAME)											\
+			private:												\
+			CLASSNAME(const CLASSNAME&) = delete;					\
+			CLASSNAME& operator = (const CLASSNAME&) = delete;		
+
+#define DECLARE_SINGLETON(CLASSNAME)								\
+			NO_COPY(CLASSNAME)										\
+			private:												\
+			static CLASSNAME*	m_pInstance;						\
+			public:													\
+			static CLASSNAME*	GetInstance( void );				\
+			static unsigned int DestroyInstance( void );			
+
+#define IMPLEMENT_SINGLETON(CLASSNAME)								\
+			CLASSNAME*	CLASSNAME::m_pInstance = nullptr;			\
+			CLASSNAME*	CLASSNAME::GetInstance( void )	{			\
+			if(nullptr == m_pInstance) {							\
+				m_pInstance = new CLASSNAME;						\
+				}													\
+				return m_pInstance;									\
+			}														\
+			unsigned int CLASSNAME::DestroyInstance( void ) {		\
+				unsigned int iRefCnt = {0};							\
+				if (nullptr != m_pInstance) {						\
+				iRefCnt = m_pInstance->Release();					\
+				if(0 == iRefCnt)									\
+					m_pInstance = nullptr;							\
+				}													\
+				return iRefCnt;										\
+			}
+
+#ifndef			MSG_BOX
+#define			MSG_BOX(_message)			MessageBox(NULL, TEXT(_message), L"System Message", MB_OK)
+#endif

@@ -1,46 +1,40 @@
 #pragma once
-#include "stdafx.h"
-#include "mesh.h"
-#include "Texture.h"
+#include "Transform.h"
 
-class CGameObject
+class CGameObject abstract : public CBase
 {
 public:
-	CGameObject();
+	struct GAMEOBJECT_DESC : public CTransform::TRANSFORM_DESC
+	{
+		_uint			iData;
+	};
+protected:
+	CGameObject(EngineContext* _pcontext);
+	CGameObject(const CGameObject& Prototype);
 	~CGameObject() = default;
 
-	virtual void Update(FLOAT _timeElapsed);
-	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& _commandList) const;
-	virtual void UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& _commandList) const;
+public:
+	virtual HRESULT		Initialize_Prototype();
+	virtual HRESULT		Initialize(void* pArg);
+	virtual void		Priority_Update(_float fTimeDelta);
+	virtual void		Update(_float fTimeDelta);
+	virtual void		Late_Update(_float fTimeDelta);
+	virtual HRESULT		Render(const ComPtr<ID3D12GraphicsCommandList>& _commandList);
 
-	void Transform(XMFLOAT3 _shift);
-	void Rotate(FLOAT _pitch, FLOAT _yaw, FLOAT _roll);
+public:
+	virtual CGameObject*	Clone(void* pArg) = 0;
+	virtual void			Free() override;
 
-	void SetMesh(const shared_ptr<CMesh>& _mesh);
-	void SetTexture(const shared_ptr<CTexture>& _texture);
-
-	void SetPosition(XMFLOAT3 _position);
-	XMFLOAT3 GetPosition() const;
+public:
+	class CComponent*	Find_Component(const _wstring& strComponentTag);
 
 protected:
-	XMFLOAT4X4			m_xmf4x4WorldMatrix;
+	HRESULT				Add_Component(_uint iPrototypeLevelIndex, const _wstring& strPrototypeTag, const _wstring& strComponentTag, CComponent** ppOut, void* pArg = nullptr);
 
-	XMFLOAT3			m_xmf3Right;
-	XMFLOAT3			m_xmf3Up;
-	XMFLOAT3			m_xmf3Front;
-
-	shared_ptr<CMesh>	m_pMesh;
-	shared_ptr<CTexture>	m_pTexture;
-};
-
-class CRotatingObject : public CGameObject
-{
-public:
-	CRotatingObject();
-	~CRotatingObject() = default;
-
-	void Update(FLOAT _timeElapsed) override;
-
-private:
-	FLOAT m_fRotatingSpeed;
+protected:
+	class CTransform*							m_pTransformCom = { nullptr };
+	class CGameInstance*						m_pGameInstance = { nullptr };
+	EngineContext*								m_pContext = { nullptr };
+	map<const _wstring, class CComponent*>		m_Components;
+	_uint										m_iData = {};
 };
