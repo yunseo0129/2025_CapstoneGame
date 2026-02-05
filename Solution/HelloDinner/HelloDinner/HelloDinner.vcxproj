@@ -133,7 +133,9 @@
     <ClInclude Include="Common\DDSTextureLoader12.h" />
     <ClInclude Include="GameInstance.h" />
     <ClInclude Include="Prototype_Manager.h" />
-    <ClInclude Include="Transform.h" />
+    <ClInclude Include="Transform.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Utiles.h" />
     <ClInclude Include="HelloDinner.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>

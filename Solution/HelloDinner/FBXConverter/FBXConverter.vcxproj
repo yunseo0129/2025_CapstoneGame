@@ -152,7 +152,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CBinary_Converter.h" />
-    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="stdafx.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Mytypedef.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

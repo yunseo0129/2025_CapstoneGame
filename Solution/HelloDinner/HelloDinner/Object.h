@@ -1,14 +1,13 @@
 #pragma once
-#include "Base.h"
-// 컴포넌트, 트랜스폼 컴포넌트 만들고 포함하기
+#include "Transform.h"
 
 class CGameObject abstract : public CBase
 {
 public:
-	typedef struct : public CTransform::TRANSFORM_DESC
+	struct GAMEOBJECT_DESC : public CTransform::TRANSFORM_DESC
 	{
 		_uint			iData;
-	}GAMEOBJECT_DESC;
+	};
 protected:
 	CGameObject(EngineContext* _pcontext);
 	CGameObject(const CGameObject& Prototype);

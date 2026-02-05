@@ -30,7 +30,7 @@ HRESULT CGameObject::Initialize(void* pArg)
 		m_iData = pDesc->iData;
 	}
 
-	m_pTransformCom = CTransform::Create(m_pDevice, m_pContext);
+	m_pTransformCom = CTransform::Create(m_pContext);
 	if (nullptr == m_pTransformCom)
 		return E_FAIL;
 
@@ -85,7 +85,7 @@ HRESULT CGameObject::Add_Component(_uint iPrototypeLevelIndex, const _wstring& s
 	if (nullptr != Find_Component(strComponentTag))
 		return E_FAIL;
 
-	CComponent* pComponent = static_cast<CComponent*>(m_pGameInstance->Clone_Prototype(PROTOTYPE::PROTO_COMPONENT, iPrototypeLevelIndex, strPrototypeTag, pArg));
+	CComponent* pComponent = static_cast<CComponent*>(m_pGameInstance->Clone_Prototype(Engine::PROTOTYPE::PROTO_COMPONENT, iPrototypeLevelIndex, strPrototypeTag, pArg));
 	if (nullptr == pComponent)
 		return E_FAIL;
 
