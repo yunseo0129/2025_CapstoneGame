@@ -90,6 +90,8 @@ bool CGraphic_Device::InitDirect3D(HWND _hwnd, EngineContext* _pcontext)
 	CreateRtvAndDsvDescriptorHeaps();
 	// CreateRootSignature(); level에서 처리
 
+	OnResize();
+
 	_pcontext->device = m_pD3dDevice.Get();
 	_pcontext->cmdList = m_pCommandList.Get();
 	_pcontext->cmdQueue = m_pCommandQueue.Get();

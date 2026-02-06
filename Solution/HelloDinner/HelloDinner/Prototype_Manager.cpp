@@ -1,5 +1,5 @@
 #include "Prototype_Manager.h"
-#include"Object.h"
+#include "GameObject.h"
 #include "GameInstance.h"
 
 CPrototype_Manager::CPrototype_Manager()

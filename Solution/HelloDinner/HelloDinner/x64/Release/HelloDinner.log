@@ -1,31 +1,7 @@
-﻿  Component.cpp
-  Prototype_Manager.cpp
-C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\Base.h(48,24): error C2039: 'AddRef': 'EngineContext'의 멤버가 아닙니다.
-  (소스 파일 'Component.cpp'을(를) 컴파일하는 중)
-      C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\Defines.h(34,8):
-      'EngineContext' 선언을 참조하십시오.
-      C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\Base.h(48,24):
-      템플릿 인스턴스화 컨텍스트(가장 오래된 인스턴스화 컨텍스트)가
-          C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\Component.cpp(9,2):
-          컴파일되는 함수 템플릿 인스턴스화 'unsigned int Safe_AddRef<EngineContext*>(T &)'에 대한 참조를 확인하세요.
-          with
-          [
-              T=EngineContext *
-          ]
-  
-C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\Base.h(60,24): error C2039: 'Release': 'EngineContext'의 멤버가 아닙니다.
-  (소스 파일 'Component.cpp'을(를) 컴파일하는 중)
-      C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\Defines.h(34,8):
-      'EngineContext' 선언을 참조하십시오.
-      C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\Base.h(60,24):
-      템플릿 인스턴스화 컨텍스트(가장 오래된 인스턴스화 컨텍스트)가
-          C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\Component.cpp(34,2):
-          컴파일되는 함수 템플릿 인스턴스화 'unsigned int Safe_Release<EngineContext*>(T &)'에 대한 참조를 확인하세요.
-          with
-          [
-              T=EngineContext *
-          ]
-  
-C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\Prototype_Manager.cpp(2,9): error C1083: 포함 파일을 열 수 없습니다. 'Object.h': No such file or directory
-  Renderer.cpp
-C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\Renderer.cpp(2,10): error C1083: 포함 파일을 열 수 없습니다. 'Object.h': No such file or directory
+﻿  Graphic_Device.cpp
+  코드를 생성하고 있습니다.
+  103 of 421 functions (24.5%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    15 functions had inline decision re-evaluated but remain unchanged
+  코드를 생성했습니다.
+  HelloDinner.vcxproj -> C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\x64\Release\HelloDinner.exe

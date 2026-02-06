@@ -22,9 +22,15 @@ HRESULT CMainApp::Initialize()
 	EngineDesc.iViewportWidth = Client::g_iWinSizeX;
 	EngineDesc.iViewportHeight = Client::g_iWinSizeY;
 
-	EngineContext* EngineContext;
+	EngineContext EngineContext;
+	EngineContext.cmdList = nullptr;
+	EngineContext.cmdQueue = nullptr;
+	EngineContext.device = nullptr;
+	EngineContext.rtvHeap = nullptr;
+	EngineContext.dsvHeap = nullptr;
+	EngineContext.srvHeap = nullptr;
 
-	if (FAILED(m_pGameInstance->Initialize_Engine(EngineDesc, EngineContext)))
+	if (FAILED(m_pGameInstance->Initialize_Engine(EngineDesc, &EngineContext)))
 		return E_FAIL;
 
 	return S_OK;

@@ -27,15 +27,6 @@
     <Filter Include="소스 파일\01. Engine">
       <UniqueIdentifier>{10fa4d8e-ed1c-4d14-8a6c-eef70705968e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\01. Engine\04.Scene">
-      <UniqueIdentifier>{446fbe64-2145-4f1e-8678-ef60221a47da}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\01. Engine\03.Buffer">
-      <UniqueIdentifier>{23654880-601c-4052-aa92-86c54e9b9a65}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\01. Engine\02.Mesh">
-      <UniqueIdentifier>{e2d8d40a-7283-4b2a-a18a-6accb8d0b665}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\01. Engine\00. Base">
       <UniqueIdentifier>{943c87b1-d326-4195-a7e0-16d91b68fa08}</UniqueIdentifier>
     </Filter>
@@ -72,6 +63,24 @@
     <Filter Include="소스 파일\01. Engine\08. Renderer">
       <UniqueIdentifier>{25a9c77d-0bd0-43b3-ba93-f5158efdd5af}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\02. Game">
+      <UniqueIdentifier>{a6e8db8f-3b6e-4720-8ba4-edcba90e5b11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\GameObject">
+      <UniqueIdentifier>{b687e6ca-6630-46e7-b051-ee30ee69ac62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\GameObject\Player">
+      <UniqueIdentifier>{fbc2e468-eeaa-42d5-a414-4973c5d609f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\02. Mesh">
+      <UniqueIdentifier>{e2d8d40a-7283-4b2a-a18a-6accb8d0b665}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\03. Buffer">
+      <UniqueIdentifier>{23654880-601c-4052-aa92-86c54e9b9a65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\04. Level">
+      <UniqueIdentifier>{446fbe64-2145-4f1e-8678-ef60221a47da}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -93,13 +102,13 @@
       <Filter>소스 파일\99.Defines</Filter>
     </ClInclude>
     <ClInclude Include="Mesh.h">
-      <Filter>소스 파일\01. Engine\02.Mesh</Filter>
+      <Filter>소스 파일\01. Engine\02. Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Shader.h">
-      <Filter>소스 파일\01. Engine\03.Buffer</Filter>
+      <Filter>소스 파일\01. Engine\03. Buffer</Filter>
     </ClInclude>
     <ClInclude Include="Texture.h">
-      <Filter>소스 파일\01. Engine\03.Buffer</Filter>
+      <Filter>소스 파일\01. Engine\03. Buffer</Filter>
     </ClInclude>
     <ClInclude Include="Resource.h">
       <Filter>소스 파일\99.Defines</Filter>
@@ -140,6 +149,9 @@
     <ClInclude Include="Renderer.h">
       <Filter>소스 파일\01. Engine\08. Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>소스 파일\02. Game\GameObject</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -152,13 +164,13 @@
       <Filter>소스 파일\00.Main</Filter>
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
-      <Filter>소스 파일\01. Engine\02.Mesh</Filter>
+      <Filter>소스 파일\01. Engine\02. Mesh</Filter>
     </ClCompile>
     <ClCompile Include="Shader.cpp">
-      <Filter>소스 파일\01. Engine\03.Buffer</Filter>
+      <Filter>소스 파일\01. Engine\03. Buffer</Filter>
     </ClCompile>
     <ClCompile Include="Texture.cpp">
-      <Filter>소스 파일\01. Engine\03.Buffer</Filter>
+      <Filter>소스 파일\01. Engine\03. Buffer</Filter>
     </ClCompile>
     <ClCompile Include="Base.cpp">
       <Filter>소스 파일\01. Engine\00. Base</Filter>
@@ -189,6 +201,9 @@
     </ClCompile>
     <ClCompile Include="Renderer.cpp">
       <Filter>소스 파일\01. Engine\08. Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>소스 파일\02. Game\GameObject</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

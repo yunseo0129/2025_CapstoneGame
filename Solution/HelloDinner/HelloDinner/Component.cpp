@@ -6,7 +6,6 @@ CComponent::CComponent(EngineContext* _context)
 	, m_pGameInstance{ CGameInstance::GetInstance() }
 {
 	Safe_AddRef(m_pGameInstance);
-	Safe_AddRef(m_pContext);
 }
 
 CComponent::CComponent(const CComponent& Prototype)
@@ -14,8 +13,7 @@ CComponent::CComponent(const CComponent& Prototype)
 	, m_pGameInstance{ Prototype.m_pGameInstance }
 {
 	Safe_AddRef(m_pGameInstance);
-	Safe_AddRef(m_pContext);
-}
+} 
 
 HRESULT CComponent::Initialize_Prototype()
 {
@@ -30,8 +28,6 @@ HRESULT CComponent::Initialize(void* pArg)
 void CComponent::Free()
 {
 	__super::Free();
-
-	Safe_Release(m_pContext);
 
 	Safe_Release(m_pGameInstance);
 }

@@ -1,3 +1,6 @@
+#ifndef InputDev_h__
+#define InputDev_h__
+
 #include "Base.h"
 
 using namespace Engine;
@@ -81,3 +84,4 @@ public:
 	virtual void	Free(void);
 
 };
+#endif // InputDev_h__

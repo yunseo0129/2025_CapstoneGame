@@ -26,7 +26,7 @@ private:
 	HRESULT Render_Priority();
 	HRESULT Render_NonBlend();
 	HRESULT Render_Blend();
-	HRESULT Render_UI();
+	//HRESULT Render_UI();
 
 public:
 	static CRenderer* Create(ID3D12Device* pDevice, ID3D12GraphicsCommandList* _commandList);

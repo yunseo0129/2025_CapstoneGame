@@ -1,5 +1,5 @@
 #include "Renderer.h"
-#include "Object.h"
+#include "GameObject.h"
 #include "GameInstance.h"
 
 CRenderer::CRenderer(ID3D12Device* pDevice, ID3D12GraphicsCommandList* _pCommandlist)
@@ -38,8 +38,8 @@ HRESULT CRenderer::Draw_RenderObject()
 		return E_FAIL;
 	if (FAILED(Render_Blend()))
 		return E_FAIL;
-	if (FAILED(Render_UI()))
-		return E_FAIL;
+	//if (FAILED(Render_UI()))
+		//return E_FAIL;
 
 
 	return S_OK;
