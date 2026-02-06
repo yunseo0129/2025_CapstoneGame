@@ -9,6 +9,7 @@ CMainApp::CMainApp()
 
 CMainApp::~CMainApp()
 {
+
 	if(m_pD3dDevice != nullptr)
 		FlushCommandQueue();
 }

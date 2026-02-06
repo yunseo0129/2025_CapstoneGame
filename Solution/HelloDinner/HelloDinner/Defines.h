@@ -6,6 +6,9 @@ namespace Client
 	constexpr int g_iWinSizeY = 720;
 }
 
+extern HINSTANCE g_hInst;
+extern HWND g_hWnd;
+
 namespace RootParameter
 {
     constexpr UINT GameObject = 0;
@@ -48,6 +51,15 @@ typedef struct
 	unsigned int	iViewportWidth;
 	unsigned int	iViewportHeight;
 }ENGINE_DESC;
+
+typedef struct tagKeyState
+{
+	bool bPress = false;
+	bool bDown = false;
+	bool bUp = false;
+
+	tagKeyState() : bPress(false), bDown(false), bUp(false) {}
+}KEYSTATE, * PKEYSTATE;
 
 #define NO_COPY(CLASSNAME)											\
 			private:												\

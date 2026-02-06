@@ -26,6 +26,8 @@ using namespace Microsoft::WRL;
 #include <DirectXPackedVector.h>
 #include <DirectXColors.h>
 #include <DirectXCollision.h>
+#define DIRECTINPUT_VERSION 0x0800
+#include <dinput.h>
 
 using namespace DirectX;
 using namespace DirectX::PackedVector;

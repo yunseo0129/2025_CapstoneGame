@@ -78,7 +78,6 @@ private:
 	_uint m_iDsvDescriptorSize = 0;
 	_uint m_iCbvSrvUavDescriptorSize = 0;
 
-	_wstring m_strMainWndCaption = L"HelloDinner";
 	D3D_DRIVER_TYPE m_d3dDriverType = D3D_DRIVER_TYPE_HARDWARE;
 	DXGI_FORMAT m_BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	DXGI_FORMAT m_DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
