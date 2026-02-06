@@ -6,10 +6,10 @@ class CGraphic_Device : public CBase
 {
 public:
 	CGraphic_Device();
-	~CGraphic_Device() = default;
+	~CGraphic_Device();
 
 public:
-	void BeforeRender();
+	void BeforeRender(const _float4& vClearColor);
 	void AfterRender();
 
 private:

@@ -11,7 +11,7 @@ CGraphic_Device::~CGraphic_Device()
 	FlushCommandQueue();
 }
 
-void CGraphic_Device::BeforeRender()
+void CGraphic_Device::BeforeRender(const _float4& vClearColor)
 {
 	// 명령 레코드와 연결된 메모리 재사용
 	// 연결된 명령 목록이 GPU에 완료되었을 때만 재설정 가능.
@@ -38,7 +38,7 @@ void CGraphic_Device::BeforeRender()
 	m_pCommandList->RSSetScissorRects(1, &m_ScissorRect);
 
 	// 백 버퍼와 깊이 버퍼 초기화.
-	m_pCommandList->ClearRenderTargetView(CurrentBackBufferView(), Colors::LightSteelBlue, 0, nullptr);
+	m_pCommandList->ClearRenderTargetView(CurrentBackBufferView(), (_float*)&vClearColor, 0, nullptr);
 	m_pCommandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
 	// 렌더링 버퍼 지정

@@ -19,12 +19,33 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineCo
 	m_pGraphic_Device = CGraphic_Device::Create(EngineDesc.hWnd, _pcontext);
 	if (nullptr == m_pGraphic_Device)
 		return E_FAIL;
+
 	return S_OK;
 }
 
 void CGameInstance::Update_Engine(_float fTimeDelta)
 {
 
+}
+
+HRESULT CGameInstance::Render_Begin(const _float4& vClearColor)
+{
+	m_pGraphic_Device->BeforeRender(vClearColor);
+
+	return S_OK;
+}
+
+HRESULT CGameInstance::Draw()
+{
+
+	return S_OK;
+}
+
+HRESULT CGameInstance::Render_End()
+{
+	m_pGraphic_Device->AfterRender();
+
+	return S_OK;
 }
 
 HRESULT CGameInstance::Add_Prototype(_uint iLevelIndex, const _wstring& strPrototypeTag, CBase* pPrototype)

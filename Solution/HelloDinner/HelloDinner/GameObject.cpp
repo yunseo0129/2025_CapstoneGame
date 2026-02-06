@@ -1,4 +1,4 @@
-#include "Object.h"
+#include "GameObject.h"
 #include "GameInstance.h"
 
 CGameObject::CGameObject(EngineContext* _pcontext)
@@ -52,9 +52,8 @@ void CGameObject::Late_Update(_float fTimeDelta)
 {
 }
 
-HRESULT CGameObject::Render(const ComPtr<ID3D12GraphicsCommandList>& _commandList)
+void CGameObject::Render(const ComPtr<ID3D12GraphicsCommandList>& _commandList)
 {
-	return S_OK;
 }
 
 void CGameObject::Free()

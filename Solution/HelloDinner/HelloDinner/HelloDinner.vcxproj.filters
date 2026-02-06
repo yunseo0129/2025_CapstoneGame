@@ -36,9 +36,6 @@
     <Filter Include="소스 파일\01. Engine\02.Mesh">
       <UniqueIdentifier>{e2d8d40a-7283-4b2a-a18a-6accb8d0b665}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\02. Game">
-      <UniqueIdentifier>{bb6c1f39-a506-4212-ad95-af84e6cbf75e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\01. Engine\00. Base">
       <UniqueIdentifier>{943c87b1-d326-4195-a7e0-16d91b68fa08}</UniqueIdentifier>
     </Filter>
@@ -47,12 +44,6 @@
     </Filter>
     <Filter Include="소스 파일\01. Engine\05.. Timer">
       <UniqueIdentifier>{75730003-6d70-432d-84d8-eef4ac13ee3a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\02. Game\00.GameObject">
-      <UniqueIdentifier>{9d2b40a9-d53c-4edd-9577-af6c489e842e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\02. Game\01. Player">
-      <UniqueIdentifier>{89d733c0-4a84-4ae4-89cb-a81bd5c1b95a}</UniqueIdentifier>
     </Filter>
     <Filter Include="소스 파일\01. Engine\06. Prototype">
       <UniqueIdentifier>{94ac9699-79f6-485b-885e-c874ee561016}</UniqueIdentifier>
@@ -78,6 +69,9 @@
     <Filter Include="소스 파일\01. Engine\98. Device\Input">
       <UniqueIdentifier>{2f3c329a-24d8-4801-a6db-44618986da33}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\01. Engine\08. Renderer">
+      <UniqueIdentifier>{25a9c77d-0bd0-43b3-ba93-f5158efdd5af}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -101,9 +95,6 @@
     <ClInclude Include="Mesh.h">
       <Filter>소스 파일\01. Engine\02.Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="Object.h">
-      <Filter>소스 파일\02. Game\00.GameObject</Filter>
-    </ClInclude>
     <ClInclude Include="Shader.h">
       <Filter>소스 파일\01. Engine\03.Buffer</Filter>
     </ClInclude>
@@ -116,9 +107,6 @@
     <ClInclude Include="targetver.h">
       <Filter>소스 파일\99.Defines</Filter>
     </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>소스 파일\01. Engine\04.Scene</Filter>
-    </ClInclude>
     <ClInclude Include="Utiles.h">
       <Filter>소스 파일\98.Utility</Filter>
     </ClInclude>
@@ -130,9 +118,6 @@
     </ClInclude>
     <ClInclude Include="Timer.h">
       <Filter>소스 파일\01. Engine\05.. Timer</Filter>
-    </ClInclude>
-    <ClInclude Include="Player.h">
-      <Filter>소스 파일\02. Game\01. Player</Filter>
     </ClInclude>
     <ClInclude Include="Prototype_Manager.h">
       <Filter>소스 파일\01. Engine\06. Prototype</Filter>
@@ -152,6 +137,9 @@
     <ClInclude Include="Input_Device.h">
       <Filter>소스 파일\01. Engine\98. Device\Input</Filter>
     </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>소스 파일\01. Engine\08. Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -166,17 +154,11 @@
     <ClCompile Include="Mesh.cpp">
       <Filter>소스 파일\01. Engine\02.Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="Object.cpp">
-      <Filter>소스 파일\02. Game\00.GameObject</Filter>
-    </ClCompile>
     <ClCompile Include="Shader.cpp">
       <Filter>소스 파일\01. Engine\03.Buffer</Filter>
     </ClCompile>
     <ClCompile Include="Texture.cpp">
       <Filter>소스 파일\01. Engine\03.Buffer</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>소스 파일\01. Engine\04.Scene</Filter>
     </ClCompile>
     <ClCompile Include="Base.cpp">
       <Filter>소스 파일\01. Engine\00. Base</Filter>
@@ -186,9 +168,6 @@
     </ClCompile>
     <ClCompile Include="Timer.cpp">
       <Filter>소스 파일\01. Engine\05.. Timer</Filter>
-    </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>소스 파일\02. Game\01. Player</Filter>
     </ClCompile>
     <ClCompile Include="Prototype_Manager.cpp">
       <Filter>소스 파일\01. Engine\06. Prototype</Filter>
@@ -207,6 +186,9 @@
     </ClCompile>
     <ClCompile Include="Input_Device.cpp">
       <Filter>소스 파일\01. Engine\98. Device\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>소스 파일\01. Engine\08. Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
