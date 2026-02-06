@@ -16,6 +16,9 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineCo
 	if (nullptr == m_pPrototype_Manager)
 		return E_FAIL;
 
+	m_pGraphic_Device = CGraphic_Device::Create(EngineDesc.hWnd, _pcontext);
+	if (nullptr == m_pGraphic_Device)
+		return E_FAIL;
 	return S_OK;
 }
 

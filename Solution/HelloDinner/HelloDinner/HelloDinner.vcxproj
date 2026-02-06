@@ -132,6 +132,8 @@
     <ClInclude Include="Common\d3dx12.h" />
     <ClInclude Include="Common\DDSTextureLoader12.h" />
     <ClInclude Include="GameInstance.h" />
+    <ClInclude Include="Graphic_Device.h" />
+    <ClInclude Include="Input_Device.h" />
     <ClInclude Include="Prototype_Manager.h" />
     <ClInclude Include="Transform.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
@@ -162,7 +164,9 @@
     <ClCompile Include="Common\DDSTextureLoader12.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="GameInstance.cpp" />
+    <ClCompile Include="Graphic_Device.cpp" />
     <ClCompile Include="HelloDinner.cpp" />
+    <ClCompile Include="Input_Device.cpp" />
     <ClCompile Include="MainApp.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>

@@ -69,6 +69,15 @@
     <Filter Include="소스 파일\01. Engine\07. Components\01. Transform">
       <UniqueIdentifier>{fcd81d4a-caee-4134-998c-8dc00c520cd3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\01. Engine\98. Device">
+      <UniqueIdentifier>{9d766b22-093a-4fe0-bb45-531efb2cf66f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\98. Device\Graphic">
+      <UniqueIdentifier>{5343ebb2-fdc8-4296-9a39-a704b64fff2f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\98. Device\Input">
+      <UniqueIdentifier>{2f3c329a-24d8-4801-a6db-44618986da33}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -137,6 +146,12 @@
     <ClInclude Include="Transform.h">
       <Filter>소스 파일\01. Engine\07. Components\01. Transform</Filter>
     </ClInclude>
+    <ClInclude Include="Graphic_Device.h">
+      <Filter>소스 파일\01. Engine\98. Device\Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Input_Device.h">
+      <Filter>소스 파일\01. Engine\98. Device\Input</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -186,6 +201,12 @@
     </ClCompile>
     <ClCompile Include="Transform.cpp">
       <Filter>소스 파일\01. Engine\07. Components\01. Transform</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic_Device.cpp">
+      <Filter>소스 파일\01. Engine\98. Device\Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Input_Device.cpp">
+      <Filter>소스 파일\01. Engine\98. Device\Input</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

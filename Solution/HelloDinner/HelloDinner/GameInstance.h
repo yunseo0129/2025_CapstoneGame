@@ -1,5 +1,6 @@
 #pragma once
 #include "Prototype_Manager.h"
+#include "Graphic_Device.h"
 
 class CGameInstance final : public CBase
 {
@@ -24,6 +25,7 @@ public: /* For.Prototype_Manager */
 	class CBase* Clone_Prototype(Engine::PROTOTYPE eType, _uint iLevelIndex, const _wstring& strPrototypeTag, void* pArg = nullptr);
 
 private:
+	class CGraphic_Device* m_pGraphic_Device = { nullptr };
 	class CPrototype_Manager* m_pPrototype_Manager = { nullptr };
 
 public:
