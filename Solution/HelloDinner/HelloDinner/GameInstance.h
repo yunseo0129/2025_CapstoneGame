@@ -12,7 +12,7 @@ private:
 public: /* For.GameInstance */
 	HRESULT Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineContext* _pcontext);
 	void Update_Engine(_float fTimeDelta);
-	HRESULT Render_Begin(const _float4& vClearColor = _float4(0.f, 0.f, 1.f, 1.f));
+	HRESULT Render_Begin(const _float4& vClearColor = _float4(0.f, 1.f, 0.f, 0.f));
 	HRESULT Draw();
 	HRESULT Render_End();
 	//void Clear(_int iLevelID);

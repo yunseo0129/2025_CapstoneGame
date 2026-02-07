@@ -1,7 +1,6 @@
 ﻿  Component.cpp
   GameInstance.cpp
   GameObject.cpp
-  Graphic_Device.cpp
   MainApp.cpp
   Prototype_Manager.cpp
   Renderer.cpp

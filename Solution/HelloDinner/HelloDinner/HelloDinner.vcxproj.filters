@@ -33,9 +33,6 @@
     <Filter Include="소스 파일\01. Engine\01. Camera">
       <UniqueIdentifier>{cb8ff52d-3025-41fd-822e-cf8c5c47dafb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\01. Engine\05.. Timer">
-      <UniqueIdentifier>{75730003-6d70-432d-84d8-eef4ac13ee3a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\01. Engine\06. Prototype">
       <UniqueIdentifier>{94ac9699-79f6-485b-885e-c874ee561016}</UniqueIdentifier>
     </Filter>
@@ -80,6 +77,9 @@
     </Filter>
     <Filter Include="소스 파일\01. Engine\04. Level">
       <UniqueIdentifier>{446fbe64-2145-4f1e-8678-ef60221a47da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\05. Timer">
+      <UniqueIdentifier>{75730003-6d70-432d-84d8-eef4ac13ee3a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -126,7 +126,7 @@
       <Filter>소스 파일\01. Engine\01. Camera</Filter>
     </ClInclude>
     <ClInclude Include="Timer.h">
-      <Filter>소스 파일\01. Engine\05.. Timer</Filter>
+      <Filter>소스 파일\01. Engine\05. Timer</Filter>
     </ClInclude>
     <ClInclude Include="Prototype_Manager.h">
       <Filter>소스 파일\01. Engine\06. Prototype</Filter>
@@ -179,7 +179,7 @@
       <Filter>소스 파일\01. Engine\01. Camera</Filter>
     </ClCompile>
     <ClCompile Include="Timer.cpp">
-      <Filter>소스 파일\01. Engine\05.. Timer</Filter>
+      <Filter>소스 파일\01. Engine\05. Timer</Filter>
     </ClCompile>
     <ClCompile Include="Prototype_Manager.cpp">
       <Filter>소스 파일\01. Engine\06. Prototype</Filter>

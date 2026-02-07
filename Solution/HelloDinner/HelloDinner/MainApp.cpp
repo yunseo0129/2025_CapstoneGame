@@ -62,6 +62,7 @@ HRESULT CMainApp::Render()
 
 void CMainApp::FrameAdvance()
 {
+	Render();
 }
 
 
