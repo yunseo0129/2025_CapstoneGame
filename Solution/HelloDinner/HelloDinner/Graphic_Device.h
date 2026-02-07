@@ -13,7 +13,7 @@ public:
 	void AfterRender();
 
 private:
-	bool InitDirect3D(HWND _hwnd, EngineContext* _pcontext);
+	bool InitDirect3D(HWND& _hwnd, EngineContext* _pcontext);
 	bool Get4xMsaaState()const;
 	void Set4xMsaaState(bool _value);
 	void OnResize();

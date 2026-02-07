@@ -76,7 +76,7 @@ void CGraphic_Device::AfterRender()
 }
 
 
-bool CGraphic_Device::InitDirect3D(HWND _hwnd, EngineContext* _pcontext)
+bool CGraphic_Device::InitDirect3D(HWND& _hwnd, EngineContext* _pcontext)
 {
 	m_hMainWnd = _hwnd;
 	CreateDevice();
