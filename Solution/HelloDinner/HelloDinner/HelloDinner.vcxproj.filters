@@ -81,6 +81,24 @@
     <Filter Include="소스 파일\01. Engine\05. Timer">
       <UniqueIdentifier>{75730003-6d70-432d-84d8-eef4ac13ee3a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\01. Engine\02. Mesh\Cube">
+      <UniqueIdentifier>{87fdfce2-d2cc-475a-9806-00fdd8bd1a94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\02. Mesh\Skybox">
+      <UniqueIdentifier>{30c8e1b0-5899-408f-a5ba-fa053f3754fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\03. Buffer\Shader">
+      <UniqueIdentifier>{4c52239b-9c88-48be-8aae-c04aed3255d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\03. Buffer\Texture">
+      <UniqueIdentifier>{c8ff2889-4401-4a33-89b1-0452553ea4ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\03. Buffer\Shader\Cube">
+      <UniqueIdentifier>{654631a4-c479-42ed-9d39-cec08f99c003}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\03. Buffer\Shader\Skybox">
+      <UniqueIdentifier>{ebdd6ec1-5777-4ef4-95e9-fbc2a924b33b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -103,12 +121,6 @@
     </ClInclude>
     <ClInclude Include="Mesh.h">
       <Filter>소스 파일\01. Engine\02. Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="Shader.h">
-      <Filter>소스 파일\01. Engine\03. Buffer</Filter>
-    </ClInclude>
-    <ClInclude Include="Texture.h">
-      <Filter>소스 파일\01. Engine\03. Buffer</Filter>
     </ClInclude>
     <ClInclude Include="Resource.h">
       <Filter>소스 파일\99.Defines</Filter>
@@ -152,6 +164,30 @@
     <ClInclude Include="GameObject.h">
       <Filter>소스 파일\02. Game\GameObject</Filter>
     </ClInclude>
+    <ClInclude Include="IndexMesh.h">
+      <Filter>소스 파일\01. Engine\02. Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="CubeIndexMesh.h">
+      <Filter>소스 파일\01. Engine\02. Mesh\Cube</Filter>
+    </ClInclude>
+    <ClInclude Include="CubeMesh.h">
+      <Filter>소스 파일\01. Engine\02. Mesh\Cube</Filter>
+    </ClInclude>
+    <ClInclude Include="SkyboxMesh.h">
+      <Filter>소스 파일\01. Engine\02. Mesh\Skybox</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>소스 파일\01. Engine\03. Buffer\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>소스 파일\01. Engine\03. Buffer\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="CubeShader.h">
+      <Filter>소스 파일\01. Engine\03. Buffer\Shader\Cube</Filter>
+    </ClInclude>
+    <ClInclude Include="SkyboxShader.h">
+      <Filter>소스 파일\01. Engine\03. Buffer\Shader\Skybox</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -165,12 +201,6 @@
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
       <Filter>소스 파일\01. Engine\02. Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="Shader.cpp">
-      <Filter>소스 파일\01. Engine\03. Buffer</Filter>
-    </ClCompile>
-    <ClCompile Include="Texture.cpp">
-      <Filter>소스 파일\01. Engine\03. Buffer</Filter>
     </ClCompile>
     <ClCompile Include="Base.cpp">
       <Filter>소스 파일\01. Engine\00. Base</Filter>
@@ -204,6 +234,30 @@
     </ClCompile>
     <ClCompile Include="GameObject.cpp">
       <Filter>소스 파일\02. Game\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="IndexMesh.cpp">
+      <Filter>소스 파일\01. Engine\02. Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="CubeIndexMesh.cpp">
+      <Filter>소스 파일\01. Engine\02. Mesh\Cube</Filter>
+    </ClCompile>
+    <ClCompile Include="CubeMesh.cpp">
+      <Filter>소스 파일\01. Engine\02. Mesh\Cube</Filter>
+    </ClCompile>
+    <ClCompile Include="SkyboxMesh.cpp">
+      <Filter>소스 파일\01. Engine\02. Mesh\Skybox</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>소스 파일\01. Engine\03. Buffer\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>소스 파일\01. Engine\03. Buffer\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="CubeShader.cpp">
+      <Filter>소스 파일\01. Engine\03. Buffer\Shader\Cube</Filter>
+    </ClCompile>
+    <ClCompile Include="SkyboxShader.cpp">
+      <Filter>소스 파일\01. Engine\03. Buffer\Shader\Skybox</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

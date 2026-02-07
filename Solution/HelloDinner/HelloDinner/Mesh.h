@@ -20,60 +20,8 @@ protected:
 	D3D12_VERTEX_BUFFER_VIEW	m_vertexBufferView;
 };
 
-// Index Buffer »ç¿ë
-class CIndexMesh abstract : public CMesh
-{
-public:
-	CIndexMesh() = default;
-	~CIndexMesh() = default;
 
-	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& _commandList) const override;
-	virtual void ReleaseUploadBuffer() override;
 
-protected:
-	UINT						m_iIndices;
-	ComPtr<ID3D12Resource>		m_pIndexBuffer;
-	ComPtr<ID3D12Resource>		m_pIndexUploadBuffer;
-	D3D12_INDEX_BUFFER_VIEW		m_indexBufferView;
-};
 
-class CCubeMesh : public CMesh
-{
-private:
-	struct tVertex
-	{
-		XMFLOAT3 m_xmf3Position;
-		XMFLOAT2 m_xmf2Uv;
-	};
 
-public:
-	CCubeMesh(const ComPtr<ID3D12Device>& _device, const ComPtr<ID3D12GraphicsCommandList>& _commandList);
-	~CCubeMesh() = default;
-};
 
-class CCubeIndexMesh : public CIndexMesh
-{
-private:
-	struct tVertex
-	{
-		XMFLOAT3 m_xmf3Position;
-		XMFLOAT4 m_xmf4Colors;
-	};
-
-public:
-	CCubeIndexMesh(const ComPtr<ID3D12Device>& _device, const ComPtr<ID3D12GraphicsCommandList>& _commandList);
-	~CCubeIndexMesh() = default;
-};
-
-class CSkyboxMesh : public CMesh
-{
-private:
-	struct tVertex
-	{
-		XMFLOAT3 m_xmf3Position;
-	};
-
-public:
-	CSkyboxMesh(const ComPtr<ID3D12Device>& _device, const ComPtr<ID3D12GraphicsCommandList>& _commandList);
-	~CSkyboxMesh() override = default;
-};
