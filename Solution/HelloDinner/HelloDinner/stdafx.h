@@ -19,6 +19,8 @@
 using namespace Microsoft::WRL;
 
 #include <d3d12.h>
+#define DIRECTINPUT_VERSION 0x0800
+#include <dinput.h>
 #include "../HelloDinner/Common/d3dx12.h"
 #include <dxgi1_4.h>
 #include <D3Dcompiler.h>
@@ -26,15 +28,15 @@ using namespace Microsoft::WRL;
 #include <DirectXPackedVector.h>
 #include <DirectXColors.h>
 #include <DirectXCollision.h>
-
 using namespace DirectX;
 using namespace DirectX::PackedVector;
 
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
-
+#pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "dxguid.lib")
+
 
 #include <string>
 #include <ranges>

@@ -19,7 +19,7 @@ public:
 	virtual void		Priority_Update(_float fTimeDelta);
 	virtual void		Update(_float fTimeDelta);
 	virtual void		Late_Update(_float fTimeDelta);
-	virtual HRESULT		Render(const ComPtr<ID3D12GraphicsCommandList>& _commandList);
+	virtual void		Render(const ComPtr<ID3D12GraphicsCommandList>& _commandList);
 
 public:
 	virtual CGameObject*	Clone(void* pArg) = 0;

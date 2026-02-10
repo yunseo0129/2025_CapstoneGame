@@ -128,11 +128,21 @@
     <ClInclude Include="Base.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Component.h" />
+    <ClInclude Include="CubeIndexMesh.h" />
+    <ClInclude Include="CubeMesh.h" />
+    <ClInclude Include="CubeShader.h" />
     <ClInclude Include="Defines.h" />
     <ClInclude Include="Common\d3dx12.h" />
     <ClInclude Include="Common\DDSTextureLoader12.h" />
     <ClInclude Include="GameInstance.h" />
+    <ClInclude Include="GameObject.h" />
+    <ClInclude Include="Graphic_Device.h" />
+    <ClInclude Include="IndexMesh.h" />
+    <ClInclude Include="Input_Device.h" />
     <ClInclude Include="Prototype_Manager.h" />
+    <ClInclude Include="Renderer.h" />
+    <ClInclude Include="SkyboxMesh.h" />
+    <ClInclude Include="SkyboxShader.h" />
     <ClInclude Include="Transform.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClInclude>
@@ -142,12 +152,7 @@
     </ClInclude>
     <ClInclude Include="MainApp.h" />
     <ClInclude Include="Mesh.h" />
-    <ClInclude Include="Object.h" />
-    <ClInclude Include="Player.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="Scene.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="Shader.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -161,17 +166,24 @@
     </ClCompile>
     <ClCompile Include="Common\DDSTextureLoader12.cpp" />
     <ClCompile Include="Component.cpp" />
+    <ClCompile Include="CubeIndexMesh.cpp" />
+    <ClCompile Include="CubeMesh.cpp" />
+    <ClCompile Include="CubeShader.cpp" />
     <ClCompile Include="GameInstance.cpp" />
+    <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="Graphic_Device.cpp" />
     <ClCompile Include="HelloDinner.cpp" />
+    <ClCompile Include="IndexMesh.cpp" />
+    <ClCompile Include="Input_Device.cpp" />
     <ClCompile Include="MainApp.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="Object.cpp" />
-    <ClCompile Include="Player.cpp" />
     <ClCompile Include="Prototype_Manager.cpp" />
-    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="SkyboxMesh.cpp" />
+    <ClCompile Include="SkyboxShader.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Transform.cpp" />

@@ -12,6 +12,10 @@ CGameInstance::CGameInstance()
 
 HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineContext* _pcontext)
 {
+	m_pGraphic_Device = CGraphic_Device::Create(EngineDesc.hWnd, _pcontext);
+	if (nullptr == m_pGraphic_Device)
+		return E_FAIL;
+
 	m_pPrototype_Manager = CPrototype_Manager::Create(EngineDesc.iNumLevels);
 	if (nullptr == m_pPrototype_Manager)
 		return E_FAIL;
@@ -22,6 +26,26 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineCo
 void CGameInstance::Update_Engine(_float fTimeDelta)
 {
 
+}
+
+HRESULT CGameInstance::Render_Begin(const _float4& vClearColor)
+{
+	m_pGraphic_Device->BeforeRender(vClearColor);
+
+	return S_OK;
+}
+
+HRESULT CGameInstance::Draw()
+{
+
+	return S_OK;
+}
+
+HRESULT CGameInstance::Render_End()
+{
+	m_pGraphic_Device->AfterRender();
+
+	return S_OK;
 }
 
 HRESULT CGameInstance::Add_Prototype(_uint iLevelIndex, const _wstring& strPrototypeTag, CBase* pPrototype)
@@ -38,4 +62,19 @@ CBase* CGameInstance::Clone_Prototype(Engine::PROTOTYPE eType, _uint iLevelIndex
 		return nullptr;
 
 	return m_pPrototype_Manager->Clone_Prototype(eType, iLevelIndex, strPrototypeTag, pArg);
+}
+
+void CGameInstance::Release_Engine()
+{
+	CGameInstance::GetInstance()->Free();
+
+	CGameInstance::GetInstance()->DestroyInstance();
+}
+
+void CGameInstance::Free()
+{
+	__super::Free();
+
+	Safe_Release(m_pPrototype_Manager);
+	Safe_Release(m_pGraphic_Device);
 }

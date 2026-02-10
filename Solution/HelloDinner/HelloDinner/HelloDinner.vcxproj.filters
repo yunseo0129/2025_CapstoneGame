@@ -27,32 +27,11 @@
     <Filter Include="소스 파일\01. Engine">
       <UniqueIdentifier>{10fa4d8e-ed1c-4d14-8a6c-eef70705968e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\01. Engine\04.Scene">
-      <UniqueIdentifier>{446fbe64-2145-4f1e-8678-ef60221a47da}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\01. Engine\03.Buffer">
-      <UniqueIdentifier>{23654880-601c-4052-aa92-86c54e9b9a65}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\01. Engine\02.Mesh">
-      <UniqueIdentifier>{e2d8d40a-7283-4b2a-a18a-6accb8d0b665}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\02. Game">
-      <UniqueIdentifier>{bb6c1f39-a506-4212-ad95-af84e6cbf75e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\01. Engine\00. Base">
       <UniqueIdentifier>{943c87b1-d326-4195-a7e0-16d91b68fa08}</UniqueIdentifier>
     </Filter>
     <Filter Include="소스 파일\01. Engine\01. Camera">
       <UniqueIdentifier>{cb8ff52d-3025-41fd-822e-cf8c5c47dafb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\01. Engine\05.. Timer">
-      <UniqueIdentifier>{75730003-6d70-432d-84d8-eef4ac13ee3a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\02. Game\00.GameObject">
-      <UniqueIdentifier>{9d2b40a9-d53c-4edd-9577-af6c489e842e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\02. Game\01. Player">
-      <UniqueIdentifier>{89d733c0-4a84-4ae4-89cb-a81bd5c1b95a}</UniqueIdentifier>
     </Filter>
     <Filter Include="소스 파일\01. Engine\06. Prototype">
       <UniqueIdentifier>{94ac9699-79f6-485b-885e-c874ee561016}</UniqueIdentifier>
@@ -68,6 +47,57 @@
     </Filter>
     <Filter Include="소스 파일\01. Engine\07. Components\01. Transform">
       <UniqueIdentifier>{fcd81d4a-caee-4134-998c-8dc00c520cd3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\98. Device">
+      <UniqueIdentifier>{9d766b22-093a-4fe0-bb45-531efb2cf66f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\98. Device\Graphic">
+      <UniqueIdentifier>{5343ebb2-fdc8-4296-9a39-a704b64fff2f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\98. Device\Input">
+      <UniqueIdentifier>{2f3c329a-24d8-4801-a6db-44618986da33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\08. Renderer">
+      <UniqueIdentifier>{25a9c77d-0bd0-43b3-ba93-f5158efdd5af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game">
+      <UniqueIdentifier>{a6e8db8f-3b6e-4720-8ba4-edcba90e5b11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\GameObject">
+      <UniqueIdentifier>{b687e6ca-6630-46e7-b051-ee30ee69ac62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\GameObject\Player">
+      <UniqueIdentifier>{fbc2e468-eeaa-42d5-a414-4973c5d609f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\02. Mesh">
+      <UniqueIdentifier>{e2d8d40a-7283-4b2a-a18a-6accb8d0b665}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\03. Buffer">
+      <UniqueIdentifier>{23654880-601c-4052-aa92-86c54e9b9a65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\04. Level">
+      <UniqueIdentifier>{446fbe64-2145-4f1e-8678-ef60221a47da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\05. Timer">
+      <UniqueIdentifier>{75730003-6d70-432d-84d8-eef4ac13ee3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\02. Mesh\Cube">
+      <UniqueIdentifier>{87fdfce2-d2cc-475a-9806-00fdd8bd1a94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\02. Mesh\Skybox">
+      <UniqueIdentifier>{30c8e1b0-5899-408f-a5ba-fa053f3754fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\03. Buffer\Shader">
+      <UniqueIdentifier>{4c52239b-9c88-48be-8aae-c04aed3255d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\03. Buffer\Texture">
+      <UniqueIdentifier>{c8ff2889-4401-4a33-89b1-0452553ea4ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\03. Buffer\Shader\Cube">
+      <UniqueIdentifier>{654631a4-c479-42ed-9d39-cec08f99c003}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\03. Buffer\Shader\Skybox">
+      <UniqueIdentifier>{ebdd6ec1-5777-4ef4-95e9-fbc2a924b33b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -90,25 +120,13 @@
       <Filter>소스 파일\99.Defines</Filter>
     </ClInclude>
     <ClInclude Include="Mesh.h">
-      <Filter>소스 파일\01. Engine\02.Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="Object.h">
-      <Filter>소스 파일\02. Game\00.GameObject</Filter>
-    </ClInclude>
-    <ClInclude Include="Shader.h">
-      <Filter>소스 파일\01. Engine\03.Buffer</Filter>
-    </ClInclude>
-    <ClInclude Include="Texture.h">
-      <Filter>소스 파일\01. Engine\03.Buffer</Filter>
+      <Filter>소스 파일\01. Engine\02. Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Resource.h">
       <Filter>소스 파일\99.Defines</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">
       <Filter>소스 파일\99.Defines</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>소스 파일\01. Engine\04.Scene</Filter>
     </ClInclude>
     <ClInclude Include="Utiles.h">
       <Filter>소스 파일\98.Utility</Filter>
@@ -120,10 +138,7 @@
       <Filter>소스 파일\01. Engine\01. Camera</Filter>
     </ClInclude>
     <ClInclude Include="Timer.h">
-      <Filter>소스 파일\01. Engine\05.. Timer</Filter>
-    </ClInclude>
-    <ClInclude Include="Player.h">
-      <Filter>소스 파일\02. Game\01. Player</Filter>
+      <Filter>소스 파일\01. Engine\05. Timer</Filter>
     </ClInclude>
     <ClInclude Include="Prototype_Manager.h">
       <Filter>소스 파일\01. Engine\06. Prototype</Filter>
@@ -137,6 +152,42 @@
     <ClInclude Include="Transform.h">
       <Filter>소스 파일\01. Engine\07. Components\01. Transform</Filter>
     </ClInclude>
+    <ClInclude Include="Graphic_Device.h">
+      <Filter>소스 파일\01. Engine\98. Device\Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Input_Device.h">
+      <Filter>소스 파일\01. Engine\98. Device\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>소스 파일\01. Engine\08. Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>소스 파일\02. Game\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="IndexMesh.h">
+      <Filter>소스 파일\01. Engine\02. Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="CubeIndexMesh.h">
+      <Filter>소스 파일\01. Engine\02. Mesh\Cube</Filter>
+    </ClInclude>
+    <ClInclude Include="CubeMesh.h">
+      <Filter>소스 파일\01. Engine\02. Mesh\Cube</Filter>
+    </ClInclude>
+    <ClInclude Include="SkyboxMesh.h">
+      <Filter>소스 파일\01. Engine\02. Mesh\Skybox</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>소스 파일\01. Engine\03. Buffer\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>소스 파일\01. Engine\03. Buffer\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="CubeShader.h">
+      <Filter>소스 파일\01. Engine\03. Buffer\Shader\Cube</Filter>
+    </ClInclude>
+    <ClInclude Include="SkyboxShader.h">
+      <Filter>소스 파일\01. Engine\03. Buffer\Shader\Skybox</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -149,19 +200,7 @@
       <Filter>소스 파일\00.Main</Filter>
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
-      <Filter>소스 파일\01. Engine\02.Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="Object.cpp">
-      <Filter>소스 파일\02. Game\00.GameObject</Filter>
-    </ClCompile>
-    <ClCompile Include="Shader.cpp">
-      <Filter>소스 파일\01. Engine\03.Buffer</Filter>
-    </ClCompile>
-    <ClCompile Include="Texture.cpp">
-      <Filter>소스 파일\01. Engine\03.Buffer</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>소스 파일\01. Engine\04.Scene</Filter>
+      <Filter>소스 파일\01. Engine\02. Mesh</Filter>
     </ClCompile>
     <ClCompile Include="Base.cpp">
       <Filter>소스 파일\01. Engine\00. Base</Filter>
@@ -170,10 +209,7 @@
       <Filter>소스 파일\01. Engine\01. Camera</Filter>
     </ClCompile>
     <ClCompile Include="Timer.cpp">
-      <Filter>소스 파일\01. Engine\05.. Timer</Filter>
-    </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>소스 파일\02. Game\01. Player</Filter>
+      <Filter>소스 파일\01. Engine\05. Timer</Filter>
     </ClCompile>
     <ClCompile Include="Prototype_Manager.cpp">
       <Filter>소스 파일\01. Engine\06. Prototype</Filter>
@@ -186,6 +222,42 @@
     </ClCompile>
     <ClCompile Include="Transform.cpp">
       <Filter>소스 파일\01. Engine\07. Components\01. Transform</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphic_Device.cpp">
+      <Filter>소스 파일\01. Engine\98. Device\Graphic</Filter>
+    </ClCompile>
+    <ClCompile Include="Input_Device.cpp">
+      <Filter>소스 파일\01. Engine\98. Device\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>소스 파일\01. Engine\08. Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>소스 파일\02. Game\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="IndexMesh.cpp">
+      <Filter>소스 파일\01. Engine\02. Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="CubeIndexMesh.cpp">
+      <Filter>소스 파일\01. Engine\02. Mesh\Cube</Filter>
+    </ClCompile>
+    <ClCompile Include="CubeMesh.cpp">
+      <Filter>소스 파일\01. Engine\02. Mesh\Cube</Filter>
+    </ClCompile>
+    <ClCompile Include="SkyboxMesh.cpp">
+      <Filter>소스 파일\01. Engine\02. Mesh\Skybox</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>소스 파일\01. Engine\03. Buffer\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>소스 파일\01. Engine\03. Buffer\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="CubeShader.cpp">
+      <Filter>소스 파일\01. Engine\03. Buffer\Shader\Cube</Filter>
+    </ClCompile>
+    <ClCompile Include="SkyboxShader.cpp">
+      <Filter>소스 파일\01. Engine\03. Buffer\Shader\Skybox</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

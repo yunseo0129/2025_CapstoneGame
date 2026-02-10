@@ -9,10 +9,9 @@
 
 // 전역 변수:
 HINSTANCE           g_hInst;                                  // 현재 인스턴스입니다.
+HWND                g_hWnd;
 WCHAR               szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR               szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
-
-CMainApp		   gGameFramework;                          // 게임 프레임워크
 
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -42,6 +41,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
         return FALSE;
     }
+    CMainApp* pMainApp = { nullptr };
+
+    pMainApp = CMainApp::Create();
+    if (nullptr == pMainApp)
+        return FALSE;
 
     hAccelTable = ::LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_HELLODINNER));
 
@@ -60,7 +64,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
         else
         {
-			gGameFramework.FrameAdvance();
+            pMainApp->FrameAdvance();
         }
     }
 
@@ -119,10 +123,10 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
       return FALSE;
    }
 
-   gGameFramework.Initialize(hInstance, hWnd);
-
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
+
+   g_hWnd = hWnd;
 
    return TRUE;
 }
@@ -142,7 +146,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_ACTIVATE:
-        gGameFramework.SetActive(static_cast<BOOL>(wParam));
         break;
     case WM_SIZE:
         break;
@@ -150,11 +153,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_LBUTTONUP:
     case WM_RBUTTONDOWN:
     case WM_RBUTTONUP:
-        gGameFramework.MouseEvent(message, lParam);
         break;
     case WM_CHAR:
     case WM_KEYDOWN:
-        gGameFramework.KeyboardEvent(hWnd, message, wParam, lParam);
         break;
     case WM_DESTROY:
         PostQuitMessage(0);

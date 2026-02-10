@@ -1,4 +1,4 @@
-#include "Object.h"
+#include "GameObject.h"
 #include "GameInstance.h"
 
 CGameObject::CGameObject(EngineContext* _pcontext)
@@ -6,7 +6,6 @@ CGameObject::CGameObject(EngineContext* _pcontext)
 	, m_pGameInstance{ CGameInstance::GetInstance() }
 {
 	Safe_AddRef(m_pGameInstance);
-	Safe_AddRef(m_pContext);
 }
 
 CGameObject::CGameObject(const CGameObject& Prototype)
@@ -14,7 +13,6 @@ CGameObject::CGameObject(const CGameObject& Prototype)
 	, m_pGameInstance{ Prototype.m_pGameInstance }
 {
 	Safe_AddRef(m_pGameInstance);
-	Safe_AddRef(m_pContext);
 }
 
 HRESULT CGameObject::Initialize_Prototype()
@@ -52,9 +50,8 @@ void CGameObject::Late_Update(_float fTimeDelta)
 {
 }
 
-HRESULT CGameObject::Render(const ComPtr<ID3D12GraphicsCommandList>& _commandList)
+void CGameObject::Render(const ComPtr<ID3D12GraphicsCommandList>& _commandList)
 {
-	return S_OK;
 }
 
 void CGameObject::Free()
@@ -67,7 +64,6 @@ void CGameObject::Free()
 
 	Safe_Release(m_pTransformCom);
 	Safe_Release(m_pGameInstance);
-	Safe_Release(m_pContext);
 }
 
 CComponent* CGameObject::Find_Component(const _wstring& strComponentTag)
