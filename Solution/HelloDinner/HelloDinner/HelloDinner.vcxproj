@@ -139,6 +139,7 @@
     <ClInclude Include="Graphic_Device.h" />
     <ClInclude Include="IndexMesh.h" />
     <ClInclude Include="Input_Device.h" />
+    <ClInclude Include="PipeLine.h" />
     <ClInclude Include="Prototype_Manager.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="SkyboxMesh.h" />
@@ -179,6 +180,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="PipeLine.cpp" />
     <ClCompile Include="Prototype_Manager.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Shader.cpp" />

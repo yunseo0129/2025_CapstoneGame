@@ -64,6 +64,43 @@ CBase* CGameInstance::Clone_Prototype(Engine::PROTOTYPE eType, _uint iLevelIndex
 	return m_pPrototype_Manager->Clone_Prototype(eType, iLevelIndex, strPrototypeTag, pArg);
 }
 
+void CGameInstance::Set_Transform(CPipeLine::D3DTRANSFORMSTATE eState, _fmatrix TransformMatrix)
+{
+	if (nullptr == m_pPipeLine)
+		return;
+
+	return m_pPipeLine->Set_Transform(eState, TransformMatrix);
+}
+
+_matrix CGameInstance::Get_ViewProjMatrix()
+{
+	return m_pPipeLine->Get_ViewProjMatrix();
+}
+
+_matrix CGameInstance::Get_TransformMatrix(CPipeLine::D3DTRANSFORMSTATE eState)
+{
+	if (nullptr == m_pPipeLine)
+		return XMMatrixIdentity();
+
+	return m_pPipeLine->Get_TransformMatrix(eState);
+}
+
+_float4x4 CGameInstance::Get_TransformFloat4x4(CPipeLine::D3DTRANSFORMSTATE eState)
+{
+	if (nullptr == m_pPipeLine)
+		return _float4x4();
+
+	return m_pPipeLine->Get_TransformFloat4x4(eState);
+}
+
+const _float4* CGameInstance::Get_CamPosition() const
+{
+	if (nullptr == m_pPipeLine)
+		return nullptr;
+
+	return m_pPipeLine->Get_CamPosition();
+}
+
 void CGameInstance::Release_Engine()
 {
 	CGameInstance::GetInstance()->Free();

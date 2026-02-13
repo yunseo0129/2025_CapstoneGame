@@ -1,55 +1,51 @@
 #pragma once
-#include "stdafx.h"
 
-class Camera
+#include "GameObject.h"
+
+class CCamera abstract : public CGameObject
 {
 public:
-	Camera();
-	~Camera() = default;
+	struct CAMERA_DESC : public CGameObject::GAMEOBJECT_DESC
+	{
+		_float3			vEye = {};
+		_float3			vAt = {};
 
-	virtual void Update(FLOAT timeElapsed) = 0;
-	virtual void UpdateEye(XMFLOAT3 position) = 0;
-	void UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& commandList);
-
-	virtual void RotatePitch(FLOAT radian) = 0;
-	virtual void RotateYaw(FLOAT radian) = 0;
-
-	void SetLens(FLOAT fovy, FLOAT aspect, FLOAT minZ, FLOAT maxZ);
-
-	XMFLOAT3 GetEye() const;
-	XMFLOAT3 GetU() const;
-	XMFLOAT3 GetV() const;
-	XMFLOAT3 GetN() const;
+		_float			fFovy = { 0.f };
+		_float			fAspect = { 0.f };
+		_float			fNear = { 0.f };
+		_float			fFar = { 0.f };
+	};
 
 protected:
-	void UpdateBasis();
+	CCamera(EngineContext* pContext);
+	CCamera(const CCamera& Prototype);
+	virtual ~CCamera() = default;
 
-protected:
-	XMFLOAT4X4 m_viewMatrix;
-	XMFLOAT4X4 m_projectionMatrix;
-
-	XMFLOAT3 m_eye;
-	XMFLOAT3 m_at;
-	XMFLOAT3 m_up;
-
-	XMFLOAT3 m_u;
-	XMFLOAT3 m_v;
-	XMFLOAT3 m_n;
-};
-
-class ThirdPersonCamera : public Camera
-{
 public:
-	ThirdPersonCamera();
-	~ThirdPersonCamera() = default;
+	virtual HRESULT Initialize_Prototype();
+	virtual HRESULT Initialize(void* pArg);
+	virtual void Priority_Update(_float fTimeDelta);
+	virtual void Update(_float fTimeDelta);
+	virtual void Late_Update(_float fTimeDelta);
+	virtual HRESULT Render();
 
-	void Update(FLOAT timeElapsed) override;
-	void UpdateEye(XMFLOAT3 position) override;
+	_float			Get_RotR() const { return m_fRotR; }
+	_float			Get_RotY() const { return m_fRotY; }
+	void			Move(_vector vTarget) { m_pTransformCom->Set_State(CTransform::STATE_POSITION, vTarget); }
 
-	void RotatePitch(FLOAT radian) override;
-	void RotateYaw(FLOAT radian) override;
-private:
-	FLOAT m_radius;
-	FLOAT m_phi;
-	FLOAT m_theta;
+protected:
+	_float			m_fFovy = { 0.f };
+	_float			m_fAspect = { 0.f };
+	_float			m_fNear = { 0.f };
+	_float			m_fFar = { 0.f };
+	_float			m_fRotR = { 0.f };
+	_float			m_fRotY = { 0.f };
+
+protected:
+	void Compute_PipeLineMatrices();
+
+
+public:
+	virtual CGameObject* Clone(void* pArg) = 0;
+	virtual void Free() override;
 };

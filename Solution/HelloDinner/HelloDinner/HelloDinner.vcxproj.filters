@@ -30,9 +30,6 @@
     <Filter Include="소스 파일\01. Engine\00. Base">
       <UniqueIdentifier>{943c87b1-d326-4195-a7e0-16d91b68fa08}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\01. Engine\01. Camera">
-      <UniqueIdentifier>{cb8ff52d-3025-41fd-822e-cf8c5c47dafb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\01. Engine\06. Prototype">
       <UniqueIdentifier>{94ac9699-79f6-485b-885e-c874ee561016}</UniqueIdentifier>
     </Filter>
@@ -99,6 +96,12 @@
     <Filter Include="소스 파일\01. Engine\03. Buffer\Shader\Skybox">
       <UniqueIdentifier>{ebdd6ec1-5777-4ef4-95e9-fbc2a924b33b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\01. Engine\07. Components\05. Camera">
+      <UniqueIdentifier>{cb8ff52d-3025-41fd-822e-cf8c5c47dafb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\09. PipeLine">
+      <UniqueIdentifier>{6ffafc5a-83d0-4aa2-b9b8-dde7d459af74}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -135,7 +138,7 @@
       <Filter>소스 파일\01. Engine\00. Base</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
-      <Filter>소스 파일\01. Engine\01. Camera</Filter>
+      <Filter>소스 파일\01. Engine\07. Components\05. Camera</Filter>
     </ClInclude>
     <ClInclude Include="Timer.h">
       <Filter>소스 파일\01. Engine\05. Timer</Filter>
@@ -188,6 +191,9 @@
     <ClInclude Include="SkyboxShader.h">
       <Filter>소스 파일\01. Engine\03. Buffer\Shader\Skybox</Filter>
     </ClInclude>
+    <ClInclude Include="PipeLine.h">
+      <Filter>소스 파일\01. Engine\09. PipeLine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -206,7 +212,7 @@
       <Filter>소스 파일\01. Engine\00. Base</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
-      <Filter>소스 파일\01. Engine\01. Camera</Filter>
+      <Filter>소스 파일\01. Engine\07. Components\05. Camera</Filter>
     </ClCompile>
     <ClCompile Include="Timer.cpp">
       <Filter>소스 파일\01. Engine\05. Timer</Filter>
@@ -258,6 +264,9 @@
     </ClCompile>
     <ClCompile Include="SkyboxShader.cpp">
       <Filter>소스 파일\01. Engine\03. Buffer\Shader\Skybox</Filter>
+    </ClCompile>
+    <ClCompile Include="PipeLine.cpp">
+      <Filter>소스 파일\01. Engine\09. PipeLine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

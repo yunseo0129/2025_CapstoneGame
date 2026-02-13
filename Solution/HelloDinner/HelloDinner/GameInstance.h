@@ -1,6 +1,7 @@
 #pragma once
 #include "Prototype_Manager.h"
 #include "Graphic_Device.h"
+#include "PipeLine.h"
 
 class CGameInstance final : public CBase
 {
@@ -24,9 +25,17 @@ public: /* For.Prototype_Manager */
 	HRESULT Add_Prototype(_uint iLevelIndex, const _wstring& strPrototypeTag, class CBase* pPrototype);
 	class CBase* Clone_Prototype(Engine::PROTOTYPE eType, _uint iLevelIndex, const _wstring& strPrototypeTag, void* pArg = nullptr);
 
+public: /* For.PipeLine */
+	void Set_Transform(CPipeLine::D3DTRANSFORMSTATE eState, _fmatrix TransformMatrix);
+	_matrix Get_ViewProjMatrix();
+	_matrix Get_TransformMatrix(CPipeLine::D3DTRANSFORMSTATE eState);
+	_float4x4 Get_TransformFloat4x4(CPipeLine::D3DTRANSFORMSTATE eState);
+	const _float4*Get_CamPosition() const;
+
 private:
-	class CGraphic_Device* m_pGraphic_Device = { nullptr };
-	class CPrototype_Manager* m_pPrototype_Manager = { nullptr };
+	class CGraphic_Device*		m_pGraphic_Device = { nullptr };
+	class CPrototype_Manager*	m_pPrototype_Manager = { nullptr };
+	class CPipeLine*			m_pPipeLine = { nullptr };
 
 public:
 	static void Release_Engine();
