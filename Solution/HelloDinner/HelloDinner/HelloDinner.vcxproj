@@ -138,7 +138,9 @@
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Graphic_Device.h" />
     <ClInclude Include="IndexMesh.h" />
-    <ClInclude Include="Input_Device.h" />
+    <ClInclude Include="Input_Device.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="PipeLine.h" />
     <ClInclude Include="Prototype_Manager.h" />
     <ClInclude Include="Renderer.h" />

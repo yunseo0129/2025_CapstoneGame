@@ -101,6 +101,51 @@ const _float4* CGameInstance::Get_CamPosition() const
 	return m_pPipeLine->Get_CamPosition();
 }
 
+_byte CGameInstance::Get_DIKeyState(_ubyte byKeyID)
+{
+	return m_pInput_Device->Get_DIKeyState(byKeyID);
+}
+
+_byte CGameInstance::Get_DIMouseState(Engine::MOUSEKEYSTATE eMouse)
+{
+	return m_pInput_Device->Get_DIMouseState(eMouse);
+}
+
+_long CGameInstance::Get_DIMouseMove(Engine::MOUSEMOVESTATE eMouseState)
+{
+	return m_pInput_Device->Get_DIMouseMove(eMouseState);
+}
+
+bool CGameInstance::Key_Pressing(int _iKey)
+{
+	return m_pInput_Device->Key_Pressing(_iKey);
+}
+
+bool CGameInstance::Key_Down(int _iKey)
+{
+	return m_pInput_Device->Key_Down(_iKey);
+}
+
+bool CGameInstance::Key_Up(int _iKey)
+{
+	return m_pInput_Device->Key_Up(_iKey);
+}
+
+bool CGameInstance::Mouse_Pressing(int _iKey)
+{
+	return m_pInput_Device->Mouse_Pressing(_iKey);
+}
+
+bool CGameInstance::Mouse_Down(int _iKey)
+{
+	return m_pInput_Device->Mouse_Down(_iKey);
+}
+
+bool CGameInstance::Mouse_Up(int _iKey)
+{
+	return m_pInput_Device->Mouse_Up(_iKey);
+}
+
 void CGameInstance::Release_Engine()
 {
 	CGameInstance::GetInstance()->Free();

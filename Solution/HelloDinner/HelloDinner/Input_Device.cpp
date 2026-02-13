@@ -89,19 +89,19 @@ void CInput_Device::Update_InputDev(void)
 	}
 
 
-	MOUSEKEYSTATE eMouse;
+	Engine::MOUSEKEYSTATE eMouse;
 	for (int i = 0; i < 3; ++i)
 	{
 		switch (i)
 		{
 		case 0:
-			eMouse = MOUSEKEYSTATE::DIM_LB;
+			eMouse = Engine::MOUSEKEYSTATE::DIM_LB;
 			break;
 		case 1:
-			eMouse = MOUSEKEYSTATE::DIM_RB;
+			eMouse = Engine::MOUSEKEYSTATE::DIM_RB;
 			break;
 		case 2:
-			eMouse = MOUSEKEYSTATE::DIM_MB;
+			eMouse = Engine::MOUSEKEYSTATE::DIM_MB;
 			break;
 		default:
 			break;

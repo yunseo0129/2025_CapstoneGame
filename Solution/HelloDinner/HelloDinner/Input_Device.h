@@ -3,8 +3,6 @@
 
 #include "Base.h"
 
-using namespace Engine;
-
 class CInput_Device : public CBase
 {
 private:
@@ -41,20 +39,20 @@ public:
 		return m_tMouseInfo[_iKey].bUp;
 	}
 
-	_byte	Get_DIMouseState(MOUSEKEYSTATE eMouse)
+	_byte Get_DIMouseState(Engine::MOUSEKEYSTATE eMouse) const
 	{
 		return m_tMouseState.rgbButtons[eMouse];
 	}
 
-	_long Get_DIMouseMove(MOUSEMOVESTATE eMouseState)
+	_long Get_DIMouseMove(Engine::MOUSEMOVESTATE eMouseState) const
 	{
 		switch (eMouseState)
 		{
-		case MOUSEMOVESTATE::DIMS_X:
+		case Engine::MOUSEMOVESTATE::DIMS_X:
 			return m_tMouseState.lX;
-		case MOUSEMOVESTATE::DIMS_Y:
+		case Engine::MOUSEMOVESTATE::DIMS_Y:
 			return m_tMouseState.lY;
-		case MOUSEMOVESTATE::DIMS_Z:
+		case Engine::MOUSEMOVESTATE::DIMS_Z:
 			return m_tMouseState.lZ;
 		default:
 			return 0;
@@ -75,7 +73,7 @@ private:
 private:
 	list<unsigned char>		m_KeyList;
 	unsigned char			m_cKey[256];
-	KEYSTATE				m_tKeyInfo[256] = {};		// 키보드에 있는 모든 키값을 저장하기 위한 변수
+	KEYSTATE				m_tKeyInfo[256] = {};
 	KEYSTATE				m_tMouseInfo[3] = {};
 	DIMOUSESTATE			m_tMouseState = {};
 
