@@ -64,6 +64,88 @@ CBase* CGameInstance::Clone_Prototype(Engine::PROTOTYPE eType, _uint iLevelIndex
 	return m_pPrototype_Manager->Clone_Prototype(eType, iLevelIndex, strPrototypeTag, pArg);
 }
 
+void CGameInstance::Set_Transform(CPipeLine::D3DTRANSFORMSTATE eState, _fmatrix TransformMatrix)
+{
+	if (nullptr == m_pPipeLine)
+		return;
+
+	return m_pPipeLine->Set_Transform(eState, TransformMatrix);
+}
+
+_matrix CGameInstance::Get_ViewProjMatrix()
+{
+	return m_pPipeLine->Get_ViewProjMatrix();
+}
+
+_matrix CGameInstance::Get_TransformMatrix(CPipeLine::D3DTRANSFORMSTATE eState)
+{
+	if (nullptr == m_pPipeLine)
+		return XMMatrixIdentity();
+
+	return m_pPipeLine->Get_TransformMatrix(eState);
+}
+
+_float4x4 CGameInstance::Get_TransformFloat4x4(CPipeLine::D3DTRANSFORMSTATE eState)
+{
+	if (nullptr == m_pPipeLine)
+		return _float4x4();
+
+	return m_pPipeLine->Get_TransformFloat4x4(eState);
+}
+
+const _float4* CGameInstance::Get_CamPosition() const
+{
+	if (nullptr == m_pPipeLine)
+		return nullptr;
+
+	return m_pPipeLine->Get_CamPosition();
+}
+
+_byte CGameInstance::Get_DIKeyState(_ubyte byKeyID)
+{
+	return m_pInput_Device->Get_DIKeyState(byKeyID);
+}
+
+_byte CGameInstance::Get_DIMouseState(Engine::MOUSEKEYSTATE eMouse)
+{
+	return m_pInput_Device->Get_DIMouseState(eMouse);
+}
+
+_long CGameInstance::Get_DIMouseMove(Engine::MOUSEMOVESTATE eMouseState)
+{
+	return m_pInput_Device->Get_DIMouseMove(eMouseState);
+}
+
+bool CGameInstance::Key_Pressing(int _iKey)
+{
+	return m_pInput_Device->Key_Pressing(_iKey);
+}
+
+bool CGameInstance::Key_Down(int _iKey)
+{
+	return m_pInput_Device->Key_Down(_iKey);
+}
+
+bool CGameInstance::Key_Up(int _iKey)
+{
+	return m_pInput_Device->Key_Up(_iKey);
+}
+
+bool CGameInstance::Mouse_Pressing(int _iKey)
+{
+	return m_pInput_Device->Mouse_Pressing(_iKey);
+}
+
+bool CGameInstance::Mouse_Down(int _iKey)
+{
+	return m_pInput_Device->Mouse_Down(_iKey);
+}
+
+bool CGameInstance::Mouse_Up(int _iKey)
+{
+	return m_pInput_Device->Mouse_Up(_iKey);
+}
+
 void CGameInstance::Release_Engine()
 {
 	CGameInstance::GetInstance()->Free();

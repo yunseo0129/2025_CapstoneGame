@@ -1,87 +1,70 @@
 #include "Camera.h"
+#include "GameInstance.h"
 
-Camera::Camera() : m_eye{ 0.f, 0.f, 0.f }, m_at{ 0.f, 0.f, 1.f }, m_up{ 0.f, 1.f, 0.f },
-m_u{ 1.f, 0.f, 0.f }, m_v{ 0.f, 1.f, 0.f }, m_n{ 0.f, 0.f, 1.f }
-{
-	XMStoreFloat4x4(&m_viewMatrix, XMMatrixIdentity());
-	XMStoreFloat4x4(&m_projectionMatrix, XMMatrixIdentity());
-}
-
-void Camera::UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& commandList)
-{
-	XMStoreFloat4x4(&m_viewMatrix, XMMatrixLookAtLH(XMLoadFloat3(&m_eye), XMLoadFloat3(&m_at), XMLoadFloat3(&m_up)));
-
-	XMFLOAT4X4 viewMatrix;
-	XMStoreFloat4x4(&viewMatrix, XMMatrixTranspose(XMLoadFloat4x4(&m_viewMatrix)));
-	commandList->SetGraphicsRoot32BitConstants(1, 16, &viewMatrix, 0);
-
-	XMFLOAT4X4 projectionMatrix;
-	XMStoreFloat4x4(&projectionMatrix, XMMatrixTranspose(XMLoadFloat4x4(&m_projectionMatrix)));
-	commandList->SetGraphicsRoot32BitConstants(1, 16, &projectionMatrix, 16);
-}
-
-void Camera::SetLens(FLOAT fovy, FLOAT aspect, FLOAT minZ, FLOAT maxZ)
-{
-	XMStoreFloat4x4(&m_projectionMatrix, XMMatrixPerspectiveFovLH(fovy, aspect, minZ, maxZ));
-}
-
-XMFLOAT3 Camera::GetEye() const
-{
-	return m_eye;
-}
-
-XMFLOAT3 Camera::GetU() const
-{
-	return m_u;
-}
-
-XMFLOAT3 Camera::GetV() const
-{
-	return m_v;
-}
-
-XMFLOAT3 Camera::GetN() const
-{
-	return m_n;
-}
-
-void Camera::UpdateBasis()
-{
-	m_n = Vector3::Normalize(Vector3::Sub(m_at, m_eye));
-	m_u = Vector3::Normalize(Vector3::Cross(m_up, m_n));
-	m_v = Vector3::Normalize(Vector3::Cross(m_n, m_u));
-}
-
-ThirdPersonCamera::ThirdPersonCamera() : Camera{}, m_radius{ 45.0f },
-m_phi{ XM_PIDIV2 - 0.3f }, m_theta{ 0.0f }
+CCamera::CCamera(EngineContext* pContext)
+	: CGameObject{ pContext }
 {
 
 }
 
-void ThirdPersonCamera::Update(FLOAT timeElapsed)
+CCamera::CCamera(const CCamera& Prototype)
+	: CGameObject{ Prototype }
 {
 
 }
 
-void ThirdPersonCamera::UpdateEye(XMFLOAT3 position)
+HRESULT CCamera::Initialize_Prototype()
 {
-	XMFLOAT3 offset{
-		static_cast<FLOAT>(m_radius * sin(m_phi) * cos(m_theta)),
-		static_cast<FLOAT>(m_radius * cos(m_phi)),
-		static_cast<FLOAT>(m_radius * sin(m_phi) * sin(m_theta))
-	};
-	m_eye = Vector3::Add(position, offset);
-	m_at = position;
-	UpdateBasis();
+	return S_OK;
 }
 
-void ThirdPersonCamera::RotatePitch(FLOAT radian)
+HRESULT CCamera::Initialize(void* pArg)
 {
-	m_phi += radian;
-	m_phi = std::clamp(m_phi, XM_PIDIV2 - 0.6f, XM_PIDIV2 + 0.2f);
+	if (FAILED(__super::Initialize(pArg)))
+		return E_FAIL;
+
+	CAMERA_DESC* pDesc = static_cast<CAMERA_DESC*>(pArg);
+
+	m_pTransformCom->Set_State(CTransform::STATE_POSITION, XMVectorSetW(XMLoadFloat3(&pDesc->vEye), 1.f));
+	m_pTransformCom->LookAt(XMVectorSetW(XMLoadFloat3(&pDesc->vAt), 1.f));
+
+	m_fFovy = pDesc->fFovy;
+	m_fAspect = pDesc->fAspect;
+	m_fNear = pDesc->fNear;
+	m_fFar = pDesc->fFar;
+
+	return S_OK;
 }
 
-void ThirdPersonCamera::RotateYaw(FLOAT radian)
+void CCamera::Priority_Update(_float fTimeDelta)
 {
-	m_theta += radian;
+
+}
+
+void CCamera::Update(_float fTimeDelta)
+{
+
+}
+
+void CCamera::Late_Update(_float fTimeDelta)
+{
+
+}
+
+HRESULT CCamera::Render()
+{
+
+	return S_OK;
+}
+
+void CCamera::Compute_PipeLineMatrices()
+{
+	m_pGameInstance->Set_Transform(CPipeLine::D3DTS_VIEW, m_pTransformCom->Get_WorldMatrix_Inverse());
+	m_pGameInstance->Set_Transform(CPipeLine::D3DTS_PROJ, XMMatrixPerspectiveFovLH(m_fFovy, m_fAspect, m_fNear, m_fFar));
+}
+
+void CCamera::Free()
+{
+	__super::Free();
+
 }
