@@ -113,6 +113,7 @@ void initialize_sector()
 	}
 }
 
+// OVERLAPPED 구조체와 WSABUF 구조체를 확장하여 관리하는 클래스
 class OVER_EXP {
 public:
 	WSAOVERLAPPED _over;
@@ -137,6 +138,8 @@ public:
 };
 
 enum S_STATE { ST_FREE, ST_ALLOC, ST_INGAME };
+
+// 클라이언트 세션을 관리하는 클래스
 class SESSION {
 	OVER_EXP _recv_over;
 
@@ -290,6 +293,7 @@ int get_new_client_id()
 	return -1;
 }
 
+// 클라이언트로부터 받은 패킷을 처리하는 함수
 void process_packet(int c_id, char* packet)
 {
 	switch (packet[1]) {
@@ -420,6 +424,7 @@ void disconnect(int c_id)
 	clients[c_id]._state = ST_FREE;
 }
 
+// IOCP worker thread 함수
 void worker_thread(HANDLE h_iocp)
 {
 	while (true) {

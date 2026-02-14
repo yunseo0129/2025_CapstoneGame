@@ -26,6 +26,12 @@ constexpr char SC_LOGIN_OK = 7;
 constexpr char SC_LOGIN_FAIL = 8;
 constexpr char SC_STAT_CHANGE = 9;
 
+// 패킷 처리 완료 유형을 나타내는 enum
+enum COMP_TYPE { OP_ACCEPT, OP_RECV, OP_SEND };
+
+// 세션 상태를 나타내는 enum
+enum S_STATE { ST_FREE, ST_ALLOC, ST_INGAME };
+
 #pragma pack (push, 1)
 struct CS_LOGIN_PACKET {
 	unsigned char size;

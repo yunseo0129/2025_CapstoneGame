@@ -13,51 +13,36 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="소스 파일\Session">
+      <UniqueIdentifier>{5ae3a116-8ee8-4f0d-b342-e56e3bf43de9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\OverlappedEXP">
+      <UniqueIdentifier>{af9c0784-295e-4fee-ac58-b242acc26ead}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="2019182027_multi_iocp_server.cpp">
+    <ClCompile Include="multi_iocp_server.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="2019182027_single_iocp_server.cpp">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="Session.cpp">
+      <Filter>소스 파일\Session</Filter>
     </ClCompile>
-    <ClCompile Include="2019182027_overlapped_server.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="2019182027_non_blocking.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="2019182027_multi_thread.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="2019182027_sector.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="2019182027_view.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="2019182027_NPC.cpp">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="OverllapedEXP.cpp">
+      <Filter>소스 파일\OverlappedEXP</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="protocol.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="include\lauxlib.h">
+    <ClInclude Include="pch.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="include\lua.h">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="Session.h">
+      <Filter>소스 파일\Session</Filter>
     </ClInclude>
-    <ClInclude Include="include\lua.hpp">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="include\luaconf.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="include\lualib.h">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="OverllapedEXP.h">
+      <Filter>소스 파일\OverlappedEXP</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
