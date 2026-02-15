@@ -39,9 +39,6 @@
     <Filter Include="소스 파일\02. Game\GameObject\Player">
       <UniqueIdentifier>{fbc2e468-eeaa-42d5-a414-4973c5d609f1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\01. Engine\09. PipeLine">
-      <UniqueIdentifier>{6ffafc5a-83d0-4aa2-b9b8-dde7d459af74}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\01. Engine\01. Level">
       <UniqueIdentifier>{446fbe64-2145-4f1e-8678-ef60221a47da}</UniqueIdentifier>
     </Filter>
@@ -147,6 +144,15 @@
     <Filter Include="소스 파일\01. Engine\00. System\02. Timer\Manager">
       <UniqueIdentifier>{b9ce22ff-e3bb-484c-ab74-70efbbee8a85}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\01. Engine\06. Shader">
+      <UniqueIdentifier>{dfe31e4b-61a3-4cf7-ad01-a236c4abc160}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\07. PipeLine">
+      <UniqueIdentifier>{6ffafc5a-83d0-4aa2-b9b8-dde7d459af74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\06. Shader\Manager">
+      <UniqueIdentifier>{05d5c434-cb2c-4949-b212-1d381a762fdd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -216,7 +222,7 @@
       <Filter>소스 파일\01. Engine\04. Components\Shader\Skybox</Filter>
     </ClInclude>
     <ClInclude Include="PipeLine.h">
-      <Filter>소스 파일\01. Engine\09. PipeLine</Filter>
+      <Filter>소스 파일\01. Engine\07. PipeLine</Filter>
     </ClInclude>
     <ClInclude Include="GameObject.h">
       <Filter>소스 파일\01. Engine\03. Objects</Filter>
@@ -256,6 +262,9 @@
     </ClInclude>
     <ClInclude Include="Timer_Manager.h">
       <Filter>소스 파일\01. Engine\00. System\02. Timer\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader_Manager.h">
+      <Filter>소스 파일\01. Engine\06. Shader\Manager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -308,7 +317,7 @@
       <Filter>소스 파일\01. Engine\04. Components\Shader\Skybox</Filter>
     </ClCompile>
     <ClCompile Include="PipeLine.cpp">
-      <Filter>소스 파일\01. Engine\09. PipeLine</Filter>
+      <Filter>소스 파일\01. Engine\07. PipeLine</Filter>
     </ClCompile>
     <ClCompile Include="GameObject.cpp">
       <Filter>소스 파일\01. Engine\03. Objects</Filter>
@@ -348,6 +357,9 @@
     </ClCompile>
     <ClCompile Include="Timer_Manager.cpp">
       <Filter>소스 파일\01. Engine\00. System\02. Timer\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader_Manager.cpp">
+      <Filter>소스 파일\01. Engine\06. Shader\Manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

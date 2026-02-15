@@ -12,15 +12,6 @@ namespace Client
 extern HINSTANCE g_hInst;
 extern HWND g_hWnd;
 
-namespace RootParameter
-{
-    constexpr UINT GameObject = 0;
-    constexpr UINT Camera = 1;
-    constexpr UINT TextureCube = 2;
-    constexpr UINT Texture2D = 3;
-	constexpr UINT TextureArray = 4;
-}
-
 namespace DescriptorRange
 {
     constexpr UINT Texture = 0;
@@ -34,6 +25,38 @@ namespace Engine
     enum MOUSEKEYSTATE { DIM_LB, DIM_RB, DIM_MB, DIM_END };
     enum MOUSEMOVESTATE { DIMS_X, DIMS_Y, DIMS_Z, DIMS_END };
 }
+
+
+// Texture data 저장하는 srv 만들 때 VIEW_DIMENSION 설정용
+enum class TEXTURE_TYPE {
+	TEX_2D ,
+	TEX_CUBE ,
+	TEX_ARRAY ,
+};
+
+// Root Signature의 Root Parameter 슬롯 설정용
+enum class RootParameterIndex
+{
+	Camera ,
+	GameObject ,
+	TEXTURE ,
+	// 후에 Material, BoneMatrix 등등 추가할 수 있음
+	End
+};
+
+// Input Layout과 PSO 설정용
+enum class PSO_TYPE
+{
+	DEFAULT ,        // 일반 물체 (Static Mesh / Opaque)
+	ANIM ,           // 캐릭터 (Skeletal Mesh / Opaque)
+	ALPHA_BLEND ,    // 반투명 이펙트 (Static Mesh / Transparent)
+	UI ,             // 2D UI (UI Mesh / Transparent / No Depth)
+	SHADOW_STATIC ,  // 그림자 생성용 (Static Mesh / Depth Only)
+	SHADOW_ANIM ,    // 그림자 생성용 (Skeletal Mesh / Depth Only)
+	END
+};
+
+
 //-------------------------------------------------------------
 //-------------------------------------------------------------
 

@@ -17,7 +17,7 @@ CTexture::CTexture(const CTexture& Prototype)
     // Clone된 객체는 UploadBuffer를 가질 필요가 없으므로 복사하지 않음
 }
 
-HRESULT CTexture::Initialize_Prototype(ID3D12GraphicsCommandList* pCommandList, const _tchar* pTextureFilePath, _uint iNumTexture, _uint _irootParameterIndex)
+HRESULT CTexture::Initialize_Prototype(ID3D12GraphicsCommandList* pCommandList, const _tchar* pTextureFilePath, _uint iNumTexture, TEXTURE_TYPE _iTextureType )
 {
     m_iNumTextures = iNumTexture;
 
@@ -57,11 +57,11 @@ HRESULT CTexture::Initialize_Prototype(ID3D12GraphicsCommandList* pCommandList, 
   
 
 		// 4. 텍스처의 리소스 설명자 정보 저장
-        if (FAILED(SetResourceDesc(m_Textures[i].Get(), _irootParameterIndex)))
+        if (FAILED(SetResourceDesc(m_Textures[i].Get(), _iTextureType )))
 			return E_FAIL;
 
         // 5. Shader Resource View (SRV) 생성
-        if (FAILED(CreateShaderResourceView(hDescriptor, i, _irootParameterIndex)))
+        if (FAILED(CreateShaderResourceView(hDescriptor, i, _iTextureType )))
             return E_FAIL;
 
         // 다음 텍스처를 위해 핸들 오프셋 이동
@@ -78,7 +78,7 @@ HRESULT CTexture::Initialize(void* pArg)
     return S_OK;
 }
 
-HRESULT CTexture::Bind_ShaderResource(ID3D12GraphicsCommandList* pCommandList, _uint iRootParameterIndex, _uint iTextureIndex)
+HRESULT CTexture::Bind_ShaderResource(ID3D12GraphicsCommandList* pCommandList, RootParameterIndex _eRootParameterIndex, _uint iTextureIndex)
 {
     if (iTextureIndex >= m_iNumTextures)
         return E_FAIL;
@@ -92,7 +92,7 @@ HRESULT CTexture::Bind_ShaderResource(ID3D12GraphicsCommandList* pCommandList, _
     hGpuHandle.Offset(iTextureIndex, m_iCbvSrvUavDescriptorSize);
 
     // 3. 루트 테이블에 바인딩
-    pCommandList->SetGraphicsRootDescriptorTable(iRootParameterIndex, hGpuHandle);
+    pCommandList->SetGraphicsRootDescriptorTable( (_uint)_eRootParameterIndex , hGpuHandle);
 
     return S_OK;
 }
@@ -147,17 +147,17 @@ HRESULT CTexture::Load_DDSTexture(ID3D12GraphicsCommandList* pCommandList, const
     return S_OK;
 }
 
-HRESULT CTexture::SetResourceDesc(ID3D12Resource* _pTexture, _uint _type) {
+HRESULT CTexture::SetResourceDesc(ID3D12Resource* _pTexture, TEXTURE_TYPE _iTextureType ) {
     if (!_pTexture)
 		return E_FAIL;
     
     D3D12_RESOURCE_DESC desc = _pTexture->GetDesc();
     m_FormatDesc = desc.Format;
     m_iWidth = desc.Width;
-    m_iHeight = desc.Height;
+    m_iHeight = desc.Height; 
     m_iArraySize = desc.DepthOrArraySize;
     m_iMipLevels = desc.MipLevels;
-    m_eType = _type;
+    m_eType = _iTextureType;
 
 	return S_OK;
 }
@@ -178,26 +178,26 @@ HRESULT CTexture::Create_SrvDescriptorHeap()
     return S_OK;
 }
 
-HRESULT CTexture::CreateShaderResourceView(CD3DX12_CPU_DESCRIPTOR_HANDLE _descriptorHandle, _uint _iIndex, _uint _irootParameterIndex)
+HRESULT CTexture::CreateShaderResourceView(CD3DX12_CPU_DESCRIPTOR_HANDLE _descriptorHandle, _uint _iIndex, TEXTURE_TYPE _iTextureType )
 {
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
     srvDesc.Format = m_Textures[_iIndex]->GetDesc().Format;
 
-    switch (_irootParameterIndex)
+    switch ( _iTextureType )
     {
-    case RootParameter::Texture2D:
+    case TEXTURE_TYPE::TEX_2D:
         srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
         srvDesc.Texture2D.MostDetailedMip = 0;
         srvDesc.Texture2D.MipLevels = m_Textures[_iIndex]->GetDesc().MipLevels;
         srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
         break;
-    case RootParameter::TextureCube:
+    case TEXTURE_TYPE::TEX_CUBE:
         srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
         srvDesc.TextureCube.MostDetailedMip = 0;
         srvDesc.TextureCube.MipLevels = m_Textures[_iIndex]->GetDesc().MipLevels;
         srvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
-    case RootParameter::TextureArray:
+    case TEXTURE_TYPE::TEX_ARRAY:
         srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
         srvDesc.Texture2DArray.ArraySize = m_iArraySize;
         break;
@@ -237,11 +237,11 @@ void CTexture::SetResourceDesc(D3D12_RESOURCE_DESC& _resourceDesc, UINT64 _size)
 
 
 
-CTexture* CTexture::Create(ID3D12Device* _pDevice, ID3D12GraphicsCommandList* _pCommandList, const _tchar* _pTextureFilePath, _uint _irootParameterIndex, _uint _iNumTextures)
+CTexture* CTexture::Create ( ID3D12Device* pDevice , ID3D12GraphicsCommandList* pCommandList , const _tchar* cFilePath , _uint iNumTextures , TEXTURE_TYPE _iTextureType )
 {
-    CTexture* pInstance = new CTexture(_pDevice);
+    CTexture* pInstance = new CTexture( pDevice );
 
-    if (FAILED(pInstance->Initialize_Prototype(_pCommandList, _pTextureFilePath, _iNumTextures, _irootParameterIndex)))
+    if (FAILED(pInstance->Initialize_Prototype( pCommandList , cFilePath , iNumTextures , _iTextureType )))
     {
         Safe_Release(pInstance); // 혹은 delete pInstance;
     }
