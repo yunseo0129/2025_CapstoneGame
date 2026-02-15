@@ -1,5 +1,8 @@
 #pragma once
 
+//-------------------------------------------------------------
+// namespace 
+//-------------------------------------------------------------
 namespace Client
 {
 	constexpr int g_iWinSizeX = 1280;
@@ -14,7 +17,8 @@ namespace RootParameter
     constexpr UINT GameObject = 0;
     constexpr UINT Camera = 1;
     constexpr UINT TextureCube = 2;
-    constexpr UINT Texture = 3;
+    constexpr UINT Texture2D = 3;
+	constexpr UINT TextureArray = 4;
 }
 
 namespace DescriptorRange
@@ -30,7 +34,12 @@ namespace Engine
     enum MOUSEKEYSTATE { DIM_LB, DIM_RB, DIM_MB, DIM_END };
     enum MOUSEMOVESTATE { DIMS_X, DIMS_Y, DIMS_Z, DIMS_END };
 }
+//-------------------------------------------------------------
+//-------------------------------------------------------------
 
+//-------------------------------------------------------------
+// struct 
+//-------------------------------------------------------------
 struct EngineContext
 {
     ID3D12Device* device;
@@ -60,6 +69,19 @@ typedef struct tagKeyState
 
 	tagKeyState() : bPress(false), bDown(false), bUp(false) {}
 }KEYSTATE, * PKEYSTATE;
+
+
+// InputLayout에서 사용할 정점 구조체
+typedef struct
+{
+	XMFLOAT3		vPosition;		// 12bytes
+	XMFLOAT3		vNormal;		// 12bytes
+	XMFLOAT2		vTexcoord;		// 8bytes
+	XMFLOAT3		vTangent;		// 12bytes
+}VTXMESH;
+
+//-------------------------------------------------------------
+//-------------------------------------------------------------
 
 #define NO_COPY(CLASSNAME)											\
 			private:												\

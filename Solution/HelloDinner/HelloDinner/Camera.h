@@ -42,6 +42,7 @@ protected:
 	_float			m_fRotY = { 0.f };
 
 protected:
+	// Pipeline에 카메라 관련 행렬들을 계산해서 넘겨주는 함수
 	void Compute_PipeLineMatrices();
 
 

@@ -50,7 +50,7 @@ void CGameObject::Late_Update(_float fTimeDelta)
 {
 }
 
-void CGameObject::Render(const ComPtr<ID3D12GraphicsCommandList>& _commandList)
+void CGameObject::Render(ID3D12GraphicsCommandList* _commandList)
 {
 }
 
@@ -74,6 +74,11 @@ CComponent* CGameObject::Find_Component(const _wstring& strComponentTag)
 		return nullptr;
 
 	return iter->second;
+}
+
+const _float4x4* CGameObject::Get_WorldMatrix4x4Ptr()
+{
+	return m_pTransformCom->Get_WorldFloat4x4_Ptr();
 }
 
 HRESULT CGameObject::Add_Component(_uint iPrototypeLevelIndex, const _wstring& strPrototypeTag, const _wstring& strComponentTag, CComponent** ppOut, void* pArg)

@@ -1,6 +1,14 @@
 #include "GameInstance.h"
 
+#include "Renderer.h"
+#include "PipeLine.h"
+#include "Input_Device.h"
+#include "Timer_Manager.h"
+#include "Level_Manager.h"
+#include "Graphic_Device.h"
+#include "Object_Manager.h"
 #include "Prototype_Manager.h"
+#include "Load_Manager.h"
 
 IMPLEMENT_SINGLETON(CGameInstance)
 
@@ -9,6 +17,78 @@ CGameInstance::CGameInstance()
 
 }
 
+
+HRESULT CGameInstance::Open_File(const wchar_t* filename)
+{
+	return m_pLoad_Manager->Open_File(filename);
+}
+
+void CGameInstance::Close_File()
+{
+	m_pLoad_Manager->Close_File();
+}
+
+void CGameInstance::Read_File(_char& read)
+{
+	m_pLoad_Manager->Read_File(read);
+}
+
+void CGameInstance::Read_File(size_t& read)
+{
+	m_pLoad_Manager->Read_File(read);
+}
+
+void CGameInstance::Read_File(_int& read)
+{
+	m_pLoad_Manager->Read_File(read);
+}
+
+void CGameInstance::Read_File(_uint& read)
+{
+	m_pLoad_Manager->Read_File(read);
+}
+
+void CGameInstance::Read_File(_float& read)
+{
+	m_pLoad_Manager->Read_File(read);
+}
+
+void CGameInstance::Read_File(_float4& read)
+{
+	m_pLoad_Manager->Read_File(read);
+}
+
+void CGameInstance::Read_File(_float4x4& read)
+{
+	m_pLoad_Manager->Read_File(read);
+}
+
+void CGameInstance::Read_File(VTXMESH& read)
+{
+	m_pLoad_Manager->Read_File(read);
+}
+
+/*
+void CGameInstance::Read_File(VTXANIMMESH& read)
+{
+	m_pLoad_Manager->Read_File(read);
+}
+
+void CGameInstance::Read_File(KEYFRAME& read)
+{
+	m_pLoad_Manager->Read_File(read);
+}
+*/
+
+void CGameInstance::Read_File(char(&read)[MAX_PATH])
+{
+	m_pLoad_Manager->Read_File(read);
+}
+
+void CGameInstance::Read_File(_tchar(&read)[MAX_PATH])
+{
+	m_pLoad_Manager->Read_File(read);
+}
 
 HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineContext* _pcontext)
 {

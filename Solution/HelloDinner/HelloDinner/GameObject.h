@@ -16,25 +16,35 @@ protected:
 public:
 	virtual HRESULT		Initialize_Prototype();
 	virtual HRESULT		Initialize(void* pArg);
+
+public:
 	virtual void		Priority_Update(_float fTimeDelta);
 	virtual void		Update(_float fTimeDelta);
 	virtual void		Late_Update(_float fTimeDelta);
-	virtual void		Render(const ComPtr<ID3D12GraphicsCommandList>& _commandList);
-
-public:
-	virtual CGameObject*	Clone(void* pArg) = 0;
-	virtual void			Free() override;
+	virtual void		Render(ID3D12GraphicsCommandList* _commandList);
 
 public:
 	class CComponent*	Find_Component(const _wstring& strComponentTag);
-
+	const _float4x4* Get_WorldMatrix4x4Ptr();		//RootConstantBuffer에 WorldMatrix를 넘겨줄 때 사용
+	bool			IsDead() { return m_bDead; }
+	void			SetDead() { m_bDead = true; }
 protected:
 	HRESULT				Add_Component(_uint iPrototypeLevelIndex, const _wstring& strPrototypeTag, const _wstring& strComponentTag, CComponent** ppOut, void* pArg = nullptr);
 
 protected:
-	class CTransform*							m_pTransformCom = { nullptr };
 	class CGameInstance*						m_pGameInstance = { nullptr };
 	EngineContext*								m_pContext = { nullptr };
+	
+	// 보유한 컴포넌트 정보
 	map<const _wstring, class CComponent*>		m_Components;
+	class CTransform* m_pTransformCom = { nullptr };
+
+	//
 	_uint										m_iData = {};
+	bool										m_bDead = false;
+
+public:
+	virtual CGameObject* Clone(void* pArg) = 0;
+	virtual void			Free() override;
+
 };

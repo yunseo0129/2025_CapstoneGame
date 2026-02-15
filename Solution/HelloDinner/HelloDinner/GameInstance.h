@@ -1,8 +1,7 @@
 #pragma once
 #include "Prototype_Manager.h"
-#include "Graphic_Device.h"
 #include "PipeLine.h"
-#include "Input_Device.h"
+#include "Renderer.h"
 
 class CGameInstance final : public CBase
 {
@@ -21,6 +20,25 @@ public: /* For.GameInstance */
 
 	_float Compute_Random_Normal();
 	_float Compute_Random(_float fMin, _float fMax);
+
+public: /* For.Load_Manager */
+	HRESULT Open_File(const wchar_t* filename);
+	void	Close_File();
+
+	void	Read_File(_char& read);
+	void	Read_File(size_t& read);
+	void	Read_File(_int& read);
+	void	Read_File(_uint& read);
+	void	Read_File(_float& read);
+	void	Read_File(_float4& read);
+	void	Read_File(_float4x4& read);
+	void	Read_File(VTXMESH& read);
+	//void	Read_File(VTXANIMMESH& read);
+	//void	Read_File(KEYFRAME& read);
+	void	Read_File(char(&read)[MAX_PATH]);
+	void	Read_File(_tchar(&read)[MAX_PATH]);
+
+
 
 public: /* For.Prototype_Manager */
 	HRESULT Add_Prototype(_uint iLevelIndex, const _wstring& strPrototypeTag, class CBase* pPrototype);
@@ -46,9 +64,14 @@ public: /* for.Input_Device */
 
 private:
 	class CGraphic_Device*		m_pGraphic_Device = { nullptr };
+	class CInput_Device*		m_pInput_Device = { nullptr };
 	class CPrototype_Manager*	m_pPrototype_Manager = { nullptr };
 	class CPipeLine*			m_pPipeLine = { nullptr };
-	class CInput_Device*		m_pInput_Device = { nullptr };
+	
+	class CObject_Manager*		m_pObject_Manager = { nullptr };
+	class CLevel_Manager*		m_pLevel_Manager = { nullptr };
+	class CRenderer*			m_pRenderer = { nullptr };
+	class CLoad_Manager*		m_pLoad_Manager = { nullptr };
 
 public:
 	static void Release_Engine();

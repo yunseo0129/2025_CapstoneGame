@@ -99,12 +99,6 @@ bool CGraphic_Device::InitDirect3D(HWND& _hwnd, EngineContext* _pcontext)
 	_pcontext->dsvHeap = m_pDsvHeap.Get();
 	// srvHeap는 다른 곳에서 처리
 
-	Safe_AddRef(m_pD3dDevice);
-	Safe_AddRef(m_pCommandList);
-	Safe_AddRef(m_pCommandQueue);
-	Safe_AddRef(m_pRtvHeap);
-	Safe_AddRef(m_pDsvHeap);
-
 	return true;
 }
 

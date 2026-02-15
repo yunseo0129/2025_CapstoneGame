@@ -1,10 +1,2 @@
-﻿  Camera.cpp
-  Component.cpp
-  GameInstance.cpp
-  GameObject.cpp
-  Input_Device.cpp
-  MainApp.cpp
-  Prototype_Manager.cpp
-  Renderer.cpp
-  코드를 생성하고 있습니다...
-  HelloDinner.vcxproj -> C:\Users\장윤서\Source\Repos\2025_CapstoneGame\Solution\HelloDinner\x64\Debug\HelloDinner.exe
+﻿  Model.cpp
+  HelloDinner.vcxproj -> C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\x64\Debug\HelloDinner.exe

@@ -1,19 +1,59 @@
 #include "Timer.h"
 
-CTimer::CTimer() : m_prev{ 0 }, m_deltaTime{ 0.f }
+CTimer::CTimer(void)
+	: m_fTimeDelta(0.f)
 {
-	QueryPerformanceFrequency(&m_frequency);	// Å¸ÀÌ¸ÓÀÇ ÁÖÆÄ¼ö È¹µæ
+	ZeroMemory(&m_FixTime, sizeof(LARGE_INTEGER));
+	ZeroMemory(&m_LastTime, sizeof(LARGE_INTEGER));
+	ZeroMemory(&m_FrameTime, sizeof(LARGE_INTEGER));
+	ZeroMemory(&m_CpuTick, sizeof(LARGE_INTEGER));
 }
 
-void CTimer::Tick()
+
+HRESULT CTimer::Ready_Timer(void)
 {
-	LARGE_INTEGER now;
-	QueryPerformanceCounter(&now);
-	m_deltaTime = static_cast<FLOAT>((now.QuadPart - m_prev.QuadPart) / static_cast<FLOAT>(m_frequency.QuadPart));
-	m_prev = now;
+	QueryPerformanceCounter(&m_FrameTime);			// 1077
+	QueryPerformanceCounter(&m_LastTime);			// 1085
+	QueryPerformanceCounter(&m_FixTime);			// 1090
+
+	QueryPerformanceFrequency(&m_CpuTick);
+
+	return S_OK;
 }
 
-FLOAT CTimer::GetElapsedTime() const
+void CTimer::Update_Timer(void)
 {
-	return m_deltaTime;
+	QueryPerformanceCounter(&m_FrameTime);			// 1500
+
+	if (m_FrameTime.QuadPart - m_FixTime.QuadPart >= m_CpuTick.QuadPart)
+	{
+		QueryPerformanceFrequency(&m_CpuTick);
+		m_FixTime = m_FrameTime;
+	}
+
+	m_fTimeDelta = (m_FrameTime.QuadPart - m_LastTime.QuadPart) / (_float)m_CpuTick.QuadPart;
+
+	if (m_fTimeDelta > 1.f / 60.f)
+	{
+		m_fTimeDelta = 1.f / 60.f;
+	}
+	m_LastTime = m_FrameTime;
 }
+
+CTimer* CTimer::Create(void)
+{
+	CTimer* pInstance = new CTimer;
+
+	if (FAILED(pInstance->Ready_Timer()))
+	{
+		MSG_BOX("Failed To Created : CTimer");
+		Safe_Release(pInstance);
+	}
+	return pInstance;
+}
+
+void CTimer::Free(void)
+{
+	__super::Free();
+}
+
