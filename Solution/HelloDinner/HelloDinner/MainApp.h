@@ -10,16 +10,20 @@ public:
 	CMainApp();
 	~CMainApp() = default;
 
-	void FrameAdvance();
-
-private:
+public:
+	HRESULT Initialize();
 	void Update(_float fTimeDelta);
 	HRESULT Render();
-	HRESULT Initialize();
 
 private:
 	CGameInstance* m_pGameInstance = { nullptr };
 	wstring m_strMainWndCaption = L"HelloDinner";
+
+	ENGINE_DESC EngineDesc;
+	EngineContext EngineContext;
+
+private:
+	HRESULT SetUp_StartLevel(LEVELID eLevelID);
 
 public:
 	static CMainApp* Create();

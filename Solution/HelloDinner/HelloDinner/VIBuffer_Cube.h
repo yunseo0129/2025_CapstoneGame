@@ -11,7 +11,7 @@ private:
 public:
     virtual HRESULT Initialize_Prototype(ID3D12GraphicsCommandList* _pCommandList) override;
 
-    static CVIBuffer_Cube* Create(const ComPtr<ID3D12Device>& _device, ID3D12GraphicsCommandList* _commandList);
+    static CBase* Create(const ComPtr<ID3D12Device>& _device, ID3D12GraphicsCommandList* _commandList);
     virtual CComponent* Clone(void* pArg) override;
     virtual void Free() override;
 };

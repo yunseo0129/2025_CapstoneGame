@@ -15,6 +15,10 @@ public:
 		XMStoreFloat4x4(&m_TransformMatrices[eState], TransformMatrix);
 	}
 
+	void Set_CamPosition(_float4 vCamPosition) {
+		m_vCamPosition = vCamPosition;
+	}
+
 	_matrix Get_TransformMatrix(D3DTRANSFORMSTATE eState) {
 		return XMLoadFloat4x4(&m_TransformMatrices[eState]);
 	}

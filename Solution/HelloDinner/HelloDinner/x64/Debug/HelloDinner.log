@@ -1,40 +1,5 @@
-﻿  Base.cpp
-  Camera.cpp
-  DDSTextureLoader12.cpp
-  Component.cpp
-  CubeShader.cpp
-  GameInstance.cpp
-  GameObject.cpp
-  Graphic_Device.cpp
-  HelloDinner.cpp
-  Input_Device.cpp
-  Layer.cpp
-  Level.cpp
-  Level_Manager.cpp
-  Load_Manager.cpp
-  MainApp.cpp
-  Mesh.cpp
-  Model.cpp
-  Object_Manager.cpp
-  PipeLine.cpp
-  Prototype_Manager.cpp
+﻿  Cube.cpp
+  Level_Loading.cpp
+  Skybox.cpp
   코드를 생성하고 있습니다...
-  컴파일하고 있습니다...
-  Renderer.cpp
-  Shader.cpp
-  Shader_Manager.cpp
-  SkyboxShader.cpp
-  Texture.cpp
-C:\Users\user\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\Texture.cpp(156,20): warning C4244: '=': 'UINT64'에서 '_uint'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  Timer.cpp
-  Timer_Manager.cpp
-  Transform.cpp
-  VIBuffer.cpp
-  VIBuffer_Cube.cpp
-C:\Users\user\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\VIBuffer_Cube.cpp(42,32): warning C4267: '=': 'size_t'에서 '_uint'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\user\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\VIBuffer_Cube.cpp(75,30): warning C4267: '=': 'size_t'에서 '_uint'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  VIBuffer_Skybox.cpp
-C:\Users\user\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\VIBuffer_Skybox.cpp(42,32): warning C4267: '=': 'size_t'에서 '_uint'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\Users\user\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\VIBuffer_Skybox.cpp(75,30): warning C4267: '=': 'size_t'에서 '_uint'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  코드를 생성하고 있습니다...
-  HelloDinner.vcxproj -> C:\Users\user\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\x64\Debug\HelloDinner.exe
+  HelloDinner.vcxproj -> C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\x64\Debug\HelloDinner.exe

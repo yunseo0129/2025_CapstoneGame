@@ -89,7 +89,7 @@ HRESULT CVIBuffer_Cube::Initialize_Prototype(ID3D12GraphicsCommandList* _pComman
 }
 
 
-CVIBuffer_Cube* CVIBuffer_Cube::Create(const ComPtr<ID3D12Device>& _device, ID3D12GraphicsCommandList* _commandList)
+CBase* CVIBuffer_Cube::Create(const ComPtr<ID3D12Device>& _device, ID3D12GraphicsCommandList* _commandList)
 {
     CVIBuffer_Cube* pInstance = new CVIBuffer_Cube(_device);
     if (FAILED(pInstance->Initialize_Prototype(_commandList)))

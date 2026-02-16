@@ -81,15 +81,6 @@
     <Filter Include="소스 파일\01. Engine\04. Components\01. Transform">
       <UniqueIdentifier>{fcd81d4a-caee-4134-998c-8dc00c520cd3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\01. Engine\04. Components\Shader">
-      <UniqueIdentifier>{4c52239b-9c88-48be-8aae-c04aed3255d4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\01. Engine\04. Components\Shader\Cube">
-      <UniqueIdentifier>{654631a4-c479-42ed-9d39-cec08f99c003}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\01. Engine\04. Components\Shader\Skybox">
-      <UniqueIdentifier>{ebdd6ec1-5777-4ef4-95e9-fbc2a924b33b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\01. Engine\05. Renderer">
       <UniqueIdentifier>{25a9c77d-0bd0-43b3-ba93-f5158efdd5af}</UniqueIdentifier>
     </Filter>
@@ -153,6 +144,15 @@
     <Filter Include="소스 파일\01. Engine\06. Shader\Manager">
       <UniqueIdentifier>{05d5c434-cb2c-4949-b212-1d381a762fdd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\02. Game\01. Levels">
+      <UniqueIdentifier>{c43918c2-52f7-4d36-b26f-9d3e5e424d88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\01. Levels\Loading">
+      <UniqueIdentifier>{a4800bdf-b883-4c6d-af45-92216972cf92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\GameObject\Object">
+      <UniqueIdentifier>{abee257d-9e76-488e-9a5b-bcfceaefba0e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -212,15 +212,6 @@
     <ClInclude Include="Renderer.h">
       <Filter>소스 파일\01. Engine\05. Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="Shader.h">
-      <Filter>소스 파일\01. Engine\04. Components\Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="CubeShader.h">
-      <Filter>소스 파일\01. Engine\04. Components\Shader\Cube</Filter>
-    </ClInclude>
-    <ClInclude Include="SkyboxShader.h">
-      <Filter>소스 파일\01. Engine\04. Components\Shader\Skybox</Filter>
-    </ClInclude>
     <ClInclude Include="PipeLine.h">
       <Filter>소스 파일\01. Engine\07. PipeLine</Filter>
     </ClInclude>
@@ -266,6 +257,15 @@
     <ClInclude Include="Shader_Manager.h">
       <Filter>소스 파일\01. Engine\06. Shader\Manager</Filter>
     </ClInclude>
+    <ClInclude Include="Level_Loading.h">
+      <Filter>소스 파일\02. Game\01. Levels\Loading</Filter>
+    </ClInclude>
+    <ClInclude Include="Cube.h">
+      <Filter>소스 파일\02. Game\GameObject\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Skybox.h">
+      <Filter>소스 파일\02. Game\GameObject\Object</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -306,15 +306,6 @@
     </ClCompile>
     <ClCompile Include="Renderer.cpp">
       <Filter>소스 파일\01. Engine\05. Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Shader.cpp">
-      <Filter>소스 파일\01. Engine\04. Components\Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="CubeShader.cpp">
-      <Filter>소스 파일\01. Engine\04. Components\Shader\Cube</Filter>
-    </ClCompile>
-    <ClCompile Include="SkyboxShader.cpp">
-      <Filter>소스 파일\01. Engine\04. Components\Shader\Skybox</Filter>
     </ClCompile>
     <ClCompile Include="PipeLine.cpp">
       <Filter>소스 파일\01. Engine\07. PipeLine</Filter>
@@ -361,6 +352,15 @@
     <ClCompile Include="Shader_Manager.cpp">
       <Filter>소스 파일\01. Engine\06. Shader\Manager</Filter>
     </ClCompile>
+    <ClCompile Include="Level_Loading.cpp">
+      <Filter>소스 파일\02. Game\01. Levels\Loading</Filter>
+    </ClCompile>
+    <ClCompile Include="Cube.cpp">
+      <Filter>소스 파일\02. Game\GameObject\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Skybox.cpp">
+      <Filter>소스 파일\02. Game\GameObject\Object</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="HelloDinner.rc">
@@ -379,5 +379,10 @@
     <FxCompile Include="Shader.hlsl">
       <Filter>셰이더 파일</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Common.hlsli">
+      <Filter>셰이더 파일</Filter>
+    </None>
   </ItemGroup>
 </Project>

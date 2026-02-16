@@ -26,16 +26,18 @@ namespace Engine
     enum MOUSEMOVESTATE { DIMS_X, DIMS_Y, DIMS_Z, DIMS_END };
 }
 
+// 수정 필요
+enum LEVELID { LEVEL_STATIC, LEVEL_LOADING, LEVEL_LOGO, LEVEL_GAMEPLAY, LEVEL_END };
 
 // Texture data 저장하는 srv 만들 때 VIEW_DIMENSION 설정용
-enum class TEXTURE_TYPE {
+enum TEXTURE_TYPE {
 	TEX_2D ,
 	TEX_CUBE ,
 	TEX_ARRAY ,
 };
 
 // Root Signature의 Root Parameter 슬롯 설정용
-enum class RootParameterIndex
+enum RootParameterIndex
 {
 	Camera ,
 	GameObject ,
@@ -45,7 +47,7 @@ enum class RootParameterIndex
 };
 
 // Input Layout과 PSO 설정용
-enum class PSO_TYPE
+enum PSO_TYPE
 {
 	DEFAULT ,        // 일반 물체 (Static Mesh / Opaque)
 	ANIM ,           // 캐릭터 (Skeletal Mesh / Opaque)
@@ -93,6 +95,14 @@ typedef struct tagKeyState
 	tagKeyState() : bPress(false), bDown(false), bUp(false) {}
 }KEYSTATE, * PKEYSTATE;
 
+
+// Camera에서 사용할 카메라 정보 구조체
+typedef struct
+{
+	XMFLOAT4X4						m_xmf4x4View;
+	XMFLOAT4X4						m_xmf4x4Proj;
+	XMFLOAT3						m_xmf3Position;
+}CB_VS_CAMERA;
 
 // InputLayout에서 사용할 정점 구조체
 typedef struct

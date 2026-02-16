@@ -128,7 +128,7 @@
     <ClInclude Include="Base.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Component.h" />
-    <ClInclude Include="CubeShader.h" />
+    <ClInclude Include="Cube.h" />
     <ClInclude Include="Defines.h" />
     <ClInclude Include="Common\d3dx12.h" />
     <ClInclude Include="Common\DDSTextureLoader12.h" />
@@ -140,6 +140,7 @@
     </ClInclude>
     <ClInclude Include="Layer.h" />
     <ClInclude Include="Level.h" />
+    <ClInclude Include="Level_Loading.h" />
     <ClInclude Include="Level_Manager.h" />
     <ClInclude Include="Load_Manager.h" />
     <ClInclude Include="Mesh.h" />
@@ -149,7 +150,7 @@
     <ClInclude Include="Prototype_Manager.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Shader_Manager.h" />
-    <ClInclude Include="SkyboxShader.h" />
+    <ClInclude Include="Skybox.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Timer_Manager.h" />
     <ClInclude Include="Transform.h">
@@ -161,7 +162,6 @@
     </ClInclude>
     <ClInclude Include="MainApp.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="Shader.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Timer.h" />
@@ -176,7 +176,7 @@
     </ClCompile>
     <ClCompile Include="Common\DDSTextureLoader12.cpp" />
     <ClCompile Include="Component.cpp" />
-    <ClCompile Include="CubeShader.cpp" />
+    <ClCompile Include="Cube.cpp" />
     <ClCompile Include="GameInstance.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Graphic_Device.cpp" />
@@ -184,6 +184,7 @@
     <ClCompile Include="Input_Device.cpp" />
     <ClCompile Include="Layer.cpp" />
     <ClCompile Include="Level.cpp" />
+    <ClCompile Include="Level_Loading.cpp" />
     <ClCompile Include="Level_Manager.cpp" />
     <ClCompile Include="Load_Manager.cpp" />
     <ClCompile Include="MainApp.cpp">
@@ -195,9 +196,8 @@
     <ClCompile Include="PipeLine.cpp" />
     <ClCompile Include="Prototype_Manager.cpp" />
     <ClCompile Include="Renderer.cpp" />
-    <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Shader_Manager.cpp" />
-    <ClCompile Include="SkyboxShader.cpp" />
+    <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Timer_Manager.cpp" />
@@ -218,6 +218,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Common.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

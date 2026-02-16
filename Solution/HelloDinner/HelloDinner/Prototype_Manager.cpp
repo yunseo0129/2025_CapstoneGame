@@ -50,16 +50,18 @@ CBase* CPrototype_Manager::Clone_Prototype(Engine::PROTOTYPE eType, _uint iLevel
 	switch (eType)
 	{
 	case Engine::PROTOTYPE::PROTO_GAMEOBJ:
-	//	pCopyObject = dynamic_cast<CGameObject*>(pPrototype)->Clone(pArg);
+		pCopyObject = dynamic_cast<CGameObject*>(pPrototype)->Clone(pArg);
 		break;
 
 	case Engine::PROTOTYPE::PROTO_COMPONENT:
-	//	pCopyObject = dynamic_cast<CComponent*>(pPrototype)->Clone(pArg);
+		pCopyObject = dynamic_cast<CComponent*>(pPrototype)->Clone(pArg);
 		break;
 	}
 
-	if (nullptr == pCopyObject)
+	if (nullptr == pCopyObject) {
+		MSG_BOX("Failed to Clone : component");
 		return nullptr;
+	}
 
 	return pCopyObject;
 }

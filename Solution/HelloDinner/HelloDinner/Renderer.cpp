@@ -30,8 +30,9 @@ HRESULT CRenderer::Add_RenderObject(RENDERGROUP eRenderGroup, CGameObject* pRend
 	return S_OK;
 }
 
-HRESULT CRenderer::Draw_RenderObject()
+HRESULT CRenderer::Draw_RenderObject(ID3D12GraphicsCommandList* _CmdList)
 {
+	m_pCommandlist = _CmdList;
 	if (FAILED(Render_Priority()))
 		return E_FAIL;
 	if (FAILED(Render_NonBlend()))

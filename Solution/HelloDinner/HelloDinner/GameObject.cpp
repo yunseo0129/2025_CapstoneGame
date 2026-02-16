@@ -83,8 +83,10 @@ const _float4x4* CGameObject::Get_WorldMatrix4x4Ptr()
 
 HRESULT CGameObject::Add_Component(_uint iPrototypeLevelIndex, const _wstring& strPrototypeTag, const _wstring& strComponentTag, CComponent** ppOut, void* pArg)
 {
-	if (nullptr != Find_Component(strComponentTag))
+	if (nullptr != Find_Component(strComponentTag)) {
+		MSG_BOX("Failed to Add_Component : Component with the same tag already exists.");
 		return E_FAIL;
+	}
 
 	CComponent* pComponent = static_cast<CComponent*>(m_pGameInstance->Clone_Prototype(Engine::PROTOTYPE::PROTO_COMPONENT, iPrototypeLevelIndex, strPrototypeTag, pArg));
 	if (nullptr == pComponent)

@@ -1,6 +1,5 @@
 #include "Model.h"
 #include "Mesh.h"
-#include "Shader.h"
 #include "GameInstance.h"
 
 CModel::CModel(ID3D12Device* pDevice, EngineContext* pContext)

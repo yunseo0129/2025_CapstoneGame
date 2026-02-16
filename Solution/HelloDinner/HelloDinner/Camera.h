@@ -2,7 +2,7 @@
 
 #include "GameObject.h"
 
-class CCamera abstract : public CGameObject
+class CCamera : public CGameObject
 {
 public:
 	struct CAMERA_DESC : public CGameObject::GAMEOBJECT_DESC
@@ -16,7 +16,7 @@ public:
 		_float			fFar = { 0.f };
 	};
 
-protected:
+public:
 	CCamera(EngineContext* pContext);
 	CCamera(const CCamera& Prototype);
 	virtual ~CCamera() = default;
@@ -47,6 +47,6 @@ protected:
 
 
 public:
-	virtual CGameObject* Clone(void* pArg) = 0;
+	virtual CGameObject* Clone(void* pArg);
 	virtual void Free() override;
 };

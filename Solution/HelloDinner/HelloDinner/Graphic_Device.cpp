@@ -8,7 +8,7 @@ CGraphic_Device::CGraphic_Device()
 CGraphic_Device::~CGraphic_Device()
 {
 	// 디바이스가 종료되기 전에 GPU가 모든 명령을 완료하도록 대기
-	FlushCommandQueue();
+	WaitForGpuComplete();
 }
 
 void CGraphic_Device::BeforeRender(const _float4& vClearColor)
@@ -67,12 +67,24 @@ void CGraphic_Device::AfterRender()
 	ID3D12CommandList* cmdsLists[] = { m_pCommandList.Get() };
 	m_pCommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
-	// 스왑체인 프로젝트
-	ThrowIfFailed(m_pSwapChain->Present(0, 0));
-	m_iCurrBackBuffer = (m_iCurrBackBuffer + 1) % m_iSwapChainBufferCount;
+	WaitForGpuComplete();
 
-	// 동기화 코드 -> 추후 수정 필요
-	FlushCommandQueue();
+#ifdef _WITH_PRESENT_PARAMETERS
+	DXGI_PRESENT_PARAMETERS dxgiPresentParameters;
+	dxgiPresentParameters.DirtyRectsCount = 0;
+	dxgiPresentParameters.pDirtyRects = NULL;
+	dxgiPresentParameters.pScrollRect = NULL;
+	dxgiPresentParameters.pScrollOffset = NULL;
+	m_pSwapChain->Present1(1, 0, &dxgiPresentParameters);
+#else
+#ifdef _WITH_SYNCH_SWAPCHAIN
+	m_pSwapChain->Present(1, 0);
+#else
+	m_pSwapChain->Present(0, 0);
+#endif
+#endif
+
+	MoveToNextFrame();
 }
 
 
@@ -184,7 +196,7 @@ void CGraphic_Device::CreateSwapChain()
 	ThrowIfFailed(m_pDxgiFactory->CreateSwapChain(
 		m_pCommandQueue.Get(),
 		&sd,
-		m_pSwapChain.GetAddressOf()));
+		(IDXGISwapChain**)m_pSwapChain.GetAddressOf()));
 }
 
 void CGraphic_Device::CreateRtvAndDsvDescriptorHeaps()
@@ -235,27 +247,28 @@ void CGraphic_Device::CreateCommandObjects()
 	m_pCommandList->Close();
 }
 
-void CGraphic_Device::FlushCommandQueue()
+void CGraphic_Device::WaitForGpuComplete()
 {
-	// 현재 펜스 값 증가
-	m_iCurrentFence++;
+	const UINT64 nFenceValue = ++m_nFenceValues[m_iCurrBackBuffer];
+	HRESULT hResult = m_pCommandQueue->Signal(m_pFence.Get(), nFenceValue);
 
-	// 커맨드 큐에 신호를 보낸다.
-	// 이 신호는 GPU가 커맨드 큐에 제출된 모든 명령을 실행한 후에야 처리됨
-	// 즉, 이 신호가 처리되었다는 것은 GPU가 모든 명령을 완료했다는 의미
-	ThrowIfFailed(m_pCommandQueue->Signal(m_pFence.Get(), m_iCurrentFence));
-
-	// GPU가 현재 펜스 값에 도달했는지 확인
-	if (m_pFence->GetCompletedValue() < m_iCurrentFence)
+	if (m_pFence->GetCompletedValue() < nFenceValue)
 	{
-		HANDLE eventHandle = CreateEvent(nullptr, false, false, NULL);
+		hResult = m_pFence->SetEventOnCompletion(nFenceValue, m_hFenceEvent);
+		::WaitForSingleObject(m_hFenceEvent, INFINITE);
+	}
+}
 
-		// 펜스가 현재 펜스 값에 도달하면 이벤트가 신호됨 
-		ThrowIfFailed(m_pFence->SetEventOnCompletion(m_iCurrentFence, eventHandle));
+void CGraphic_Device::MoveToNextFrame()
+{
+	m_iCurrBackBuffer = m_pSwapChain.Get()->GetCurrentBackBufferIndex();
+	UINT64 nFenceValue = ++m_nFenceValues[m_iCurrBackBuffer];
+	HRESULT hResult = m_pCommandQueue->Signal(m_pFence.Get(), nFenceValue);
 
-		// 이벤트가 신호될 때까지 대기
-		WaitForSingleObject(eventHandle, INFINITE);
-		CloseHandle(eventHandle);
+	if (m_pFence->GetCompletedValue() < nFenceValue)
+	{
+		hResult = m_pFence->SetEventOnCompletion(nFenceValue, m_hFenceEvent);
+		::WaitForSingleObject(m_hFenceEvent, INFINITE);
 	}
 }
 
@@ -283,8 +296,7 @@ void CGraphic_Device::OnResize()
 	assert(m_pSwapChain);
 	assert(m_pDirectCmdListAlloc);
 
-	// 리소스 변경전에 Flush
-	FlushCommandQueue();
+	WaitForGpuComplete();
 
 	ThrowIfFailed(m_pCommandList->Reset(m_pDirectCmdListAlloc.Get(), nullptr));
 
@@ -373,8 +385,7 @@ void CGraphic_Device::OnResize()
 	ID3D12CommandList* cmdsLists[] = { m_pCommandList.Get() };
 	m_pCommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
-	// 동기화
-	FlushCommandQueue();
+	WaitForGpuComplete();
 
 	// client 영역에 맞게 뷰포트와 시저렉트 설정
 	m_ScreenViewport.TopLeftX = 0;
@@ -497,11 +508,5 @@ CGraphic_Device* CGraphic_Device::Create(HWND _hwnd, EngineContext* _pcontext)
 
 void CGraphic_Device::Free()
 {
-
-	Safe_Release(m_pD3dDevice);
-	Safe_Release(m_pCommandQueue);
-	Safe_Release(m_pCommandList);
-	Safe_Release(m_pRtvHeap);
-	Safe_Release(m_pDsvHeap);
 	
 }

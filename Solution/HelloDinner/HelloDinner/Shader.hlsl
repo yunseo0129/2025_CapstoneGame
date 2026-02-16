@@ -1,71 +1,64 @@
-cbuffer GameObject : register(b0)
+#include "Common.hlsli"
+
+// --------------------------------------------------------
+// Input Structures
+// --------------------------------------------------------
+struct VS_IN_STATIC
 {
-    matrix g_worldMatrix : packoffset(c0);
+    float3 vPos : POSITION;
+    float3 vNormal : NORMAL;
+    float2 vUV : TEXCOORD0;
+    float3 vTangent : TANGENT;
 };
 
-cbuffer Camera : register(b1)
+struct VS_OUT
 {
-    matrix g_viewMatrix : packoffset(c0);
-    matrix g_projectionMatrix : packoffset(c4);
+    float4 vPosition : SV_POSITION; // 화면 좌표
+    float3 vWorldPos : POSITION; // 월드 좌표 (조명 계산용)
+    float3 vNormal : NORMAL; // 노멀
+    float2 vUV : TEXCOORD0; // UV
 };
 
-Texture2D g_texture : register(t0);
-TextureCube g_textureCube : register(t1);
-
-SamplerState g_sampler : register(s0);
-
-struct OBJECT_VERTEX_INPUT
+// --------------------------------------------------------
+// Vertex Shaders
+// --------------------------------------------------------
+// 일반 물체용 VS
+VS_OUT VS_Main_Static(VS_IN_STATIC In)
 {
-    float3 position : POSITION;
-    float2 uv : TEXCOORD;
-};
+    VS_OUT Out = (VS_OUT) 0;
 
-struct OBJECT_PIXEL_INPUT
-{
-    float4 position : SV_POSITION;
-    float2 uv : TEXCOORD;
-};
-
-OBJECT_PIXEL_INPUT OBJECT_VERTEX(OBJECT_VERTEX_INPUT input)
-{
-    OBJECT_PIXEL_INPUT output;
-    output.position = mul(float4(input.position, 1.0f), g_worldMatrix);
-    output.position = mul(output.position, g_viewMatrix);
-    output.position = mul(output.position, g_projectionMatrix);
-    output.uv = input.uv;
+    // 1. [Local -> World] 변환
+    // g_matWorld는 cbObject(b1)에서 가져옴
+    float4 vWorldPos = mul(float4(In.vPos, 1.0f), g_matWorld);
     
-    return output;
+    // 픽셀 셰이더에서 조명 계산 등을 위해 월드 좌표 저장
+    Out.vWorldPos = vWorldPos.xyz;
+
+    // 2. [World -> Clip] 변환 (카메라 적용)
+    // 월드 좌표에 ViewProj(b0)를 곱함
+    Out.vPosition = mul(vWorldPos, mul(g_matView, g_matProj));
+    
+    // 3. 노멀 변환 (Local -> World)
+    // 회전만 적용 (스케일링이 균등하다는 가정 하에 3x3 사용)
+    Out.vNormal = normalize(mul(In.vNormal, (float3x3) g_matWorld));
+    
+    Out.vUV = In.vUV;
+    
+    return Out;
 }
 
-float4 OBJECT_PIXEL(OBJECT_PIXEL_INPUT input) : SV_TARGET
+// --------------------------------------------------------
+// Pixel Shaders
+// --------------------------------------------------------
+// 조명 적용 PS (Lit)
+float4 PS_Main_Lit(VS_OUT In) : SV_TARGET
 {
-    return g_texture.Sample(g_sampler, input.uv);
-}
 
-
-struct SKYBOX_VERTEX_INPUT
-{
-    float3 position : POSITION;
-};
-
-struct SKYBOX_PIXEL_INPUT
-{
-    float4 position : SV_POSITION;
-    float3 lookup : LOOKUP;
-};
-
-SKYBOX_PIXEL_INPUT SKYBOX_VERTEX(SKYBOX_VERTEX_INPUT input)
-{
-    SKYBOX_PIXEL_INPUT output;
-    output.position = mul(float4(input.position, 1.0f), g_worldMatrix);
-    output.position = mul(output.position, g_viewMatrix);
-    output.position = mul(output.position, g_projectionMatrix).xyww;
-    output.lookup = input.position;
-
-    return output;
-}
-
-float4 SKYBOX_PIXEL(SKYBOX_PIXEL_INPUT input) : SV_TARGET
-{
-    return g_textureCube.Sample(g_sampler, input.lookup);
+    float4 texColor = g_Textures.Sample(g_samWrap, In.vUV);
+        
+   // sRGB -> Linear 변환 (감마 보정)
+   texColor.rgb = pow(texColor.rgb, 2.2f);
+    
+    
+    return float4(texColor);
 }

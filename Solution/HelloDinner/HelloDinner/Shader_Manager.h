@@ -49,7 +49,9 @@ private:
     vector<D3D12_INPUT_ELEMENT_DESC> m_LayoutStatic;
     vector<D3D12_INPUT_ELEMENT_DESC> m_LayoutAnim;
     vector<D3D12_INPUT_ELEMENT_DESC> m_LayoutUI;
+
 public:
+	static CShader_Manager* Create(const ComPtr<ID3D12Device>& pDevice);
     virtual void Free () override;
 };
 

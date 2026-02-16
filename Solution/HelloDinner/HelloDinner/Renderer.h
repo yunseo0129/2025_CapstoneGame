@@ -14,7 +14,7 @@ private:
 public:
 	HRESULT Initialize();
 	HRESULT Add_RenderObject(RENDERGROUP eRenderGroup, class CGameObject* pRenderObject);
-	HRESULT Draw_RenderObject();
+	HRESULT Draw_RenderObject(ID3D12GraphicsCommandList* _CmdList);
 
 private:
 	ID3D12Device* m_pDevice = { nullptr };

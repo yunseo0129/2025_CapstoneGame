@@ -11,7 +11,8 @@ public:
 public:
 	void BeforeRender(const _float4& vClearColor);
 	void AfterRender();
-
+	
+	ID3D12GraphicsCommandList* GetCommandList() const { return m_pCommandList.Get(); }
 private:
 	bool InitDirect3D(HWND& _hwnd, EngineContext* _pcontext);
 	bool Get4xMsaaState()const;
@@ -21,7 +22,8 @@ private:
 	void CreateCommandObjects();
 	void CreateRtvAndDsvDescriptorHeaps();
 	void CreateSwapChain();
-	void FlushCommandQueue();
+	void WaitForGpuComplete();
+	void MoveToNextFrame();
 
 	ID3D12Resource* CurrentBackBuffer()const;
 	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView()const;
@@ -52,24 +54,25 @@ private:
 
 	// Graphics
 	ComPtr<IDXGIFactory4> m_pDxgiFactory;
-	ComPtr<IDXGISwapChain> m_pSwapChain;
+	ComPtr<IDXGISwapChain3> m_pSwapChain;
 	ComPtr<ID3D12Device> m_pD3dDevice;
-
-	ComPtr<ID3D12Fence> m_pFence;
-	_ulong m_iCurrentFence = 0;
 
 	ComPtr<ID3D12CommandQueue> m_pCommandQueue;
 	ComPtr<ID3D12CommandAllocator> m_pDirectCmdListAlloc;
 	ComPtr<ID3D12GraphicsCommandList> m_pCommandList;
 
 	static const _int m_iSwapChainBufferCount = 2;
-	_int m_iCurrBackBuffer = 0;
+	_int			m_iCurrBackBuffer = 0;
 	ComPtr<ID3D12Resource> m_pSwapChainBuffer[m_iSwapChainBufferCount];
 	ComPtr<ID3D12Resource> m_pDepthStencilBuffer;
 
 	ComPtr<ID3D12DescriptorHeap> m_pRtvHeap;
 	ComPtr<ID3D12DescriptorHeap> m_pDsvHeap;
 	ComPtr<ID3D12RootSignature>	 m_pRootSignature;
+
+	ComPtr<ID3D12Fence> m_pFence;
+	UINT64				m_nFenceValues[m_iSwapChainBufferCount];
+	HANDLE				m_hFenceEvent;
 
 	D3D12_VIEWPORT m_ScreenViewport;
 	D3D12_RECT m_ScissorRect;

@@ -16,10 +16,26 @@ public: /* For.GameInstance */
 	HRESULT Render_Begin(const _float4& vClearColor = _float4(0.f, 1.f, 0.f, 0.f));
 	HRESULT Draw();
 	HRESULT Render_End();
-	//void Clear(_int iLevelID);
+	void Clear(_int iLevelID);
 
 	_float Compute_Random_Normal();
 	_float Compute_Random(_float fMin, _float fMax);
+
+public: /* for.Input_Device */
+	_byte Get_DIKeyState(_ubyte byKeyID);
+	_byte Get_DIMouseState(Engine::MOUSEKEYSTATE eMouse);
+	_long Get_DIMouseMove(Engine::MOUSEMOVESTATE eMouseState);
+	bool Key_Pressing(int _iKey);
+	bool Key_Down(int _iKey);
+	bool Key_Up(int _iKey);
+	bool Mouse_Pressing(int _iKey);
+	bool Mouse_Down(int _iKey);
+	bool Mouse_Up(int _iKey);
+
+public: /* For.timer_Manager */
+	_float Get_TimeDelta(const _wstring& strTimerTag);
+	HRESULT	Add_Timer(const _wstring& strTimerTag);
+	void Update_TimeDelta(const _wstring& strTimerTag);
 
 public: /* For.Load_Manager */
 	HRESULT Open_File(const wchar_t* filename);
@@ -38,40 +54,53 @@ public: /* For.Load_Manager */
 	void	Read_File(char(&read)[MAX_PATH]);
 	void	Read_File(_tchar(&read)[MAX_PATH]);
 
+public: /* for.Level_Manager */
+	HRESULT Open_Level(_int iLevelIndex, class CLevel* pNewLevel);
 
 
 public: /* For.Prototype_Manager */
 	HRESULT Add_Prototype(_uint iLevelIndex, const _wstring& strPrototypeTag, class CBase* pPrototype);
 	class CBase* Clone_Prototype(Engine::PROTOTYPE eType, _uint iLevelIndex, const _wstring& strPrototypeTag, void* pArg = nullptr);
 
+public: /* For.Object_Manager */
+	HRESULT Add_GameObject_ToLayer(_uint iPrototypeLevelIndex, const _wstring& strPrototypeTag, _uint iLevelIndex, const _wstring& strLayerTag, void* pArg = nullptr);
+	class CGameObject* Add_GameObject_ToLayer_Return_Obj(_uint iPrototypeLevelIndex, const _wstring& strPrototypeTag, _uint iLevelIndex, const _wstring& strLayerTag, void* pArg = nullptr);
+	list<class CGameObject*> Get_List(_uint iLevelIndex, const _wstring& strLayerTag);
+	class CGameObject* Get_GameObject_To_Layer(_uint iLevelIndex, const _wstring& strLayerTag, _uint Index);
+
+
 public: /* For.PipeLine */
 	void Set_Transform(CPipeLine::D3DTRANSFORMSTATE eState, _fmatrix TransformMatrix);
+	void Set_CamPosition(_float4 vCamPosition);
 	_matrix Get_ViewProjMatrix();
 	_matrix Get_TransformMatrix(CPipeLine::D3DTRANSFORMSTATE eState);
 	_float4x4 Get_TransformFloat4x4(CPipeLine::D3DTRANSFORMSTATE eState);
 	const _float4*Get_CamPosition() const;
 
-public: /* for.Input_Device */
-	_byte Get_DIKeyState(_ubyte byKeyID);
-	_byte Get_DIMouseState(Engine::MOUSEKEYSTATE eMouse);
-	_long Get_DIMouseMove(Engine::MOUSEMOVESTATE eMouseState);
-	bool Key_Pressing(int _iKey);
-	bool Key_Down(int _iKey);
-	bool Key_Up(int _iKey);
-	bool Mouse_Pressing(int _iKey);
-	bool Mouse_Down(int _iKey);
-	bool Mouse_Up(int _iKey);
+public: /* For.Shader_Manager */
+	void Set_PipelineState(ID3D12GraphicsCommandList* pCmdList, const PSO_TYPE& _eType);
+	void Set_RootSignature(ID3D12GraphicsCommandList* pCmdList);
+
+public: /* For.Renderer */
+	HRESULT Add_RenderObject(CRenderer::RENDERGROUP eRenderGroup, class CGameObject* pRenderObject);
+
 
 private:
 	class CGraphic_Device*		m_pGraphic_Device = { nullptr };
 	class CInput_Device*		m_pInput_Device = { nullptr };
-	class CPrototype_Manager*	m_pPrototype_Manager = { nullptr };
-	class CPipeLine*			m_pPipeLine = { nullptr };
-	
-	class CObject_Manager*		m_pObject_Manager = { nullptr };
+	class CTimer_Manager*		m_pTimer_Manager = { nullptr };
 	class CLevel_Manager*		m_pLevel_Manager = { nullptr };
+	class CPrototype_Manager*	m_pPrototype_Manager = { nullptr };
+	class CObject_Manager*		m_pObject_Manager = { nullptr };
+	class CPipeLine*			m_pPipeLine = { nullptr };
+	class CShader_Manager*		m_pShader_Manager = { nullptr };
 	class CRenderer*			m_pRenderer = { nullptr };
 	class CLoad_Manager*		m_pLoad_Manager = { nullptr };
+
+	class CCamera* m_pCamera = { nullptr };
+	ComPtr<ID3D12Resource> m_pCameraBuffer = { nullptr };
+	CB_VS_CAMERA* m_pcbMappedCamera = NULL;
+	ComPtr<ID3D12GraphicsCommandList> m_pCommandList = { nullptr };
 
 public:
 	static void Release_Engine();

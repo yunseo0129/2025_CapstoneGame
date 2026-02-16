@@ -24,8 +24,10 @@ HRESULT CObject_Manager::Initialize(_uint iNumLevels)
 HRESULT CObject_Manager::Add_GameObject_ToLayer(_uint iPrototypeLevelIndex, const _wstring& strPrototypeTag, _uint iLevelIndex, const _wstring& strLayerTag, void* pArg)
 {
 	CGameObject* pGameObject = static_cast<CGameObject*>(m_pGameInstance->Clone_Prototype(Engine::PROTOTYPE::PROTO_GAMEOBJ, iPrototypeLevelIndex, strPrototypeTag, pArg));
-	if (nullptr == pGameObject)
+	if (nullptr == pGameObject) {
+		MSG_BOX("Failed to Clone_Prototype in CObject_Manager::Add_GameObject_ToLayer");
 		return E_FAIL;
+	}
 
 	CLayer* pLayer = Find_Layer(iLevelIndex, strLayerTag);
 
@@ -87,8 +89,10 @@ void CObject_Manager::Late_Update(_float fTimeDelta)
 {
 	for (size_t i = 0; i < m_iNumLevels; i++)
 	{
-		for (auto& Pair : m_pLayers[i])
-			Pair.second->Late_Update(fTimeDelta);
+		for (auto& Pair : m_pLayers[i]) {
+	
+			Pair.second->Late_Update(fTimeDelta); 
+		}
 	}
 }
 

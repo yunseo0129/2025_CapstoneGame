@@ -162,13 +162,13 @@ HRESULT CShader_Manager::Create_PSO ()
 	// 1. 쉐이더 컴파일
 	// ----------------------------------------------------------------
 	// Vertex Shader (Input Layout별)
-	ComPtr<ID3DBlob> vsStatic = Compile_Shader ( L"Mesh.hlsl" , "VS_Main_Static" , "vs_5_1" );
-	ComPtr<ID3DBlob> vsAnim = Compile_Shader ( L"Mesh.hlsl" , "VS_Main_Anim" , "vs_5_1" );
-	ComPtr<ID3DBlob> vsUI = Compile_Shader ( L"UI.hlsl" , "VS_Main_UI" , "vs_5_1" );
+	ComPtr<ID3DBlob> vsStatic = Compile_Shader ( L"Shader.hlsl" , "VS_Main_Static" , "vs_5_1" );
+	//ComPtr<ID3DBlob> vsAnim = Compile_Shader ( L"Shader.hlsl" , "VS_Main_Anim" , "vs_5_1" );
+	// ComPtr<ID3DBlob> vsUI = Compile_Shader ( L"UI.hlsl" , "VS_Main_UI" , "vs_5_1" );
 
 	// Pixel Shader (재질별)
-	ComPtr<ID3DBlob> psLit = Compile_Shader ( L"Mesh.hlsl" , "PS_Main_Lit" , "ps_5_1" ); // 조명 O
-	ComPtr<ID3DBlob> psUI = Compile_Shader ( L"UI.hlsl" , "PS_Main_UI" , "ps_5_1" ); // 조명 X
+	ComPtr<ID3DBlob> psLit = Compile_Shader ( L"Shader.hlsl" , "PS_Main_Lit" , "ps_5_1" ); // 조명 O
+	// ComPtr<ID3DBlob> psUI = Compile_Shader ( L"UI.hlsl" , "PS_Main_UI" , "ps_5_1" ); // 조명 X
 
 	// ----------------------------------------------------------------
 	// 2. 기본 PSO Desc 작성 (공통 설정)
@@ -195,7 +195,7 @@ HRESULT CShader_Manager::Create_PSO ()
 
 	m_pDevice->CreateGraphicsPipelineState ( &psoDesc , IID_PPV_ARGS ( &m_pPSOs[( UINT )PSO_TYPE::DEFAULT] ) );
 
-
+	/*
 	// ================================================================
 	// ANIMATION (Anim Mesh / Opaque / Lit)
 	// ================================================================
@@ -207,7 +207,7 @@ HRESULT CShader_Manager::Create_PSO ()
 
 	m_pDevice->CreateGraphicsPipelineState ( &psoDesc , IID_PPV_ARGS ( &m_pPSOs[( UINT )PSO_TYPE::ANIM] ) );
 
-
+	
 	// ================================================================
 	// ALPHA BLEND (Static Mesh / Transparent / Lit)
 	// ================================================================
@@ -271,6 +271,7 @@ HRESULT CShader_Manager::Create_PSO ()
 	psoDesc.RasterizerState.SlopeScaledDepthBias = 1.0f;
 
 	m_pDevice->CreateGraphicsPipelineState ( &psoDesc , IID_PPV_ARGS ( &m_pPSOs[( UINT )PSO_TYPE::SHADOW_STATIC] ) );
+	*/
 
 	return S_OK;
 }
@@ -321,6 +322,17 @@ void CShader_Manager::Create_InputLayouts ()
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
+}
+
+CShader_Manager* CShader_Manager::Create(const ComPtr<ID3D12Device>& pDevice)
+{
+	CShader_Manager* pInstance = new CShader_Manager();
+	if ( FAILED ( pInstance->Initialize ( pDevice ) ) )
+	{
+		MSG_BOX ( "Failed to Created : CShader_Manager" );
+		Safe_Release ( pInstance );
+	}
+	return pInstance;
 }
 
 void CShader_Manager::Free ()

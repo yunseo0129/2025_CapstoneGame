@@ -43,6 +43,7 @@ void CCamera::Priority_Update(_float fTimeDelta)
 
 void CCamera::Update(_float fTimeDelta)
 {
+	Compute_PipeLineMatrices();
 
 }
 
@@ -59,8 +60,16 @@ HRESULT CCamera::Render()
 
 void CCamera::Compute_PipeLineMatrices()
 {
+	_float4 vCamPosition;
+	XMStoreFloat4(&vCamPosition, m_pTransformCom->Get_State(CTransform::STATE_POSITION));
+	m_pGameInstance->Set_CamPosition(vCamPosition);
 	m_pGameInstance->Set_Transform(CPipeLine::D3DTS_VIEW, m_pTransformCom->Get_WorldMatrix_Inverse());
 	m_pGameInstance->Set_Transform(CPipeLine::D3DTS_PROJ, XMMatrixPerspectiveFovLH(m_fFovy, m_fAspect, m_fNear, m_fFar));
+}
+
+CGameObject* CCamera::Clone(void* pArg)
+{
+	return new CCamera{ *this };
 }
 
 void CCamera::Free()
