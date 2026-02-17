@@ -32,8 +32,14 @@ HRESULT CMainApp::Initialize()
 	if (FAILED(m_pGameInstance->Initialize_Engine(EngineDesc, &EngineContext)))
 		return E_FAIL;
 
+	m_pGameInstance->ResetCmdList ();
+
 	if (FAILED(SetUp_StartLevel(LEVEL_LOGO)))
 		return E_FAIL;
+
+	m_pGameInstance->CloseCmdList ();
+
+	m_pGameInstance->ReleaseUploadBuffers ( LEVEL_LOADING );
 
 	return S_OK;
 }
@@ -41,6 +47,10 @@ HRESULT CMainApp::Initialize()
 
 void CMainApp::Update(_float fTimeDelta)
 {
+
+	if ( FAILED ( m_pGameInstance->Render_Begin ( _float4 { 0.0f,1.0f, 0.0f ,0.0f } ) ) )
+		return;
+
 	if (nullptr != m_pGameInstance)
 		m_pGameInstance->Update_Engine(fTimeDelta);
 
@@ -62,10 +72,9 @@ void CMainApp::Update(_float fTimeDelta)
 
 HRESULT CMainApp::Render()
 {
-	if (nullptr == m_pGameInstance)
-		return E_FAIL;
 
-	if (FAILED(m_pGameInstance->Render_Begin()))
+
+	if (nullptr == m_pGameInstance)
 		return E_FAIL;
 
 	m_pGameInstance->Draw();

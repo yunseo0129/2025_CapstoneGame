@@ -65,9 +65,9 @@ HRESULT CCube::Ready_Components()
 
 	m_pTransformCom = CTransform::Create(m_pContext);
 
-	if (FAILED(Add_Component(LEVEL_LOADING, L"Prototype_Component_VIBuffer_Skybox",
+	if (FAILED(Add_Component(LEVEL_LOADING, L"Prototype_Component_VIBuffer_VtxCube",
 		TEXT("Com_VIBuffer"), reinterpret_cast<CComponent**>(&m_pVIBufferCom)))) {
-		return E_FAIL;
+		return E_FAIL;  
 	}
 
 	if (m_pVIBufferCom == nullptr) {
@@ -75,7 +75,7 @@ HRESULT CCube::Ready_Components()
 		return E_FAIL;
 	}
 
-	if (FAILED(Add_Component(LEVEL_LOADING, L"Prototype_Component_Texture_Skybox",
+	if (FAILED(Add_Component(LEVEL_LOADING, L"Prototype_Component_Texture_Cube",
 		TEXT("Com_Texture"), reinterpret_cast<CComponent**>(&m_pTextureCom))))
 		return E_FAIL;
 

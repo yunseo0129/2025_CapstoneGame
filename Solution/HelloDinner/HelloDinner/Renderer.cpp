@@ -32,12 +32,11 @@ HRESULT CRenderer::Add_RenderObject(RENDERGROUP eRenderGroup, CGameObject* pRend
 
 HRESULT CRenderer::Draw_RenderObject(ID3D12GraphicsCommandList* _CmdList)
 {
-	m_pCommandlist = _CmdList;
-	if (FAILED(Render_Priority()))
+	if (FAILED(Render_Priority( _CmdList )))
 		return E_FAIL;
-	if (FAILED(Render_NonBlend()))
+	if (FAILED(Render_NonBlend( _CmdList )))
 		return E_FAIL;
-	if (FAILED(Render_Blend()))
+	if (FAILED(Render_Blend( _CmdList )))
 		return E_FAIL;
 	//if (FAILED(Render_UI()))
 		//return E_FAIL;
@@ -46,12 +45,12 @@ HRESULT CRenderer::Draw_RenderObject(ID3D12GraphicsCommandList* _CmdList)
 	return S_OK;
 }
 
-HRESULT CRenderer::Render_Priority()
+HRESULT CRenderer::Render_Priority( ID3D12GraphicsCommandList* _CmdList )
 {
 	for (auto& pRenderObject : m_RenderObjects[RG_PRIORITY])
 	{
 		if (nullptr != pRenderObject)
-			pRenderObject->Render(m_pCommandlist);
+			pRenderObject->Render( _CmdList );
 
 		Safe_Release(pRenderObject);
 	}
@@ -60,14 +59,14 @@ HRESULT CRenderer::Render_Priority()
 	return S_OK;
 }
 
-HRESULT CRenderer::Render_NonBlend()
+HRESULT CRenderer::Render_NonBlend( ID3D12GraphicsCommandList* _CmdList )
 {
 	//m_pGameInstance->Render_BlockList();
 
 	for (auto& pRenderObject : m_RenderObjects[RG_NONBLEND])
 	{
 		if (nullptr != pRenderObject)
-			pRenderObject->Render(m_pCommandlist);
+			pRenderObject->Render( _CmdList );
 
 		Safe_Release(pRenderObject);
 	}
@@ -76,12 +75,12 @@ HRESULT CRenderer::Render_NonBlend()
 	return S_OK;
 }
 
-HRESULT CRenderer::Render_Blend()
+HRESULT CRenderer::Render_Blend( ID3D12GraphicsCommandList* _CmdList )
 {
 	for (auto& pRenderObject : m_RenderObjects[RG_BLEND])
 	{
 		if (nullptr != pRenderObject)
-			pRenderObject->Render(m_pCommandlist);
+			pRenderObject->Render( _CmdList );
 
 		Safe_Release(pRenderObject);
 	}

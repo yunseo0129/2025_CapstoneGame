@@ -7,6 +7,7 @@
 #include "VIBuffer_Skybox.h"
 #include "Texture.h"
 #include "Cube.h"
+#include "Skybox.h"
 #include "Renderer.h"
 
 CLevel_Loading::CLevel_Loading(ID3D12Device* pDevice, EngineContext* pContext)
@@ -65,13 +66,24 @@ HRESULT CLevel_Loading::Ready_TestLoader()
 	// 큐브 하나 그려보기
 	CCube* pCube = CCube::Create(m_pContext);
 
+	
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_GameObject_Cube", pCube)))
 		return E_FAIL;
 	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, L"Prototype_GameObject_Cube", LEVEL_LOADING, L"Layer_Test", nullptr))) {
 		MSG_BOX("Failed to Add GameObject To Layer : Cube");
 		return E_FAIL;
 	}
+	
+	
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_GameObject_Skybox", CSkybox::Create(m_pContext))))
+		return E_FAIL;
 
+	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, L"Prototype_GameObject_Skybox", LEVEL_LOADING, L"Layer_Skybox", nullptr))) {
+		MSG_BOX("Failed to Add GameObject To Layer : Skybox");
+		return E_FAIL;
+	}
+	
+	
 	return S_OK;
 }
 

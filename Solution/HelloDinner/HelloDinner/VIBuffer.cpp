@@ -5,6 +5,7 @@ CVIBuffer::CVIBuffer(const ComPtr<ID3D12Device>& _device)
     : CComponent(nullptr)
     , m_pDevice(_device)
 {
+    m_ePrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 }
 
 CVIBuffer::CVIBuffer(const CVIBuffer& Prototype)
@@ -47,13 +48,28 @@ HRESULT CVIBuffer::Render(ID3D12GraphicsCommandList* _commandList)
 {
     // commendlist는 매 프레임마다 다를 수 있으므로 인자로 받음.
     // 공통 파이프라인 설정
-    _commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    _commandList->IASetPrimitiveTopology(m_ePrimitiveTopology);
     _commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
     _commandList->IASetIndexBuffer(&m_indexBufferView);
     _commandList->DrawIndexedInstanced(m_iIndices, 1, 0, 0, 0);
 
 	// 자식에서 새로 만들 필요X - 공통으로 사용할 수 있도록 구현
     return S_OK;
+}
+
+void CVIBuffer::LogBufferViews ( const D3D12_VERTEX_BUFFER_VIEW& vbv , const D3D12_INDEX_BUFFER_VIEW& ibv )
+{
+    char msg[256];
+    sprintf_s ( msg , "VBV: GPU=0x%llx, Size=%u, Stride=%u\n" ,
+        static_cast< unsigned long long >( vbv.BufferLocation ) ,
+        vbv.SizeInBytes , vbv.StrideInBytes );
+    OutputDebugStringA ( msg );
+
+    sprintf_s ( msg , "IBV: GPU=0x%llx, Size=%u, Format=%u\n" ,
+        static_cast< unsigned long long >( ibv.BufferLocation ) ,
+        ibv.SizeInBytes , static_cast< unsigned >( ibv.Format ) );
+    OutputDebugStringA ( msg );
 }
 
 void CVIBuffer::ReleaseUploadBuffer()
@@ -87,7 +103,7 @@ void CVIBuffer::SetResourceDesc(D3D12_RESOURCE_DESC& _resourceDesc, UINT64 _widt
 }
 
 
-HRESULT CVIBuffer::Create_Buffer(ID3D12GraphicsCommandList* _pCommandList, ID3D12Resource** _ppDefaultBuffer, ID3D12Resource** _ppUploadBuffer, _uint _iBufferSize, const void* _pData)
+HRESULT CVIBuffer::Create_Buffer(ID3D12GraphicsCommandList* _pCommandList, ID3D12Resource** _ppDefaultBuffer, ID3D12Resource** _ppUploadBuffer, _uint _iBufferSize, const void* _pData, bool _isIndex)
 {
     D3D12_HEAP_PROPERTIES DefaultheapProps;
     SetHeapProperties(DefaultheapProps, D3D12_HEAP_TYPE_DEFAULT);
@@ -126,12 +142,24 @@ HRESULT CVIBuffer::Create_Buffer(ID3D12GraphicsCommandList* _pCommandList, ID3D1
     UpdateSubresources(_pCommandList, *_ppDefaultBuffer, *_ppUploadBuffer, 0, 0, 1, &subResourceData);
 
         // 4. 상태 전이 (Copy Dest -> Generic Read)
-    auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-        *_ppDefaultBuffer,
-        D3D12_RESOURCE_STATE_COPY_DEST,
-        D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER
-    );
-    _pCommandList->ResourceBarrier(1, &barrier);
+
+    if ( _isIndex == false ) {
+        auto barrier = CD3DX12_RESOURCE_BARRIER::Transition (
+            *_ppDefaultBuffer ,
+            D3D12_RESOURCE_STATE_COPY_DEST ,
+            D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER
+        );
+        _pCommandList->ResourceBarrier ( 1 , &barrier );
+    }
+    else if ( _isIndex == true ) {
+        auto barrier = CD3DX12_RESOURCE_BARRIER::Transition (
+            *_ppDefaultBuffer ,
+            D3D12_RESOURCE_STATE_COPY_DEST ,
+            D3D12_RESOURCE_STATE_INDEX_BUFFER
+        );
+        _pCommandList->ResourceBarrier ( 1 , &barrier );
+    }
+    
     return S_OK;
 }
 

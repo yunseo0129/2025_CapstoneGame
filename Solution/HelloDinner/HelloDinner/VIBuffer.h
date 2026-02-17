@@ -15,6 +15,8 @@ protected:
 public:
     HRESULT Render(ID3D12GraphicsCommandList* _commandList);
 
+    void LogBufferViews ( const D3D12_VERTEX_BUFFER_VIEW& vbv , const D3D12_INDEX_BUFFER_VIEW& ibv );
+
     void ReleaseUploadBuffer(); // 렌더링 시작 후 업로드 버퍼 해제
 
     virtual void SetHeapProperties(D3D12_HEAP_PROPERTIES& _heapProps, D3D12_HEAP_TYPE _type);
@@ -24,8 +26,8 @@ protected: // 자식 클래스들이 공통으로 쓸 변수
     ComPtr<ID3D12Device>                m_pDevice;
 
 	// Vertex Buffer 관련 멤버 변수
-    ComPtr<ID3D12Resource>      m_pVertexBuffer;
-    ComPtr<ID3D12Resource>      m_pVertexUploadBuffer;
+    ComPtr<ID3D12Resource>      m_pVertexBuffer = nullptr;
+    ComPtr<ID3D12Resource>      m_pVertexUploadBuffer = nullptr;
     D3D12_VERTEX_BUFFER_VIEW    m_vertexBufferView;
 
     _uint                       m_iVertices = 0;
@@ -33,8 +35,8 @@ protected: // 자식 클래스들이 공통으로 쓸 변수
     D3D12_PRIMITIVE_TOPOLOGY    m_ePrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 	// Index Buffer 관련 멤버 변수
-    ComPtr<ID3D12Resource>		m_pIndexBuffer;
-    ComPtr<ID3D12Resource>		m_pIndexUploadBuffer;
+    ComPtr<ID3D12Resource>		m_pIndexBuffer = nullptr;
+    ComPtr<ID3D12Resource>		m_pIndexUploadBuffer = nullptr;
     D3D12_INDEX_BUFFER_VIEW		m_indexBufferView;
 
     _uint						m_iIndices = 0;
@@ -44,7 +46,7 @@ protected: // 자식 클래스들이 공통으로 쓸 변수
 protected:
     // DX12 버퍼 생성 헬퍼 함수
     HRESULT Create_Buffer(ID3D12GraphicsCommandList* _pCommandList, ID3D12Resource** _ppDefaultBuffer, ID3D12Resource** _ppUploadBuffer,
-        _uint _iBufferSize, const void* _pData);
+        _uint _iBufferSize, const void* _pData, bool _isIndex);
 
 public:
     virtual HRESULT Initialize_Prototype(ID3D12GraphicsCommandList* _pCommandList);

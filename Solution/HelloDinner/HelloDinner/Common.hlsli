@@ -16,7 +16,7 @@ cbuffer cbTransform : register(b0)
 cbuffer cbObject : register(b1)
 {
     matrix g_matWorld; // 월드 행렬
-}
+};
 
 
 // ------------------------------------------------
@@ -24,6 +24,9 @@ cbuffer cbObject : register(b1)
 // ------------------------------------------------
 // t0 : 텍스처 정보
 Texture2D g_Textures : register(t0);
+
+// t0, space1 : 큐브맵 텍스처 (Skybox 전용, 별도 space 사용)
+TextureCube g_TexCube : register(t0);
 
 // Static Samplers
 SamplerState g_samWrap : register(s0); // 일반 3D

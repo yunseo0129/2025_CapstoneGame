@@ -146,7 +146,6 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Object_Manager.h" />
-    <ClInclude Include="PipeLine.h" />
     <ClInclude Include="Prototype_Manager.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Shader_Manager.h" />
@@ -193,7 +192,6 @@
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Object_Manager.cpp" />
-    <ClCompile Include="PipeLine.cpp" />
     <ClCompile Include="Prototype_Manager.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Shader_Manager.cpp" />

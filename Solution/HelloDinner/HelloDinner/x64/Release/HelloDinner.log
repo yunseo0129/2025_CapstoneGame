@@ -1,9 +1,8 @@
-﻿  GameInstance.cpp
-  Renderer.cpp
-  Shader_Manager.cpp
+﻿  MainApp.cpp
+  VIBuffer.cpp
   코드를 생성하고 있습니다.
-  8 of 1529 functions ( 0.5%) were compiled, the rest were copied from previous compilation.
+  6 of 1541 functions ( 0.4%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    1 functions had inline decision re-evaluated but remain unchanged
+    3 functions had inline decision re-evaluated but remain unchanged
   코드를 생성했습니다.
-  HelloDinner.vcxproj -> C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\x64\Release\HelloDinner.exe
+  HelloDinner.vcxproj -> C:\Users\user\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\x64\Release\HelloDinner.exe

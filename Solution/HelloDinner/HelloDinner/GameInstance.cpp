@@ -1,11 +1,10 @@
 #include "GameInstance.h"
 
+#include "Graphic_Device.h"
 #include "Renderer.h"
-#include "PipeLine.h"
 #include "Input_Device.h"
 #include "Timer_Manager.h"
 #include "Level_Manager.h"
-#include "Graphic_Device.h"
 #include "Object_Manager.h"
 #include "Prototype_Manager.h"
 #include "Load_Manager.h"
@@ -49,9 +48,6 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineCo
 	if (nullptr == m_pObject_Manager)
 		return E_FAIL;
 
-	m_pPipeLine = CPipeLine::Create();
-	if (nullptr == m_pPipeLine)
-		return E_FAIL;
 
 	m_pShader_Manager = CShader_Manager::Create(_pcontext->device);
 
@@ -72,7 +68,7 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineCo
 	m_pCamera = new CCamera(_pcontext);
 
 	CCamera::CAMERA_DESC CameraDesc;
-	CameraDesc.vEye = { 0.f, 0.f, -5.f };
+	CameraDesc.vEye = { 0.f, 5.f, 10.f };
 	CameraDesc.vAt = { 0.f, 0.f, 0.f };
 	CameraDesc.fFovy = XMConvertToRadians(45.f);
 	CameraDesc.fAspect = static_cast<_float>(EngineDesc.iViewportWidth) / EngineDesc.iViewportHeight;
@@ -82,80 +78,31 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineCo
 	if (FAILED(m_pCamera->Initialize(&CameraDesc)))
 		return E_FAIL;
 
-	UINT ncbElementBytes = ((sizeof(CB_VS_CAMERA) + 255) & ~255) / 256;
-
-	D3D12_HEAP_PROPERTIES d3dHeapPropertiesDesc;
-	::ZeroMemory(&d3dHeapPropertiesDesc, sizeof(D3D12_HEAP_PROPERTIES));
-	d3dHeapPropertiesDesc.Type = D3D12_HEAP_TYPE_UPLOAD;
-	d3dHeapPropertiesDesc.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-	d3dHeapPropertiesDesc.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-	d3dHeapPropertiesDesc.CreationNodeMask = 1;
-	d3dHeapPropertiesDesc.VisibleNodeMask = 1;
-
-	D3D12_RESOURCE_DIMENSION d3dResourceDimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	D3D12_RESOURCE_DESC d3dResourceDesc;
-	::ZeroMemory(&d3dResourceDesc, sizeof(D3D12_RESOURCE_DESC));
-	d3dResourceDesc.Dimension = d3dResourceDimension; //D3D12_RESOURCE_DIMENSION_BUFFER, D3D12_RESOURCE_DIMENSION_TEXTURE1D, D3D12_RESOURCE_DIMENSION_TEXTURE2D
-	d3dResourceDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-	d3dResourceDesc.Width = ncbElementBytes;
-	d3dResourceDesc.Height = 1;
-	d3dResourceDesc.DepthOrArraySize = 1;
-	d3dResourceDesc.MipLevels =  1;
-	d3dResourceDesc.Format = DXGI_FORMAT_UNKNOWN;
-	d3dResourceDesc.SampleDesc.Count = 1;
-	d3dResourceDesc.SampleDesc.Quality = 0;
-	d3dResourceDesc.Layout = (d3dResourceDimension == D3D12_RESOURCE_DIMENSION_BUFFER) ? D3D12_TEXTURE_LAYOUT_ROW_MAJOR : D3D12_TEXTURE_LAYOUT_UNKNOWN;
-	d3dResourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-
-	D3D12_RESOURCE_STATES d3dResourceStates = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-	d3dResourceStates |= D3D12_RESOURCE_STATE_GENERIC_READ;
-	HRESULT hResult = _pcontext->device->CreateCommittedResource(&d3dHeapPropertiesDesc, D3D12_HEAP_FLAG_NONE, &d3dResourceDesc, d3dResourceStates, NULL, __uuidof(ID3D12Resource), (void**)&m_pCameraBuffer);
-
-	m_pCameraBuffer.Get()->Map(0, NULL, (void**)&m_pcbMappedCamera);
-
-	m_pCommandList = _pcontext->cmdList;
-
 	return S_OK;
 }
 
 void CGameInstance::Update_Engine(_float fTimeDelta)
 {
 	m_pCamera->Update(fTimeDelta);
-
-	XMFLOAT4X4 xmf4x4View;
-	XMStoreFloat4x4(&xmf4x4View, m_pPipeLine->Get_TransformMatrix(CPipeLine::D3DTS_VIEW));
-	memcpy(&m_pcbMappedCamera->m_xmf4x4View, &xmf4x4View, sizeof(_float4x4));
-
-	XMFLOAT4X4 xmf4x4Proj;
-	XMStoreFloat4x4(&xmf4x4Proj, m_pPipeLine->Get_TransformMatrix(CPipeLine::D3DTS_PROJ));
-	memcpy(&m_pcbMappedCamera->m_xmf4x4Proj, &xmf4x4Proj, sizeof(_float4x4));
-
-	memcpy(&m_pcbMappedCamera->m_xmf3Position, m_pPipeLine->Get_CamPosition(), sizeof(_float3));
-
 	m_pObject_Manager->Late_Update(fTimeDelta);
 }
 
 HRESULT CGameInstance::Render_Begin(const _float4& vClearColor)
 {
 	m_pGraphic_Device->BeforeRender(vClearColor);
+	m_pCommandList = m_pGraphic_Device->GetCommandList ();
 
-	m_pCommandList = m_pGraphic_Device->GetCommandList();
-
+	
 	Set_RootSignature(m_pCommandList.Get());
 
-	D3D12_GPU_VIRTUAL_ADDRESS d3dGpuVirtualAddress = m_pCameraBuffer->GetGPUVirtualAddress();
-	m_pCommandList->SetGraphicsRootConstantBufferView(RootParameterIndex::Camera, d3dGpuVirtualAddress);
-
-
+	
 	return S_OK;
 }
 
 HRESULT CGameInstance::Draw()
 {
-
-
-	m_pRenderer->Draw_RenderObject(m_pCommandList.Get());
-
+	m_pCamera->Bind_CameraBuffer ( m_pCommandList.Get () , RootParameterIndex::Camera );
+	m_pRenderer->Draw_RenderObject ( m_pCommandList.Get () );
 	return S_OK;
 }
 
@@ -221,6 +168,23 @@ bool CGameInstance::Mouse_Down(int _iKey)
 bool CGameInstance::Mouse_Up(int _iKey)
 {
 	return m_pInput_Device->Mouse_Up(_iKey);
+}
+
+
+void CGameInstance::ResetCmdList ()
+{
+	if ( nullptr == m_pGraphic_Device )
+		return;
+
+	m_pGraphic_Device->ResetCmdList ();
+}
+
+void CGameInstance::CloseCmdList ()
+{
+	if ( nullptr == m_pGraphic_Device )
+		return;
+
+	m_pGraphic_Device->CloseCmdList ();
 }
 
 // ------------------------------------------------------------------------
@@ -360,6 +324,14 @@ CBase* CGameInstance::Clone_Prototype(Engine::PROTOTYPE eType, _uint iLevelIndex
 	return m_pPrototype_Manager->Clone_Prototype(eType, iLevelIndex, strPrototypeTag, pArg);
 }
 
+void CGameInstance::ReleaseUploadBuffers ( _uint iLevelIndex )
+{
+	if ( nullptr == m_pPrototype_Manager )
+		return;
+
+	m_pPrototype_Manager->ReleaseUploadBuffers ( iLevelIndex );
+}
+
 // ------------------------------------------------------------------------
 // Object_Manager
 // ------------------------------------------------------------------------
@@ -390,53 +362,6 @@ CGameObject* CGameInstance::Get_GameObject_To_Layer(_uint iLevelIndex, const _ws
 	return m_pObject_Manager->Get_GameObject_To_Layer(iLevelIndex, strLayerTag, Index);
 }
 
-// ------------------------------------------------------------------------
-// PipeLine
-// ------------------------------------------------------------------------
-
-void CGameInstance::Set_Transform(CPipeLine::D3DTRANSFORMSTATE eState, _fmatrix TransformMatrix)
-{
-	if (nullptr == m_pPipeLine)
-		return;
-
-	return m_pPipeLine->Set_Transform(eState, TransformMatrix);
-}
-
-void CGameInstance::Set_CamPosition(_float4 vCamPosition)
-{
-	if (nullptr == m_pPipeLine)
-		return;
-	return m_pPipeLine->Set_CamPosition(vCamPosition);
-}
-
-_matrix CGameInstance::Get_ViewProjMatrix()
-{
-	return m_pPipeLine->Get_ViewProjMatrix();
-}
-
-_matrix CGameInstance::Get_TransformMatrix(CPipeLine::D3DTRANSFORMSTATE eState)
-{
-	if (nullptr == m_pPipeLine)
-		return XMMatrixIdentity();
-
-	return m_pPipeLine->Get_TransformMatrix(eState);
-}
-
-_float4x4 CGameInstance::Get_TransformFloat4x4(CPipeLine::D3DTRANSFORMSTATE eState)
-{
-	if (nullptr == m_pPipeLine)
-		return _float4x4();
-
-	return m_pPipeLine->Get_TransformFloat4x4(eState);
-}
-
-const _float4* CGameInstance::Get_CamPosition() const
-{
-	if (nullptr == m_pPipeLine)
-		return nullptr;
-
-	return m_pPipeLine->Get_CamPosition();
-}
 
 // ------------------------------------------------------------------------
 // Shader_Manager
@@ -480,6 +405,33 @@ void CGameInstance::Free()
 {
 	__super::Free();
 
-	Safe_Release(m_pPrototype_Manager);
-	Safe_Release(m_pGraphic_Device);
+
+	// 2. ComPtr로 보유한 커맨드 리스트 참조 해제
+	m_pCommandList.Reset ();
+
+	// 3. 렌더러 해제 (Device, CmdList를 Safe_AddRef로 보유 중)
+	Safe_Release ( m_pRenderer );
+
+	// 4. 게임 오브젝트 해제 (컴포넌트 → 텍스처/버퍼의 ComPtr 해제)
+	Safe_Release ( m_pObject_Manager );
+
+	// 5. 레벨 해제
+	Safe_Release ( m_pLevel_Manager );
+
+	// 6. 프로토타입 해제 (텍스처/버퍼 원본 리소스 해제)
+	Safe_Release ( m_pPrototype_Manager );
+
+	// 7. 카메라 해제 (CameraBuffer ComPtr 해제)
+	Safe_Delete ( m_pCamera );
+
+	// 8. 셰이더 매니저 해제 (PSO, RootSignature 해제)
+	Safe_Release ( m_pShader_Manager );
+
+	// 9. 나머지 매니저 해제
+	Safe_Release ( m_pLoad_Manager );
+	Safe_Release ( m_pTimer_Manager );
+	Safe_Release ( m_pInput_Device );
+
+	// 10. Device를 가장 마지막에 해제
+	Safe_Release ( m_pGraphic_Device );
 }

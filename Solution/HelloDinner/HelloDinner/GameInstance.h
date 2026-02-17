@@ -1,7 +1,7 @@
 #pragma once
 #include "Prototype_Manager.h"
-#include "PipeLine.h"
 #include "Renderer.h"
+
 
 class CGameInstance final : public CBase
 {
@@ -20,6 +20,10 @@ public: /* For.GameInstance */
 
 	_float Compute_Random_Normal();
 	_float Compute_Random(_float fMin, _float fMax);
+
+public: /* for.Graphics_Device*/
+	void ResetCmdList ();
+	void CloseCmdList ();
 
 public: /* for.Input_Device */
 	_byte Get_DIKeyState(_ubyte byKeyID);
@@ -61,6 +65,8 @@ public: /* for.Level_Manager */
 public: /* For.Prototype_Manager */
 	HRESULT Add_Prototype(_uint iLevelIndex, const _wstring& strPrototypeTag, class CBase* pPrototype);
 	class CBase* Clone_Prototype(Engine::PROTOTYPE eType, _uint iLevelIndex, const _wstring& strPrototypeTag, void* pArg = nullptr);
+	void ReleaseUploadBuffers ( _uint iLevelIndex );
+
 
 public: /* For.Object_Manager */
 	HRESULT Add_GameObject_ToLayer(_uint iPrototypeLevelIndex, const _wstring& strPrototypeTag, _uint iLevelIndex, const _wstring& strLayerTag, void* pArg = nullptr);
@@ -68,14 +74,6 @@ public: /* For.Object_Manager */
 	list<class CGameObject*> Get_List(_uint iLevelIndex, const _wstring& strLayerTag);
 	class CGameObject* Get_GameObject_To_Layer(_uint iLevelIndex, const _wstring& strLayerTag, _uint Index);
 
-
-public: /* For.PipeLine */
-	void Set_Transform(CPipeLine::D3DTRANSFORMSTATE eState, _fmatrix TransformMatrix);
-	void Set_CamPosition(_float4 vCamPosition);
-	_matrix Get_ViewProjMatrix();
-	_matrix Get_TransformMatrix(CPipeLine::D3DTRANSFORMSTATE eState);
-	_float4x4 Get_TransformFloat4x4(CPipeLine::D3DTRANSFORMSTATE eState);
-	const _float4*Get_CamPosition() const;
 
 public: /* For.Shader_Manager */
 	void Set_PipelineState(ID3D12GraphicsCommandList* pCmdList, const PSO_TYPE& _eType);

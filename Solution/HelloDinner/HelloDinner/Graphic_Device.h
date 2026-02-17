@@ -8,16 +8,21 @@ public:
 	CGraphic_Device();
 	~CGraphic_Device();
 
+	void ResetCmdList ();
+
 public:
 	void BeforeRender(const _float4& vClearColor);
 	void AfterRender();
+
+	void CloseCmdList ();
 	
-	ID3D12GraphicsCommandList* GetCommandList() const { return m_pCommandList.Get(); }
+	const ComPtr<ID3D12GraphicsCommandList>& GetCommandList() const { return m_pCommandList; }
 private:
 	bool InitDirect3D(HWND& _hwnd, EngineContext* _pcontext);
 	bool Get4xMsaaState()const;
 	void Set4xMsaaState(bool _value);
-	void OnResize();
+	void CreateRenderTargetViews ();
+	void CreateDepthStencilView ();
 	void CreateDevice();
 	void CreateCommandObjects();
 	void CreateRtvAndDsvDescriptorHeaps();
@@ -35,7 +40,7 @@ private:
 
 private:
 	// 활성화 상태 플래그 (아직 사용 X)
-	_bool m_isActivate;
+	// _bool m_isActivate;
 
 	// 메인윈도우 핸들정보 (swapchain생성시 필요)
 	HWND      m_hMainWnd = nullptr; 

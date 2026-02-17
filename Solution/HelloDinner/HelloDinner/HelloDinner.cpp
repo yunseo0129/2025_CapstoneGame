@@ -77,9 +77,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                 DispatchMessage(&msg);
             }
         }
-            pGameInstance->Update_TimeDelta(TEXT("Timer_60"));
-            pMainApp->Update(pGameInstance->Get_TimeDelta(TEXT("Timer_60")));
-            pMainApp->Render();
+        else {
+            pGameInstance->Update_TimeDelta ( TEXT ( "Timer_60" ) );
+            pMainApp->Update ( pGameInstance->Get_TimeDelta ( TEXT ( "Timer_60" ) ) );
+            pMainApp->Render ();
+        }
     }
 
     Safe_Release(pGameInstance);

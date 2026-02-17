@@ -19,8 +19,8 @@ private:
 	CGameInstance* m_pGameInstance = { nullptr };
 	wstring m_strMainWndCaption = L"HelloDinner";
 
-	ENGINE_DESC EngineDesc;
-	EngineContext EngineContext;
+	ENGINE_DESC EngineDesc = {};
+	EngineContext EngineContext = {};
 
 private:
 	HRESULT SetUp_StartLevel(LEVELID eLevelID);

@@ -138,9 +138,6 @@
     <Filter Include="소스 파일\01. Engine\06. Shader">
       <UniqueIdentifier>{dfe31e4b-61a3-4cf7-ad01-a236c4abc160}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\01. Engine\07. PipeLine">
-      <UniqueIdentifier>{6ffafc5a-83d0-4aa2-b9b8-dde7d459af74}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\01. Engine\06. Shader\Manager">
       <UniqueIdentifier>{05d5c434-cb2c-4949-b212-1d381a762fdd}</UniqueIdentifier>
     </Filter>
@@ -211,9 +208,6 @@
     </ClInclude>
     <ClInclude Include="Renderer.h">
       <Filter>소스 파일\01. Engine\05. Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="PipeLine.h">
-      <Filter>소스 파일\01. Engine\07. PipeLine</Filter>
     </ClInclude>
     <ClInclude Include="GameObject.h">
       <Filter>소스 파일\01. Engine\03. Objects</Filter>
@@ -289,9 +283,6 @@
     <ClCompile Include="Prototype_Manager.cpp">
       <Filter>소스 파일\01. Engine\02. Prototype</Filter>
     </ClCompile>
-    <ClCompile Include="GameInstance.cpp">
-      <Filter>소스 파일\01. Engine\99. GameInstance</Filter>
-    </ClCompile>
     <ClCompile Include="Component.cpp">
       <Filter>소스 파일\01. Engine\04. Components\00. Component</Filter>
     </ClCompile>
@@ -306,9 +297,6 @@
     </ClCompile>
     <ClCompile Include="Renderer.cpp">
       <Filter>소스 파일\01. Engine\05. Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="PipeLine.cpp">
-      <Filter>소스 파일\01. Engine\07. PipeLine</Filter>
     </ClCompile>
     <ClCompile Include="GameObject.cpp">
       <Filter>소스 파일\01. Engine\03. Objects</Filter>
@@ -360,6 +348,9 @@
     </ClCompile>
     <ClCompile Include="Skybox.cpp">
       <Filter>소스 파일\02. Game\GameObject\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="GameInstance.cpp">
+      <Filter>소스 파일\01. Engine\99. GameInstance</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

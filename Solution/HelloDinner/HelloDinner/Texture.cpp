@@ -141,7 +141,7 @@ HRESULT CTexture::Load_DDSTexture(ID3D12GraphicsCommandList* pCommandList, const
 
     CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
         m_Textures[_iIndex].Get(),
-        D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ);
+        D3D12_RESOURCE_STATE_COPY_DEST , D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
     pCommandList->ResourceBarrier(1, &barrier);
 
     return S_OK;
@@ -197,6 +197,7 @@ HRESULT CTexture::CreateShaderResourceView(CD3DX12_CPU_DESCRIPTOR_HANDLE _descri
         srvDesc.TextureCube.MostDetailedMip = 0;
         srvDesc.TextureCube.MipLevels = m_Textures[_iIndex]->GetDesc().MipLevels;
         srvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
+        break;
     case TEXTURE_TYPE::TEX_ARRAY:
         srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
         srvDesc.Texture2DArray.ArraySize = m_iArraySize;

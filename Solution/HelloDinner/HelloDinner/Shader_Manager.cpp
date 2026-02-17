@@ -42,29 +42,29 @@ HRESULT CShader_Manager::Create_GlobalRootSignature ()
 	// 계속 추가하자
 	CD3DX12_ROOT_PARAMETER parameters[( _uint )RootParameterIndex::End];
 
-	// [t0, space1]
+	// [t0, space0]
 	// RangeType: SRV (Shader Resource View)
 	// NumDescriptors: 1
 	// BaseShaderRegister: 0 (t0 부터 시작)
 	// RegisterSpace: 0 (space0)
-	// Flags: _DATA_STATIC_WHILE_SET_AT_EXECUTE : 커맨드 리스트에 이 디스크립터 테이블을 바인딩한 후에는 그리는 동안은 데이터가 안 바뀜 (최적화)
 	CD3DX12_DESCRIPTOR_RANGE ranges[1]; // 텍스처 테이블용 1개
-	ranges[0].Init ( D3D12_DESCRIPTOR_RANGE_TYPE_SRV , 1 , 0 , 0 , D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC_WHILE_SET_AT_EXECUTE );
+	ranges[0].Init ( D3D12_DESCRIPTOR_RANGE_TYPE_SRV , 1 , 0 , 0 );
+
 	// Material용으로 추가
 
 	// [Parameter 0] : CBV (Camera)
 	// -> cbTransform : register(b0)
 	// 카메라 정보 (뷰, 프로젝션 행렬)
-	parameters[0].InitAsConstantBufferView ( 0 , 0 );
+	parameters[RootParameterIndex::Camera].InitAsConstantBufferView ( 0 , 0 );
 
 	// [Parameter 1] : Constant32 (Object)
 	// -> cbObject : register(b1)
 	// Transform 정보
-	parameters[1].InitAsConstants ( 16 , 1 );
+	parameters[RootParameterIndex::GameObject].InitAsConstants ( 16 , 1 );
 
 	// [Parameter 2] : Texture Table
 	// -> g_Textures[] : register(t0, space1)
-	parameters[2].InitAsDescriptorTable ( 1 , &ranges[0] );
+	parameters[RootParameterIndex::TEXTURE].InitAsDescriptorTable ( 1 , &ranges[0] );
 
 	//----------------------------------------------------------------------
 	// Static Sampler s0 ~ s4
@@ -163,11 +163,14 @@ HRESULT CShader_Manager::Create_PSO ()
 	// ----------------------------------------------------------------
 	// Vertex Shader (Input Layout별)
 	ComPtr<ID3DBlob> vsStatic = Compile_Shader ( L"Shader.hlsl" , "VS_Main_Static" , "vs_5_1" );
+	ComPtr<ID3DBlob> vsSkybox = Compile_Shader ( L"Shader.hlsl" , "VS_Main_Skybox" , "vs_5_1" );
+
 	//ComPtr<ID3DBlob> vsAnim = Compile_Shader ( L"Shader.hlsl" , "VS_Main_Anim" , "vs_5_1" );
 	// ComPtr<ID3DBlob> vsUI = Compile_Shader ( L"UI.hlsl" , "VS_Main_UI" , "vs_5_1" );
 
 	// Pixel Shader (재질별)
 	ComPtr<ID3DBlob> psLit = Compile_Shader ( L"Shader.hlsl" , "PS_Main_Lit" , "ps_5_1" ); // 조명 O
+	ComPtr<ID3DBlob> psSkybox = Compile_Shader ( L"Shader.hlsl" , "PS_Main_Skybox" , "ps_5_1" ); // Skybox
 	// ComPtr<ID3DBlob> psUI = Compile_Shader ( L"UI.hlsl" , "PS_Main_UI" , "ps_5_1" ); // 조명 X
 
 	// ----------------------------------------------------------------
@@ -194,6 +197,23 @@ HRESULT CShader_Manager::Create_PSO ()
 	psoDesc.PS = { psLit->GetBufferPointer (), psLit->GetBufferSize () };
 
 	m_pDevice->CreateGraphicsPipelineState ( &psoDesc , IID_PPV_ARGS ( &m_pPSOs[( UINT )PSO_TYPE::DEFAULT] ) );
+
+	// ================================================================
+	// SKYBOX (Static Mesh / TextureCube / DepthFunc LessEqual)
+	// ================================================================
+	psoDesc = baseDesc; // 리셋
+	psoDesc.InputLayout = { m_LayoutStatic.data (), ( UINT )m_LayoutStatic.size () };
+	psoDesc.VS = { vsSkybox->GetBufferPointer (), vsSkybox->GetBufferSize () };
+	psoDesc.PS = { psSkybox->GetBufferPointer (), psSkybox->GetBufferSize () };
+
+	// 스카이박스는 항상 가장 뒤에 있어야 하므로 z=w 트릭 사용
+	// DepthFunc를 LESS_EQUAL로 변경해야 z=1(far plane)에서도 통과
+	psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+
+	// 스카이박스 내부에서 렌더링하므로 Front Face Culling (안쪽 면을 보여줌)
+	psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+
+	m_pDevice->CreateGraphicsPipelineState ( &psoDesc , IID_PPV_ARGS ( &m_pPSOs[( UINT )PSO_TYPE::SKYBOX] ) );
 
 	/*
 	// ================================================================
@@ -337,8 +357,11 @@ CShader_Manager* CShader_Manager::Create(const ComPtr<ID3D12Device>& pDevice)
 
 void CShader_Manager::Free ()
 {
+	for (UINT i = 0; i < (UINT)PSO_TYPE::END; ++i)
+		m_pPSOs[i].Reset();
 
-	m_pPSOs->Reset ();
+	m_pRootSignature.Reset();
+	m_pDevice.Reset();
 
 	CBase::Free ();
 }

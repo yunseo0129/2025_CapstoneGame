@@ -50,6 +50,7 @@ enum RootParameterIndex
 enum PSO_TYPE
 {
 	DEFAULT ,        // 일반 물체 (Static Mesh / Opaque)
+	SKYBOX ,         // 스카이박스 (TextureCube / DepthFunc LessEqual)
 	ANIM ,           // 캐릭터 (Skeletal Mesh / Opaque)
 	ALPHA_BLEND ,    // 반투명 이펙트 (Static Mesh / Transparent)
 	UI ,             // 2D UI (UI Mesh / Transparent / No Depth)
@@ -102,6 +103,7 @@ typedef struct
 	XMFLOAT4X4						m_xmf4x4View;
 	XMFLOAT4X4						m_xmf4x4Proj;
 	XMFLOAT3						m_xmf3Position;
+	float							m_fPadding; // 16바이트 정렬을 위한 패딩
 }CB_VS_CAMERA;
 
 // InputLayout에서 사용할 정점 구조체

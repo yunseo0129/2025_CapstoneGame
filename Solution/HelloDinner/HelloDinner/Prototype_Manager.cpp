@@ -1,6 +1,8 @@
 #include "Prototype_Manager.h"
 #include "GameObject.h"
 #include "GameInstance.h"
+#include "VIBuffer.h"
+#include "Texture.h"
 
 CPrototype_Manager::CPrototype_Manager()
 {
@@ -75,6 +77,34 @@ void CPrototype_Manager::Clear(_uint iLevelIndex)
 		Safe_Release(Pair.second);
 
 	m_pPrototypes[iLevelIndex].clear();
+}
+
+void CPrototype_Manager::ReleaseUploadBuffers ( _uint iLevelIndex )
+{
+	if ( iLevelIndex >= m_iNumLevels )
+		return;
+
+	for ( auto& Pair : m_pPrototypes[iLevelIndex] )
+	{
+		if ( nullptr == Pair.second )
+			continue;
+
+		// VIBuffer 계열인지 확인
+		CVIBuffer* pVIBuffer = dynamic_cast< CVIBuffer* >( Pair.second );
+		if ( nullptr != pVIBuffer )
+		{
+			pVIBuffer->ReleaseUploadBuffer ();
+			continue;
+		}
+
+		// Texture 계열인지 확인
+		CTexture* pTexture = dynamic_cast< CTexture* >( Pair.second );
+		if ( nullptr != pTexture )
+		{
+			pTexture->Release_UploadBuffer ();
+			continue;
+		}
+	}
 }
 
 

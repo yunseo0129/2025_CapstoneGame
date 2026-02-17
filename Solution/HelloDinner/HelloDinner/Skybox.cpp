@@ -43,20 +43,18 @@ void CSkybox::Late_Update(_float fTimeDelta)
 
 void CSkybox::Render(ID3D12GraphicsCommandList* _commandList)
 {
-	// Transform 컴포넌트의 월드 행렬을 RootConstantBuffer에 넘겨준다.
 	XMFLOAT4X4 WorldMatrix;
 	XMStoreFloat4x4(&WorldMatrix, m_pTransformCom->Get_WorldMatrix());
 	_commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &WorldMatrix, 0);
 
-	// PSO 바인딩
-	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::DEFAULT);
+	// Skybox 전용 PSO 사용 (DEFAULT가 아닌 SKYBOX)
+	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::SKYBOX);
 
 	if (FAILED(m_pTextureCom->Bind_ShaderResource(_commandList, RootParameterIndex::TEXTURE))) {
 		MSG_BOX("Failed to Bind Texture Resource in CSkybox");
 		return;
 	}
 
-	// 정점 버퍼 바인딩 및 렌더링
 	m_pVIBufferCom->Render(_commandList);
 }
 

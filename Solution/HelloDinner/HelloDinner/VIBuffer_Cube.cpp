@@ -44,11 +44,11 @@ HRESULT CVIBuffer_Cube::Initialize_Prototype(ID3D12GraphicsCommandList* _pComman
 
     // 부모의 헬퍼 함수를 이용해 Vertex Buffer 생성
     if (FAILED(Create_Buffer(_pCommandList, m_pVertexBuffer.GetAddressOf(), m_pVertexUploadBuffer.GetAddressOf(),
-        vertexBufferSize, vertices.data())))
+        vertexBufferSize, vertices.data(), false)))
         return E_FAIL;
 
     // 뷰 설정
-    m_vertexBufferView.BufferLocation = m_pVertexBuffer->GetGPUVirtualAddress();
+    m_vertexBufferView.BufferLocation = m_pVertexBuffer.Get()->GetGPUVirtualAddress ();
     m_vertexBufferView.StrideInBytes = m_iVertexStride;
     m_vertexBufferView.SizeInBytes = vertexBufferSize;
 
@@ -77,12 +77,12 @@ HRESULT CVIBuffer_Cube::Initialize_Prototype(ID3D12GraphicsCommandList* _pComman
 
     // 부모의 헬퍼 함수 재활용 (Index Buffer도 Buffer이므로 동일함)
     if (FAILED(Create_Buffer(_pCommandList, m_pIndexBuffer.GetAddressOf(), m_pIndexUploadBuffer.GetAddressOf(),
-        indexBufferSize, indices.data())))
+        indexBufferSize, indices.data(), true)))
         return E_FAIL;
 
-    // 인덱스 뷰 설정
-    m_indexBufferView.BufferLocation = m_pIndexBuffer->GetGPUVirtualAddress();
-    m_indexBufferView.Format = m_eIndexFormat;
+    // 뷰 설정
+    m_indexBufferView.BufferLocation = m_pIndexBuffer.Get()->GetGPUVirtualAddress();
+    m_indexBufferView.Format = DXGI_FORMAT_R32_UINT;
     m_indexBufferView.SizeInBytes = indexBufferSize;
 
     return S_OK;
