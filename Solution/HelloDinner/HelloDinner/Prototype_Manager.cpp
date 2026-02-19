@@ -139,9 +139,10 @@ void CPrototype_Manager::Free()
 
 	for (_uint i = 0; i < m_iNumLevels; ++i)
 	{
-		for (auto& Pair : m_pPrototypes[i])
-			Safe_Release(Pair.second);
+		for (auto& Pair : m_pPrototypes[i]) {
 
+			Safe_Release(Pair.second);
+		}
 		m_pPrototypes[i].clear();
 	}
 

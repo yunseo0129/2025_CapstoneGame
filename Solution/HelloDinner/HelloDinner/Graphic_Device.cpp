@@ -9,13 +9,7 @@ CGraphic_Device::CGraphic_Device()
 
 CGraphic_Device::~CGraphic_Device()
 {
-	// 디바이스가 종료되기 전에 GPU가 모든 명령을 완료하도록 대기
-	WaitForGpuComplete();
-	if ( m_hFenceEvent )
-	{
-		::CloseHandle ( m_hFenceEvent );
-		m_hFenceEvent = nullptr;
-	}
+
 }
 
 void CGraphic_Device::ResetCmdList ()
@@ -526,5 +520,45 @@ CGraphic_Device* CGraphic_Device::Create(HWND _hwnd, EngineContext* _pcontext)
 
 void CGraphic_Device::Free()
 {
-	
+	// 디바이스가 종료되기 전에 GPU가 모든 명령을 완료하도록 대기
+	WaitForGpuComplete();
+	if (m_hFenceEvent)
+	{
+		::CloseHandle(m_hFenceEvent);
+		m_hFenceEvent = nullptr;
+	}
+	// ComPtr은 Reset() 또는 소멸자에서 자동 Release되지만,
+	// 명시적으로 해제 순서를 지정하는 것이 안전합니다.
+	m_pDepthStencilBuffer.Reset();
+	for (int i = 0; i < m_iSwapChainBufferCount; ++i)
+		m_pSwapChainBuffer[i].Reset();
+
+	m_pRootSignature.Reset();
+	m_pFence.Reset();
+	m_pCommandList.Reset();
+	m_pDirectCmdListAlloc.Reset();
+	m_pCommandQueue.Reset();
+
+	m_pDsvHeap.Reset();
+	m_pRtvHeap.Reset();
+	m_pSwapChain.Reset();
+	// Device Reset 전에 남은 객체 확인
+#ifdef _DEBUG
+	{
+		ComPtr<ID3D12DebugDevice> debugDevice;
+		if (SUCCEEDED(m_pD3dDevice->QueryInterface(IID_PPV_ARGS(&debugDevice))))
+		{
+			m_pD3dDevice.Reset(); // Device 먼저 해제
+			debugDevice->ReportLiveDeviceObjects(
+				D3D12_RLDO_DETAIL | D3D12_RLDO_IGNORE_INTERNAL);
+			// debugDevice가 스코프 종료 시 자동 해제
+		}
+	}
+#else
+	m_pD3dDevice.Reset();
+#endif
+
+	m_pDxgiFactory.Reset();
+	__super::Free();
+
 }

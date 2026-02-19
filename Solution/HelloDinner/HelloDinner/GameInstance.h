@@ -96,8 +96,6 @@ private:
 	class CLoad_Manager*		m_pLoad_Manager = { nullptr };
 
 	class CCamera* m_pCamera = { nullptr };
-	ComPtr<ID3D12Resource> m_pCameraBuffer = { nullptr };
-	CB_VS_CAMERA* m_pcbMappedCamera = NULL;
 	ComPtr<ID3D12GraphicsCommandList> m_pCommandList = { nullptr };
 
 public:

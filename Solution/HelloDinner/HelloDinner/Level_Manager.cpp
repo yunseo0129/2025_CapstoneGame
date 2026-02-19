@@ -58,6 +58,6 @@ void CLevel_Manager::Free()
 {
 	__super::Free();
 
-	//Safe_Release(m_pGameInstance);
+	Safe_Release(m_pGameInstance);
 	Safe_Release(m_pCurrentLevel);
 }

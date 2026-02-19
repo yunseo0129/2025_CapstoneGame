@@ -77,7 +77,7 @@ private:
 
 	ComPtr<ID3D12Fence> m_pFence;
 	UINT64				m_nFenceValues[m_iSwapChainBufferCount];
-	HANDLE				m_hFenceEvent;
+	HANDLE				m_hFenceEvent = nullptr;
 
 	D3D12_VIEWPORT m_ScreenViewport;
 	D3D12_RECT m_ScissorRect;

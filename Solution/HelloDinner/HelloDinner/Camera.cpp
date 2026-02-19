@@ -145,5 +145,13 @@ CGameObject* CCamera::Clone (void* Arg)
 
 void CCamera::Free()
 {
+	if (m_pCameraBuffer)
+	{
+		m_pCameraBuffer->Unmap(0, nullptr);
+		m_pCameraBuffer.Reset();  // 또는 ComPtr이 아니면 Safe_Release
+		m_pCbMappedCamera = nullptr;
+	}
+
+	m_pDevice.Reset();
 	__super::Free();
 }

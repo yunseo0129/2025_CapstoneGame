@@ -93,6 +93,8 @@ HRESULT CTexture::Bind_ShaderResource(ID3D12GraphicsCommandList* pCommandList, R
 
     // 3. 루트 테이블에 바인딩
     pCommandList->SetGraphicsRootDescriptorTable( (_uint)_eRootParameterIndex , hGpuHandle);
+    
+
 
     return S_OK;
 }
@@ -268,5 +270,6 @@ void CTexture::Free()
     m_Textures.clear();
     m_UploadBuffers.clear();
     m_pSrvDescriptorHeap.Reset();
+    m_pDevice.Reset();
     CComponent::Free(); // 부모 클래스 해제
 }

@@ -120,7 +120,7 @@ HRESULT CVIBuffer::Create_Buffer(ID3D12GraphicsCommandList* _pCommandList, ID3D1
         &DefaultheapProps,
         D3D12_HEAP_FLAG_NONE,
         &resourceDesc,
-        D3D12_RESOURCE_STATE_COPY_DEST,
+        D3D12_RESOURCE_STATE_COMMON,
         NULL,
         IID_PPV_ARGS(_ppDefaultBuffer)));
 
@@ -165,7 +165,8 @@ HRESULT CVIBuffer::Create_Buffer(ID3D12GraphicsCommandList* _pCommandList, ID3D1
 
 void CVIBuffer::Free()
 {
-    // CComponent::Free()가 호출됨.
-    // ComPtr을 쓰므로 별도의 Release 불필요.
+	m_pVertexBuffer.Reset();
+	m_pIndexBuffer.Reset();
+	m_pDevice.Reset();
     __super::Free();
 }
