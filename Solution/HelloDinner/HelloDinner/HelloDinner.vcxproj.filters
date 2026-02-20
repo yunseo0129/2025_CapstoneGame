@@ -150,6 +150,12 @@
     <Filter Include="소스 파일\02. Game\GameObject\Object">
       <UniqueIdentifier>{abee257d-9e76-488e-9a5b-bcfceaefba0e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\02. Game\GameObject\01. Camera">
+      <UniqueIdentifier>{188718ca-2dc7-45da-9e00-13df983572a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\GameObject\01. Camera\00. FPV">
+      <UniqueIdentifier>{17a405ee-327c-4a79-9215-8d7ec6f7717f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -260,6 +266,9 @@
     <ClInclude Include="Skybox.h">
       <Filter>소스 파일\02. Game\GameObject\Object</Filter>
     </ClInclude>
+    <ClInclude Include="Camera_FPV.h">
+      <Filter>소스 파일\02. Game\GameObject\01. Camera\00. FPV</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -351,6 +360,9 @@
     </ClCompile>
     <ClCompile Include="GameInstance.cpp">
       <Filter>소스 파일\01. Engine\99. GameInstance</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera_FPV.cpp">
+      <Filter>소스 파일\02. Game\GameObject\01. Camera\00. FPV</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -4,7 +4,7 @@
 
 class CCamera  : public CGameObject
 {
-public:
+protected:
 	struct CAMERA_DESC : public CGameObject::GAMEOBJECT_DESC
 	{
 		_float3			vEye = {};
@@ -58,7 +58,7 @@ protected:
 
 private:
 	// 朝五虞 Constant Buffer 持失
-	HRESULT Create_CameraBuffer ();
+	HRESULT Create_CameraBuffer();
 
 
 private:
