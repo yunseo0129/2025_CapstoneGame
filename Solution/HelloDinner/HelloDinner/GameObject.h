@@ -39,9 +39,9 @@ protected:
 	map<const _wstring, class CComponent*>		m_Components;
 	class CTransform* m_pTransformCom = { nullptr };
 
-	//
 	_uint										m_iData = {};
 	bool										m_bDead = false;
+	bool										m_bOnOff = true;
 
 public:
 	virtual CGameObject* Clone(void* pArg) = 0;
