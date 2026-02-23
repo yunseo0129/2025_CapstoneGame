@@ -4,11 +4,11 @@
 class CCamera_FPV final : public CCamera
 {
 public:
-	typedef struct : public CCamera::CAMERA_DESC
+	struct FPV_CAMERA_DESC : public CCamera::CAMERA_DESC
 	{
 		_float			fMouseSensor = {};
 		_float			fSpeedPerSec = {};
-	}FPV_CAMERA_DESC;
+	};
 
 private:
 	CCamera_FPV(EngineContext* pContext);
