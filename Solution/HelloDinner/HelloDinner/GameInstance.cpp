@@ -65,6 +65,8 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineCo
 	// 1. abstract 설정
 	// 2. Clone = 0;
 	// 3. 생성자, 소멸자 protected로 변경
+
+	// 카메라는 게임인스턴스에 있으면 안됨. 레이어에 있어야함 테스트할거면 메인에 있어야함
 	m_pCamera = new CCamera(_pcontext);
 
 	CCamera::CAMERA_DESC CameraDesc;
