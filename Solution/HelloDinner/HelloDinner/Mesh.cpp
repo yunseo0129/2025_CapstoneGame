@@ -2,7 +2,7 @@
 #include "GameInstance.h"
 
 
-CMesh::CMesh(ComPtr<ID3D12Device>& pDevice)
+CMesh::CMesh(ID3D12Device* pDevice)
 	: CVIBuffer{ pDevice }
 {
 }
@@ -54,7 +54,7 @@ HRESULT CMesh::Ready_VertexBuffer_For_Anim(class CModel* pModel)
 	return S_OK;
 }
 
-CMesh* CMesh::Create(ComPtr<ID3D12Device>& pDevice, EngineContext* pContext, CModel::TYPE eModelType, class CModel* pModel, _fmatrix PreTransformMatrix)
+CMesh* CMesh::Create(ID3D12Device* pDevice, EngineContext* pContext, CModel::TYPE eModelType, class CModel* pModel, _fmatrix PreTransformMatrix)
 {
 	CMesh* pInstance = new CMesh(pDevice);
 

@@ -1,11 +1,17 @@
 #include "VIBuffer.h"
 
 // engine_context까지는 필요없을 듯
-CVIBuffer::CVIBuffer(const ComPtr<ID3D12Device>& _device)
+CVIBuffer::CVIBuffer(ID3D12Device* _device)
     : CComponent(nullptr)
     , m_pDevice(_device)
 {
     m_ePrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	m_vertexBufferView.BufferLocation = 0;
+	m_vertexBufferView.SizeInBytes = 0;
+	m_vertexBufferView.StrideInBytes = 0;
+	m_indexBufferView.BufferLocation = 0;
+	m_indexBufferView.SizeInBytes = 0;
+	m_indexBufferView.Format = DXGI_FORMAT_UNKNOWN;
 }
 
 CVIBuffer::CVIBuffer(const CVIBuffer& Prototype)

@@ -146,6 +146,7 @@
     <ClInclude Include="Level_Loading.h" />
     <ClInclude Include="Level_Manager.h" />
     <ClInclude Include="Load_Manager.h" />
+    <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Object_Manager.h" />
@@ -193,6 +194,7 @@
     <ClCompile Include="MainApp.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Object_Manager.cpp" />

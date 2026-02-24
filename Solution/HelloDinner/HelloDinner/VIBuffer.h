@@ -7,7 +7,7 @@ class CVIBuffer abstract : public CComponent
 {
 protected:
     // 부모 생성자: Device와 Context(CommandList)를 받아옴
-    CVIBuffer(const ComPtr<ID3D12Device>& _device);
+    CVIBuffer(ID3D12Device* _device);
     // 복사 생성자: 프로토타입의 데이터를 복사 (얕은 복사로 리소스 공유)
     CVIBuffer(const CVIBuffer& Prototype);
     virtual ~CVIBuffer() = default;

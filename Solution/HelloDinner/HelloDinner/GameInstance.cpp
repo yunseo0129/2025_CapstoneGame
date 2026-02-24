@@ -67,25 +67,13 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineCo
 	// 3. 생성자, 소멸자 protected로 변경
 
 	// 카메라는 게임인스턴스에 있으면 안됨. 레이어에 있어야함 테스트할거면 메인에 있어야함
-	m_pCamera = new CCamera(_pcontext);
-
-	CCamera::CAMERA_DESC CameraDesc;
-	CameraDesc.vEye = { 0.f, 5.f, 10.f };
-	CameraDesc.vAt = { 0.f, 0.f, 0.f };
-	CameraDesc.fFovy = XMConvertToRadians(45.f);
-	CameraDesc.fAspect = static_cast<_float>(EngineDesc.iViewportWidth) / EngineDesc.iViewportHeight;
-	CameraDesc.fNear = 0.1f;
-	CameraDesc.fFar = 100.f;
-
-	if (FAILED(m_pCamera->Initialize(&CameraDesc)))
-		return E_FAIL;
 
 	return S_OK;
 }
 
 void CGameInstance::Update_Engine(_float fTimeDelta)
 {
-	m_pCamera->Update(fTimeDelta);
+
 	m_pObject_Manager->Late_Update(fTimeDelta);
 }
 
@@ -103,7 +91,6 @@ HRESULT CGameInstance::Render_Begin(const _float4& vClearColor)
 
 HRESULT CGameInstance::Draw()
 {
-	m_pCamera->Bind_CameraBuffer ( m_pCommandList.Get () , RootParameterIndex::Camera );
 	m_pRenderer->Draw_RenderObject ( m_pCommandList.Get () );
 	return S_OK;
 }
@@ -422,9 +409,6 @@ void CGameInstance::Free()
 
 	// 6. 프로토타입 해제 (텍스처/버퍼 원본 리소스 해제)
 	Safe_Release ( m_pPrototype_Manager );
-
-	// 7. 카메라 해제 (CameraBuffer ComPtr 해제)
-	Safe_Delete ( m_pCamera );
 
 	// 8. 셰이더 매니저 해제 (PSO, RootSignature 해제)
 	Safe_Release ( m_pShader_Manager );

@@ -1,6 +1,6 @@
 #include "VIBuffer_Skybox.h"
 
-CVIBuffer_Skybox::CVIBuffer_Skybox(const ComPtr<ID3D12Device>& _device)
+CVIBuffer_Skybox::CVIBuffer_Skybox(ID3D12Device* _device)
     : CVIBuffer(_device)
 {
 }
@@ -89,7 +89,7 @@ HRESULT CVIBuffer_Skybox::Initialize_Prototype(ID3D12GraphicsCommandList* _comma
 }
 
 
-CVIBuffer_Skybox* CVIBuffer_Skybox::Create(const ComPtr<ID3D12Device>& _device, ID3D12GraphicsCommandList* _commandList)
+CVIBuffer_Skybox* CVIBuffer_Skybox::Create(ID3D12Device* _device, ID3D12GraphicsCommandList* _commandList)
 {
     CVIBuffer_Skybox* pInstance = new CVIBuffer_Skybox(_device);
     if (FAILED(pInstance->Initialize_Prototype(_commandList)))

@@ -156,6 +156,9 @@
     <Filter Include="소스 파일\02. Game\GameObject\01. Camera\00. FPV">
       <UniqueIdentifier>{17a405ee-327c-4a79-9215-8d7ec6f7717f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\01. Engine\04. Components\02. Model\Material">
+      <UniqueIdentifier>{e4f7948b-114e-42d0-aeb0-59c7f1561b05}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -269,6 +272,9 @@
     <ClInclude Include="Camera_FPV.h">
       <Filter>소스 파일\02. Game\GameObject\01. Camera\00. FPV</Filter>
     </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>소스 파일\01. Engine\04. Components\02. Model\Material</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -363,6 +369,9 @@
     </ClCompile>
     <ClCompile Include="Camera_FPV.cpp">
       <Filter>소스 파일\02. Game\GameObject\01. Camera\00. FPV</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\02. Model\Material</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

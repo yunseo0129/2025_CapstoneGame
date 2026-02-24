@@ -33,11 +33,21 @@ private:
 	vector<class CMesh*>		m_Meshes;
 
 private:
+	// 메테리얼 총 갯수
+	_uint						m_iNumMaterials = {};
+	// 메테리얼들을 저장하는 벡터 -> 벡벡벡말고 메테리얼 클래스 하나만들어서 그냥 벡터로 만들것
+	vector<class CMaterial*>		m_Materials;
+
+private:
 	// 로컬 매트릭스처럼 사용될 미리 준비한 매트릭스임 회전, 크기 정보같은 초기값들을 담음
 	_float4x4					m_PreTransformMatrix = {};
 
 private:
 	HRESULT Ready_Meshes();
+	HRESULT Ready_Materials(const wchar_t* pModelFilePath);
+
+private:
+	HRESULT Bind_Material(_uint iMeshIndex, aiTextureType eType, _uint iTextureIndex);
 
 private:
 	ID3D12Device* m_pDevice = { nullptr };

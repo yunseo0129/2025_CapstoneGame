@@ -95,7 +95,6 @@ private:
 	class CRenderer*			m_pRenderer = { nullptr };
 	class CLoad_Manager*		m_pLoad_Manager = { nullptr };
 
-	class CCamera* m_pCamera = { nullptr };
 	ComPtr<ID3D12GraphicsCommandList> m_pCommandList = { nullptr };
 
 public:

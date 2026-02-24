@@ -7,7 +7,7 @@
 class CMesh final : public CVIBuffer
 {
 private:
-	CMesh(ComPtr<ID3D12Device>& pDevice);
+	CMesh(ID3D12Device* pDevice);
 	virtual ~CMesh() = default;
 
 public:
@@ -27,7 +27,7 @@ private:
 
 
 public:
-	static CMesh* Create(ComPtr<ID3D12Device>& pDevice, EngineContext* pContext, CModel::TYPE eModelType, class CModel* pModel, _fmatrix PreTransformMatrix);
+	static CMesh* Create(ID3D12Device* pDevice, EngineContext* pContext, CModel::TYPE eModelType, class CModel* pModel, _fmatrix PreTransformMatrix);
 	virtual CComponent* Clone(void* pArg) override;
 	virtual void Free() override;
 

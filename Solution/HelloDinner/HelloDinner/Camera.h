@@ -48,14 +48,6 @@ protected:
 	_float			m_fRotR = { 0.f };
 	_float			m_fRotY = { 0.f };
 
-protected:
-	// Pipeline에 카메라 관련 행렬들을 계산해서 넘겨주는 함수
-	// void Compute_PipeLineMatrices();
-	// (변경) 카메라가 직접 계산해서 자신이 가지고 있음
-	// Camera 정보는 Render 시작할 때 RootSignature에 한번 바인딩 하면됨
-	// GameObject로 관리하면 Render 할때마다 찾고 RenderQueue에서 카메라를 찾는 비용이 드니
-	// Level에서 카메라를 관리하는 방식으로 변경
-
 private:
 	// 카메라 Constant Buffer 생성
 	HRESULT Create_CameraBuffer();

@@ -3,6 +3,7 @@ C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloD
 C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\Common\DDSTextureLoader12.cpp;C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\x64\Debug\DDSTextureLoader12.obj
 C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\Component.cpp;C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\x64\Debug\Component.obj
 C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\Cube.cpp;C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\x64\Debug\Cube.obj
+C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\Camera_FPV.cpp;C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\x64\Debug\Camera_FPV.obj
 C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\GameInstance.cpp;C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\x64\Debug\GameInstance.obj
 C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\GameObject.cpp;C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\x64\Debug\GameObject.obj
 C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\Graphic_Device.cpp;C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\x64\Debug\Graphic_Device.obj
@@ -14,6 +15,7 @@ C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloD
 C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\Level_Manager.cpp;C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\x64\Debug\Level_Manager.obj
 C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\Load_Manager.cpp;C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\x64\Debug\Load_Manager.obj
 C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\MainApp.cpp;C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\x64\Debug\MainApp.obj
+C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\Material.cpp;C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\x64\Debug\Material.obj
 C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\Mesh.cpp;C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\x64\Debug\Mesh.obj
 C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\Model.cpp;C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\x64\Debug\Model.obj
 C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\Object_Manager.cpp;C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\x64\Debug\Object_Manager.obj
