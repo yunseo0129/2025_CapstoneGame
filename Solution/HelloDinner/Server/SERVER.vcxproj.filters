@@ -45,14 +45,4 @@
       <Filter>소스 파일\OverlappedEXP</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <Library Include="lua54.lib">
-      <Filter>리소스 파일</Filter>
-    </Library>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="npc.lua">
-      <Filter>리소스 파일</Filter>
-    </None>
-  </ItemGroup>
 </Project>
