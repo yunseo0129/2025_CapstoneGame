@@ -12,6 +12,7 @@ _uint CBase::AddRef()
 
 _uint CBase::Release()
 {
+
 	if (0 == m_iRefCnt)
 	{
 		Free();

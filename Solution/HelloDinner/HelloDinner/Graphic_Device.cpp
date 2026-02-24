@@ -2,25 +2,32 @@
 
 CGraphic_Device::CGraphic_Device()
 {
+	for ( int i = 0; i < m_iSwapChainBufferCount; i++ ) m_nFenceValues[i] = 0;
+	m_ScreenViewport = { 0, 0, Client::g_iWinSizeX, Client::g_iWinSizeY, 0.0f, 1.0f };
+	m_ScissorRect = { 0, 0, Client::g_iWinSizeX, Client::g_iWinSizeY };
 }
-
 
 CGraphic_Device::~CGraphic_Device()
 {
-	// 디바이스가 종료되기 전에 GPU가 모든 명령을 완료하도록 대기
-	FlushCommandQueue();
+
+}
+
+void CGraphic_Device::ResetCmdList ()
+{
+	// 명령 목록은 ExecuteCommandList를 통해 명령 대기열에 추가된 후에 재설정 가능
+	// 명령 목록을 재사용하면 메모리가 재사용 됨
+	ThrowIfFailed ( m_pCommandList.Get ()->Reset ( m_pDirectCmdListAlloc.Get () , nullptr ) );
+	//MSG_BOX ( "CmdList Reset" );
 }
 
 void CGraphic_Device::BeforeRender(const _float4& vClearColor)
 {
 	// 명령 레코드와 연결된 메모리 재사용
 	// 연결된 명령 목록이 GPU에 완료되었을 때만 재설정 가능.
-	ThrowIfFailed(m_pDirectCmdListAlloc->Reset());
+	ThrowIfFailed ( m_pDirectCmdListAlloc->Reset () );
 
-	// 명령 목록은 ExecuteCommandList를 통해 명령 대기열에 추가된 후에 재설정 가능
-	// 명령 목록을 재사용하면 메모리가 재사용 됨
-	ThrowIfFailed(m_pCommandList->Reset(m_pDirectCmdListAlloc.Get(), nullptr));
-
+	ResetCmdList ();
+	
 	// 자원 사용에 대한 상태 전환 (Present -> RenderTarget)
 	D3D12_RESOURCE_BARRIER barrier;
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -33,7 +40,6 @@ void CGraphic_Device::BeforeRender(const _float4& vClearColor)
 	m_pCommandList->ResourceBarrier(1, &barrier);
 
 	// 뷰포트와 ScissorRects 재설정
-	m_pCommandList->SetGraphicsRootSignature(m_pRootSignature.Get());
 	m_pCommandList->RSSetViewports(1, &m_ScreenViewport);
 	m_pCommandList->RSSetScissorRects(1, &m_ScissorRect);
 
@@ -45,6 +51,8 @@ void CGraphic_Device::BeforeRender(const _float4& vClearColor)
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = CurrentBackBufferView();
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = DepthStencilView();
 	m_pCommandList->OMSetRenderTargets(1, &rtvHandle, true, &dsvHandle);
+
+
 }
 
 void CGraphic_Device::AfterRender()
@@ -58,23 +66,79 @@ void CGraphic_Device::AfterRender()
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 
-	m_pCommandList->ResourceBarrier(1, &barrier);
+	m_pCommandList->ResourceBarrier (1 , &barrier);
 
-	// command list에 기록 완료
-	ThrowIfFailed(m_pCommandList->Close());
+	CloseCmdList();
 
-	// 명령 대기열에 명령 목록 추가
-	ID3D12CommandList* cmdsLists[] = { m_pCommandList.Get() };
-	m_pCommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
-	// 스왑체인 프로젝트
-	ThrowIfFailed(m_pSwapChain->Present(0, 0));
-	m_iCurrBackBuffer = (m_iCurrBackBuffer + 1) % m_iSwapChainBufferCount;
+#ifdef _WITH_PRESENT_PARAMETERS
+	DXGI_PRESENT_PARAMETERS dxgiPresentParameters;
+	dxgiPresentParameters.DirtyRectsCount = 0;
+	dxgiPresentParameters.pDirtyRects = NULL;
+	dxgiPresentParameters.pScrollRect = NULL;
+	dxgiPresentParameters.pScrollOffset = NULL;
+	m_pSwapChain->Present1(1, 0, &dxgiPresentParameters);
+#else
+#ifdef _WITH_SYNCH_SWAPCHAIN
+	m_pSwapChain->Present(1, 0);
+#else
+	HRESULT hr = m_pSwapChain->Present ( 0 , 0 );
+	if ( FAILED ( hr ) )
+	{
+		if ( hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET )
+		{
+			HRESULT removedReason = m_pD3dDevice->GetDeviceRemovedReason ();
+			wchar_t buf[128];
+			swprintf_s ( buf , L"Device Removed! Reason: 0x%08X\n" , ( unsigned int )removedReason );
+			OutputDebugString ( buf );
 
-	// 동기화 코드 -> 추후 수정 필요
-	FlushCommandQueue();
+			// DRED 데이터 조회
+			ComPtr<ID3D12DeviceRemovedExtendedData> pDred;
+			if ( SUCCEEDED ( m_pD3dDevice->QueryInterface ( IID_PPV_ARGS ( &pDred ) ) ) )
+			{
+				D3D12_DRED_AUTO_BREADCRUMBS_OUTPUT DredAutoBreadcrumbsOutput;
+				if ( SUCCEEDED ( pDred->GetAutoBreadcrumbsOutput ( &DredAutoBreadcrumbsOutput ) ) )
+				{
+					OutputDebugString ( L"[DRED] Auto Breadcrumbs:\n" );
+					for ( auto pNode = DredAutoBreadcrumbsOutput.pHeadAutoBreadcrumbNode; pNode; pNode = pNode->pNext )
+					{
+						swprintf_s ( buf , L"  Command List: %s, Count: %u, Completed: %u\n" ,
+							pNode->pCommandListDebugNameW ? pNode->pCommandListDebugNameW : L"(unnamed)" ,
+							pNode->BreadcrumbCount ,
+							pNode->pLastBreadcrumbValue ? *pNode->pLastBreadcrumbValue : 0 );
+						OutputDebugString ( buf );
+					}
+				}
+				D3D12_DRED_PAGE_FAULT_OUTPUT DredPageFaultOutput;
+				if ( SUCCEEDED ( pDred->GetPageFaultAllocationOutput ( &DredPageFaultOutput ) ) )
+				{
+					swprintf_s ( buf , L"[DRED] Page Fault VA: 0x%llX\n" , DredPageFaultOutput.PageFaultVA );
+					OutputDebugString ( buf );
+				}
+			}
+
+			ThrowIfFailed ( removedReason );
+		}
+		ThrowIfFailed ( hr );
+	}
+#endif
+#endif
+
+	MoveToNextFrame();
 }
 
+void CGraphic_Device::CloseCmdList ()
+{
+	// command list에 기록 완료
+	ThrowIfFailed(m_pCommandList->Close ());
+
+	// 명령 대기열에 명령 목록 추가
+	ID3D12CommandList* cmdsLists[] = { m_pCommandList.Get () };
+	m_pCommandQueue->ExecuteCommandLists ( _countof ( cmdsLists ) , cmdsLists );
+
+	//MSG_BOX ( "CmdList Close" );
+	WaitForGpuComplete ();
+}
 
 bool CGraphic_Device::InitDirect3D(HWND& _hwnd, EngineContext* _pcontext)
 {
@@ -86,11 +150,10 @@ bool CGraphic_Device::InitDirect3D(HWND& _hwnd, EngineContext* _pcontext)
 #endif
 
 	CreateCommandObjects();
-	CreateSwapChain();
 	CreateRtvAndDsvDescriptorHeaps();
-	// CreateRootSignature(); level에서 처리
-
-	OnResize();
+	CreateSwapChain ();
+	CreateRenderTargetViews ();
+	CreateDepthStencilView ();
 
 	_pcontext->device = m_pD3dDevice.Get();
 	_pcontext->cmdList = m_pCommandList.Get();
@@ -99,27 +162,30 @@ bool CGraphic_Device::InitDirect3D(HWND& _hwnd, EngineContext* _pcontext)
 	_pcontext->dsvHeap = m_pDsvHeap.Get();
 	// srvHeap는 다른 곳에서 처리
 
-	Safe_AddRef(m_pD3dDevice);
-	Safe_AddRef(m_pCommandList);
-	Safe_AddRef(m_pCommandQueue);
-	Safe_AddRef(m_pRtvHeap);
-	Safe_AddRef(m_pDsvHeap);
-
 	return true;
 }
 
 void CGraphic_Device::CreateDevice()
 {
+	UINT nDXGIFactoryFlags = 0;
 #if defined(DEBUG) || defined(_DEBUG) 
 	// 디버그 레이어 활성화
 	{
 		ComPtr<ID3D12Debug> debugController;
 		ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
 		debugController->EnableDebugLayer();
+
+		ComPtr<ID3D12DeviceRemovedExtendedDataSettings> pDredSettings;
+		if ( SUCCEEDED ( D3D12GetDebugInterface ( IID_PPV_ARGS ( &pDredSettings ) ) ) )
+		{
+			pDredSettings->SetAutoBreadcrumbsEnablement ( D3D12_DRED_ENABLEMENT_FORCED_ON );
+			pDredSettings->SetPageFaultEnablement ( D3D12_DRED_ENABLEMENT_FORCED_ON );
+		}
 	}
+nDXGIFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
 #endif
 
-ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(&m_pDxgiFactory)));
+ThrowIfFailed(CreateDXGIFactory2( nDXGIFactoryFlags, IID_PPV_ARGS(&m_pDxgiFactory)));
 
 // 하드웨어 디바이스 생성
 HRESULT hardwareResult = D3D12CreateDevice(
@@ -162,6 +228,9 @@ ThrowIfFailed(m_pD3dDevice->CheckFeatureSupport(
 
 m_i4xMsaaQuality = msQualityLevels.NumQualityLevels;
 assert(m_i4xMsaaQuality > 0 && "Unexpected MSAA quality level.");
+
+for ( UINT i = 0; i < m_iSwapChainBufferCount; i++ ) m_nFenceValues[i] = 0;
+m_hFenceEvent = ::CreateEvent ( NULL , FALSE , FALSE , NULL );
 }
 
 void CGraphic_Device::CreateSwapChain()
@@ -169,7 +238,7 @@ void CGraphic_Device::CreateSwapChain()
 	// 스왑체인 생성 전에 기존 스왑체인 해제
 	m_pSwapChain.Reset();
 
-	DXGI_SWAP_CHAIN_DESC sd;
+	DXGI_SWAP_CHAIN_DESC sd = {};
 	sd.BufferDesc.Width = Client::g_iWinSizeX;
 	sd.BufferDesc.Height = Client::g_iWinSizeY;
 	sd.BufferDesc.RefreshRate.Numerator = 60;
@@ -177,8 +246,8 @@ void CGraphic_Device::CreateSwapChain()
 	sd.BufferDesc.Format = m_BackBufferFormat;
 	sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 	sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-	sd.SampleDesc.Count = m_is4xMsaaState ? 4 : 1;
-	sd.SampleDesc.Quality = m_is4xMsaaState ? (m_i4xMsaaQuality - 1) : 0;
+	sd.SampleDesc.Count = 1;
+	sd.SampleDesc.Quality = 0;
 	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	sd.BufferCount = m_iSwapChainBufferCount;
 	sd.OutputWindow = m_hMainWnd;
@@ -187,10 +256,16 @@ void CGraphic_Device::CreateSwapChain()
 	sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
 	// 스왑체인 생성
-	ThrowIfFailed(m_pDxgiFactory->CreateSwapChain(
-		m_pCommandQueue.Get(),
-		&sd,
-		m_pSwapChain.GetAddressOf()));
+	ComPtr<IDXGISwapChain> swapChain;
+	ThrowIfFailed ( m_pDxgiFactory->CreateSwapChain (
+		m_pCommandQueue.Get () ,
+		&sd ,
+		swapChain.GetAddressOf () ) );
+
+	ThrowIfFailed ( swapChain.As ( &m_pSwapChain ) );
+
+	m_pDxgiFactory->MakeWindowAssociation ( m_hMainWnd , DXGI_MWA_NO_ALT_ENTER );
+	m_iCurrBackBuffer = m_pSwapChain->GetCurrentBackBufferIndex ();
 }
 
 void CGraphic_Device::CreateRtvAndDsvDescriptorHeaps()
@@ -241,27 +316,28 @@ void CGraphic_Device::CreateCommandObjects()
 	m_pCommandList->Close();
 }
 
-void CGraphic_Device::FlushCommandQueue()
+void CGraphic_Device::WaitForGpuComplete()
 {
-	// 현재 펜스 값 증가
-	m_iCurrentFence++;
+	const UINT64 nFenceValue = ++m_nFenceValues[m_iCurrBackBuffer];
+	HRESULT hResult = m_pCommandQueue->Signal(m_pFence.Get(), nFenceValue);
 
-	// 커맨드 큐에 신호를 보낸다.
-	// 이 신호는 GPU가 커맨드 큐에 제출된 모든 명령을 실행한 후에야 처리됨
-	// 즉, 이 신호가 처리되었다는 것은 GPU가 모든 명령을 완료했다는 의미
-	ThrowIfFailed(m_pCommandQueue->Signal(m_pFence.Get(), m_iCurrentFence));
-
-	// GPU가 현재 펜스 값에 도달했는지 확인
-	if (m_pFence->GetCompletedValue() < m_iCurrentFence)
+	if (m_pFence->GetCompletedValue() < nFenceValue)
 	{
-		HANDLE eventHandle = CreateEvent(nullptr, false, false, NULL);
+		hResult = m_pFence->SetEventOnCompletion(nFenceValue, m_hFenceEvent);
+		::WaitForSingleObject(m_hFenceEvent, INFINITE);
+	}
+}
 
-		// 펜스가 현재 펜스 값에 도달하면 이벤트가 신호됨 
-		ThrowIfFailed(m_pFence->SetEventOnCompletion(m_iCurrentFence, eventHandle));
+void CGraphic_Device::MoveToNextFrame()
+{
+	m_iCurrBackBuffer = m_pSwapChain.Get()->GetCurrentBackBufferIndex();
+	UINT64 nFenceValue = ++m_nFenceValues[m_iCurrBackBuffer];
+	HRESULT hResult = m_pCommandQueue->Signal(m_pFence.Get(), nFenceValue);
 
-		// 이벤트가 신호될 때까지 대기
-		WaitForSingleObject(eventHandle, INFINITE);
-		CloseHandle(eventHandle);
+	if (m_pFence->GetCompletedValue() < nFenceValue)
+	{
+		hResult = m_pFence->SetEventOnCompletion(nFenceValue, m_hFenceEvent);
+		::WaitForSingleObject(m_hFenceEvent, INFINITE);
 	}
 }
 
@@ -278,119 +354,60 @@ void CGraphic_Device::Set4xMsaaState(bool _value)
 
 		// 다중샘플링 앤티앨리어싱 설정이 바뀌면 스왑체인과 관련된 자원을 모두 다시 만들어야 한다.
 		CreateSwapChain();
-		OnResize();
+		CreateRenderTargetViews ();
+		CreateDepthStencilView ();
 	}
 }
 
-void CGraphic_Device::OnResize()
+void CGraphic_Device::CreateRenderTargetViews ()
 {
-	// 기존 디바이스와 스왑체인, 커맨드 얼로케이터가 유효한지 확인
-	assert(m_pD3dDevice);
-	assert(m_pSwapChain);
-	assert(m_pDirectCmdListAlloc);
-
-	// 리소스 변경전에 Flush
-	FlushCommandQueue();
-
-	ThrowIfFailed(m_pCommandList->Reset(m_pDirectCmdListAlloc.Get(), nullptr));
-
-	// 이전 리소스 해제
-	for (int i = 0; i < m_iSwapChainBufferCount; ++i)
-		m_pSwapChainBuffer[i].Reset();
-	m_pDepthStencilBuffer.Reset();
-
-	// 스왑체인 버퍼 크기 조절
-	ThrowIfFailed(m_pSwapChain->ResizeBuffers(
-		m_iSwapChainBufferCount,
-		Client::g_iWinSizeX, Client::g_iWinSizeY,
-		m_BackBufferFormat,
-		DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
-
-	m_iCurrBackBuffer = 0;
-
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(m_pRtvHeap->GetCPUDescriptorHandleForHeapStart());
-	for (UINT i = 0; i < m_iSwapChainBufferCount; i++)
+	D3D12_CPU_DESCRIPTOR_HANDLE d3dRtvCPUDescriptorHandle = m_pRtvHeap->GetCPUDescriptorHandleForHeapStart ();
+	for ( UINT i = 0; i < m_iSwapChainBufferCount; i++ )
 	{
-		ThrowIfFailed(m_pSwapChain->GetBuffer(i, IID_PPV_ARGS(&m_pSwapChainBuffer[i])));
-		m_pD3dDevice->CreateRenderTargetView(m_pSwapChainBuffer[i].Get(), nullptr, rtvHeapHandle);
-		rtvHeapHandle.ptr += m_iRtvDescriptorSize;
+		ThrowIfFailed ( m_pSwapChain->GetBuffer ( i , __uuidof( ID3D12Resource ) , ( void** )&m_pSwapChainBuffer[i] ) );
+		m_pD3dDevice->CreateRenderTargetView ( m_pSwapChainBuffer[i].Get() , NULL , d3dRtvCPUDescriptorHandle);
+		d3dRtvCPUDescriptorHandle.ptr += m_iRtvDescriptorSize;
 	}
+}
 
-	// 깊이/스텐실 버퍼 생성
-	D3D12_RESOURCE_DESC depthStencilDesc;
-	depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	depthStencilDesc.Alignment = 0;
-	depthStencilDesc.Width = Client::g_iWinSizeX;
-	depthStencilDesc.Height = Client::g_iWinSizeY;
-	depthStencilDesc.DepthOrArraySize = 1;
-	depthStencilDesc.MipLevels = 1;
+void CGraphic_Device::CreateDepthStencilView ()
+{
+	D3D12_RESOURCE_DESC d3dResourceDesc;
+	d3dResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	d3dResourceDesc.Alignment = 0;
+	d3dResourceDesc.Width = Client::g_iWinSizeX;
+	d3dResourceDesc.Height = Client::g_iWinSizeY;
+	d3dResourceDesc.DepthOrArraySize = 1;
+	d3dResourceDesc.MipLevels = 1;
+	d3dResourceDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	d3dResourceDesc.SampleDesc.Count = 1;
+	d3dResourceDesc.SampleDesc.Quality = 0;
+	d3dResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+	d3dResourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
-	// 1. SRV 형식: DXGI_FORMAT_R24_UNORM_X8_TYPEless
-	// 2. DSV 형식: DXGI_FORMAT_D24_UNORM_S8_UINT
-	depthStencilDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
+	D3D12_HEAP_PROPERTIES d3dHeapProperties;
+	::ZeroMemory ( &d3dHeapProperties , sizeof ( D3D12_HEAP_PROPERTIES ) );
+	d3dHeapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
+	d3dHeapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+	d3dHeapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+	d3dHeapProperties.CreationNodeMask = 1;
+	d3dHeapProperties.VisibleNodeMask = 1;
 
-	depthStencilDesc.SampleDesc.Count = m_is4xMsaaState ? 4 : 1;
-	depthStencilDesc.SampleDesc.Quality = m_is4xMsaaState ? (m_i4xMsaaQuality - 1) : 0;
-	depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-	depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+	D3D12_CLEAR_VALUE d3dClearValue;
+	d3dClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	d3dClearValue.DepthStencil.Depth = 1.0f;
+	d3dClearValue.DepthStencil.Stencil = 0;
 
-	D3D12_CLEAR_VALUE optClear;
-	optClear.Format = m_DepthStencilFormat;
-	optClear.DepthStencil.Depth = 1.0f;
-	optClear.DepthStencil.Stencil = 0;
+	m_pD3dDevice->CreateCommittedResource ( &d3dHeapProperties , D3D12_HEAP_FLAG_NONE , &d3dResourceDesc , D3D12_RESOURCE_STATE_DEPTH_WRITE , &d3dClearValue , __uuidof( ID3D12Resource ) , ( void** )&m_pDepthStencilBuffer );
 
-	D3D12_HEAP_PROPERTIES heapProps;
-	heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
-	heapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-	heapProps.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-	heapProps.CreationNodeMask = 1;
-	heapProps.VisibleNodeMask = 1;
+	D3D12_DEPTH_STENCIL_VIEW_DESC d3dDepthStencilViewDesc;
+	::ZeroMemory ( &d3dDepthStencilViewDesc , sizeof ( D3D12_DEPTH_STENCIL_VIEW_DESC ) );
+	d3dDepthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	d3dDepthStencilViewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+	d3dDepthStencilViewDesc.Flags = D3D12_DSV_FLAG_NONE;
 
-	ThrowIfFailed(m_pD3dDevice->CreateCommittedResource(
-		&heapProps,
-		D3D12_HEAP_FLAG_NONE,
-		&depthStencilDesc,
-		D3D12_RESOURCE_STATE_COMMON,
-		&optClear,
-		IID_PPV_ARGS(m_pDepthStencilBuffer.GetAddressOf())));
-
-	// 리소스 형식 설정
-	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
-	dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
-	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-	dsvDesc.Format = m_DepthStencilFormat;
-	dsvDesc.Texture2D.MipSlice = 0;
-	m_pD3dDevice->CreateDepthStencilView(m_pDepthStencilBuffer.Get(), &dsvDesc, DepthStencilView());
-
-	// 리소스 상태 전환 (COMMON -> DEPTH_WRITE)
-	D3D12_RESOURCE_BARRIER barrier;
-	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	barrier.Transition.pResource = m_pDepthStencilBuffer.Get();
-	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_DEPTH_WRITE;
-
-
-	m_pCommandList->ResourceBarrier(1, &barrier);
-
-	// 명령 목록 닫기 및 실행
-	ThrowIfFailed(m_pCommandList->Close());
-	ID3D12CommandList* cmdsLists[] = { m_pCommandList.Get() };
-	m_pCommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
-
-	// 동기화
-	FlushCommandQueue();
-
-	// client 영역에 맞게 뷰포트와 시저렉트 설정
-	m_ScreenViewport.TopLeftX = 0;
-	m_ScreenViewport.TopLeftY = 0;
-	m_ScreenViewport.Width = static_cast<float>(Client::g_iWinSizeX);
-	m_ScreenViewport.Height = static_cast<float>(Client::g_iWinSizeY);
-	m_ScreenViewport.MinDepth = 0.0f;
-	m_ScreenViewport.MaxDepth = 1.0f;
-
-	m_ScissorRect = { 0, 0, Client::g_iWinSizeX, Client::g_iWinSizeY };
+	D3D12_CPU_DESCRIPTOR_HANDLE d3dDsvCPUDescriptorHandle = m_pDsvHeap->GetCPUDescriptorHandleForHeapStart ();
+	m_pD3dDevice->CreateDepthStencilView ( m_pDepthStencilBuffer.Get() , &d3dDepthStencilViewDesc , d3dDsvCPUDescriptorHandle);
 }
 
 ID3D12Resource* CGraphic_Device::CurrentBackBuffer()const
@@ -503,11 +520,45 @@ CGraphic_Device* CGraphic_Device::Create(HWND _hwnd, EngineContext* _pcontext)
 
 void CGraphic_Device::Free()
 {
+	// 디바이스가 종료되기 전에 GPU가 모든 명령을 완료하도록 대기
+	WaitForGpuComplete();
+	if (m_hFenceEvent)
+	{
+		::CloseHandle(m_hFenceEvent);
+		m_hFenceEvent = nullptr;
+	}
+	// ComPtr은 Reset() 또는 소멸자에서 자동 Release되지만,
+	// 명시적으로 해제 순서를 지정하는 것이 안전합니다.
+	m_pDepthStencilBuffer.Reset();
+	for (int i = 0; i < m_iSwapChainBufferCount; ++i)
+		m_pSwapChainBuffer[i].Reset();
 
-	Safe_Release(m_pD3dDevice);
-	Safe_Release(m_pCommandQueue);
-	Safe_Release(m_pCommandList);
-	Safe_Release(m_pRtvHeap);
-	Safe_Release(m_pDsvHeap);
-	
+	m_pRootSignature.Reset();
+	m_pFence.Reset();
+	m_pCommandList.Reset();
+	m_pDirectCmdListAlloc.Reset();
+	m_pCommandQueue.Reset();
+
+	m_pDsvHeap.Reset();
+	m_pRtvHeap.Reset();
+	m_pSwapChain.Reset();
+	// Device Reset 전에 남은 객체 확인
+#ifdef _DEBUG
+	{
+		ComPtr<ID3D12DebugDevice> debugDevice;
+		if (SUCCEEDED(m_pD3dDevice->QueryInterface(IID_PPV_ARGS(&debugDevice))))
+		{
+			m_pD3dDevice.Reset(); // Device 먼저 해제
+			debugDevice->ReportLiveDeviceObjects(
+				D3D12_RLDO_DETAIL | D3D12_RLDO_IGNORE_INTERNAL);
+			// debugDevice가 스코프 종료 시 자동 해제
+		}
+	}
+#else
+	m_pD3dDevice.Reset();
+#endif
+
+	m_pDxgiFactory.Reset();
+	__super::Free();
+
 }

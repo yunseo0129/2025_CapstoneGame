@@ -1,18 +1,34 @@
 #pragma once
-#include "stdafx.h"
 
-class CTimer
+#include "Base.h"
+
+class CTimer final : public CBase
 {
-public:
-	CTimer();
-	~CTimer() = default;
+private:
+	CTimer(void);
+	virtual ~CTimer(void) = default;
 
-	void Tick();
-	FLOAT GetElapsedTime() const;
+public:
+	_float Get_TimeDelta(void) const {
+		return m_fTimeDelta;
+	}
+
+public:
+	HRESULT	Ready_Timer(void);
+	void Update_Timer(void);
 
 private:
-	LARGE_INTEGER	m_prev;
-	LARGE_INTEGER	m_frequency;
-	FLOAT			m_deltaTime;
+	LARGE_INTEGER			m_FrameTime = {};
+	LARGE_INTEGER			m_FixTime = {};
+	LARGE_INTEGER			m_LastTime = {};
+	LARGE_INTEGER			m_CpuTick = {};
+
+private:
+	_float					m_fTimeDelta = {};
+
+public:
+	static CTimer* Create(void);
+	virtual void Free(void) override;
+
 };
 

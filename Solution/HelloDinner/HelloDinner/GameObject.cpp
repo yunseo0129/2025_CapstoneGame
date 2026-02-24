@@ -50,7 +50,7 @@ void CGameObject::Late_Update(_float fTimeDelta)
 {
 }
 
-void CGameObject::Render(const ComPtr<ID3D12GraphicsCommandList>& _commandList)
+void CGameObject::Render(ID3D12GraphicsCommandList* _commandList)
 {
 }
 
@@ -58,8 +58,11 @@ void CGameObject::Free()
 {
 	__super::Free();
 
-	for (auto& Pair : m_Components)
+	for (auto& Pair : m_Components) {
 		Safe_Release(Pair.second);
+		Safe_Release(Pair.second);
+		// 두번 호출 해야지 m_Components의 참조 카운트가 0이 되어서 객체가 해제된다.
+	}
 	m_Components.clear();
 
 	Safe_Release(m_pTransformCom);
@@ -76,10 +79,17 @@ CComponent* CGameObject::Find_Component(const _wstring& strComponentTag)
 	return iter->second;
 }
 
+const _float4x4* CGameObject::Get_WorldMatrix4x4Ptr()
+{
+	return m_pTransformCom->Get_WorldFloat4x4_Ptr();
+}
+
 HRESULT CGameObject::Add_Component(_uint iPrototypeLevelIndex, const _wstring& strPrototypeTag, const _wstring& strComponentTag, CComponent** ppOut, void* pArg)
 {
-	if (nullptr != Find_Component(strComponentTag))
+	if (nullptr != Find_Component(strComponentTag)) {
+		MSG_BOX("Failed to Add_Component : Component with the same tag already exists.");
 		return E_FAIL;
+	}
 
 	CComponent* pComponent = static_cast<CComponent*>(m_pGameInstance->Clone_Prototype(Engine::PROTOTYPE::PROTO_COMPONENT, iPrototypeLevelIndex, strPrototypeTag, pArg));
 	if (nullptr == pComponent)

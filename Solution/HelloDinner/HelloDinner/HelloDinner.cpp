@@ -2,8 +2,10 @@
 //
 
 #include "stdafx.h"
-#include "MainApp.h"
 #include "HelloDinner.h"
+
+#include "MainApp.h"
+#include "GameInstance.h"
 
 #define MAX_LOADSTRING 100
 
@@ -47,10 +49,23 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     if (nullptr == pMainApp)
         return FALSE;
 
+    CGameInstance* pGameInstance = CGameInstance::GetInstance();
+    if (nullptr == pGameInstance)
+        return FALSE;
+
+    Safe_AddRef(pGameInstance);
+
+    if (FAILED(pGameInstance->Add_Timer(TEXT("Timer_Default"))))
+        return E_FAIL;
+    if (FAILED(pGameInstance->Add_Timer(TEXT("Timer_60"))))
+        return E_FAIL;
+
+    _float		fTimeAcc = { 0.f };
+
     hAccelTable = ::LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_HELLODINNER));
 
     // 기본 메시지 루프입니다:
-    while (GetMessage(&msg, nullptr, 0, 0))
+    while (true)
     {
         if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
@@ -62,11 +77,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                 DispatchMessage(&msg);
             }
         }
-        else
-        {
-            pMainApp->FrameAdvance();
+        else {
+            pGameInstance->Update_TimeDelta ( TEXT ( "Timer_60" ) );
+            pMainApp->Update ( pGameInstance->Get_TimeDelta ( TEXT ( "Timer_60" ) ) );
+            pMainApp->Render ();
         }
     }
+
+    Safe_Release(pGameInstance);
+
+    Safe_Release(pMainApp);
 
     //gGameFramework.OnDestroy();
 

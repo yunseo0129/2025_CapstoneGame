@@ -1,39 +1,77 @@
 #include "Mesh.h"
+#include "GameInstance.h"
 
-void CMesh::Render(const ComPtr<ID3D12GraphicsCommandList>& _commandList) const
+
+CMesh::CMesh(ID3D12Device* pDevice)
+	: CVIBuffer{ pDevice }
 {
-	_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
-	_commandList->DrawInstanced(m_iVertices, 1, 0, 0);
 }
 
-void CMesh::ReleaseUploadBuffer()
+HRESULT CMesh::Initialize_Prototype(CModel::TYPE eModelType, class CModel* pModel, _fmatrix PreTransformMatrix)
 {
-	if (m_pVertexUploadBuffer) m_pVertexUploadBuffer.Reset();
+	m_pGameInstance->Read_File(m_szName);
+
+	// 이 매쉬의 정점 개수 저장해줘야할듯!
+	m_pGameInstance->Read_File(m_iVertices);
+	// 이 매수의 삼각형 개수 저장해줘야할듯함!
+	m_pGameInstance->Read_File(m_iIndices);
+	m_eIndexFormat = DXGI_FORMAT_R32_UINT;
+	m_ePrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+#pragma region VERTEX_BUFFER	
+
+	HRESULT hr = CModel::TYPE_NONANIM == eModelType ? Ready_VertexBuffer_For_NonAnim(PreTransformMatrix) : Ready_VertexBuffer_For_Anim(pModel);
+
+	if (FAILED(hr))
+		return E_FAIL;
+
+
+#pragma endregion
+
+#pragma region INDEX_BUFFER
+	// 인덱스 정보 받아서 버퍼 생성
+
+#pragma endregion
+
+	return S_OK;
 }
 
-void CMesh::SetHeapProperties(D3D12_HEAP_PROPERTIES& _heapProps, D3D12_HEAP_TYPE _type)
+HRESULT CMesh::Initialize(void* pArg)
 {
-	_heapProps.Type = _type;
-	_heapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-	_heapProps.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-	_heapProps.CreationNodeMask = 1;
-	_heapProps.VisibleNodeMask = 1;
+	return S_OK;
 }
 
-void CMesh::SetResourceDesc(D3D12_RESOURCE_DESC& _resourceDesc, UINT64 _width)
+HRESULT CMesh::Ready_VertexBuffer_For_NonAnim(_fmatrix PreTransformMatrix)
 {
-	_resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	_resourceDesc.Alignment = 0;
-	_resourceDesc.Width = _width;
-	_resourceDesc.Height = 1;
-	_resourceDesc.DepthOrArraySize = 1;
-	_resourceDesc.MipLevels = 1;
-	_resourceDesc.Format = DXGI_FORMAT_UNKNOWN;
-	_resourceDesc.SampleDesc.Count = 1;
-	_resourceDesc.SampleDesc.Quality = 0;
-	_resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-	_resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+	// 정보 받아서 buffer 생성
+	return S_OK;
 }
 
+HRESULT CMesh::Ready_VertexBuffer_For_Anim(class CModel* pModel)
+{
+	// 정보 받아서 buffer 생성
 
+	return S_OK;
+}
+
+CMesh* CMesh::Create(ID3D12Device* pDevice, EngineContext* pContext, CModel::TYPE eModelType, class CModel* pModel, _fmatrix PreTransformMatrix)
+{
+	CMesh* pInstance = new CMesh(pDevice);
+
+	if (FAILED(pInstance->Initialize_Prototype(eModelType, pModel, PreTransformMatrix)))
+	{
+		MSG_BOX("Failed to Created : CMesh");
+		Safe_Release(pInstance);
+	}
+	return pInstance;
+}
+
+CComponent* CMesh::Clone(void* pArg)
+{
+	return nullptr;
+}
+
+void CMesh::Free()
+{
+	__super::Free();
+}

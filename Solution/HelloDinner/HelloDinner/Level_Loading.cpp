@@ -1,0 +1,107 @@
+#include "stdafx.h"
+#include "Level_Loading.h"
+
+#include "GameInstance.h"
+
+#include "VIBuffer_Cube.h"
+#include "VIBuffer_Skybox.h"
+#include "Texture.h"
+#include "Cube.h"
+#include "Skybox.h"
+#include "Renderer.h"
+
+CLevel_Loading::CLevel_Loading(ID3D12Device* pDevice, EngineContext* pContext)
+	: CLevel{ pDevice, pContext }
+	, m_pDevice{ pDevice }
+	, m_pContext{ pContext }
+	, m_pGameInstance{ CGameInstance::GetInstance() }
+{
+	
+}
+
+HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
+{
+	m_eNextLevelID = eNextLevelID;
+
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_Component_VIBuffer_VtxCube",
+		CVIBuffer_Cube::Create(m_pDevice, m_pContext->cmdList))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_Component_VIBuffer_Skybox",
+		CVIBuffer_Skybox::Create(m_pDevice, m_pContext->cmdList))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_Component_Texture_Cube",
+		CTexture::Create(m_pDevice, m_pContext->cmdList, L"Resources/Textures/Rock.dds", 1))))
+		return E_FAIL;
+	
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_Component_Texture_Skybox",
+		CTexture::Create(m_pDevice, m_pContext->cmdList, L"Resources/Textures/Skybox_Cube.dds", 1, TEX_CUBE))))
+		return E_FAIL;
+
+	Ready_TestLoader();
+
+	// m_pLoader = CLoader::Create(m_pDevice, m_pContext, m_eNextLevelID)
+
+	return S_OK;
+}
+
+void CLevel_Loading::Update(_float fTimeDelta)
+{
+}
+
+HRESULT CLevel_Loading::Render()
+{
+
+#ifdef _DEBUG
+	// m_pLoader->Show_Debug();
+#endif
+
+	return S_OK;
+}
+
+HRESULT CLevel_Loading::Ready_TestLoader()
+{
+	// 큐브 하나 그려보기
+	CCube* pCube = CCube::Create(m_pContext);
+
+	
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_GameObject_Cube", pCube)))
+		return E_FAIL;
+	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, L"Prototype_GameObject_Cube", LEVEL_LOADING, L"Layer_Test", nullptr))) {
+		MSG_BOX("Failed to Add GameObject To Layer : Cube");
+		return E_FAIL;
+	}
+	
+	
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_GameObject_Skybox", CSkybox::Create(m_pContext))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, L"Prototype_GameObject_Skybox", LEVEL_LOADING, L"Layer_Skybox", nullptr))) {
+		MSG_BOX("Failed to Add GameObject To Layer : Skybox");
+		return E_FAIL;
+	}
+	
+	
+	return S_OK;
+}
+
+CLevel_Loading* CLevel_Loading::Create(ID3D12Device* pDevice, EngineContext* pContext, LEVELID eNextLevelID)
+{
+	CLevel_Loading* pInstance = new CLevel_Loading(pDevice, pContext);
+
+	if (FAILED(pInstance->Initialize(eNextLevelID)))
+	{
+		MSG_BOX("Failed to Created : CLevel_Loading");
+		Safe_Release(pInstance);
+	}
+
+	return pInstance;
+}
+
+void CLevel_Loading::Free()
+{
+	__super::Free();
+
+}

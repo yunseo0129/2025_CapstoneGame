@@ -1,27 +1,34 @@
 #pragma once
-#include "stdafx.h"
 
-// Index Buffer 미사용
-class CMesh abstract
+#include "VIBuffer.h"
+#include "Model.h"
+
+//		VIBuffer 상속
+class CMesh final : public CVIBuffer
 {
-public:
-	CMesh() = default;
+private:
+	CMesh(ID3D12Device* pDevice);
 	virtual ~CMesh() = default;
 
-	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
-	virtual void ReleaseUploadBuffer();
-	virtual void SetHeapProperties(D3D12_HEAP_PROPERTIES& _heapProps, D3D12_HEAP_TYPE _type);
-	virtual void SetResourceDesc(D3D12_RESOURCE_DESC& _resourceDesc, UINT64 _width);
+public:
+	// 멤버변수 외에 바이너리해야 될 것 있음
+	virtual HRESULT Initialize_Prototype(CModel::TYPE eModelType, class CModel* pModel, _fmatrix PreTransformMatrix);
+	virtual HRESULT Initialize(void* pArg);
 
-protected:
-	UINT						m_iVertices;
-	ComPtr<ID3D12Resource>		m_pVertexBuffer;
-	ComPtr<ID3D12Resource>		m_pVertexUploadBuffer;
-	D3D12_VERTEX_BUFFER_VIEW	m_vertexBufferView;
+public:
+	// 애님모델과 논애님모델은 정점버퍼를 따로 사용한다
+	// 바이너리화 해야할 것 있음
+	HRESULT Ready_VertexBuffer_For_NonAnim(_fmatrix PreTransformMatrix);
+	HRESULT Ready_VertexBuffer_For_Anim(class CModel* pModel);
+
+private:
+	// 이 매쉬의 이름
+	_char						m_szName[MAX_PATH] = "";
+
+
+public:
+	static CMesh* Create(ID3D12Device* pDevice, EngineContext* pContext, CModel::TYPE eModelType, class CModel* pModel, _fmatrix PreTransformMatrix);
+	virtual CComponent* Clone(void* pArg) override;
+	virtual void Free() override;
+
 };
-
-
-
-
-
-

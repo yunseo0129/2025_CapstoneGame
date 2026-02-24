@@ -1,5 +1,8 @@
 #pragma once
 
+//-------------------------------------------------------------
+// namespace 
+//-------------------------------------------------------------
 namespace Client
 {
 	constexpr int g_iWinSizeX = 1280;
@@ -8,14 +11,6 @@ namespace Client
 
 extern HINSTANCE g_hInst;
 extern HWND g_hWnd;
-
-namespace RootParameter
-{
-    constexpr UINT GameObject = 0;
-    constexpr UINT Camera = 1;
-    constexpr UINT TextureCube = 2;
-    constexpr UINT Texture = 3;
-}
 
 namespace DescriptorRange
 {
@@ -31,6 +26,75 @@ namespace Engine
     enum MOUSEMOVESTATE { DIMS_X, DIMS_Y, DIMS_Z, DIMS_END };
 }
 
+// 수정 필요
+enum LEVELID { LEVEL_STATIC, LEVEL_LOADING, LEVEL_LOGO, LEVEL_GAMEPLAY, LEVEL_END };
+
+// Texture data 저장하는 srv 만들 때 VIEW_DIMENSION 설정용
+enum TEXTURE_TYPE {
+	TEX_2D ,
+	TEX_CUBE ,
+	TEX_ARRAY ,
+};
+
+// Root Signature의 Root Parameter 슬롯 설정용
+enum RootParameterIndex
+{
+	Camera ,
+	GameObject ,
+	TEXTURE ,
+	// 후에 Material, BoneMatrix 등등 추가할 수 있음
+	End
+};
+
+// Input Layout과 PSO 설정용
+enum PSO_TYPE
+{
+	DEFAULT ,        // 일반 물체 (Static Mesh / Opaque)
+	SKYBOX ,         // 스카이박스 (TextureCube / DepthFunc LessEqual)
+	ANIM ,           // 캐릭터 (Skeletal Mesh / Opaque)
+	ALPHA_BLEND ,    // 반투명 이펙트 (Static Mesh / Transparent)
+	UI ,             // 2D UI (UI Mesh / Transparent / No Depth)
+	SHADOW_STATIC ,  // 그림자 생성용 (Static Mesh / Depth Only)
+	SHADOW_ANIM ,    // 그림자 생성용 (Skeletal Mesh / Depth Only)
+	END
+};
+
+// Assimp에서 제공하는 Texture Type
+enum aiTextureType
+{
+	aiTextureType_NONE = 0,
+	aiTextureType_DIFFUSE = 1,
+	aiTextureType_SPECULAR = 2,
+	aiTextureType_AMBIENT = 3,
+	aiTextureType_EMISSIVE = 4,
+	aiTextureType_HEIGHT = 5,
+	aiTextureType_NORMALS = 6,
+	aiTextureType_SHININESS = 7,
+	aiTextureType_OPACITY = 8,
+	aiTextureType_DISPLACEMENT = 9,
+	aiTextureType_LIGHTMAP = 10,
+	aiTextureType_REFLECTION = 11,
+	aiTextureType_BASE_COLOR = 12,
+	aiTextureType_NORMAL_CAMERA = 13,
+	aiTextureType_EMISSION_COLOR = 14,
+	aiTextureType_METALNESS = 15,
+	aiTextureType_DIFFUSE_ROUGHNESS = 16,
+	aiTextureType_AMBIENT_OCCLUSION = 17,
+	aiTextureType_UNKNOWN = 18,
+
+#ifndef SWIG
+	_aiTextureType_Force32Bit = INT_MAX
+#endif
+};
+#define AI_TEXTURE_TYPE_MAX  aiTextureType_UNKNOWN
+
+
+//-------------------------------------------------------------
+//-------------------------------------------------------------
+
+//-------------------------------------------------------------
+// struct 
+//-------------------------------------------------------------
 struct EngineContext
 {
     ID3D12Device* device;
@@ -60,6 +124,28 @@ typedef struct tagKeyState
 
 	tagKeyState() : bPress(false), bDown(false), bUp(false) {}
 }KEYSTATE, * PKEYSTATE;
+
+
+// Camera에서 사용할 카메라 정보 구조체
+typedef struct
+{
+	XMFLOAT4X4						m_xmf4x4View;
+	XMFLOAT4X4						m_xmf4x4Proj;
+	XMFLOAT3						m_xmf3Position;
+	float							m_fPadding; // 16바이트 정렬을 위한 패딩
+}CB_VS_CAMERA;
+
+// InputLayout에서 사용할 정점 구조체
+typedef struct
+{
+	XMFLOAT3		vPosition;		// 12bytes
+	XMFLOAT3		vNormal;		// 12bytes
+	XMFLOAT2		vTexcoord;		// 8bytes
+	XMFLOAT3		vTangent;		// 12bytes
+}VTXMESH;
+
+//-------------------------------------------------------------
+//-------------------------------------------------------------
 
 #define NO_COPY(CLASSNAME)											\
 			private:												\

@@ -1,6 +1,8 @@
 #include "Prototype_Manager.h"
 #include "GameObject.h"
 #include "GameInstance.h"
+#include "VIBuffer.h"
+#include "Texture.h"
 
 CPrototype_Manager::CPrototype_Manager()
 {
@@ -50,16 +52,18 @@ CBase* CPrototype_Manager::Clone_Prototype(Engine::PROTOTYPE eType, _uint iLevel
 	switch (eType)
 	{
 	case Engine::PROTOTYPE::PROTO_GAMEOBJ:
-	//	pCopyObject = dynamic_cast<CGameObject*>(pPrototype)->Clone(pArg);
+		pCopyObject = dynamic_cast<CGameObject*>(pPrototype)->Clone(pArg);
 		break;
 
 	case Engine::PROTOTYPE::PROTO_COMPONENT:
-	//	pCopyObject = dynamic_cast<CComponent*>(pPrototype)->Clone(pArg);
+		pCopyObject = dynamic_cast<CComponent*>(pPrototype)->Clone(pArg);
 		break;
 	}
 
-	if (nullptr == pCopyObject)
+	if (nullptr == pCopyObject) {
+		MSG_BOX("Failed to Clone : component");
 		return nullptr;
+	}
 
 	return pCopyObject;
 }
@@ -73,6 +77,34 @@ void CPrototype_Manager::Clear(_uint iLevelIndex)
 		Safe_Release(Pair.second);
 
 	m_pPrototypes[iLevelIndex].clear();
+}
+
+void CPrototype_Manager::ReleaseUploadBuffers ( _uint iLevelIndex )
+{
+	if ( iLevelIndex >= m_iNumLevels )
+		return;
+
+	for ( auto& Pair : m_pPrototypes[iLevelIndex] )
+	{
+		if ( nullptr == Pair.second )
+			continue;
+
+		// VIBuffer 계열인지 확인
+		CVIBuffer* pVIBuffer = dynamic_cast< CVIBuffer* >( Pair.second );
+		if ( nullptr != pVIBuffer )
+		{
+			pVIBuffer->ReleaseUploadBuffer ();
+			continue;
+		}
+
+		// Texture 계열인지 확인
+		CTexture* pTexture = dynamic_cast< CTexture* >( Pair.second );
+		if ( nullptr != pTexture )
+		{
+			pTexture->Release_UploadBuffer ();
+			continue;
+		}
+	}
 }
 
 
@@ -107,9 +139,10 @@ void CPrototype_Manager::Free()
 
 	for (_uint i = 0; i < m_iNumLevels; ++i)
 	{
-		for (auto& Pair : m_pPrototypes[i])
-			Safe_Release(Pair.second);
+		for (auto& Pair : m_pPrototypes[i]) {
 
+			Safe_Release(Pair.second);
+		}
 		m_pPrototypes[i].clear();
 	}
 
