@@ -47,7 +47,7 @@ private:
 	HRESULT Ready_Materials(const wchar_t* pModelFilePath);
 
 private:
-	HRESULT Bind_Material(_uint iMeshIndex, aiTextureType eType, _uint iTextureIndex);
+	HRESULT Bind_Material(_uint iMeshIndex, TextureType eType, _uint iTextureIndex);
 
 private:
 	ID3D12Device* m_pDevice = { nullptr };

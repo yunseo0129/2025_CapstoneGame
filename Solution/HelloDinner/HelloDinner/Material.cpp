@@ -18,7 +18,7 @@ CMaterial::CMaterial(const CMaterial& Prototype)
 	}
 }
 
-HRESULT CMaterial::Add_Texture(aiTextureType eType, CTexture* pTexture)
+HRESULT CMaterial::Add_Texture(TextureType eType, CTexture* pTexture)
 {
 	if (pTexture == nullptr)
 		return E_FAIL;
@@ -31,7 +31,7 @@ HRESULT CMaterial::Add_Texture(aiTextureType eType, CTexture* pTexture)
 	return S_OK;
 }
 
-CTexture* CMaterial::Get_Texture(aiTextureType eType, _uint iTextureIndex)
+CTexture* CMaterial::Get_Texture(TextureType eType, _uint iTextureIndex)
 {
 	if (eType >= m_Textures.size())
 		return nullptr;
@@ -42,7 +42,7 @@ CTexture* CMaterial::Get_Texture(aiTextureType eType, _uint iTextureIndex)
 	return m_Textures[eType][iTextureIndex];
 }
 
-HRESULT CMaterial::Bind_ShaderResource(ID3D12GraphicsCommandList* pCmdList, aiTextureType eType, RootParameterIndex iRootParameterIndex, _uint iTextureIndex)
+HRESULT CMaterial::Bind_ShaderResource(ID3D12GraphicsCommandList* pCmdList, TextureType eType, RootParameterIndex iRootParameterIndex, _uint iTextureIndex)
 {
 	CTexture* pTexture = Get_Texture(eType, iTextureIndex);
 	if (pTexture == nullptr)
