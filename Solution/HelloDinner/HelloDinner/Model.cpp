@@ -110,12 +110,12 @@ HRESULT CModel::Ready_Materials(const wchar_t* pModelFilePath)
 				m_pGameInstance->Read_File(szPerfectPath);
 
 				// 2. Material이 Texture을 생성하도록 요청
-				CTexture* pTexture = CTexture::Create(m_pDevice, m_pContext->cmdList, szPerfectPath, 1, TEXTURE_TYPE::TEX_2D);
+				CTexture* pTexture = CTexture::Create(m_pDevice, m_pContext->cmdList, szPerfectPath);
 
 				// 3. 생성된 텍스처를 머티리얼에 등록
 				if (pTexture != nullptr)
 				{
-					m_Materials[i]->Add_Texture((aiTextureType)j, pTexture);
+					m_Materials[i]->Add_Texture((TextureType)j, pTexture);
 				}
 				else
 				{
@@ -127,7 +127,7 @@ HRESULT CModel::Ready_Materials(const wchar_t* pModelFilePath)
 	return S_OK;
 }
 
-HRESULT CModel::Bind_Material(_uint iMeshIndex, aiTextureType eType, _uint iTextureIndex)
+HRESULT CModel::Bind_Material(_uint iMeshIndex, TextureType eType, _uint iTextureIndex)
 {
 	if (iMeshIndex >= m_iNumMaterials)
 		return E_FAIL;

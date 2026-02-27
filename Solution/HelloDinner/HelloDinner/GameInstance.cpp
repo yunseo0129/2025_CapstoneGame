@@ -73,7 +73,8 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineCo
 
 void CGameInstance::Update_Engine(_float fTimeDelta)
 {
-
+	m_pInput_Device->Update_InputDev();
+	m_pLevel_Manager->Update(fTimeDelta);
 	m_pObject_Manager->Late_Update(fTimeDelta);
 }
 
@@ -91,6 +92,7 @@ HRESULT CGameInstance::Render_Begin(const _float4& vClearColor)
 
 HRESULT CGameInstance::Draw()
 {
+	m_pLevel_Manager->Bind_CameraBuffer(m_pCommandList.Get(), RootParameterIndex::Camera, CAMERA_FPV);
 	m_pRenderer->Draw_RenderObject ( m_pCommandList.Get () );
 	return S_OK;
 }

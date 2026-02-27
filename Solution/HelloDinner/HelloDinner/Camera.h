@@ -34,7 +34,7 @@ public:
 	void			Move(_vector vTarget) { m_pTransformCom->Set_State(CTransform::STATE_POSITION, vTarget); }
 
 	// CBV 바인딩 함수
-	HRESULT Bind_CameraBuffer ( ID3D12GraphicsCommandList* pCmdList , RootParameterIndex _eIndex );
+	HRESULT Bind_CameraBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameterIndex _eIndex);
 
 	static void DebugPrintMatrix ( const char* name , const XMFLOAT4X4& m );
 

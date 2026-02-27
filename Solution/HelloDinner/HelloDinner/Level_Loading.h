@@ -15,6 +15,7 @@ public:
 	virtual HRESULT Initialize(LEVELID eNextLevelID);
 	virtual void Update(_float fTimeDelta) override;
 	virtual HRESULT Render() override;
+	virtual void Add_Camera() override;
 
 private:
 	LEVELID			m_eNextLevelID = { LEVEL_END };

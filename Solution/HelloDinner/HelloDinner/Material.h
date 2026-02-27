@@ -10,11 +10,11 @@ private:
 	virtual ~CMaterial() = default;
 
 public:
-	HRESULT Add_Texture(aiTextureType eType, class CTexture* pTexture);
+	HRESULT Add_Texture(TextureType eType, class CTexture* pTexture);
 
-	class CTexture* Get_Texture(aiTextureType eType, _uint iTextureIndex = 0);
+	class CTexture* Get_Texture(TextureType eType, _uint iTextureIndex = 0);
 
-	HRESULT Bind_ShaderResource(ID3D12GraphicsCommandList* pCmdList, aiTextureType eType, RootParameterIndex iRootParameterIndex, _uint iTextureIndex = 0);
+	HRESULT Bind_ShaderResource(ID3D12GraphicsCommandList* pCmdList, TextureType eType, RootParameterIndex iRootParameterIndex, _uint iTextureIndex = 0);
 
 private:
 	vector<vector<class CTexture*>> m_Textures;
