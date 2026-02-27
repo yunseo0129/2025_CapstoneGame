@@ -9,6 +9,7 @@
 #include "Cube.h"
 #include "Skybox.h"
 #include "Renderer.h"
+#include "Camera_FPV.h"
 
 CLevel_Loading::CLevel_Loading(ID3D12Device* pDevice, EngineContext* pContext)
 	: CLevel{ pDevice, pContext }
@@ -40,6 +41,8 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 		CTexture::Create(m_pDevice, m_pContext->cmdList, L"Resources/Textures/Skybox_Cube.dds", 1, TEX_CUBE))))
 		return E_FAIL;
 
+	Add_Camera();
+
 	Ready_TestLoader();
 
 	// m_pLoader = CLoader::Create(m_pDevice, m_pContext, m_eNextLevelID)
@@ -49,6 +52,7 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 
 void CLevel_Loading::Update(_float fTimeDelta)
 {
+	__super::Update(fTimeDelta);
 }
 
 HRESULT CLevel_Loading::Render()
@@ -59,6 +63,22 @@ HRESULT CLevel_Loading::Render()
 #endif
 
 	return S_OK;
+}
+
+void CLevel_Loading::Add_Camera()
+{
+	CCamera_FPV::FPV_CAMERA_DESC tDesc;
+	tDesc.vEye = _float3{ 0.f, 0.f, -5.f };
+	tDesc.vAt = _float3{ 0.f, 0.f, 0.f };
+	tDesc.fFovy = XMConvertToRadians(60.f);
+	tDesc.fAspect = 1280.f / 720.f;
+	tDesc.fNear = 0.1f;
+	tDesc.fFar = 100.f;
+
+	CCamera_FPV* pCamera = CCamera_FPV::Create(m_pContext);
+	pCamera->Initialize(&tDesc);
+
+	m_pCamera[CAMERA_FPV] = pCamera;
 }
 
 HRESULT CLevel_Loading::Ready_TestLoader()

@@ -39,6 +39,12 @@ void CLevel_Manager::Update(_float fTimeDelta)
 		m_pCurrentLevel->Update(fTimeDelta);
 }
 
+void CLevel_Manager::Bind_CameraBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameterIndex _eIndex, CAMERA_TYPE _eType)
+{
+	if (nullptr != m_pCurrentLevel)
+		m_pCurrentLevel->Bind_CameraBuffer(pCmdList, _eIndex, _eType);
+}
+
 HRESULT CLevel_Manager::Render()
 {
 	if (nullptr != m_pCurrentLevel)

@@ -7,8 +7,6 @@ CRenderer::CRenderer(ID3D12Device* pDevice, ID3D12GraphicsCommandList* _pCommand
 	, m_pCommandlist{ _pCommandlist }
 	, m_pGameInstance{ CGameInstance::GetInstance() }
 {
-	Safe_AddRef(m_pDevice);
-	Safe_AddRef(m_pCommandlist);
 	Safe_AddRef(m_pGameInstance);
 }
 
@@ -131,8 +129,8 @@ void CRenderer::Free()
 		m_RenderObjects[i].clear();
 	}
 
-	Safe_Release(m_pDevice);
-	Safe_Release(m_pCommandlist);
+	m_pDevice.Reset();
+	m_pCommandlist.Reset();
 	Safe_Release(m_pGameInstance);
 }
 

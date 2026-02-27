@@ -17,8 +17,8 @@ public:
 	HRESULT Draw_RenderObject(ID3D12GraphicsCommandList* _CmdList);
 
 private:
-	ID3D12Device* m_pDevice = { nullptr };
-	ID3D12GraphicsCommandList* m_pCommandlist = { nullptr };
+	ComPtr<ID3D12Device> m_pDevice = { nullptr };
+	ComPtr<ID3D12GraphicsCommandList> m_pCommandlist = { nullptr };
 	class CGameInstance* m_pGameInstance = { nullptr };
 	list<class CGameObject*>			m_RenderObjects[RG_END];
 

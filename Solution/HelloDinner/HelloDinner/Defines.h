@@ -36,6 +36,15 @@ enum TEXTURE_TYPE {
 	TEX_ARRAY ,
 };
 
+// Camera
+enum CAMERA_TYPE
+{
+	CAMERA_FPV ,
+	CAMERA_TPV ,
+	CAMERA_UI  ,
+	CAMERA_END
+};
+
 // Root Signature의 Root Parameter 슬롯 설정용
 enum RootParameterIndex
 {
