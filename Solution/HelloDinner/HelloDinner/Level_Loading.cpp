@@ -74,6 +74,10 @@ void CLevel_Loading::Add_Camera()
 	tDesc.fAspect = 1280.f / 720.f;
 	tDesc.fNear = 0.1f;
 	tDesc.fFar = 100.f;
+	tDesc.fCamMouseSensor = 1.f;
+	tDesc.fCamSpeedPerSec = 2.f;
+	tDesc.fRotationPerSec = 1.f;
+	tDesc.fSpeedPerSec = 1.f;
 
 	CCamera_FPV* pCamera = CCamera_FPV::Create(m_pContext);
 	pCamera->Initialize(&tDesc);

@@ -54,6 +54,9 @@ void CMainApp::Update(_float fTimeDelta)
 	if (nullptr != m_pGameInstance)
 		m_pGameInstance->Update_Engine(fTimeDelta);
 
+	if (m_pGameInstance->Key_Down(DIK_ESCAPE))
+		PostQuitMessage(0);
+
 	static float acc = { 0.f };
 	static int FPS = { 0 };
 

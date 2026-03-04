@@ -68,8 +68,8 @@ public:
 
 private:
 	_float4x4				m_WorldMatrix = {};
-	_float					m_fSpeedPerSec = {};
-	_float					m_fRotationPerSec = {};
+	_float					m_fSpeedPerSec = 1.f;
+	_float					m_fRotationPerSec = 1.f;
 
 public:
 	static CTransform* Create(EngineContext* _pcontext);

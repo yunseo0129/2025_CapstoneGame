@@ -65,14 +65,14 @@ HRESULT CCamera::Bind_CameraBuffer ( ID3D12GraphicsCommandList* pCmdList , RootP
 {
 	XMFLOAT4X4 xmf4x4View , xmf4x4Proj;
 
-	XMStoreFloat4x4 ( &xmf4x4View , m_pTransformCom->Get_WorldMatrix_Inverse () );
+	XMStoreFloat4x4 ( &xmf4x4View , m_pTransformCom->Get_WorldMatrix_Inverse() );
 	memcpy ( &m_pCbMappedCamera->m_xmf4x4View , &xmf4x4View , sizeof ( _float4x4 ) );
 
-	XMStoreFloat4x4 ( &xmf4x4Proj , XMMatrixPerspectiveFovLH ( m_fFovy , m_fAspect , m_fNear , m_fFar ) );
+	XMStoreFloat4x4 ( &xmf4x4Proj , XMMatrixPerspectiveFovLH( m_fFovy , m_fAspect , m_fNear , m_fFar ) );
 	memcpy ( &m_pCbMappedCamera->m_xmf4x4Proj , &xmf4x4Proj , sizeof ( _float4x4 ) );
 	
 	XMFLOAT3 xmf3Pos;
-	XMStoreFloat3 ( &xmf3Pos , m_pTransformCom->Get_State ( CTransform::STATE_POSITION ) );
+	XMStoreFloat3 ( &xmf3Pos , m_pTransformCom->Get_State( CTransform::STATE_POSITION ) );
 	memcpy ( &m_pCbMappedCamera->m_xmf3Position , &xmf3Pos , sizeof ( _float3 ) );
 
 	// 디버그 출력

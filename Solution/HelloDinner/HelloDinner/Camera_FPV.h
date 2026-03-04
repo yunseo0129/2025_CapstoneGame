@@ -6,8 +6,8 @@ class CCamera_FPV final : public CCamera
 public:
 	struct FPV_CAMERA_DESC : public CCamera::CAMERA_DESC
 	{
-		_float			fMouseSensor = {};
-		_float			fSpeedPerSec = {};
+		_float			fCamMouseSensor = {};
+		_float			fCamSpeedPerSec = {};
 	};
 
 private:
@@ -22,8 +22,8 @@ public:
 	virtual void Late_Update(_float fTimeDelta) override;
 
 private:
-	_float			m_fMouseSensor = {};
-	_float			m_fSpeedPerSec = {};
+	_float			m_fCamMouseSensor = {};
+	_float			m_fCamSpeedPerSec = {};
 
 public:
 	static CCamera_FPV* Create(EngineContext* _pcontext);
