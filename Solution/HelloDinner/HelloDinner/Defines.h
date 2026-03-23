@@ -153,6 +153,15 @@ typedef struct
 	XMFLOAT3		vTangent;		// 12bytes
 }VTXMESH;
 
+typedef struct
+{
+	XMFLOAT3		vPosition;		// 12bytes
+	XMFLOAT3		vNormal;		// 12bytes
+	XMFLOAT2		vTexcoord;		// 8bytes
+	XMFLOAT3		vTangent;		// 12bytes
+}VTXANIMMESH;
+
+
 //-------------------------------------------------------------
 //-------------------------------------------------------------
 
