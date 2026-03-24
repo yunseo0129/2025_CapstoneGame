@@ -1,5 +1,6 @@
 #include "Texture.h"
 #include "../HelloDinner/Common/DDSTextureLoader12.h"
+#include "../HelloDinner/Common/WICTextureLoader12.h"
 
 CTexture::CTexture(ID3D12Device* _pDevice)
     : CComponent(nullptr)
@@ -34,9 +35,18 @@ HRESULT CTexture::Initialize_Prototype(ID3D12GraphicsCommandList* pCommandList, 
 
     _tchar			szTextureFilePath[MAX_PATH] = TEXT("");
 
+    pTextureFilePath = L"Resources/Textures/Rock.dds";
     for (_uint i = 0; i < m_iNumTextures; ++i)
     {
-        wsprintf(szTextureFilePath, pTextureFilePath, i);
+        // 포맷 문자열(%d 등)이 포함된 경로인지 확인
+        if (wcschr(pTextureFilePath, L'%') != nullptr)
+            wsprintf(szTextureFilePath, pTextureFilePath, i);
+        else
+            wcscpy_s(szTextureFilePath, pTextureFilePath);
+
+        // 빈 경로 스킵
+        if (wcslen(szTextureFilePath) == 0)
+            continue;
 
         /* 드라이브경로, 디렉토리경로, 파일네임, 파일확장자. */
         _tchar		szEXT[MAX_PATH] = TEXT("");
@@ -44,15 +54,42 @@ HRESULT CTexture::Initialize_Prototype(ID3D12GraphicsCommandList* pCommandList, 
         /* D:\정의훈\147\3d\Framework\Client\Bin\Resources\Textures\Default.jpg */
         _wsplitpath_s(szTextureFilePath, nullptr, 0, nullptr, 0, nullptr, 0, szEXT, MAX_PATH);
 
+        // 확인
+        char szLog[1024];
+        char szPathA[MAX_PATH];
+        char szExtA[MAX_PATH];
+        WideCharToMultiByte(CP_ACP, 0, szTextureFilePath, -1, szPathA, MAX_PATH, nullptr, nullptr);
+        WideCharToMultiByte(CP_ACP, 0, szEXT, -1, szExtA, MAX_PATH, nullptr, nullptr);
+        sprintf_s(szLog, "[Texture] Path: %s | Ext: '%s'\n", szPathA, szExtA);
+        OutputDebugStringA(szLog);
+
         // 3. 텍스처 파일 로드
         if (false == lstrcmpW(szEXT, TEXT(".dds")))
         {
             if (FAILED(Load_DDSTexture(pCommandList, szTextureFilePath, i)))
                 return E_FAIL;
         }
-        else {
-			//WIC 텍스처 로드 함수 구현 필요 (예: LoadWICTextureFromFileEx)
-            MSG_BOX("Failed to Load : CTexture");
+        else if (false == lstrcmpW(szEXT, TEXT(".png")) ||
+            false == lstrcmpW(szEXT, TEXT(".jpg")) ||
+            false == lstrcmpW(szEXT, TEXT(".bmp")) ||
+            false == lstrcmpW(szEXT, TEXT(".tiff")))
+        {
+            if (FAILED(Load_WICTexture(pCommandList, szTextureFilePath, i)))
+                return E_FAIL;
+        }
+        else if (false == lstrcmpW(szEXT, TEXT(".psd")) ||
+            false == lstrcmpW(szEXT, TEXT(".tga")))
+        {
+            // .psd와 .tga는 WIC 미지원 → 스킵 (로그만 출력)
+            char szSkipLog[512];
+            sprintf_s(szSkipLog, "[Texture] Skipped unsupported format: %s\n", szExtA);
+            OutputDebugStringA(szSkipLog);
+            continue;
+        }
+        else
+        {
+            MSG_BOX("Failed to Load : CTexture - Unsupported format");
+            return E_FAIL;
         }
   
 
@@ -144,6 +181,44 @@ HRESULT CTexture::Load_DDSTexture(ID3D12GraphicsCommandList* pCommandList, const
     CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
         m_Textures[_iIndex].Get(),
         D3D12_RESOURCE_STATE_COPY_DEST , D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
+    pCommandList->ResourceBarrier(1, &barrier);
+
+    return S_OK;
+}
+
+HRESULT CTexture::Load_WICTexture(ID3D12GraphicsCommandList* pCommandList, const wstring& _pFilePath, _uint _iIndex)
+{
+    D3D12_SUBRESOURCE_DATA subresource{};
+    unique_ptr<uint8_t[]> wicData;
+
+    if (FAILED(DirectX::LoadWICTextureFromFile(m_pDevice.Get(), _pFilePath.c_str(),
+        m_Textures[_iIndex].GetAddressOf(), wicData, subresource)))
+        return E_FAIL;
+
+    const UINT64 TextureSize = GetRequiredIntermediateSize(m_Textures[_iIndex].Get(), 0, 1);
+
+    // UploadBuffer 생성
+    D3D12_HEAP_PROPERTIES heapUploadProps;
+    SetHeapProperties(heapUploadProps, D3D12_HEAP_TYPE_UPLOAD);
+
+    D3D12_RESOURCE_DESC resourceDesc;
+    SetResourceDesc(resourceDesc, TextureSize);
+
+    if (FAILED(m_pDevice->CreateCommittedResource(
+        &heapUploadProps,
+        D3D12_HEAP_FLAG_NONE,
+        &resourceDesc,
+        D3D12_RESOURCE_STATE_GENERIC_READ,
+        nullptr,
+        IID_PPV_ARGS(&m_UploadBuffers[_iIndex]))))
+        return E_FAIL;
+
+    UpdateSubresources(pCommandList, m_Textures[_iIndex].Get(), m_UploadBuffers[_iIndex].Get(),
+        0, 0, 1, &subresource);
+
+    CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+        m_Textures[_iIndex].Get(),
+        D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
     pCommandList->ResourceBarrier(1, &barrier);
 
     return S_OK;

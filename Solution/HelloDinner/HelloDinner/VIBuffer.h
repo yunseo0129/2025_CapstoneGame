@@ -42,6 +42,7 @@ protected: // 자식 클래스들이 공통으로 쓸 변수
     _uint						m_iIndices = 0;
     DXGI_FORMAT                 m_eIndexFormat = DXGI_FORMAT_R32_UINT; // 보통 32비트 인덱스
 
+    _uint                       iMaterialIndex = 0;
 
 protected:
     // DX12 버퍼 생성 헬퍼 함수

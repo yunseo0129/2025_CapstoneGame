@@ -48,6 +48,7 @@ protected:
 private:
 	// 내부 유틸리티 함수
 	virtual HRESULT Load_DDSTexture(ID3D12GraphicsCommandList* pCommandList, const wstring& pFilePath, _uint iIndex);
+	HRESULT Load_WICTexture(ID3D12GraphicsCommandList* pCommandList, const wstring& _pFilePath, _uint _iIndex);
 	HRESULT SetResourceDesc(ID3D12Resource* _pTexture, TEXTURE_TYPE _iTextureType );
 
 	virtual HRESULT Create_SrvDescriptorHeap();
