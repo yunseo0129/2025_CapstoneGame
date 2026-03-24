@@ -29,6 +29,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
+    HRESULT hrCo = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    if (FAILED(hrCo))
+        return FALSE;
+
     MSG msg;
     HACCEL hAccelTable;
 

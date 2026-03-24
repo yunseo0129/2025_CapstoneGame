@@ -275,6 +275,15 @@
     <ClInclude Include="Material.h">
       <Filter>소스 파일\01. Engine\04. Components\02. Model\Material</Filter>
     </ClInclude>
+    <ClInclude Include="Map.h">
+      <Filter>소스 파일\02. Game\GameObject\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Loader_Map.h">
+      <Filter>소스 파일\02. Game\01. Levels\Loading</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\WICTextureLoader12.h">
+      <Filter>외부 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -372,6 +381,15 @@
     </ClCompile>
     <ClCompile Include="Material.cpp">
       <Filter>소스 파일\01. Engine\04. Components\02. Model\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="Map.cpp">
+      <Filter>소스 파일\02. Game\GameObject\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Loader_Map.cpp">
+      <Filter>소스 파일\02. Game\01. Levels\Loading</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\WICTextureLoader12.cpp">
+      <Filter>외부 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

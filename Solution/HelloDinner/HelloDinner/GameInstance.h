@@ -50,6 +50,8 @@ public: /* For.Load_Manager */
 	void	Read_File(_int& read);
 	void	Read_File(_uint& read);
 	void	Read_File(_float& read);
+	void	Read_File(_float2& read);
+	void	Read_File(_float3& read);
 	void	Read_File(_float4& read);
 	void	Read_File(_float4x4& read);
 	void	Read_File(VTXMESH& read);

@@ -9,15 +9,28 @@ CMesh::CMesh(ID3D12Device* pDevice)
 
 HRESULT CMesh::Initialize_Prototype(CModel::TYPE eModelType, class CModel* pModel, _fmatrix PreTransformMatrix, ID3D12GraphicsCommandList* cmdList)
 {
+	// MaterialIndex 읽기
+	m_pGameInstance->Read_File(iMaterialIndex);
+
 	// Mesh의 이름
 	m_pGameInstance->Read_File(m_szName);
 	// Mesh의 정점 개수
 	m_pGameInstance->Read_File(m_iVertices);
-	// Mesh의 인덱스 개수
-	m_pGameInstance->Read_File(m_iIndices);
+	// Mesh의 삼각형의 개수
+	_uint iNumTriangles;
+	m_pGameInstance->Read_File(iNumTriangles);
+
+	// 디버그 로그 출력
+	char szLog[512];
+	sprintf_s(szLog, "[Mesh] Name:%s | Vtx:%u | Tri:%u | Idx:%u | MatIdx:%u\n",
+		m_szName, m_iVertices, iNumTriangles, iNumTriangles * 3, iMaterialIndex);
+	OutputDebugStringA(szLog);
+
+	m_iIndices = iNumTriangles * 3; // 인덱스 개수는 삼각형 개수 * 3
 
 	m_eIndexFormat = DXGI_FORMAT_R32_UINT;
 	m_ePrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
 
 #pragma region VERTEX_BUFFER	
 
@@ -64,11 +77,22 @@ HRESULT CMesh::Ready_VertexBuffer_For_NonAnim(ID3D12GraphicsCommandList* cmdList
 {
 	// 바이너리 저장 순서: Position[] → Normal[] → TexCoord[] → Tangent[]
 	vector<VTXMESH> vertices;
+	vertices.resize(m_iVertices);
 
 	for (_uint i = 0; i < m_iVertices; ++i)
-		m_pGameInstance->Read_File(vertices[i]);
+		m_pGameInstance->Read_File(vertices[i].vPosition);
 
-	_uint vertexBufferSize = m_iVertexStride * m_iVertices;
+	for (_uint i = 0; i < m_iVertices; ++i)
+		m_pGameInstance->Read_File(vertices[i].vNormal);
+
+	for (_uint i = 0; i < m_iVertices; ++i)
+		m_pGameInstance->Read_File(vertices[i].vTexcoord);
+
+	for (_uint i = 0; i < m_iVertices; ++i)
+		m_pGameInstance->Read_File(vertices[i].vTangent);
+
+
+	_uint vertexBufferSize = sizeof(VTXMESH) * m_iVertices;
 
 	if (FAILED(Create_Buffer(cmdList, m_pVertexBuffer.GetAddressOf(), m_pVertexUploadBuffer.GetAddressOf(),
 		vertexBufferSize, vertices.data(), false)))

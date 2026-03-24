@@ -55,14 +55,27 @@ HRESULT CModel::Initialize(void* pArg)
 	return S_OK;
 }
 
-HRESULT CModel::Render(_uint iMeshIndex)
+HRESULT CModel::Render(ID3D12GraphicsCommandList* _commandList, _uint iMeshIndex)
 {
 	if (iMeshIndex >= m_iNumMeshes)
 		return E_FAIL;
 
-	// 잠깐 주석처리
-	// m_Meshes[iMeshIndex]->Render();
-	
+	// 1. 이 메쉬가 참조하는 머티리얼의 Diffuse 텍스처 바인딩
+	_uint iMaterialIndex = m_Meshes[iMeshIndex]->Get_MaterialIndex();
+
+	if (iMaterialIndex < m_iNumMaterials)
+	{
+		// Diffuse (슬롯 1)
+		Bind_Material(iMaterialIndex, (TextureType)TextureType_DIFFUSE, 0);
+
+		// 필요 시 추가 텍스처 바인딩
+		// Bind_Material(iMaterialIndex, (TextureType)TextureType_NORMALS, 0);
+	}
+
+	// 2. 메쉬 렌더 (IASet + DrawIndexedInstanced)
+	m_Meshes[iMeshIndex]->Render(_commandList);
+
+
 	return S_OK;
 }
 
@@ -89,38 +102,31 @@ HRESULT CModel::Ready_Materials(const wchar_t* pModelFilePath)
 {
 	m_pGameInstance->Read_File(m_iNumMaterials);
 
-	// CModel이 CMaterial 포인터 벡터를 가지고 있다고 가정 (vector<CMaterial*> m_Materials;)
 	m_Materials.resize(m_iNumMaterials);
 
 	for (size_t i = 0; i < m_iNumMaterials; i++)
 	{
-		// 1. 머티리얼 객체 생성
 		m_Materials[i] = CMaterial::Create(m_pDevice);
 
-		for (size_t j = 1; j < AI_TEXTURE_TYPE_MAX; j++)
+		for (size_t j = 0; j < 25; j++)
 		{
-			_uint iNumTextures;
-			m_pGameInstance->Read_File(iNumTextures);
+			// 각 슬롯마다 MAX_PATH바이트 경로를 읽음
+			_char szPath[MAX_PATH] = "";
+			m_pGameInstance->Read_File(szPath);
 
-			for (size_t k = 0; k < iNumTextures; k++)
+			// "Not_Data"이면 텍스처 없음 → 스킵
+			if (strcmp(szPath, "Not_Data") == 0)
+				continue;
+
+			// char → wchar_t 변환
+			_tchar szPerfectPath[MAX_PATH] = TEXT("");
+			MultiByteToWideChar(CP_ACP, 0, szPath, -1, szPerfectPath, MAX_PATH);
+
+			// 텍스처 생성 및 등록
+			CTexture* pTexture = CTexture::Create(m_pDevice, m_pContext->cmdList, szPerfectPath);
+			if (pTexture != nullptr)
 			{
-				_char   szExt[MAX_PATH] = "";
-				m_pGameInstance->Read_File(szExt);
-				_tchar  szPerfectPath[MAX_PATH] = TEXT("");
-				m_pGameInstance->Read_File(szPerfectPath);
-
-				// 2. Material이 Texture을 생성하도록 요청
-				CTexture* pTexture = CTexture::Create(m_pDevice, m_pContext->cmdList, szPerfectPath);
-
-				// 3. 생성된 텍스처를 머티리얼에 등록
-				if (pTexture != nullptr)
-				{
-					m_Materials[i]->Add_Texture((TextureType)j, pTexture);
-				}
-				else
-				{
-					return E_FAIL; // 텍스처 생성 실패 시 에러 반환
-				}
+				m_Materials[i]->Add_Texture((TextureType)j, pTexture);
 			}
 		}
 	}

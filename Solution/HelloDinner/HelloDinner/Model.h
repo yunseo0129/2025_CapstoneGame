@@ -20,7 +20,7 @@ public:
 
 public:
 // 인자값으로 넘어온 매쉬번호에 맞는 매쉬를 그려줌 (상위 클래스의 랜더에서 매쉬개수만큼 부를거임)
-	virtual HRESULT Render(_uint iMeshIndex);
+	virtual HRESULT Render(ID3D12GraphicsCommandList* _commandList, _uint iMeshIndex);
 
 private:
 	// 애님과 논애님을 구별하기 위함

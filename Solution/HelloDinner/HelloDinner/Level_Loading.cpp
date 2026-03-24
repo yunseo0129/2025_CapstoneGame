@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Level_Loading.h"
+#include "Loader_Map.h"
 
 #include "GameInstance.h"
 
@@ -44,6 +45,13 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 	Add_Camera();
 
 	Ready_TestLoader();
+
+	CLoader_Map* pMapLoader = CLoader_Map::Create(m_pDevice, m_pContext);
+	if (FAILED(pMapLoader->Load_MapData("Resources/Map/MapData.json", LEVEL_LOADING)))
+	{
+		MSG_BOX("Failed to load map data");
+	}
+	Safe_Release(pMapLoader);
 
 	// m_pLoader = CLoader::Create(m_pDevice, m_pContext, m_eNextLevelID)
 

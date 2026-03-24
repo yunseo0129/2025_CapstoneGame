@@ -11,6 +11,9 @@ private:
 	virtual ~CMesh() = default;
 
 public:
+	_uint Get_MaterialIndex() const { return iMaterialIndex; }
+
+public:
 	// 멤버변수 외에 바이너리해야 될 것 있음
 	virtual HRESULT Initialize_Prototype(CModel::TYPE eModelType, class CModel* pModel, _fmatrix PreTransformMatrix, ID3D12GraphicsCommandList* cmdList);
 	virtual HRESULT Initialize(void* pArg);

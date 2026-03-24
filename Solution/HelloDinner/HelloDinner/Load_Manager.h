@@ -21,6 +21,8 @@ public:
 	void	Read_File(_int& read) { if (!ReadFile(m_hFile, &read, sizeof(_int), &m_dwByte, nullptr)) { MSG_BOX("Failed to Load File _int"); } }
 	void	Read_File(_uint& read) { if (!ReadFile(m_hFile, &read, sizeof(_uint), &m_dwByte, nullptr)) { MSG_BOX("Failed to Load File _uint"); } }
 	void	Read_File(_float& read) { if (!ReadFile(m_hFile, &read, sizeof(_float), &m_dwByte, nullptr)) { MSG_BOX("Failed to Load File _float"); } }
+	void	Read_File(_float2& read) { if (!ReadFile(m_hFile, &read, sizeof(_float2), &m_dwByte, nullptr)) { MSG_BOX("Failed to Load File _float2"); } }
+	void	Read_File(_float3& read) { if (!ReadFile(m_hFile, &read, sizeof(_float3), &m_dwByte, nullptr)) { MSG_BOX("Failed to Load File _float3"); } }
 	void	Read_File(_float4& read) { if (!ReadFile(m_hFile, &read, sizeof(_float4), &m_dwByte, nullptr)) { MSG_BOX("Failed to Load File _float4"); } }
 	void	Read_File(_float4x4& read) { if (!ReadFile(m_hFile, &read, sizeof(_float4x4), &m_dwByte, nullptr)) { MSG_BOX("Failed to Load File _float4x4"); } }
 	void	Read_File(VTXMESH& read) { if (!ReadFile(m_hFile, &read, sizeof(VTXMESH), &m_dwByte, nullptr)) { MSG_BOX("Failed to Load File VTXMESH"); } }
