@@ -11,6 +11,8 @@
 #include "Skybox.h"
 #include "Renderer.h"
 #include "Camera_FPV.h"
+#include "Model.h"
+#include "Chick_3rd.h"
 
 CLevel_Loading::CLevel_Loading(ID3D12Device* pDevice, EngineContext* pContext)
 	: CLevel{ pDevice, pContext }
@@ -44,14 +46,34 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 
 	Add_Camera();
 
-	Ready_TestLoader();
+	/*Ready_TestLoader();
 
 	CLoader_Map* pMapLoader = CLoader_Map::Create(m_pDevice, m_pContext);
+	
 	if (FAILED(pMapLoader->Load_MapData("Resources/Map/MapData.json", LEVEL_LOADING)))
 	{
 		MSG_BOX("Failed to load map data");
-	}
-	Safe_Release(pMapLoader);
+	}*/
+
+
+	
+	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Chick_3rd"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, L"Resources/chick/Prototype_Component_chick.txt", _fmatrix()))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_GameObject_Chick_3rd"),
+		CChick_3rd::Create(m_pContext))))
+		return E_FAIL;
+
+	CChick_3rd::Player_3rd_DESC desc;
+	desc.strModelTag = L"Prototype_Component_Chick_3rd";
+	desc.iModelLevelIndex = 1;
+	desc.vScale = _float3(0.1f, 0.1f, 0.1f);
+	m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Chick_3rd"),
+		1, TEXT("Layer_Player_chick"), &desc);
+
+
+	//Safe_Release(pMapLoader);
 
 	// m_pLoader = CLoader::Create(m_pDevice, m_pContext, m_eNextLevelID)
 
