@@ -118,11 +118,11 @@ HRESULT CModel::Ready_Materials(const wchar_t* pModelFilePath)
 			if (strcmp(szPath, "Not_Data") == 0)
 				continue;
 
+
 			// char → wchar_t 변환
 			_tchar szPerfectPath[MAX_PATH] = TEXT("");
 			MultiByteToWideChar(CP_ACP, 0, szPath, -1, szPerfectPath, MAX_PATH);
 
-			// 텍스처 생성 및 등록
 			CTexture* pTexture = CTexture::Create(m_pDevice, m_pContext->cmdList, szPerfectPath);
 			if (pTexture != nullptr)
 			{

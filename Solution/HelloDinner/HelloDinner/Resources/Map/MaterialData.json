@@ -1,0 +1,455 @@
+{
+    "materials": [
+        {
+            "materialName": "Floor_Concrete2",
+            "albedoTexture": "Floor_Concrete2_BaseColor.png",
+            "normalTexture": "Floor_Concrete2_Normal.png",
+            "baseColor": {
+                "r": 0.8088235259056091,
+                "g": 0.8088235259056091,
+                "b": 0.8088235259056091,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Wall_Brickwall_Red",
+            "albedoTexture": "Wall_Brickwall_Red_BaseColor.png",
+            "normalTexture": "Wall_Brickwall_Red_Normal.png",
+            "baseColor": {
+                "r": 0.8308823704719544,
+                "g": 0.8308823704719544,
+                "b": 0.8308823704719544,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Midwall_ConcreteDirty",
+            "albedoTexture": "Midwall_ConcreteDirty_BaseColor.png",
+            "normalTexture": "Midwall_ConcreteDirty_Normal.png",
+            "baseColor": {
+                "r": 0.8235294222831726,
+                "g": 0.8235294222831726,
+                "b": 0.8235294222831726,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "RubberTiled",
+            "albedoTexture": "RubberTiled_BaseColor.png",
+            "normalTexture": "",
+            "baseColor": {
+                "r": 0.5441176891326904,
+                "g": 0.5441176891326904,
+                "b": 0.5441176891326904,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Alley_Prop_Set",
+            "albedoTexture": "Alley_Prop_Set_BaseColor.png",
+            "normalTexture": "Alley_Prop_Set_Normal.png",
+            "baseColor": {
+                "r": 0.8676470518112183,
+                "g": 0.8676470518112183,
+                "b": 0.8676470518112183,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "StonePavement",
+            "albedoTexture": "StonePavement_BaseColor.png",
+            "normalTexture": "StonePavement_Normal.png",
+            "baseColor": {
+                "r": 0.779411792755127,
+                "g": 0.779411792755127,
+                "b": 0.779411792755127,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Shops_And_Lights",
+            "albedoTexture": "Shops_And_Lights_BaseColor.png",
+            "normalTexture": "Shops_And_Lights_Normal.png",
+            "baseColor": {
+                "r": 0.9117646813392639,
+                "g": 0.9117646813392639,
+                "b": 0.9117646813392639,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "TreeDead",
+            "albedoTexture": "TreeDead_BaseColor.png",
+            "normalTexture": "TreeDead_Normal.png",
+            "baseColor": {
+                "r": 0.6911763548851013,
+                "g": 0.6911763548851013,
+                "b": 0.6911763548851013,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Neon_Signs",
+            "albedoTexture": "Neon_Signs_BaseColor.png",
+            "normalTexture": "",
+            "baseColor": {
+                "r": 0.8602941036224365,
+                "g": 0.8602941036224365,
+                "b": 0.8602941036224365,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Street_Shops",
+            "albedoTexture": "Street_Shops_BaseColor.png",
+            "normalTexture": "Street_Shops_Normal.png",
+            "baseColor": {
+                "r": 0.845588207244873,
+                "g": 0.845588207244873,
+                "b": 0.845588207244873,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Midwall_ConcreteDirty_B",
+            "albedoTexture": "Midwall_ConcreteDirty_B_BaseColor.png",
+            "normalTexture": "Midwall_ConcreteDirty_B_Normal.png",
+            "baseColor": {
+                "r": 0.7647058963775635,
+                "g": 0.7647058963775635,
+                "b": 0.7647058963775635,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Wall_Brickwall_Dark",
+            "albedoTexture": "Wall_Brickwall_Dark_BaseColor.png",
+            "normalTexture": "Wall_Brickwall_Dark_Normal.png",
+            "baseColor": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Street_Props",
+            "albedoTexture": "Street_Props_BaseColor.png",
+            "normalTexture": "Street_Props_Normal.png",
+            "baseColor": {
+                "r": 0.8235294222831726,
+                "g": 0.8235294222831726,
+                "b": 0.8235294222831726,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Midwall_ConcreteDirty_C",
+            "albedoTexture": "Midwall_ConcreteDirty_C_BaseColor.png",
+            "normalTexture": "Midwall_ConcreteDirty_B_Normal.png",
+            "baseColor": {
+                "r": 0.7647058963775635,
+                "g": 0.7647058963775635,
+                "b": 0.7647058963775635,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Dumpster_Set",
+            "albedoTexture": "Dumpster_Set_BaseColor.png",
+            "normalTexture": "Dumpster_Set_Normal.png",
+            "baseColor": {
+                "r": 0.9485294222831726,
+                "g": 0.9485294222831726,
+                "b": 0.9485294222831726,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "RustyMetalTiled",
+            "albedoTexture": "RustyMetalTiled_BaseColor.png",
+            "normalTexture": "RustyMetalTiled_Normal.png",
+            "baseColor": {
+                "r": 0.7426470518112183,
+                "g": 0.7426470518112183,
+                "b": 0.7426470518112183,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "AirductTiled",
+            "albedoTexture": "AirductTiled_BaseColor.png",
+            "normalTexture": "AirductTiled_Normal.png",
+            "baseColor": {
+                "r": 0.779411792755127,
+                "g": 0.779411792755127,
+                "b": 0.779411792755127,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Street_Doors_Windows",
+            "albedoTexture": "Street_Doors_Windows_BaseColor.png",
+            "normalTexture": "Street_Doors_Windows_Normal.png",
+            "baseColor": {
+                "r": 0.9264705777168274,
+                "g": 0.9264705777168274,
+                "b": 0.9264705777168274,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Floor_StreetPlatesConcrete",
+            "albedoTexture": "Floor_StreetPlatesConcrete_BaseColor.png",
+            "normalTexture": "Floor_StreetPlatesConcrete_Normal.png",
+            "baseColor": {
+                "r": 0.7352941632270813,
+                "g": 0.7352941632270813,
+                "b": 0.7352941632270813,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Storage_Prop_Set",
+            "albedoTexture": "Storage_Prop_Set_BaseColor.png",
+            "normalTexture": "Storage_Prop_Set_Normal.png",
+            "baseColor": {
+                "r": 0.8161765336990356,
+                "g": 0.8161765336990356,
+                "b": 0.8161765336990356,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Floor_Concrete",
+            "albedoTexture": "Floor_Concrete_BaseColor.png",
+            "normalTexture": "Floor_Concrete_Normal.png",
+            "baseColor": {
+                "r": 0.9117646813392639,
+                "g": 0.9117646813392639,
+                "b": 0.9117646813392639,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Garbage_Set",
+            "albedoTexture": "Garbage_Set_BaseColor.png",
+            "normalTexture": "Garbage_Set_Normal.png",
+            "baseColor": {
+                "r": 0.8970587849617004,
+                "g": 0.8970587849617004,
+                "b": 0.8970587849617004,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Wall_Brickwall_Red_Damaged",
+            "albedoTexture": "Wall_Brickwall_Red_Damaged_BaseColor.png",
+            "normalTexture": "Wall_Brickwall_Red_Damaged_Normal.png",
+            "baseColor": {
+                "r": 0.8274509906768799,
+                "g": 0.8274509906768799,
+                "b": 0.8274509906768799,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Midwall_ConcreteDetailed",
+            "albedoTexture": "Midwall_ConcreteDetailed_BaseColor.png",
+            "normalTexture": "Midwall_ConcreteDetailed_Normal.png",
+            "baseColor": {
+                "r": 0.8382352590560913,
+                "g": 0.8382352590560913,
+                "b": 0.8382352590560913,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Wall_Brickwall_Brown",
+            "albedoTexture": "Wall_Brickwall_Brown_BaseColor.png",
+            "normalTexture": "Wall_Brickwall_Red_Normal.png",
+            "baseColor": {
+                "r": 0.8308823704719544,
+                "g": 0.8308823704719544,
+                "b": 0.8308823704719544,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Bed",
+            "albedoTexture": "Bed_BaseColor.png",
+            "normalTexture": "Bed_Normal.png",
+            "baseColor": {
+                "r": 0.8088235259056091,
+                "g": 0.8088235259056091,
+                "b": 0.8088235259056091,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Wall_ConcreteWhite_Dirty",
+            "albedoTexture": "Wall_ConcreteWhite_Dirty_BaseColor.png",
+            "normalTexture": "Wall_ConcreteWhite_Dirty_Normal.png",
+            "baseColor": {
+                "r": 0.7867646813392639,
+                "g": 0.7867646813392639,
+                "b": 0.7867646813392639,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Metal_Chainlink_Fence",
+            "albedoTexture": "Metal_Chainlink_Fence_BaseColor.png",
+            "normalTexture": "Metal_Chainlink_Fence_Normal.png",
+            "baseColor": {
+                "r": 0.8161765336990356,
+                "g": 0.8161765336990356,
+                "b": 0.8161765336990356,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Wall_ConcretePainted",
+            "albedoTexture": "Wall_ConcretePainted_BaseColor.png",
+            "normalTexture": "Wall_ConcretePainted_Normal.png",
+            "baseColor": {
+                "r": 0.8014705777168274,
+                "g": 0.8014705777168274,
+                "b": 0.8014705777168274,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Floor_SidewalkPlates",
+            "albedoTexture": "Floor_SidewalkPlates_BaseColor.png",
+            "normalTexture": "Floor_SidewalkPlates_Normal.png",
+            "baseColor": {
+                "r": 0.7573529481887817,
+                "g": 0.7573529481887817,
+                "b": 0.7573529481887817,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Roof_Metal",
+            "albedoTexture": "Roof_Metal_BaseColor.png",
+            "normalTexture": "Roof_Metal_Normal.png",
+            "baseColor": {
+                "r": 0.8235294222831726,
+                "g": 0.8235294222831726,
+                "b": 0.8235294222831726,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Wall_Tiles_Dark",
+            "albedoTexture": "Wall_Tiles_Dark_BaseColor.png",
+            "normalTexture": "Wall_Tiles_Dark_Normal.png",
+            "baseColor": {
+                "r": 0.8823529481887817,
+                "g": 0.8823529481887817,
+                "b": 0.8823529481887817,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Decals_Dirt",
+            "albedoTexture": "Decals_Dirt_BaseColor.png",
+            "normalTexture": "Decals_Dirt_Normal.png",
+            "baseColor": {
+                "r": 0.6617646813392639,
+                "g": 0.6617646813392639,
+                "b": 0.6617646813392639,
+                "a": 0.9089999794960022
+            }
+        },
+        {
+            "materialName": "Wall_Brickwall_RedDark",
+            "albedoTexture": "Wall_Brickwall_RedDark_BaseColor.png",
+            "normalTexture": "Wall_Brickwall_Red_Normal.png",
+            "baseColor": {
+                "r": 0.779411792755127,
+                "g": 0.779411792755127,
+                "b": 0.779411792755127,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Floor_AsphaltRoad",
+            "albedoTexture": "Floor_AsphaltRoad_BaseColor.png",
+            "normalTexture": "Floor_AsphaltRoad_Normal.png",
+            "baseColor": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Awnings",
+            "albedoTexture": "Awnings_BaseColor.png",
+            "normalTexture": "Awnings_Normal.png",
+            "baseColor": {
+                "r": 0.9264705777168274,
+                "g": 0.9264705777168274,
+                "b": 0.9264705777168274,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Distant_Building",
+            "albedoTexture": "Distant_Building_BaseColor.png",
+            "normalTexture": "Distant_Building_Normal.png",
+            "baseColor": {
+                "r": 0.875,
+                "g": 0.875,
+                "b": 0.875,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "TrashSet",
+            "albedoTexture": "TrashSet_BaseColor.png",
+            "normalTexture": "TrashSet_Normal.png",
+            "baseColor": {
+                "r": 0.9191176295280457,
+                "g": 0.9191176295280457,
+                "b": 0.9191176295280457,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Decals_Water",
+            "albedoTexture": "Decals_Water_BaseColor.png",
+            "normalTexture": "",
+            "baseColor": {
+                "r": 0.04411756247282028,
+                "g": 0.04411756247282028,
+                "b": 0.04411756247282028,
+                "a": 0.7160000205039978
+            }
+        },
+        {
+            "materialName": "Distant_Building_B",
+            "albedoTexture": "Distant_Building_B_BaseColor.png",
+            "normalTexture": "Distant_Building_B_Normal.png",
+            "baseColor": {
+                "r": 0.904411792755127,
+                "g": 0.904411792755127,
+                "b": 0.904411792755127,
+                "a": 1.0
+            }
+        },
+        {
+            "materialName": "Distant_Building_C",
+            "albedoTexture": "Distant_Building_C_BaseColor.png",
+            "normalTexture": "Distant_Building_C_Normal.png",
+            "baseColor": {
+                "r": 0.875,
+                "g": 0.875,
+                "b": 0.875,
+                "a": 1.0
+            }
+        }
+    ]
+}

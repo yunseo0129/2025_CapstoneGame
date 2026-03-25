@@ -91,7 +91,7 @@ HRESULT CMesh::Ready_VertexBuffer_For_NonAnim(ID3D12GraphicsCommandList* cmdList
 	for (_uint i = 0; i < m_iVertices; ++i)
 		m_pGameInstance->Read_File(vertices[i].vTangent);
 
-
+	m_iVertexStride = sizeof(VTXMESH);
 	_uint vertexBufferSize = sizeof(VTXMESH) * m_iVertices;
 
 	if (FAILED(Create_Buffer(cmdList, m_pVertexBuffer.GetAddressOf(), m_pVertexUploadBuffer.GetAddressOf(),

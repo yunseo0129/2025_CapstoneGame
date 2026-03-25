@@ -35,7 +35,6 @@ HRESULT CTexture::Initialize_Prototype(ID3D12GraphicsCommandList* pCommandList, 
 
     _tchar			szTextureFilePath[MAX_PATH] = TEXT("");
 
-    pTextureFilePath = L"Resources/Textures/Rock.dds";
     for (_uint i = 0; i < m_iNumTextures; ++i)
     {
         // 포맷 문자열(%d 등)이 포함된 경로인지 확인

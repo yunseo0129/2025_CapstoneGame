@@ -54,7 +54,6 @@ HRESULT CVIBuffer::Render(ID3D12GraphicsCommandList* _commandList)
 {
     // commendlist는 매 프레임마다 다를 수 있으므로 인자로 받음.
     // 공통 파이프라인 설정
-
     _commandList->IASetPrimitiveTopology(m_ePrimitiveTopology);
     _commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
     _commandList->IASetIndexBuffer(&m_indexBufferView);

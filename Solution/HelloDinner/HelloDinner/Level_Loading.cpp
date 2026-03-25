@@ -81,11 +81,11 @@ void CLevel_Loading::Add_Camera()
 	tDesc.fFovy = XMConvertToRadians(60.f);
 	tDesc.fAspect = 1280.f / 720.f;
 	tDesc.fNear = 0.1f;
-	tDesc.fFar = 100.f;
+	tDesc.fFar = 10000.f;
 	tDesc.fCamMouseSensor = 1.f;
 	tDesc.fCamSpeedPerSec = 2.f;
 	tDesc.fRotationPerSec = 1.f;
-	tDesc.fSpeedPerSec = 1.f;
+	tDesc.fSpeedPerSec = 100.f;
 
 	CCamera_FPV* pCamera = CCamera_FPV::Create(m_pContext);
 	pCamera->Initialize(&tDesc);
@@ -110,10 +110,12 @@ HRESULT CLevel_Loading::Ready_TestLoader()
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_GameObject_Skybox", CSkybox::Create(m_pContext))))
 		return E_FAIL;
 
+	
 	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, L"Prototype_GameObject_Skybox", LEVEL_LOADING, L"Layer_Skybox", nullptr))) {
 		MSG_BOX("Failed to Add GameObject To Layer : Skybox");
 		return E_FAIL;
 	}
+	
 	
 	
 	return S_OK;

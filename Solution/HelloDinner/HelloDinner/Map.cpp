@@ -59,10 +59,10 @@ void CMap::Late_Update(_float fTimeDelta)
 
 void CMap::Render(ID3D12GraphicsCommandList* _commandList)
 {
-	// 1. 월드 행렬을 Root Constant로 전달
+	// Transform 컴포넌트의 월드 행렬을 RootConstantBuffer에 넘겨준다.
 	XMFLOAT4X4 WorldMatrix;
-	XMStoreFloat4x4(&WorldMatrix, XMMatrixTranspose(m_pTransformCom->Get_WorldMatrix()));
-	_commandList->SetGraphicsRoot32BitConstants((_uint)RootParameterIndex::GameObject, 16, &WorldMatrix, 0);
+	XMStoreFloat4x4(&WorldMatrix, m_pTransformCom->Get_WorldMatrix());
+	_commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &WorldMatrix, 0);
 
 	// 2. PSO 설정
 	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::DEFAULT);

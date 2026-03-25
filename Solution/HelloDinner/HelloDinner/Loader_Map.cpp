@@ -87,7 +87,7 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 
 			if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
 				iLevelIndex, L"Prototype_GameObject_Map",
-				iLevelIndex, L"Layer_Map", &desc)))
+				iLevelIndex, L"Layer_Test", &desc)))
 			{
 				MSG_BOX("Failed to add map instance to layer");
 			}
