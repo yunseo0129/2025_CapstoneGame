@@ -5,6 +5,8 @@
 class CGraphic_Device : public CBase
 {
 public:
+	static const _int SWAP_CHAIN_BUFFER_COUNT = 3;
+
 	CGraphic_Device();
 	~CGraphic_Device();
 
@@ -17,6 +19,8 @@ public:
 	void CloseCmdList ();
 	
 	const ComPtr<ID3D12GraphicsCommandList>& GetCommandList() const { return m_pCommandList; }
+	_int GetCurrentFrameIndex () const { return m_iCurrBackBuffer; }
+
 private:
 	bool InitDirect3D(HWND& _hwnd, EngineContext* _pcontext);
 	bool Get4xMsaaState()const;
@@ -63,20 +67,25 @@ private:
 	ComPtr<ID3D12Device> m_pD3dDevice;
 
 	ComPtr<ID3D12CommandQueue> m_pCommandQueue;
-	ComPtr<ID3D12CommandAllocator> m_pDirectCmdListAlloc;
 	ComPtr<ID3D12GraphicsCommandList> m_pCommandList;
 
-	static const _int m_iSwapChainBufferCount = 2;
+	// 버퍼 수 3
+	static const _int m_iSwapChainBufferCount = SWAP_CHAIN_BUFFER_COUNT;
 	_int			m_iCurrBackBuffer = 0;
 	ComPtr<ID3D12Resource> m_pSwapChainBuffer[m_iSwapChainBufferCount];
 	ComPtr<ID3D12Resource> m_pDepthStencilBuffer;
+
+	// 커맨드 리스트는 프레임마다 하나씩 사용하므로, 버퍼 수만큼 커맨드 할로케이터가 필요하다.
+	ComPtr<ID3D12CommandAllocator> m_pCmdListAlloc[m_iSwapChainBufferCount];
 
 	ComPtr<ID3D12DescriptorHeap> m_pRtvHeap;
 	ComPtr<ID3D12DescriptorHeap> m_pDsvHeap;
 	ComPtr<ID3D12RootSignature>	 m_pRootSignature;
 
+	//펜스 값도 3개다
 	ComPtr<ID3D12Fence> m_pFence;
 	UINT64				m_nFenceValues[m_iSwapChainBufferCount];
+	UINT64				m_iFenceValueCounter = 0;
 	HANDLE				m_hFenceEvent = nullptr;
 
 	D3D12_VIEWPORT m_ScreenViewport;

@@ -161,6 +161,17 @@ bool CGameInstance::Mouse_Up(int _iKey)
 	return m_pInput_Device->Mouse_Up(_iKey);
 }
 
+// ------------------------------------------------------------------------
+// Graphic_Device_Manager
+// ------------------------------------------------------------------------
+
+_int CGameInstance::GetCurrentFrameIndex () const
+{
+	if ( nullptr == m_pGraphic_Device )
+		return 0;
+
+	return m_pGraphic_Device->GetCurrentFrameIndex ();
+}
 
 void CGameInstance::ResetCmdList ()
 {

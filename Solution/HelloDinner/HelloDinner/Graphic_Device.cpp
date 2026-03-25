@@ -16,7 +16,7 @@ void CGraphic_Device::ResetCmdList ()
 {
 	// 명령 목록은 ExecuteCommandList를 통해 명령 대기열에 추가된 후에 재설정 가능
 	// 명령 목록을 재사용하면 메모리가 재사용 됨
-	ThrowIfFailed ( m_pCommandList.Get ()->Reset ( m_pDirectCmdListAlloc.Get () , nullptr ) );
+	ThrowIfFailed ( m_pCommandList->Reset ( m_pCmdListAlloc[m_iCurrBackBuffer].Get () , nullptr ) );
 	//MSG_BOX ( "CmdList Reset" );
 }
 
@@ -24,7 +24,7 @@ void CGraphic_Device::BeforeRender(const _float4& vClearColor)
 {
 	// 명령 레코드와 연결된 메모리 재사용
 	// 연결된 명령 목록이 GPU에 완료되었을 때만 재설정 가능.
-	ThrowIfFailed ( m_pDirectCmdListAlloc->Reset () );
+	ThrowIfFailed ( m_pCmdListAlloc[m_iCurrBackBuffer]->Reset () );
 
 	ResetCmdList ();
 	
@@ -68,7 +68,13 @@ void CGraphic_Device::AfterRender()
 
 	m_pCommandList->ResourceBarrier (1 , &barrier);
 
-	CloseCmdList();
+	ThrowIfFailed ( m_pCommandList->Close () );
+	
+	ID3D12CommandList* cmdsLists[] = { m_pCommandList.Get () };
+	m_pCommandQueue->ExecuteCommandLists ( _countof ( cmdsLists ) , cmdsLists );
+
+	m_nFenceValues[m_iCurrBackBuffer] = ++m_iFenceValueCounter;
+	ThrowIfFailed ( m_pCommandQueue->Signal ( m_pFence.Get () , m_nFenceValues[m_iCurrBackBuffer] ) );
 
 
 #ifdef _WITH_PRESENT_PARAMETERS
@@ -301,16 +307,17 @@ void CGraphic_Device::CreateCommandObjects()
 	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 	ThrowIfFailed(m_pD3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_pCommandQueue)));
 
-	ThrowIfFailed(m_pD3dDevice->CreateCommandAllocator(
-		D3D12_COMMAND_LIST_TYPE_DIRECT,
-		IID_PPV_ARGS(m_pDirectCmdListAlloc.GetAddressOf())));
+	for ( int i = 0; i < m_iSwapChainBufferCount; ++i )
+	{
+		ThrowIfFailed ( m_pD3dDevice->CreateCommandAllocator (
+			D3D12_COMMAND_LIST_TYPE_DIRECT ,
+			IID_PPV_ARGS ( m_pCmdListAlloc[i].GetAddressOf () ) ) );
+	}
 
-	ThrowIfFailed(m_pD3dDevice->CreateCommandList(
-		0,
-		D3D12_COMMAND_LIST_TYPE_DIRECT,
-		m_pDirectCmdListAlloc.Get(), // 명령 할당자
-		nullptr,                   // 초기 파이프라인 상태 객체
-		IID_PPV_ARGS(m_pCommandList.GetAddressOf())));
+	ThrowIfFailed ( m_pD3dDevice->CreateCommandList (
+		0 , D3D12_COMMAND_LIST_TYPE_DIRECT ,
+		m_pCmdListAlloc[0].Get () , nullptr ,
+		IID_PPV_ARGS ( m_pCommandList.GetAddressOf () ) ) );
 
 	// 커맨드 리스트는 생성과 동시에 기록 상태이므로, GPU에서 실행하기 전에 반드시 닫아주어야 한다.
 	m_pCommandList->Close();
@@ -330,15 +337,16 @@ void CGraphic_Device::WaitForGpuComplete()
 
 void CGraphic_Device::MoveToNextFrame()
 {
-	m_iCurrBackBuffer = m_pSwapChain.Get()->GetCurrentBackBufferIndex();
-	UINT64 nFenceValue = ++m_nFenceValues[m_iCurrBackBuffer];
-	HRESULT hResult = m_pCommandQueue->Signal(m_pFence.Get(), nFenceValue);
+	const UINT64 nCurrentFenceValue = m_nFenceValues[m_iCurrBackBuffer];
+	m_iCurrBackBuffer = m_pSwapChain->GetCurrentBackBufferIndex ();
 
-	if (m_pFence->GetCompletedValue() < nFenceValue)
+	if (m_pFence->GetCompletedValue() < m_nFenceValues[m_iCurrBackBuffer] )
 	{
-		hResult = m_pFence->SetEventOnCompletion(nFenceValue, m_hFenceEvent);
-		::WaitForSingleObject(m_hFenceEvent, INFINITE);
+		ThrowIfFailed ( m_pFence->SetEventOnCompletion ( m_nFenceValues[m_iCurrBackBuffer] , m_hFenceEvent ) );
+		::WaitForSingleObject ( m_hFenceEvent , INFINITE );
 	}
+	// 다음 프레임의 Fence 값 갱신
+	m_nFenceValues[m_iCurrBackBuffer] = nCurrentFenceValue + 1;
 }
 
 bool CGraphic_Device::Get4xMsaaState()const
@@ -536,7 +544,8 @@ void CGraphic_Device::Free()
 	m_pRootSignature.Reset();
 	m_pFence.Reset();
 	m_pCommandList.Reset();
-	m_pDirectCmdListAlloc.Reset();
+	for ( int i = 0; i < m_iSwapChainBufferCount; ++i )
+		m_pCmdListAlloc[i].Reset ();
 	m_pCommandQueue.Reset();
 
 	m_pDsvHeap.Reset();

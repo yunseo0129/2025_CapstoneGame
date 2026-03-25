@@ -24,6 +24,7 @@ public: /* For.GameInstance */
 public: /* for.Graphics_Device*/
 	void ResetCmdList ();
 	void CloseCmdList ();
+	_int GetCurrentFrameIndex () const;
 
 public: /* for.Input_Device */
 	_byte Get_DIKeyState(_ubyte byKeyID);
