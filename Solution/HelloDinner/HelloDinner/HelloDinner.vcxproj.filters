@@ -159,6 +159,12 @@
     <Filter Include="소스 파일\01. Engine\04. Components\02. Model\Material">
       <UniqueIdentifier>{e4f7948b-114e-42d0-aeb0-59c7f1561b05}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\02. Game\GameObject\Object\02. Player">
+      <UniqueIdentifier>{e45e7ca3-9609-4d91-99c7-c874544ab09e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\GameObject\Object\02. Player\01. Chick_3rd">
+      <UniqueIdentifier>{f2529a22-d40c-4172-a809-89cfcdf43b52}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -284,6 +290,9 @@
     <ClInclude Include="Common\WICTextureLoader12.h">
       <Filter>외부 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Chick_3rd.h">
+      <Filter>소스 파일\02. Game\GameObject\Object\02. Player\01. Chick_3rd</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -390,6 +399,9 @@
     </ClCompile>
     <ClCompile Include="Common\WICTextureLoader12.cpp">
       <Filter>외부 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Chick_3rd.cpp">
+      <Filter>소스 파일\02. Game\GameObject\Object\02. Player\01. Chick_3rd</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
