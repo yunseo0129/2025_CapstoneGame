@@ -228,7 +228,7 @@ HRESULT CBinary_Converter::Save_Data_NonAnim(const _tchar* pComponentTag)
 	for (MESH_INFO Mesh : m_tSaveInfo.mMeshes)
 	{
 		FileStream.write((char*)&Mesh.mMeshMaterials, sizeof(_uint));
-		FileStream.write((char*)&Mesh.szMeshName, sizeof(_char) * 256);
+		FileStream.write((char*)&Mesh.szMeshName, sizeof(_char) * MAX_PATH);
 		FileStream.write((char*)&Mesh.mNumVtxCnt, sizeof(_uint));
 		FileStream.write((char*)&Mesh.mNumTriCnt, sizeof(_uint));
 
@@ -267,7 +267,7 @@ HRESULT CBinary_Converter::Save_Data_NonAnim(const _tchar* pComponentTag)
 			if (Tex.mTexture[i].size() == 0)
 			{
 				_char FullPath[256] = "Not_Data";
-				FileStream.write((char*)&FullPath, sizeof(_char) * 256);
+				FileStream.write((char*)&FullPath, sizeof(_char) * MAX_PATH);
 			}
 			else
 			{
@@ -275,7 +275,7 @@ HRESULT CBinary_Converter::Save_Data_NonAnim(const _tchar* pComponentTag)
 				{
 					/*_char* FullPath = ;
 					strcpy_s(FullPath, 256, Path);*/
-					FileStream.write((char*)&Path.mTexPath, sizeof(_char) * 256);
+					FileStream.write((char*)&Path.mTexPath, sizeof(_char) * MAX_PATH);
 				}
 			}
 		}
@@ -304,7 +304,7 @@ HRESULT CBinary_Converter::Save_Data_Anim(const _tchar* pComponentTag)
 
 	for (NODE_INFO node : m_tSaveInfo.mNodes)
 	{
-		FileStream.write((char*)&node.mName, 256);
+		FileStream.write((char*)&node.mName, MAX_PATH);
 		FileStream.write((char*)&node.mTransformation, sizeof(_float4x4));
 		FileStream.write((char*)&node.mCombindTransformationMatrix, sizeof(_float4x4));
 		FileStream.write((char*)&node.miParentBoneIndex, sizeof(_int));
@@ -318,7 +318,7 @@ HRESULT CBinary_Converter::Save_Data_Anim(const _tchar* pComponentTag)
 	for (MESH_INFO Mesh : m_tSaveInfo.mMeshes)
 	{
 		FileStream.write((char*)&Mesh.mMeshMaterials, sizeof(_uint));
-		FileStream.write((char*)&Mesh.szMeshName, sizeof(_char) * 256);
+		FileStream.write((char*)&Mesh.szMeshName, sizeof(_char) * MAX_PATH);
 		FileStream.write((char*)&Mesh.mNumVtxCnt, sizeof(_uint));
 		FileStream.write((char*)&Mesh.mNumTriCnt, sizeof(_uint));
 
@@ -381,7 +381,7 @@ HRESULT CBinary_Converter::Save_Data_Anim(const _tchar* pComponentTag)
 			if (Tex.mTexture[i].size() == 0)
 			{
 				_char FullPath[256] = "Not_Data";
-				FileStream.write((char*)&FullPath, sizeof(_char) * 256);
+				FileStream.write((char*)&FullPath, sizeof(_char) * MAX_PATH);
 			}
 			else
 			{
@@ -389,7 +389,7 @@ HRESULT CBinary_Converter::Save_Data_Anim(const _tchar* pComponentTag)
 				{
 					/*_char* FullPath = ;
 					strcpy_s(FullPath, 256, Path);*/
-					FileStream.write((char*)&Path.mTexPath, sizeof(_char) * 256);
+					FileStream.write((char*)&Path.mTexPath, sizeof(_char) * MAX_PATH);
 				}
 			}
 		}
@@ -400,14 +400,14 @@ HRESULT CBinary_Converter::Save_Data_Anim(const _tchar* pComponentTag)
 
 	for (ANIMATION_INFO Anim : m_tSaveInfo.mAnim)
 	{
-		FileStream.write((char*)&Anim.mszName, sizeof(_char) * 256);
+		FileStream.write((char*)&Anim.mszName, sizeof(_char) * MAX_PATH);
 		FileStream.write((char*)&Anim.miNumChannels, sizeof(_uint));
 		FileStream.write((char*)&Anim.mDuration, sizeof(_float));
 		FileStream.write((char*)&Anim.mfTickPerSecond, sizeof(_float));
 
 		for (CHANNEL_INFO Channel : Anim.mChannels)
 		{
-			FileStream.write((char*)&Channel.mszName, sizeof(_char) * 256);
+			FileStream.write((char*)&Channel.mszName, sizeof(_char) * MAX_PATH);
 			FileStream.write((char*)&Channel.miNumScaleFrameKeys, sizeof(_uint));
 			FileStream.write((char*)&Channel.miNumRotationFrameKeys, sizeof(_uint));
 			FileStream.write((char*)&Channel.miNumPositionFrameKeys, sizeof(_uint));

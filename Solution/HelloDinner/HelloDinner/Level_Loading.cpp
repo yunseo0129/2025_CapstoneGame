@@ -65,8 +65,8 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 
 
 	
-	/*if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Chick_3rd"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, L"Resources/chick/Prototype_Component_chick.txt", _fmatrix()))))
+	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Chick_3rd"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, L"Resources/NonAnim/chick/Prototype_Component_chicken.txt", _fmatrix()))))
 		return E_FAIL;
 
 	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_GameObject_Chick_3rd"),
@@ -78,9 +78,9 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 	desc.iModelLevelIndex = 1;
 	desc.vScale = _float3(0.1f, 0.1f, 0.1f);
 	m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Chick_3rd"),
-		1, TEXT("Layer_Player_chick_3rd"), &desc);*/
+		1, TEXT("Layer_Player_chick_3rd"), &desc);
 
-	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Pig_3rd"),
+	/*if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Pig_3rd"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, L"Resources/chick/Prototype_Component_Pig.txt", _fmatrix()))))
 		return E_FAIL;
 
@@ -93,7 +93,7 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 	desc.iModelLevelIndex = 1;
 	desc.vScale = _float3(0.1f, 0.1f, 0.1f);
 	m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Pig_3rd"),
-		1, TEXT("Layer_Player_Pig_3rd"), &desc);
+		1, TEXT("Layer_Player_Pig_3rd"), &desc);*/
 
 
 	//Safe_Release(pMapLoader);
