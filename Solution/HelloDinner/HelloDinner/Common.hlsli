@@ -8,14 +8,14 @@
 // b0 : camera 행렬 정보 (매 프레임 갱신)
 cbuffer cbTransform : register(b0)
 {
-    matrix g_matView; // 뷰 행렬
-    matrix g_matProj; // 투영 행렬
+    row_major matrix g_matView; // 뷰 행렬
+    row_major matrix g_matProj; // 투영 행렬
     float3 g_vCamPosWS; // 월드 공간 카메라 위치
 };
 // b1 : Object 행렬 정보 (오브젝트마다 갱신)
 cbuffer cbObject : register(b1)
 {
-    matrix g_matWorld; // 월드 행렬
+    row_major matrix g_matWorld; // 월드 행렬
 };
 
 

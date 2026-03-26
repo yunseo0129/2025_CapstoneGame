@@ -11,19 +11,35 @@ CModel::CModel(ID3D12Device* pDevice, EngineContext* pContext)
 }
 
 CModel::CModel(const CModel& Prototype)
-	: CComponent{ nullptr }
+	: CComponent{ Prototype }
+	, m_pDevice{ Prototype.m_pDevice }
 	, m_eModelType{ Prototype.m_eModelType }
+	, m_eMatLoadMode{ Prototype.m_eMatLoadMode }
 	, m_iNumMeshes{ Prototype.m_iNumMeshes }
 	, m_Meshes{ Prototype.m_Meshes }
+	, m_iNumMaterials{ Prototype.m_iNumMaterials }
+	, m_Materials{ Prototype.m_Materials }
 	, m_PreTransformMatrix{ Prototype.m_PreTransformMatrix }
 {
 	for (auto& pMesh : m_Meshes)
 		Safe_AddRef(pMesh);
+
+	for (auto& pMaterial : m_Materials)
+		Safe_AddRef(pMaterial);
 }
 
-HRESULT CModel::Initialize_Prototype(TYPE eModelType, const wchar_t* pModelFilePath, _fmatrix PreTransformMatrix)
+HRESULT CModel::Set_MaterialTexture(_uint iMaterialIndex, TextureType eType, CTexture* pTexture)
+{
+	if (iMaterialIndex >= m_iNumMaterials || nullptr == pTexture)
+		return E_FAIL;
+
+	return m_Materials[iMaterialIndex]->Add_Texture(eType, pTexture);
+}
+
+HRESULT CModel::Initialize_Prototype(TYPE eModelType, const wchar_t* pModelFilePath, _fmatrix PreTransformMatrix, MATERIAL_LOAD_MODE eMatMode)
 {
 	m_eModelType = eModelType;
+	m_eMatLoadMode = eMatMode;
 
 	XMStoreFloat4x4(&m_PreTransformMatrix, PreTransformMatrix);
 
@@ -65,11 +81,17 @@ HRESULT CModel::Render(ID3D12GraphicsCommandList* _commandList, _uint iMeshIndex
 
 	if (iMaterialIndex < m_iNumMaterials)
 	{
-		// Diffuse (슬롯 1)
-		Bind_Material(iMaterialIndex, (TextureType)TextureType_DIFFUSE, 0);
+		// ★ 텍스처가 실제로 있는지 확인
+		CTexture* pTex = m_Materials[iMaterialIndex]->Get_Texture((TextureType)TextureType_DIFFUSE, 0);
+		if (pTex == nullptr)
+		{
+			char szLog[256];
+			sprintf_s(szLog, "[Model::Render] NO TEXTURE! MeshIdx=%u, MatIdx=%u, this=0x%p\n",
+				iMeshIndex, iMaterialIndex, this);
+			OutputDebugStringA(szLog);
+		}
 
-		// 필요 시 추가 텍스처 바인딩
-		// Bind_Material(iMaterialIndex, (TextureType)TextureType_NORMALS, 0);
+		Bind_Material(iMaterialIndex, (TextureType)TextureType_DIFFUSE, 0, _commandList);
 	}
 
 	// 2. 메쉬 렌더 (IASet + DrawIndexedInstanced)
@@ -118,6 +140,10 @@ HRESULT CModel::Ready_Materials(const wchar_t* pModelFilePath)
 			if (strcmp(szPath, "Not_Data") == 0)
 				continue;
 
+			//    맵 모드: 바이너리 경로 읽기만 하고 텍스처 생성은 스킵
+			//    (외부에서 Set_MaterialTexture로 설정)
+			if (m_eMatLoadMode == MATLOAD_SKIP_TEXTURE)
+				continue;
 
 			// char → wchar_t 변환
 			_tchar szPerfectPath[MAX_PATH] = TEXT("");
@@ -133,7 +159,7 @@ HRESULT CModel::Ready_Materials(const wchar_t* pModelFilePath)
 	return S_OK;
 }
 
-HRESULT CModel::Bind_Material(_uint iMeshIndex, TextureType eType, _uint iTextureIndex)
+HRESULT CModel::Bind_Material(_uint iMeshIndex, TextureType eType, _uint iTextureIndex, ID3D12GraphicsCommandList* _commandList)
 {
 	if (iMeshIndex >= m_iNumMaterials)
 		return E_FAIL;
@@ -141,15 +167,15 @@ HRESULT CModel::Bind_Material(_uint iMeshIndex, TextureType eType, _uint iTextur
 	// RootParameterIndex 추가 후 변경
 	RootParameterIndex rootParameterIndex = RootParameterIndex::TEXTURE;
 
-	m_Materials[iMeshIndex]->Bind_ShaderResource(m_pContext->cmdList, eType, rootParameterIndex, iTextureIndex);
+	m_Materials[iMeshIndex]->Bind_ShaderResource(_commandList, eType, rootParameterIndex, iTextureIndex);
 	return S_OK;
 }
 
-CModel* CModel::Create(ID3D12Device* pDevice, EngineContext* pContext, TYPE eModelType, const wchar_t* pModelFilePath, _fmatrix PreTransformMatrix)
+CModel* CModel::Create(ID3D12Device* pDevice, EngineContext* pContext, TYPE eModelType, const wchar_t* pModelFilePath, _fmatrix PreTransformMatrix, MATERIAL_LOAD_MODE eMatMode)
 {
 	CModel* pInstance = new CModel(pDevice, pContext);
 
-	if (FAILED(pInstance->Initialize_Prototype(eModelType, pModelFilePath, PreTransformMatrix)))
+	if (FAILED(pInstance->Initialize_Prototype(eModelType, pModelFilePath, PreTransformMatrix, eMatMode)))
 	{
 		MSG_BOX("Failed to Created : CModel");
 		Safe_Release(pInstance);
@@ -179,5 +205,9 @@ void CModel::Free()
 		Safe_Release(pMesh);
 
 	m_Meshes.clear();
+
+	for (auto& pMaterial : m_Materials)
+		Safe_Release(pMaterial);
+	m_Materials.clear();
 
 }

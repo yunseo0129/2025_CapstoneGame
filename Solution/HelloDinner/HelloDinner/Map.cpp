@@ -34,7 +34,9 @@ HRESULT CMap::Initialize(void* pArg)
 
 	// JSON에서 받은 TRS 적용
 	m_pTransformCom->Scaling(pDesc->vScale.x, pDesc->vScale.y, pDesc->vScale.z);
-	m_pTransformCom->RotationQuaternion(pDesc->vRotation.x, pDesc->vRotation.y, pDesc->vRotation.z);
+
+	m_pTransformCom->RotationQuaternion(pDesc->vRotation.x,pDesc->vRotation.y,pDesc->vRotation.z);
+
 	m_pTransformCom->Set_State(CTransform::STATE_POSITION,
 		XMVectorSet(pDesc->vPosition.x, pDesc->vPosition.y, pDesc->vPosition.z, 1.f));
 
@@ -112,4 +114,6 @@ CGameObject* CMap::Clone(void* pArg)
 void CMap::Free()
 {
 	__super::Free();
+
+	
 }

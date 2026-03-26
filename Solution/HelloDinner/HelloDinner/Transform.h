@@ -64,6 +64,8 @@ public:
 	/* 항등상태 기준 쿼터니언 회전 */
 	void RotationQuaternion(_float fX, _float fY, _float fZ);
 
+	void EulerRotationQuaternion(_float fX, _float fY, _float fZ);
+
 	// HRESULT Bind_ShaderResource(class CShader* pShader, const _char* pConstantName);
 
 private:

@@ -186,6 +186,25 @@ void CTransform::RotationQuaternion(_float fX, _float fY, _float fZ)
 	Set_State(STATE_LOOK, XMVector3TransformNormal(vLook, RotationMatrix));
 }
 
+void CTransform::EulerRotationQuaternion(_float fX, _float fY, _float fZ)
+{
+	_float3		vScale = Compute_Scaled();
+
+	_vector		vRight = XMVectorSet(1.f, 0.f, 0.f, 0.f) * vScale.x;
+	_vector		vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f) * vScale.y;
+	_vector		vLook = XMVectorSet(0.f, 0.f, 1.f, 0.f) * vScale.z;
+
+	// Unity 오일러 순서: Z → X → Y
+	_matrix		RotationMatrix =
+		XMMatrixRotationZ(fZ) *
+		XMMatrixRotationX(fX) *
+		XMMatrixRotationY(fY);
+
+	Set_State(STATE_RIGHT, XMVector3TransformNormal(vRight, RotationMatrix));
+	Set_State(STATE_UP, XMVector3TransformNormal(vUp, RotationMatrix));
+	Set_State(STATE_LOOK, XMVector3TransformNormal(vLook, RotationMatrix));
+}
+
 //HRESULT CTransform::Bind_ShaderResource(CShader* pShader, const _char* pConstantName)
 //{
 //	return pShader->Bind_Matrix(pConstantName, &m_WorldMatrix);

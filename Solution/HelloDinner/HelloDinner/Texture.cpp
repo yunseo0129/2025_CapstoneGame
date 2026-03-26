@@ -79,10 +79,7 @@ HRESULT CTexture::Initialize_Prototype(ID3D12GraphicsCommandList* pCommandList, 
         else if (false == lstrcmpW(szEXT, TEXT(".psd")) ||
             false == lstrcmpW(szEXT, TEXT(".tga")))
         {
-            // .psd와 .tga는 WIC 미지원 → 스킵 (로그만 출력)
-            char szSkipLog[512];
-            sprintf_s(szSkipLog, "[Texture] Skipped unsupported format: %s\n", szExtA);
-            OutputDebugStringA(szSkipLog);
+            // .psd와 .tga는 WIC 미지원
             continue;
         }
         else

@@ -14,6 +14,9 @@ CGraphic_Device::~CGraphic_Device()
 
 void CGraphic_Device::ResetCmdList ()
 {
+	// 명령 레코드와 연결된 메모리 재사용
+	// 연결된 명령 목록이 GPU에 완료되었을 때만 재설정 가능.
+	ThrowIfFailed(m_pCmdListAlloc[m_iCurrBackBuffer]->Reset());
 	// 명령 목록은 ExecuteCommandList를 통해 명령 대기열에 추가된 후에 재설정 가능
 	// 명령 목록을 재사용하면 메모리가 재사용 됨
 	ThrowIfFailed ( m_pCommandList->Reset ( m_pCmdListAlloc[m_iCurrBackBuffer].Get () , nullptr ) );
@@ -22,9 +25,6 @@ void CGraphic_Device::ResetCmdList ()
 
 void CGraphic_Device::BeforeRender(const _float4& vClearColor)
 {
-	// 명령 레코드와 연결된 메모리 재사용
-	// 연결된 명령 목록이 GPU에 완료되었을 때만 재설정 가능.
-	ThrowIfFailed ( m_pCmdListAlloc[m_iCurrBackBuffer]->Reset () );
 
 	ResetCmdList ();
 	
