@@ -262,19 +262,22 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 			desc.strModelTag = strModelTag;
 			desc.iModelLevelIndex = iLevelIndex;
 
-			desc.vPosition.x = inst["position"]["x"].get<float>() * 100.0f;
-			desc.vPosition.y = inst["position"]["y"].get<float>() * 100.0f;
-			desc.vPosition.z = inst["position"]["z"].get<float>() * 100.0f;
-			
-			
-			desc.vRotation.x = XMConvertToRadians(inst["rotation"]["x"].get<float>());
-			desc.vRotation.y = XMConvertToRadians(inst["rotation"]["y"].get<float>());
-			desc.vRotation.z = XMConvertToRadians(inst["rotation"]["z"].get<float>());
-			
+			// 이동
+			desc.vPosition.x = inst["centerPosition"]["x"].get<float>() * 100.f - 4500.f;
+			desc.vPosition.y = inst["centerPosition"]["y"].get<float>() * 100.f - 100.f;
+			desc.vPosition.z = inst["centerPosition"]["z"].get<float>() * 100.f - 6500.f;
 
-			desc.vScale.x = inst["scale"]["x"].get<float>();
-			desc.vScale.y = inst["scale"]["y"].get<float>();
-			desc.vScale.z = inst["scale"]["z"].get<float>();
+			// 회전
+			desc.vRotation.x = XMConvertToRadians(inst["rotation"]["x"].get<float>());
+			desc.vRotation.y = XMConvertToRadians(inst["rotation"]["y"].get<float>() + 180);
+			desc.vRotation.z = XMConvertToRadians(inst["rotation"]["z"].get<float>());
+
+
+
+			// 스케일
+			desc.vScale.x = inst["scale"]["x"].get<float>() * 100;
+			desc.vScale.y = inst["scale"]["y"].get<float>() * 100;
+			desc.vScale.z = inst["scale"]["z"].get<float>() * 100;
 
 			if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
 				iLevelIndex, L"Prototype_GameObject_Map",
