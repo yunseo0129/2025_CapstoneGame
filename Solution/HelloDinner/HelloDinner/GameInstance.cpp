@@ -417,6 +417,8 @@ void CGameInstance::Free()
 {
 	__super::Free();
 
+	if ( m_pGraphic_Device )
+		m_pGraphic_Device->WaitForGpuComplete ();
 
 	// 2. ComPtr로 보유한 커맨드 리스트 참조 해제
 	m_pCommandList.Reset ();

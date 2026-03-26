@@ -20,7 +20,7 @@ public:
 	
 	const ComPtr<ID3D12GraphicsCommandList>& GetCommandList() const { return m_pCommandList; }
 	_int GetCurrentFrameIndex () const { return m_iCurrBackBuffer; }
-
+	void WaitForGpuComplete ();
 private:
 	bool InitDirect3D(HWND& _hwnd, EngineContext* _pcontext);
 	bool Get4xMsaaState()const;
@@ -31,7 +31,6 @@ private:
 	void CreateCommandObjects();
 	void CreateRtvAndDsvDescriptorHeaps();
 	void CreateSwapChain();
-	void WaitForGpuComplete();
 	void MoveToNextFrame();
 
 	ID3D12Resource* CurrentBackBuffer()const;

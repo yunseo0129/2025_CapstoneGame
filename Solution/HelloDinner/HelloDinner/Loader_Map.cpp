@@ -133,6 +133,8 @@ HRESULT CLoader_Map::Load_MaterialData(const string& strJsonPath, _uint iLevelIn
 	return S_OK;
 }
 
+
+
 HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 {
 	// 1. JSON 파일 열기
@@ -294,6 +296,42 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 	//
 
 	return S_OK;
+}
+
+HRESULT CLoader_Map::Check_Fbx_Existence ( const string& strJsonPath )
+{
+	// 1. JSON 파일 열기
+	ifstream file ( strJsonPath );
+	if ( !file.is_open () )
+	{
+		MSG_BOX ( "Failed to open MapData.json" );
+		return E_FAIL;
+	}
+
+	json mapJson;
+	file >> mapJson;
+	file.close ();
+
+
+	// 3. mapData 배열 순회
+	for ( auto& entry : mapJson["mapData"] )
+	{
+		string fbxName = entry["fbxName"].get<string> ();
+		_wstring strModelTag = Get_ModelTag ( fbxName );
+
+		_wstring strBinaryPath = Get_BinaryPath ( fbxName );
+
+		ifstream fbxFile ( strBinaryPath.c_str () , ios::binary );
+		if ( !fbxFile.is_open () )
+		{
+			char szLog[512];
+			sprintf_s ( szLog , "[FBXFile] Name: %s\ not exist\n" , fbxName.c_str () );
+			OutputDebugStringA ( szLog );
+		}
+		fbxFile.close ();
+	}
+
+	return E_NOTIMPL;
 }
 
 _wstring CLoader_Map::Get_BinaryPath(const string& strFbxName)

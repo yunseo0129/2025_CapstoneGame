@@ -16,6 +16,8 @@ public:
 	// MapData.json을 읽어 모델 + 맵 오브젝트 생성
 	HRESULT Load_MapData(const string& strJsonPath, _uint iLevelIndex);
 
+	HRESULT Check_Fbx_Existence ( const string& strJsonPath );
+
 private:
 	// fbxName → 바이너리 파일 경로 변환
 	_wstring	Get_BinaryPath(const string& strFbxName);
@@ -31,7 +33,7 @@ private:
 	// 플러시 후 대기 중인 리소스들을 안전하게 해제
 	void		ReleasePendingResources();
 	_uint m_iLoadCounter = { 0 };
-	static const _uint FLUSH_INTERVAL = 10; // 10개마다 GPU 플러시
+	static const _uint FLUSH_INTERVAL = 5; // 10개마다 GPU 플러시
 	// 플러시 전까지 삭제를 보류할 리소스들
 	vector<class CComponent*> m_PendingReleases;
 	//
