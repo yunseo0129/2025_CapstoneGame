@@ -159,11 +159,17 @@
     <Filter Include="소스 파일\01. Engine\04. Components\02. Model\Material">
       <UniqueIdentifier>{e4f7948b-114e-42d0-aeb0-59c7f1561b05}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\02. Game\GameObject\Object\02. Player">
+    <Filter Include="소스 파일\02. Game\GameObject\02. Player">
       <UniqueIdentifier>{e45e7ca3-9609-4d91-99c7-c874544ab09e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\02. Game\GameObject\Object\02. Player\01. Chick_3rd">
+    <Filter Include="소스 파일\02. Game\GameObject\02. Player\01. Chick_3rd">
       <UniqueIdentifier>{f2529a22-d40c-4172-a809-89cfcdf43b52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\GameObject\02. Player\02. Pig_3rd">
+      <UniqueIdentifier>{9aba5cd5-4666-4e53-918a-1e314fb854df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\04. Components\02. Model\Animation\Channel">
+      <UniqueIdentifier>{4d17e0f3-2e12-4984-b1bd-3d6b577dc634}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -291,7 +297,16 @@
       <Filter>외부 파일</Filter>
     </ClInclude>
     <ClInclude Include="Chick_3rd.h">
-      <Filter>소스 파일\02. Game\GameObject\Object\02. Player\01. Chick_3rd</Filter>
+      <Filter>소스 파일\02. Game\GameObject\02. Player\01. Chick_3rd</Filter>
+    </ClInclude>
+    <ClInclude Include="Pig_3rd.h">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\02. Pig_3rd</Filter>
+    </ClInclude>
+    <ClInclude Include="Channel.h">
+      <Filter>소스 파일\01. Engine\04. Components\02. Model\Animation\Channel</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>소스 파일\01. Engine\04. Components\02. Model\Animation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -401,7 +416,16 @@
       <Filter>외부 파일</Filter>
     </ClCompile>
     <ClCompile Include="Chick_3rd.cpp">
-      <Filter>소스 파일\02. Game\GameObject\Object\02. Player\01. Chick_3rd</Filter>
+      <Filter>소스 파일\02. Game\GameObject\02. Player\01. Chick_3rd</Filter>
+    </ClCompile>
+    <ClCompile Include="Pig_3rd.cpp">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\02. Pig_3rd</Filter>
+    </ClCompile>
+    <ClCompile Include="Channel.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\02. Model\Animation\Channel</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\02. Model\Animation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

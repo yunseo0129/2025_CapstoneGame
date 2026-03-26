@@ -55,8 +55,8 @@ HRESULT CBinary_Converter::Convert(MODEL_TYPE eType, const _tchar* _path)
 					cout << "wcstombs_s ½ÇÆÐ" << endl;
 					return E_FAIL;
 				}
-
-				if (!strcmp(".fbx", GetFileExtension(temp)))
+				
+				if (!strcmp(".fbx", GetFileExtension(temp)) || !strcmp(".FBX", GetFileExtension(temp)))
 				{
 					_tchar szFilePath[256] = L"";
 					_tchar* szFileName = new _tchar[256];
