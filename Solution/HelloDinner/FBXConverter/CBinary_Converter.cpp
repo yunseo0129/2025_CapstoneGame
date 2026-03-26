@@ -306,7 +306,7 @@ HRESULT CBinary_Converter::Save_Data_Anim(const _tchar* pComponentTag)
 	{
 		FileStream.write((char*)&node.mName, MAX_PATH);
 		FileStream.write((char*)&node.mTransformation, sizeof(_float4x4));
-		FileStream.write((char*)&node.mCombindTransformationMatrix, sizeof(_float4x4));
+		FileStream.write((char*)&node.mCombindTransformationMatrix, sizeof(_float4x4)); // 읽는쪽에 없음
 		FileStream.write((char*)&node.miParentBoneIndex, sizeof(_int));
 	}
 
@@ -361,12 +361,12 @@ HRESULT CBinary_Converter::Save_Data_Anim(const _tchar* pComponentTag)
 			FileStream.write((char*)&Idx, sizeof(_uint));
 		}
 
-		for (XMUINT4 BlendIdx : Mesh.mvBlendIndices)
+		for (XMUINT4 BlendIdx : Mesh.mvBlendIndices) //읽는쪽에 없음
 		{
 			FileStream.write((char*)&BlendIdx, sizeof(XMUINT4));
 		}
 
-		for (_float4 Weights : Mesh.mvBlendWeights)
+		for (_float4 Weights : Mesh.mvBlendWeights) //읽는쪽에 없음
 		{
 			FileStream.write((char*)&Weights, sizeof(_float4));
 		}
@@ -401,18 +401,18 @@ HRESULT CBinary_Converter::Save_Data_Anim(const _tchar* pComponentTag)
 	for (ANIMATION_INFO Anim : m_tSaveInfo.mAnim)
 	{
 		FileStream.write((char*)&Anim.mszName, sizeof(_char) * MAX_PATH);
-		FileStream.write((char*)&Anim.miNumChannels, sizeof(_uint));
 		FileStream.write((char*)&Anim.mDuration, sizeof(_float));
 		FileStream.write((char*)&Anim.mfTickPerSecond, sizeof(_float));
+		FileStream.write((char*)&Anim.miNumChannels, sizeof(_uint));
 
 		for (CHANNEL_INFO Channel : Anim.mChannels)
 		{
 			FileStream.write((char*)&Channel.mszName, sizeof(_char) * MAX_PATH);
-			FileStream.write((char*)&Channel.miNumScaleFrameKeys, sizeof(_uint));
-			FileStream.write((char*)&Channel.miNumRotationFrameKeys, sizeof(_uint));
-			FileStream.write((char*)&Channel.miNumPositionFrameKeys, sizeof(_uint));
+			FileStream.write((char*)&Channel.miNumScaleFrameKeys, sizeof(_uint)); // 읽는쪽에 없음
+			FileStream.write((char*)&Channel.miNumRotationFrameKeys, sizeof(_uint)); // 읽는쪽에 없음
+			FileStream.write((char*)&Channel.miNumPositionFrameKeys, sizeof(_uint)); // 읽는쪽에 없음
 			FileStream.write((char*)&Channel.miNumKeyFrame, sizeof(_uint));
-			FileStream.write((char*)&Channel.miBoneIndex, sizeof(_uint));
+			FileStream.write((char*)&Channel.miBoneIndex, sizeof(_uint)); // 읽는쪽에 없음
 
 			for (KEYFRAME KeyFrame : Channel.mKeyFrame)
 			{

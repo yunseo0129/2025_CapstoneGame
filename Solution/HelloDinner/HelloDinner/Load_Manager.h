@@ -27,7 +27,7 @@ public:
 	void	Read_File(_float4x4& read) { if (!ReadFile(m_hFile, &read, sizeof(_float4x4), &m_dwByte, nullptr)) { MSG_BOX("Failed to Load File _float4x4"); } }
 	void	Read_File(VTXMESH& read) { if (!ReadFile(m_hFile, &read, sizeof(VTXMESH), &m_dwByte, nullptr)) { MSG_BOX("Failed to Load File VTXMESH"); } }
 	void	Read_File(VTXANIMMESH& read) { if (!ReadFile(m_hFile, &read, sizeof(VTXANIMMESH), &m_dwByte, nullptr)) { MSG_BOX("Failed to Load File VTXANIMMESH"); } }
-	//void	Read_File(KEYFRAME& read) { if (!ReadFile(m_hFile, &read, sizeof(KEYFRAME), &m_dwByte, nullptr)) { MSG_BOX("Failed to Load File KEYFRAME"); } }
+	void	Read_File(KEYFRAME& read) { if (!ReadFile(m_hFile, &read, sizeof(KEYFRAME), &m_dwByte, nullptr)) { MSG_BOX("Failed to Load File KEYFRAME"); } }
 	// 수정 필요함
 	void	Read_File(char(&read)[MAX_PATH]) { if (!ReadFile(m_hFile, read, MAX_PATH * sizeof(char), &m_dwByte, nullptr)) { MSG_BOX("Failed to Load File char[MAX_PATH]"); } }
 	void	Read_File(_tchar(&read)[MAX_PATH]) { if (!ReadFile(m_hFile, read, MAX_PATH * sizeof(_tchar), &m_dwByte, nullptr)) { MSG_BOX("Failed to Load File _tchar[MAX_PATH]"); } }

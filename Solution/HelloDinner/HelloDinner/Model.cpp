@@ -45,20 +45,16 @@ HRESULT CModel::Initialize_Prototype(TYPE eModelType, const wchar_t* pModelFileP
 
 	m_pGameInstance->Open_File(pModelFilePath);
 	
-	/*
 	if (FAILED(Ready_Bones()))
 		return E_FAIL;
-	*/
-
+	
 	if (FAILED(Ready_Meshes()))
 		return E_FAIL;
 
-	/*
-	if (FAILED(Ready_Animations()))
-		return E_FAIL;
-	*/
-
 	if (FAILED(Ready_Materials(pModelFilePath)))
+		return E_FAIL;
+
+	if (FAILED(Ready_Animations()))
 		return E_FAIL;
 
 	m_pGameInstance->Close_File();
@@ -101,6 +97,15 @@ HRESULT CModel::Render(ID3D12GraphicsCommandList* _commandList, _uint iMeshIndex
 	return S_OK;
 }
 
+HRESULT CModel::Ready_Bones()
+{
+	return S_OK;
+}
+
+HRESULT CModel::Ready_Animations()
+{
+	return S_OK;
+}
 
 HRESULT CModel::Ready_Meshes()
 {
@@ -210,4 +215,43 @@ void CModel::Free()
 		Safe_Release(pMaterial);
 	m_Materials.clear();
 
+}
+
+void CModel::Off_Blend()
+{
+}
+
+_uint CModel::Get_BoneIndex(const _char* pBoneName) const
+{
+	return _uint();
+}
+
+void CModel::Change_Animation(_uint iAnimIndex, _float fLinearDurationTime, _bool isLoop)
+{
+
+}
+
+_bool CModel::Play_Animation(_float fTimeDelta)
+{
+	return _bool();
+}
+
+_bool CModel::Blend_Animation(_float fTimeDelta)
+{
+	return _bool();
+}
+
+const _float4x4* CModel::Get_BoneMatrix(const _char* pBoneName) const
+{
+	return nullptr;
+}
+
+HRESULT CModel::Bind_BoneMatrices(CShader* pShader, const _char* pConstantName, _uint iMeshIndex)
+{
+	return E_NOTIMPL;
+}
+
+HRESULT CModel::Bind_Material(CShader* pShader, const _char* pConstantName, _uint iMeshIndex, TextureType eType, _uint iTextureIndex)
+{
+	return E_NOTIMPL;
 }

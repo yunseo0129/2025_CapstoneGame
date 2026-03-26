@@ -1,5 +1,4 @@
-#include "..\Public\Animation.h"
-
+#include "Animation.h"
 #include "Channel.h"
 #include "GameInstance.h"
 

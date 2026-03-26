@@ -302,6 +302,15 @@
     <ClInclude Include="Pig_3rd.h">
       <Filter>소스 파일\02. Game\GameObject\02. Player\02. Pig_3rd</Filter>
     </ClInclude>
+    <ClInclude Include="Channel.h">
+      <Filter>소스 파일\01. Engine\04. Components\02. Model\Animation\Channel</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>소스 파일\01. Engine\04. Components\02. Model\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Bone.h">
+      <Filter>소스 파일\01. Engine\04. Components\02. Model\Bone</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -414,6 +423,15 @@
     </ClCompile>
     <ClCompile Include="Pig_3rd.cpp">
       <Filter>소스 파일\02. Game\GameObject\02. Player\02. Pig_3rd</Filter>
+    </ClCompile>
+    <ClCompile Include="Channel.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\02. Model\Animation\Channel</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\02. Model\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Bone.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\02. Model\Bone</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

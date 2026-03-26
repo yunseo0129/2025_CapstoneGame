@@ -26,6 +26,14 @@ namespace Engine
     enum MOUSEMOVESTATE { DIMS_X, DIMS_Y, DIMS_Z, DIMS_END };
 }
 
+struct KEYFRAME
+{
+	XMFLOAT3		vScale;
+	XMFLOAT4		vRotation;
+	XMFLOAT3		vPosition;
+	float			fKeyFramePosition;
+};
+
 // 수정 필요
 enum LEVELID { LEVEL_STATIC, LEVEL_LOADING, LEVEL_LOGO, LEVEL_GAMEPLAY, LEVEL_END };
 

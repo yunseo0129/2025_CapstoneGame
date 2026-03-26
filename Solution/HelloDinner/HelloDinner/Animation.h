@@ -4,9 +4,6 @@
 
 /* 1. 이 애니메이션(대기, 공격 etc)이 컨트롤해야하는 뼈(Channel)의 정보를 가진다.  */
 /* 2. */
-
-BEGIN(Engine)
-
 class CAnimation final : public CBase
 {
 private:
@@ -53,5 +50,3 @@ public:
 	virtual CAnimation* Clone();
 	virtual void Free() override;
 };
-
-END

@@ -5,8 +5,6 @@
 /* 0. 이 뼈가 소속된 애니메이션을 표현하기위해서 뼈는 어떤 상태(KeyFrame)(행렬)들을 가지는가?! 에 대한 정보를 가진다. */
 /* 1. 현재 재생시간에 맞는 뼈의 상태행렬을 만들어낸다.  */
 /* 2. 같은 이름을 가진 채널이 다수 존재할 수 있다?! */
-
-BEGIN(Engine)
 //		CBase 상속
 class CChannel final : public CBase
 {
@@ -42,5 +40,3 @@ public:
 	static CChannel* Create(const class CModel* pModel);
 	virtual void Free() override;
 };
-
-END
