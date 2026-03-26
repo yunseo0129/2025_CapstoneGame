@@ -122,7 +122,7 @@ void CLevel_Loading::Add_Camera()
 {
 	CCamera_FPV::FPV_CAMERA_DESC tDesc;
 	tDesc.vEye = _float3{ 0.f, 0.f, -5.f };
-	tDesc.vAt = _float3{ 0.f, 0.f, 0.f };
+	tDesc.vAt = _float3{ 0.f, 0.f, -1.f };
 	tDesc.fFovy = XMConvertToRadians(60.f);
 	tDesc.fAspect = 1280.f / 720.f;
 	tDesc.fNear = 0.1f;
