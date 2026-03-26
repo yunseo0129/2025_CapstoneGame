@@ -50,20 +50,18 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 
 	// 1. MaterialData.json → 텍스처 Prototype 먼저 등록
 	CLoader_Map* pMapLoader = CLoader_Map::Create(m_pDevice, m_pContext);
-<<<<<<< HEAD
 	if (FAILED(pMapLoader->Load_MaterialData("Resources/Map/MaterialData.json", LEVEL_LOADING)))
 	{
 		MSG_BOX("Failed to load material data");
 	}
 
 	// 2. MapData.json → 모델 생성 + 텍스처 바인딩 + 맵 배치
-=======
-	
->>>>>>> main
 	if (FAILED(pMapLoader->Load_MapData("Resources/Map/MapData.json", LEVEL_LOADING)))
 	{
 		MSG_BOX("Failed to load map data");
-	}*/
+	}
+	Safe_Release(pMapLoader);
+	*/
 
 
 	
