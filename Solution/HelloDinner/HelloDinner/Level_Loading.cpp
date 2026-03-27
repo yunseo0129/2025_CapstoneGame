@@ -81,35 +81,35 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 		1, TEXT("Layer_Player_chick"), &desc);
 	*/
 
-	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Pig_3rd"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Pig/Prototype_Component_Pig.txt", _fmatrix()))))
-		return E_FAIL;
+	//if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Pig_3rd"),
+	//	CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Pig/Prototype_Component_Pig.txt", _fmatrix()))))
+	//	return E_FAIL;
 
-	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_GameObject_Pig_3rd"),
-		CPig_3rd::Create(m_pContext))))
-		return E_FAIL;
+	//if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_GameObject_Pig_3rd"),
+	//	CPig_3rd::Create(m_pContext))))
+	//	return E_FAIL;
 
-	CPig_3rd::Player_3rd_DESC cdesc;
-	cdesc.strModelTag = L"Prototype_Component_Pig_3rd";
-	cdesc.iModelLevelIndex = 1;
-	cdesc.vScale = _float3(0.7f, 0.7f, 0.7f);
-	m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Pig_3rd"),
-		1, TEXT("Layer_Player_Pig_3rd"), &cdesc);
+	//CPig_3rd::Player_3rd_DESC cdesc;
+	//cdesc.strModelTag = L"Prototype_Component_Pig_3rd";
+	//cdesc.iModelLevelIndex = 1;
+	//cdesc.vScale = _float3(0.7f, 0.7f, 0.7f);
+	//m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Pig_3rd"),
+	//	1, TEXT("Layer_Player_Pig_3rd"), &cdesc);
 
-	/*if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Chick_3rd"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, L"Resources/NonAnim/Gun/Prototype_Component_gun.txt", _fmatrix()))))
+	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Chick_3rd"),
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, L"Resources/NonAnim/Gun/Prototype_Component_ketchupGun.txt", _fmatrix()))))
 		return E_FAIL;
 
 	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_GameObject_Chick_3rd"),
-		CChick_3rd::Create(m_pContext))))
+		CPig_3rd::Create(m_pContext))))
 		return E_FAIL;
 	
-	CChick_3rd::Player_3rd_DESC desc;
+	CPig_3rd::Player_3rd_DESC desc;
 	desc.strModelTag = L"Prototype_Component_Chick_3rd";
 	desc.iModelLevelIndex = 1;
 	desc.vScale = _float3(1.f, 1.f, 1.f);
 	m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Chick_3rd"),
-		1, TEXT("Layer_Player_chick"), &desc);*/
+		1, TEXT("Layer_Player_chick"), &desc);
 	
 
 	// m_pLoader = CLoader::Create(m_pDevice, m_pContext, m_eNextLevelID)

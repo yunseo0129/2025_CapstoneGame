@@ -135,6 +135,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="Channel.h" />
+    <ClInclude Include="ketchup_Gun.h" />
     <ClInclude Include="Player_3rd.h" />
     <ClInclude Include="Common\WICTextureLoader12.h" />
     <ClInclude Include="Component.h" />
@@ -190,6 +191,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Channel.cpp" />
+    <ClCompile Include="ketchup_Gun.cpp" />
     <ClCompile Include="Player_3rd.cpp" />
     <ClCompile Include="Common\DDSTextureLoader12.cpp" />
     <ClCompile Include="Common\WICTextureLoader12.cpp" />
