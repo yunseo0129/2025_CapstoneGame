@@ -56,6 +56,33 @@ VS_OUT VS_Main_Static(VS_IN_STATIC In)
     return Out;
 }
 
+// 애니메이션 물체용 VS (메쉬 단위 본 매트릭스 적용)
+VS_OUT VS_Main_Anim(VS_IN_STATIC In)
+{
+    VS_OUT Out = (VS_OUT) 0;
+
+    // 1. [Local -> Bone] 변환
+    // 메쉬 단위 본 적용: g_BoneMatrices[0]에 이 메쉬의 최종 본 매트릭스가 들어있음
+    // SetUp_BoneMatrices에서 OffsetMatrix * CombinedMatrix를 계산해서 넣어줌
+    float4 vSkinnedPos = mul(float4(In.vPos, 1.0f), g_BoneMatrices[0]);
+    float3 vSkinnedNormal = mul(In.vNormal, (float3x3) g_BoneMatrices[0]);
+
+    // 2. [Bone -> World] 변환
+    float4 vWorldPos = mul(vSkinnedPos, g_matWorld);
+    Out.vWorldPos = vWorldPos.xyz;
+
+    // 3. [World -> Clip] 변환
+    float4 vViewPos = mul(vWorldPos, g_matView);
+    Out.vPosition = mul(vViewPos, g_matProj);
+
+    // 4. 노멀 변환 (Bone -> World)
+    Out.vNormal = normalize(mul(vSkinnedNormal, (float3x3) g_matWorld));
+
+    Out.vUV = In.vUV;
+
+    return Out;
+}
+
 // Skybox용 VS
 VS_OUT_SKYBOX VS_Main_Skybox(VS_IN_STATIC In)
 {
@@ -88,7 +115,7 @@ float4 PS_Main_Lit(VS_OUT In) : SV_TARGET
    // sRGB -> Linear 변환 (감마 보정)
    // texColor.rgb = pow(texColor.rgb, 2.2f);
     
-    clip(texColor.a - 0.001f); // 알파 테스트 (투명도 0.1 미만 픽셀 버림)
+    // clip(texColor.a - 0.001f); // 알파 테스트 (투명도 0.1 미만 픽셀 버림)
    
     return float4(texColor);
 }

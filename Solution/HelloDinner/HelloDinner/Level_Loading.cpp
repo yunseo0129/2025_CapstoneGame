@@ -47,7 +47,7 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 	Add_Camera();
 
 	Ready_TestLoader();
-
+	/*
 	// 1. MaterialData.json → 텍스처 Prototype 먼저 등록
 	CLoader_Map* pMapLoader = CLoader_Map::Create(m_pDevice, m_pContext);
 	if (FAILED(pMapLoader->Load_MaterialData("Resources/Map/MaterialData.json", LEVEL_LOADING)))
@@ -61,7 +61,7 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 		MSG_BOX("Failed to load map data");
 	}
 	Safe_Release(pMapLoader);
-	
+	*/
 
 
 	
@@ -80,9 +80,9 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 	m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Chick_3rd"),
 		1, TEXT("Layer_Player_chick"), &desc);
 	*/
-
+	_matrix PreTransformMatrix = XMMatrixIdentity();
 	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Pig_3rd"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Pig/Prototype_Component_Pig.txt", _fmatrix()))))
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Pig/Prototype_Component_Pig.txt", PreTransformMatrix))))
 		return E_FAIL;
 
 	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_GameObject_Pig_3rd"),
@@ -96,21 +96,6 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 	m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Pig_3rd"),
 		1, TEXT("Layer_Player_Pig_3rd"), &cdesc);
 
-	/*if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Chick_3rd"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, L"Resources/NonAnim/Gun/Prototype_Component_gun.txt", _fmatrix()))))
-		return E_FAIL;
-
-	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_GameObject_Chick_3rd"),
-		CChick_3rd::Create(m_pContext))))
-		return E_FAIL;
-	
-	CChick_3rd::Player_3rd_DESC desc;
-	desc.strModelTag = L"Prototype_Component_Chick_3rd";
-	desc.iModelLevelIndex = 1;
-	desc.vScale = _float3(1.f, 1.f, 1.f);
-	m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Chick_3rd"),
-		1, TEXT("Layer_Player_chick"), &desc);*/
-	
 
 	// m_pLoader = CLoader::Create(m_pDevice, m_pContext, m_eNextLevelID)
 

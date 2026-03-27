@@ -65,14 +65,14 @@ void CPlayer_3rd::Render(ID3D12GraphicsCommandList* _commandList)
 	_commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &WorldMatrix, 0);
 
 	// 2. PSO 설정
-	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::DEFAULT);
+	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::ANIM);
 
 	// 3. 메쉬별 렌더링 (머티리얼 바인딩 + DrawIndexedInstanced)
 	_uint iNumMeshes = m_pModelCom->Get_NumMeshes();
 	for (_uint i = 0; i < iNumMeshes; ++i)
 	{
+		m_pModelCom->Bind_BoneMatrices(_commandList, i);
 		m_pModelCom->Render(_commandList, i);
-		// m_pModelCom->Bind_BoneMatrices();
 	}
 }
 

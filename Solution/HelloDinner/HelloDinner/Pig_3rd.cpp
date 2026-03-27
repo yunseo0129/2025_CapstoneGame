@@ -36,13 +36,12 @@ void CPig_3rd::Priority_Update(_float fTimeDelta)
 
 void CPig_3rd::Update(_float fTimeDelta)
 {
-
-	m_pModelCom->Play_Animation(fTimeDelta);
 	__super::Update(fTimeDelta);
 }
 
 void CPig_3rd::Late_Update(_float fTimeDelta)
 {
+	m_pModelCom->Play_Animation(fTimeDelta);
 	__super::Late_Update(fTimeDelta);
 }
 

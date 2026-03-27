@@ -18,6 +18,12 @@ cbuffer cbObject : register(b1)
     row_major matrix g_matWorld; // 월드 행렬
 };
 
+// b2 : Bone Matrices (애니메이션 메쉬 전용)
+cbuffer cbBoneMatrices : register(b2)
+{
+    row_major matrix g_BoneMatrices[512];
+};
+
 
 // ------------------------------------------------
 // Textures & Samplers

@@ -1,5 +1,6 @@
 #include "Mesh.h"
 #include "GameInstance.h"
+#include "Bone.h"
 
 
 CMesh::CMesh(ID3D12Device* pDevice)
@@ -163,6 +164,18 @@ HRESULT CMesh::Ready_VertexBuffer_For_Anim(ID3D12GraphicsCommandList* cmdList, c
 	return S_OK;
 
 	return S_OK;
+}
+
+void CMesh::SetUp_BoneMatrices(const vector<CBone*>& Bones, _float4x4* pBoneMatrices)
+{
+	for (_uint i = 0; i < m_iNumBones; ++i)
+	{
+		// OffsetMatrix * CombinedMatrix = 최종 본 매트릭스
+		_matrix OffsetMatrix = XMLoadFloat4x4(&m_BoneOffsetMatrices[i]);
+		_matrix CombinedMatrix = Bones[m_BoneIndices[i]]->Get_CombinedTransformationMatrix();
+
+		XMStoreFloat4x4(&pBoneMatrices[i], XMMatrixTranspose(OffsetMatrix * CombinedMatrix));
+	}
 }
 
 CMesh* CMesh::Create(ID3D12Device* pDevice, EngineContext* pContext, CModel::TYPE eModelType, class CModel* pModel, _fmatrix PreTransformMatrix)

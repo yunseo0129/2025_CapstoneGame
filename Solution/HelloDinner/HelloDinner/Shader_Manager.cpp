@@ -66,6 +66,10 @@ HRESULT CShader_Manager::Create_GlobalRootSignature ()
 	// -> g_Textures[] : register(t0, space1)
 	parameters[RootParameterIndex::TEXTURE].InitAsDescriptorTable ( 1 , &ranges[0] );
 
+	// [Parameter 3] : CBV (BoneMatrix)
+	// -> cbBoneMatrices : register(b2)
+	parameters[RootParameterIndex::BoneMatrix].InitAsConstantBufferView(2, 0);
+
 	//----------------------------------------------------------------------
 	// Static Sampler s0 ~ s4
 	//----------------------------------------------------------------------
@@ -164,8 +168,7 @@ HRESULT CShader_Manager::Create_PSO ()
 	// Vertex Shader (Input Layout별)
 	ComPtr<ID3DBlob> vsStatic = Compile_Shader ( L"Shader.hlsl" , "VS_Main_Static" , "vs_5_1" );
 	ComPtr<ID3DBlob> vsSkybox = Compile_Shader ( L"Shader.hlsl" , "VS_Main_Skybox" , "vs_5_1" );
-
-	//ComPtr<ID3DBlob> vsAnim = Compile_Shader ( L"Shader.hlsl" , "VS_Main_Anim" , "vs_5_1" );
+	ComPtr<ID3DBlob> vsAnim = Compile_Shader ( L"Shader.hlsl" , "VS_Main_Anim" , "vs_5_1" );
 	// ComPtr<ID3DBlob> vsUI = Compile_Shader ( L"UI.hlsl" , "VS_Main_UI" , "vs_5_1" );
 
 	// Pixel Shader (재질별)
@@ -215,7 +218,7 @@ HRESULT CShader_Manager::Create_PSO ()
 
 	m_pDevice->CreateGraphicsPipelineState ( &psoDesc , IID_PPV_ARGS ( &m_pPSOs[( UINT )PSO_TYPE::SKYBOX] ) );
 
-	/*
+	
 	// ================================================================
 	// ANIMATION (Anim Mesh / Opaque / Lit)
 	// ================================================================
@@ -227,7 +230,7 @@ HRESULT CShader_Manager::Create_PSO ()
 
 	m_pDevice->CreateGraphicsPipelineState ( &psoDesc , IID_PPV_ARGS ( &m_pPSOs[( UINT )PSO_TYPE::ANIM] ) );
 
-	
+	/*
 	// ================================================================
 	// ALPHA BLEND (Static Mesh / Transparent / Lit)
 	// ================================================================
