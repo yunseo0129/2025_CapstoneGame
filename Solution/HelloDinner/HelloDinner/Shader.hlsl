@@ -88,7 +88,8 @@ float4 PS_Main_Lit(VS_OUT In) : SV_TARGET
    // sRGB -> Linear 변환 (감마 보정)
    // texColor.rgb = pow(texColor.rgb, 2.2f);
     
-    
+    clip(texColor.a - 0.1f); // 알파 테스트 (투명도 0.1 미만 픽셀 버림)
+   
     return float4(texColor);
 }
 
