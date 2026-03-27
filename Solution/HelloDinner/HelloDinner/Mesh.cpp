@@ -135,7 +135,7 @@ HRESULT CMesh::Ready_VertexBuffer_For_Anim(ID3D12GraphicsCommandList* cmdList, c
 		m_BoneOffsetMatrices.push_back(OffsetMatrix);
 	}
 
-	vector<VTXMESH> vertices;
+	vector<VTXANIMMESH> vertices;
 	vertices.resize(m_iVertices);
 
 	for (_uint i = 0; i < m_iVertices; ++i)
@@ -149,6 +149,13 @@ HRESULT CMesh::Ready_VertexBuffer_For_Anim(ID3D12GraphicsCommandList* cmdList, c
 
 	for (_uint i = 0; i < m_iVertices; ++i)
 		m_pGameInstance->Read_File(vertices[i].vTangent);
+
+	for (_uint i = 0; i < m_iVertices; ++i)
+		m_pGameInstance->Read_File(vertices[i].vBlendIndices);
+
+	for (_uint i = 0; i < m_iVertices; ++i)
+		m_pGameInstance->Read_File(vertices[i].vBlendWeights);
+
 
 	m_iVertexStride = sizeof(VTXMESH);
 	_uint vertexBufferSize = sizeof(VTXMESH) * m_iVertices;

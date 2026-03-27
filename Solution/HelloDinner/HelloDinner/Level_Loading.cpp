@@ -80,7 +80,7 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 	m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Chick_3rd"),
 		1, TEXT("Layer_Player_chick"), &desc);
 	*/
-	_matrix PreTransformMatrix = XMMatrixIdentity();
+	_matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(0.01f,0.01f,0.01f);
 	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Pig_3rd"),
 		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Pig/Prototype_Component_Pig.txt", PreTransformMatrix))))
 		return E_FAIL;
@@ -92,7 +92,6 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 	CPig_3rd::Player_3rd_DESC cdesc;
 	cdesc.strModelTag = L"Prototype_Component_Pig_3rd";
 	cdesc.iModelLevelIndex = 1;
-	cdesc.vScale = _float3(0.7f, 0.7f, 0.7f);
 	m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Pig_3rd"),
 		1, TEXT("Layer_Player_Pig_3rd"), &cdesc);
 
