@@ -48,7 +48,7 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 	Add_Camera();
 
 	Ready_TestLoader();
-
+	
 	// 1. MaterialData.json → 텍스처 Prototype 먼저 등록
 	CLoader_Map* pMapLoader = CLoader_Map::Create(m_pDevice, m_pContext);
 	if (FAILED(pMapLoader->Load_MaterialData("Resources/Map/MaterialData.json", LEVEL_LOADING)))
@@ -63,6 +63,7 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 	}
 	Safe_Release(pMapLoader);
 	
+
 
 
 	/*
