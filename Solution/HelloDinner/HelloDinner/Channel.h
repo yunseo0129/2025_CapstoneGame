@@ -33,6 +33,10 @@ private:
 	_uint						m_iBoneIndex = {};
 	// 보간할 이전 프레임
 	KEYFRAME					m_BeforeKeyFrame = {};
+	// 아직 미사용중
+	_uint						m_iNumScaleFrameKeys = {};
+	_uint						m_iNumRotationFrameKeys = {};
+	_uint						m_iNumPositionFrameKeys = {};
 
 	class CGameInstance*		m_pGameInstance = { nullptr };
 

@@ -12,7 +12,14 @@ HRESULT CChannel::Initialize(const CModel* pModel)
 {
 	m_pGameInstance->Read_File(m_szName);
 	m_iBoneIndex = pModel->Get_BoneIndex(m_szName);
+
+	// 미사용 데이터임
+	m_pGameInstance->Read_File(m_iNumScaleFrameKeys);
+	m_pGameInstance->Read_File(m_iNumRotationFrameKeys);
+	m_pGameInstance->Read_File(m_iNumPositionFrameKeys);
+
 	m_pGameInstance->Read_File(m_iNumKeyFrames);
+	m_pGameInstance->Read_File(m_iBoneIndex);
 
 	_float3			vScale, vPosition;
 	_float4			vRotation;
