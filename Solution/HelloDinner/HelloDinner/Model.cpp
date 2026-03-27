@@ -3,6 +3,8 @@
 #include "GameInstance.h"
 #include "Texture.h"
 #include "Material.h"
+#include "Bone.h"
+#include "Animation.h"
 
 CModel::CModel(ID3D12Device* pDevice, EngineContext* pContext)
 	: CComponent{ pContext }
@@ -45,20 +47,16 @@ HRESULT CModel::Initialize_Prototype(TYPE eModelType, const wchar_t* pModelFileP
 
 	m_pGameInstance->Open_File(pModelFilePath);
 	
-	/*
 	if (FAILED(Ready_Bones()))
 		return E_FAIL;
-	*/
-
+	
 	if (FAILED(Ready_Meshes()))
 		return E_FAIL;
 
-	/*
-	if (FAILED(Ready_Animations()))
-		return E_FAIL;
-	*/
-
 	if (FAILED(Ready_Materials(pModelFilePath)))
+		return E_FAIL;
+
+	if (FAILED(Ready_Animations()))
 		return E_FAIL;
 
 	m_pGameInstance->Close_File();
@@ -67,7 +65,6 @@ HRESULT CModel::Initialize_Prototype(TYPE eModelType, const wchar_t* pModelFileP
 
 HRESULT CModel::Initialize(void* pArg)
 {
-
 	return S_OK;
 }
 
@@ -101,6 +98,54 @@ HRESULT CModel::Render(ID3D12GraphicsCommandList* _commandList, _uint iMeshIndex
 	return S_OK;
 }
 
+HRESULT CModel::Ready_Bones()
+{
+	if (m_eModelType == TYPE_NONANIM)
+		return S_OK;
+
+	size_t NumBone;
+	m_pGameInstance->Read_File(NumBone);
+
+	_char BoneName[MAX_PATH];
+	_float4x4 BoneTransformMatrix;
+	_float4x4 CombindTransformationMatrix;
+	_int BoneParentIndex;
+
+	for (size_t i = 0; i < NumBone; ++i)
+	{
+		m_pGameInstance->Read_File(BoneName);
+		m_pGameInstance->Read_File(BoneTransformMatrix);
+		m_pGameInstance->Read_File(CombindTransformationMatrix); // 추가함(활용안함)
+		m_pGameInstance->Read_File(BoneParentIndex);
+		CBone* pBone = CBone::Create(BoneName, BoneTransformMatrix, BoneParentIndex);
+
+		if (nullptr == pBone)
+			return E_FAIL;
+
+		m_Bones.push_back(pBone);
+	}
+
+	return S_OK;
+}
+
+HRESULT CModel::Ready_Animations()
+{
+	if (m_eModelType == TYPE_NONANIM)
+		return S_OK;
+
+	m_pGameInstance->Read_File(m_iNumAnimations);
+
+	for (size_t i = 0; i < m_iNumAnimations; i++)
+	{
+		CAnimation* pAnimation = CAnimation::Create(this);
+		if (nullptr == pAnimation)
+			return E_FAIL;
+
+		m_Animations.push_back(pAnimation);
+	}
+
+	return S_OK;
+}
 
 HRESULT CModel::Ready_Meshes()
 {
@@ -210,4 +255,96 @@ void CModel::Free()
 		Safe_Release(pMaterial);
 	m_Materials.clear();
 
+}
+
+void CModel::Off_Blend()
+{
+	m_isBlend = false;
+	m_Animations[m_iCurrentAnimIndex]->Anim_Init();
+}
+
+_uint CModel::Get_BoneIndex(const _char* pBoneName) const
+{
+	_uint	iBoneIndex = { 0 };
+
+	auto	iter = find_if(m_Bones.begin(), m_Bones.end(), [&](CBone* pBone)->_bool
+		{
+			if (false == strcmp(pBone->Get_Name(), pBoneName))
+				return true;
+
+			++iBoneIndex;
+
+			return false;
+		});
+
+	if (iter == m_Bones.end())
+		MSG_BOX("없어");
+
+
+	return iBoneIndex;
+}
+
+void CModel::Change_Animation(_uint iAnimIndex, _float fLinearDurationTime, _bool isLoop)
+{
+	vector<_uint> before = m_Animations[m_iCurrentAnimIndex]->Get_VecBones();
+	m_Animations[m_iCurrentAnimIndex]->Anim_Init();
+	m_Animations[iAnimIndex]->Change_Anim(m_Bones, before);
+	m_iCurrentAnimIndex = iAnimIndex;
+	m_isLoop = isLoop;
+	m_fBlendTime = fLinearDurationTime;
+	m_isBlend = true;
+}
+
+_bool CModel::Play_Animation(_float fTimeDelta)
+{
+	/* 표현하고자 하는 애니메이션에 따른, 뼈의 상태(TransformationMatrix)를 갱신해준다.  */
+	m_isFinished = m_Animations[m_iCurrentAnimIndex]->Update_TransformationMatrices(m_Bones, m_isLoop, fTimeDelta);
+
+	/* 뼈의 바뀐 TransformationMatrix를 활용하여 렌덜이하기위한 최종 뼈의 CombinedTransformationMatrix를 만들어낸다. */
+	for (auto& pBone : m_Bones)
+	{
+		pBone->Update_CombinedTransformationMatrix(m_Bones, XMLoadFloat4x4(&m_PreTransformMatrix));
+	}
+
+	return m_isFinished;
+}
+
+_bool CModel::Blend_Animation(_float fTimeDelta)
+{
+	/* 표현하고자 하는 애니메이션에 따른, 뼈의 상태(TransformationMatrix)를 갱신해준다.  */
+	m_isFinished = m_Animations[m_iCurrentAnimIndex]->Update_TransformationMatrices(m_Bones, m_fBlendTime, fTimeDelta);
+
+	/* 뼈의 바뀐 TransformationMatrix를 활용하여 렌덜이하기위한 최종 뼈의 CombinedTransformationMatrix를 만들어낸다. */
+	for (auto& pBone : m_Bones)
+	{
+		pBone->Update_CombinedTransformationMatrix(m_Bones, XMLoadFloat4x4(&m_PreTransformMatrix));
+	}
+
+	return m_isFinished;
+}
+
+const _float4x4* CModel::Get_BoneMatrix(const _char* pBoneName) const
+{
+	auto   iter = find_if(m_Bones.begin(), m_Bones.end(), [&](CBone* pBone)->_bool
+		{
+			if (false == strcmp(pBone->Get_Name(), pBoneName))
+				return true;
+
+			return false;
+		});
+
+	if (iter == m_Bones.end())
+		return nullptr;
+
+	return (*iter)->Get_CombinedTransformationFloat4x4();
+}
+
+HRESULT CModel::Bind_BoneMatrices(CShader* pShader, const _char* pConstantName, _uint iMeshIndex)
+{
+	return S_OK;
+}
+
+HRESULT CModel::Bind_Material(CShader* pShader, const _char* pConstantName, _uint iMeshIndex, TextureType eType, _uint iTextureIndex)
+{
+	return S_OK;
 }

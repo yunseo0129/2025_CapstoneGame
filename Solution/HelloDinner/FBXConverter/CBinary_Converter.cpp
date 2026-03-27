@@ -13,41 +13,6 @@ CBinary_Converter::~CBinary_Converter()
 	m_Importer.FreeScene();
 }
 
-void ApplyRotationOnly(aiNode* node, const aiScene* scene, aiMatrix4x4 parentTransform) {
-	// 1. 현재 노드의 누적 변환 행렬 계산
-	aiMatrix4x4 globalTransform = parentTransform * node->mTransformation;
-
-	// 2. 누적 변환 행렬을 Scale, Rotation, Translation으로 분해
-	aiVector3D scaling, translation;
-	aiQuaternion rotation;
-	globalTransform.Decompose(scaling, rotation, translation);
-
-	// 3. 회전(Rotation)만 포함된 새로운 4x4 행렬 생성
-	aiMatrix4x4 rotMatrix = aiMatrix4x4(rotation.GetMatrix());
-
-	// 4. 현재 노드에 연결된 모든 메쉬의 정점에 회전 행렬 적용
-	for (unsigned int i = 0; i < node->mNumMeshes; i++) {
-		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-
-		for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
-			// 정점(Position)에 회전 적용
-			mesh->mVertices[j] = rotMatrix * mesh->mVertices[j];
-
-			// 법선(Normal)이 있다면 법선에도 회전 적용
-			if (mesh->HasNormals()) {
-				mesh->mNormals[j] = rotMatrix * mesh->mNormals[j];
-			}
-
-			// 주의: 탄젠트(Tangent)나 바이탄젠트(Bitangent)를 사용한다면 동일하게 곱해줘야 합니다.
-		}
-	}
-
-	// 5. 자식 노드로 재귀 호출
-	for (unsigned int i = 0; i < node->mNumChildren; i++) {
-		ApplyRotationOnly(node->mChildren[i], scene, globalTransform);
-	}
-}
-
 HRESULT CBinary_Converter::Convert(MODEL_TYPE eType, const _tchar* _path)
 {
 	vector<const _tchar*> Directories;
@@ -57,11 +22,11 @@ HRESULT CBinary_Converter::Convert(MODEL_TYPE eType, const _tchar* _path)
 	{
 		WIN32_FIND_DATAA	FileFinde;
 
-		_tchar	path[MAX_PATH] = L"";
-		_tchar	pathFile[MAX_PATH] = L"";
-		wcscpy_s(path, MAX_PATH, Directories[i]);
-		wcscpy_s(pathFile, MAX_PATH, Directories[i]);
-		wcscat_s(pathFile, MAX_PATH, L"*.*");
+		_tchar	path[256] = L"";
+		_tchar	pathFile[256] = L"";
+		wcscpy_s(path, 256, Directories[i]);
+		wcscpy_s(pathFile, 256, Directories[i]);
+		wcscat_s(pathFile, 256, L"*.*");
 
 		wstring strPath = pathFile;
 
@@ -76,12 +41,12 @@ HRESULT CBinary_Converter::Convert(MODEL_TYPE eType, const _tchar* _path)
 		{
 			if (!(FileFinde.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 			{
-				_tchar pPath[MAX_PATH] = L"";
-				wcscpy_s(pPath, MAX_PATH, path);
+				_tchar pPath[256] = L"";
+				wcscpy_s(pPath, 256, path);
 				string strFileName = FileFinde.cFileName;
 
-				wcscat_s(pPath, MAX_PATH, ConvertToWString(strFileName).c_str());
-				_char temp[MAX_PATH] = "";
+				wcscat_s(pPath, 256, ConvertToWString(strFileName).c_str());
+				_char temp[256] = "";
 
 				size_t convertedSize;
 				errno_t err = wcstombs_s(&convertedSize, temp, sizeof(temp), pPath, _TRUNCATE);
@@ -90,21 +55,21 @@ HRESULT CBinary_Converter::Convert(MODEL_TYPE eType, const _tchar* _path)
 					cout << "wcstombs_s 실패" << endl;
 					return E_FAIL;
 				}
-
+				
 				if (!strcmp(".fbx", GetFileExtension(temp)) || !strcmp(".FBX", GetFileExtension(temp)))
 				{
-					_tchar szFilePath[MAX_PATH] = L"";
-					_tchar* szFileName = new _tchar[MAX_PATH];
+					_tchar szFilePath[256] = L"";
+					_tchar* szFileName = new _tchar[256];
 					wcscpy_s(szFilePath, pPath);
-					err = _wsplitpath_s(szFilePath, nullptr, 0, nullptr, 0, szFileName, MAX_PATH, nullptr, 0);
+					err = _wsplitpath_s(szFilePath, nullptr, 0, nullptr, 0, szFileName, 256, nullptr, 0);
 					if (err != 0)
 					{
 						cout << "_wsplitpath_s 실패" << endl;
 						return E_FAIL;
 					}
 					const _wstring strFilePath = pPath;
-					_tchar strProtoTag[MAX_PATH] = L"Prototype_Component_";
-					wcscat_s(strProtoTag, MAX_PATH, szFileName);
+					_tchar strProtoTag[256] = L"Prototype_Component_";
+					wcscat_s(strProtoTag, 256, szFileName);
 					Convert_to_Binary(eType, ConvertToString(strFilePath).c_str(), strProtoTag);
 					Safe_Delete_Array(szFileName);
 				}
@@ -112,10 +77,10 @@ HRESULT CBinary_Converter::Convert(MODEL_TYPE eType, const _tchar* _path)
 			else if (FileFinde.cFileName[0] != '.')
 			{
 				string strFileName = FileFinde.cFileName;
-				_tchar path2[MAX_PATH] = L"";
-				wcscpy_s(path2, MAX_PATH, path);
-				wcscat_s(path2, MAX_PATH, ConvertToWString(strFileName).c_str());
-				wcscat_s(path2, MAX_PATH, L"/");
+				_tchar path2[256] = L"";
+				wcscpy_s(path2, 256, path);
+				wcscat_s(path2, 256, ConvertToWString(strFileName).c_str());
+				wcscat_s(path2, 256, L"/");
 
 				Convert(eType, path2);
 			}
@@ -131,12 +96,12 @@ HRESULT CBinary_Converter::Find_Directories(const _tchar* _path, vector<const _t
 {
 	WIN32_FIND_DATAA	FileFind;
 
-	_tchar	path[MAX_PATH] = L"";
-	wcscpy_s(path, MAX_PATH, _path);
+	_tchar	path[256] = L"";
+	wcscpy_s(path, 256, _path);
 
-	_tchar	pathFile[MAX_PATH] = L"";
-	wcscpy_s(pathFile, MAX_PATH, path);
-	wcscat_s(pathFile, MAX_PATH, L"*.*");
+	_tchar	pathFile[256] = L"";
+	wcscpy_s(pathFile, 256, path);
+	wcscat_s(pathFile, 256, L"*.*");
 
 	wstring strPath = pathFile;
 
@@ -150,11 +115,11 @@ HRESULT CBinary_Converter::Find_Directories(const _tchar* _path, vector<const _t
 			{
 				if (FileFind.cFileName[0] != '.')
 				{
-					_tchar* pPath = new _tchar[MAX_PATH];
-					wcscpy_s(pPath, MAX_PATH, path);
+					_tchar* pPath = new _tchar[256];
+					wcscpy_s(pPath, 256, path);
 					string strFileName = FileFind.cFileName;
-					wcscat_s(pPath, MAX_PATH, ConvertToWString(strFileName).c_str());
-					wcscat_s(pPath, MAX_PATH, L"/");
+					wcscat_s(pPath, 256, ConvertToWString(strFileName).c_str());
+					wcscat_s(pPath, 256, L"/");
 					Directories.push_back(pPath);
 					Find_Directories(pPath, Directories);
 				}
@@ -188,9 +153,6 @@ HRESULT CBinary_Converter::Convert_to_Binary(MODEL_TYPE eModelType, const _char*
 
 	m_pAIScene = m_Importer.ReadFile(pModelFilePath, iFlag);
 
-	//aiMatrix4x4 identity;
-	//ApplyRotationOnly(m_pAIScene->mRootNode, m_pAIScene, identity);
-
 	if (0 == m_pAIScene)
 	{
 		cout << "파일 읽기 실패" << endl;
@@ -205,6 +167,7 @@ HRESULT CBinary_Converter::Convert_to_Binary(MODEL_TYPE eModelType, const _char*
 			return E_FAIL;
 		}
 	}
+
 	if (FAILED(Ready_Meshes()))
 	{
 		cout << "메쉬 정보 저장 실패" << endl;
@@ -250,8 +213,8 @@ HRESULT CBinary_Converter::Convert_to_Binary(MODEL_TYPE eModelType, const _char*
 
 HRESULT CBinary_Converter::Save_Data_NonAnim(const _tchar* pComponentTag)
 {
-	_tchar FilePath[MAX_PATH] = L"../";
-	_tchar Ext[MAX_PATH] = L".txt";
+	_tchar FilePath[256] = L"../";
+	_tchar Ext[256] = L".txt";
 
 	wcscat_s(FilePath, pComponentTag);
 	wcscat_s(FilePath, Ext);
@@ -303,7 +266,7 @@ HRESULT CBinary_Converter::Save_Data_NonAnim(const _tchar* pComponentTag)
 		{
 			if (Tex.mTexture[i].size() == 0)
 			{
-				_char FullPath[MAX_PATH] = "Not_Data";
+				_char FullPath[256] = "Not_Data";
 				FileStream.write((char*)&FullPath, sizeof(_char) * MAX_PATH);
 			}
 			else
@@ -311,7 +274,7 @@ HRESULT CBinary_Converter::Save_Data_NonAnim(const _tchar* pComponentTag)
 				for (MAX_CHAR Path : Tex.mTexture[i])
 				{
 					/*_char* FullPath = ;
-					strcpy_s(FullPath, MAX_PATH, Path);*/
+					strcpy_s(FullPath, 256, Path);*/
 					FileStream.write((char*)&Path.mTexPath, sizeof(_char) * MAX_PATH);
 				}
 			}
@@ -324,8 +287,8 @@ HRESULT CBinary_Converter::Save_Data_NonAnim(const _tchar* pComponentTag)
 
 HRESULT CBinary_Converter::Save_Data_Anim(const _tchar* pComponentTag)
 {
-	_tchar FilePath[MAX_PATH] = L"../";
-	_tchar Ext[MAX_PATH] = L".txt";
+	_tchar FilePath[256] = L"../";
+	_tchar Ext[256] = L".txt";
 
 	wcscat_s(FilePath, pComponentTag);
 	wcscat_s(FilePath, Ext);
@@ -336,14 +299,14 @@ HRESULT CBinary_Converter::Save_Data_Anim(const _tchar* pComponentTag)
 
 	// ------------------------뼈 정보------------------------
 
-	_uint NodeSize = m_tSaveInfo.mNodes.size();
-	FileStream.write((char*)&NodeSize, sizeof(_int));
+	size_t NodeSize = m_tSaveInfo.mNodes.size();
+	FileStream.write((char*)&NodeSize, sizeof(size_t));
 
 	for (NODE_INFO node : m_tSaveInfo.mNodes)
 	{
 		FileStream.write((char*)&node.mName, MAX_PATH);
 		FileStream.write((char*)&node.mTransformation, sizeof(_float4x4));
-		FileStream.write((char*)&node.mCombindTransformationMatrix, sizeof(_float4x4));
+		FileStream.write((char*)&node.mCombindTransformationMatrix, sizeof(_float4x4)); // 읽는쪽에 없음
 		FileStream.write((char*)&node.miParentBoneIndex, sizeof(_int));
 	}
 
@@ -398,15 +361,15 @@ HRESULT CBinary_Converter::Save_Data_Anim(const _tchar* pComponentTag)
 			FileStream.write((char*)&Idx, sizeof(_uint));
 		}
 
-		for (XMUINT4 BlendIdx : Mesh.mvBlendIndices)
-		{
-			FileStream.write((char*)&BlendIdx, sizeof(XMUINT4));
-		}
+		//for (XMUINT4 BlendIdx : Mesh.mvBlendIndices) //읽는쪽에 없음
+		//{
+		//	FileStream.write((char*)&BlendIdx, sizeof(XMUINT4));
+		//}
 
-		for (_float4 Weights : Mesh.mvBlendWeights)
-		{
-			FileStream.write((char*)&Weights, sizeof(_float4));
-		}
+		//for (_float4 Weights : Mesh.mvBlendWeights) //읽는쪽에 없음
+		//{
+		//	FileStream.write((char*)&Weights, sizeof(_float4));
+		//}
 	}
 	//---------------------------메테리얼 정보 -----------------------------
 	FileStream.write((char*)&m_tSaveInfo.mNumMaterials, sizeof(_uint));
@@ -417,7 +380,7 @@ HRESULT CBinary_Converter::Save_Data_Anim(const _tchar* pComponentTag)
 		{
 			if (Tex.mTexture[i].size() == 0)
 			{
-				_char FullPath[MAX_PATH] = "Not_Data";
+				_char FullPath[256] = "Not_Data";
 				FileStream.write((char*)&FullPath, sizeof(_char) * MAX_PATH);
 			}
 			else
@@ -425,7 +388,7 @@ HRESULT CBinary_Converter::Save_Data_Anim(const _tchar* pComponentTag)
 				for (MAX_CHAR Path : Tex.mTexture[i])
 				{
 					/*_char* FullPath = ;
-					strcpy_s(FullPath, MAX_PATH, Path);*/
+					strcpy_s(FullPath, 256, Path);*/
 					FileStream.write((char*)&Path.mTexPath, sizeof(_char) * MAX_PATH);
 				}
 			}
@@ -438,18 +401,18 @@ HRESULT CBinary_Converter::Save_Data_Anim(const _tchar* pComponentTag)
 	for (ANIMATION_INFO Anim : m_tSaveInfo.mAnim)
 	{
 		FileStream.write((char*)&Anim.mszName, sizeof(_char) * MAX_PATH);
-		FileStream.write((char*)&Anim.miNumChannels, sizeof(_uint));
 		FileStream.write((char*)&Anim.mDuration, sizeof(_float));
 		FileStream.write((char*)&Anim.mfTickPerSecond, sizeof(_float));
+		FileStream.write((char*)&Anim.miNumChannels, sizeof(_uint));
 
 		for (CHANNEL_INFO Channel : Anim.mChannels)
 		{
 			FileStream.write((char*)&Channel.mszName, sizeof(_char) * MAX_PATH);
-			FileStream.write((char*)&Channel.miNumScaleFrameKeys, sizeof(_uint));
-			FileStream.write((char*)&Channel.miNumRotationFrameKeys, sizeof(_uint));
-			FileStream.write((char*)&Channel.miNumPositionFrameKeys, sizeof(_uint));
+			FileStream.write((char*)&Channel.miNumScaleFrameKeys, sizeof(_uint)); 
+			FileStream.write((char*)&Channel.miNumRotationFrameKeys, sizeof(_uint)); 
+			FileStream.write((char*)&Channel.miNumPositionFrameKeys, sizeof(_uint)); 
 			FileStream.write((char*)&Channel.miNumKeyFrame, sizeof(_uint));
-			FileStream.write((char*)&Channel.miBoneIndex, sizeof(_uint));
+			FileStream.write((char*)&Channel.miBoneIndex, sizeof(_uint)); 
 
 			for (KEYFRAME KeyFrame : Channel.mKeyFrame)
 			{
@@ -803,7 +766,7 @@ HRESULT CBinary_Converter::Ready_Materials(const _char* pModelFilePath, _bool jy
 			_char		szFileName[MAX_PATH] = "";
 			_char		szExt[MAX_PATH] = "";
 
-			_char		szFullPath[MAX_PATH] = "";
+			_char		szFullPath[256] = "";
 
 			_splitpath_s(pModelFilePath, szDrive, MAX_PATH, szDirectory, MAX_PATH, nullptr, 0, nullptr, 0);
 			_splitpath_s(strTexturePath.data, nullptr, 0, nullptr, 0, szFileName, MAX_PATH, szExt, MAX_PATH);
@@ -817,7 +780,7 @@ HRESULT CBinary_Converter::Ready_Materials(const _char* pModelFilePath, _bool jy
 
 			MultiByteToWideChar(CP_ACP, 0, szFullPath, strlen(szFullPath), szPerfectPath, MAX_PATH);
 			MAX_CHAR pPath{};
-			strcpy_s(pPath.mTexPath, MAX_PATH, szFullPath);
+			strcpy_s(pPath.mTexPath, 256, szFullPath);
 			tTexture.mTexture[1].push_back(pPath);
 
 			// _Spm 2
@@ -827,7 +790,7 @@ HRESULT CBinary_Converter::Ready_Materials(const _char* pModelFilePath, _bool jy
 				if (!FAILED(ModifyFileSuffixAndCheckExistence(szFullPath, textype, typePath)))
 				{
 					MAX_CHAR pPath{};
-					strcpy_s(pPath.mTexPath, MAX_PATH, typePath);
+					strcpy_s(pPath.mTexPath, 256, typePath);
 					tTexture.mTexture[2].push_back(pPath);
 				}
 			}
@@ -838,7 +801,7 @@ HRESULT CBinary_Converter::Ready_Materials(const _char* pModelFilePath, _bool jy
 				if (!FAILED(ModifyFileSuffixAndCheckExistence(szFullPath, textype, typePath)))
 				{
 					MAX_CHAR pPath{};
-					strcpy_s(pPath.mTexPath, MAX_PATH, typePath);
+					strcpy_s(pPath.mTexPath, 256, typePath);
 					tTexture.mTexture[4].push_back(pPath);
 				}
 			}
@@ -849,7 +812,7 @@ HRESULT CBinary_Converter::Ready_Materials(const _char* pModelFilePath, _bool jy
 				if (!FAILED(ModifyFileSuffixAndCheckExistence(szFullPath, textype, typePath)))
 				{
 					MAX_CHAR pPath{};
-					strcpy_s(pPath.mTexPath, MAX_PATH, typePath);
+					strcpy_s(pPath.mTexPath, 256, typePath);
 					tTexture.mTexture[6].push_back(pPath);
 				}
 			}
@@ -860,7 +823,7 @@ HRESULT CBinary_Converter::Ready_Materials(const _char* pModelFilePath, _bool jy
 				if (!FAILED(ModifyFileSuffixAndCheckExistence(szFullPath, textype, typePath)))
 				{
 					MAX_CHAR pPath{};
-					strcpy_s(pPath.mTexPath, MAX_PATH, typePath);
+					strcpy_s(pPath.mTexPath, 256, typePath);
 					tTexture.mTexture[8].push_back(pPath);
 				}
 			}
@@ -871,7 +834,7 @@ HRESULT CBinary_Converter::Ready_Materials(const _char* pModelFilePath, _bool jy
 				if (!FAILED(ModifyFileSuffixAndCheckExistence(szFullPath, textype, typePath)))
 				{
 					MAX_CHAR pPath{};
-					strcpy_s(pPath.mTexPath, MAX_PATH, typePath);
+					strcpy_s(pPath.mTexPath, 256, typePath);
 					tTexture.mTexture[9].push_back(pPath);
 				}
 			}
@@ -882,7 +845,7 @@ HRESULT CBinary_Converter::Ready_Materials(const _char* pModelFilePath, _bool jy
 				if (!FAILED(ModifyFileSuffixAndCheckExistence(szFullPath, textype, typePath)))
 				{
 					MAX_CHAR pPath{};
-					strcpy_s(pPath.mTexPath, MAX_PATH, typePath);
+					strcpy_s(pPath.mTexPath, 256, typePath);
 					tTexture.mTexture[15].push_back(pPath);
 				}
 			}
@@ -893,7 +856,7 @@ HRESULT CBinary_Converter::Ready_Materials(const _char* pModelFilePath, _bool jy
 				if (!FAILED(ModifyFileSuffixAndCheckExistence(szFullPath, textype, typePath)))
 				{
 					MAX_CHAR pPath{};
-					strcpy_s(pPath.mTexPath, MAX_PATH, typePath);
+					strcpy_s(pPath.mTexPath, 256, typePath);
 					tTexture.mTexture[17].push_back(pPath);
 				}
 			}
@@ -925,7 +888,7 @@ HRESULT CBinary_Converter::Ready_Materials(const _char* pModelFilePath, _bool jy
 					_char		szFileName[MAX_PATH] = "";
 					_char		szExt[MAX_PATH] = "";
 
-					_char		szFullPath[MAX_PATH] = "";
+					_char		szFullPath[256] = "";
 
 					_splitpath_s(pModelFilePath, szDrive, MAX_PATH, szDirectory, MAX_PATH, nullptr, 0, nullptr, 0);
 					_splitpath_s(strTexturePath.data, nullptr, 0, nullptr, 0, szFileName, MAX_PATH, szExt, MAX_PATH);
@@ -939,7 +902,7 @@ HRESULT CBinary_Converter::Ready_Materials(const _char* pModelFilePath, _bool jy
 
 					MultiByteToWideChar(CP_ACP, 0, szFullPath, strlen(szFullPath), szPerfectPath, MAX_PATH);
 					MAX_CHAR pPath{};
-					strcpy_s(pPath.mTexPath, MAX_PATH, szFullPath);
+					strcpy_s(pPath.mTexPath, 256, szFullPath);
 					tTexture.mTexture[j].push_back(pPath);
 				}
 			}

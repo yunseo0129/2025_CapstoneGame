@@ -10,7 +10,7 @@ CMesh::CMesh(ID3D12Device* pDevice)
 HRESULT CMesh::Initialize_Prototype(CModel::TYPE eModelType, class CModel* pModel, _fmatrix PreTransformMatrix, ID3D12GraphicsCommandList* cmdList)
 {
 	// MaterialIndex 읽기
-	m_pGameInstance->Read_File(iMaterialIndex);
+	m_pGameInstance->Read_File(m_iMaterialIndex);
 
 	// Mesh의 이름
 	m_pGameInstance->Read_File(m_szName);
@@ -23,7 +23,7 @@ HRESULT CMesh::Initialize_Prototype(CModel::TYPE eModelType, class CModel* pMode
 	// 디버그 로그 출력
 	char szLog[512];
 	sprintf_s(szLog, "[Mesh] Name:%s | Vtx:%u | Tri:%u | Idx:%u | MatIdx:%u\n",
-		m_szName, m_iVertices, iNumTriangles, iNumTriangles * 3, iMaterialIndex);
+		m_szName, m_iVertices, iNumTriangles, iNumTriangles * 3, m_iMaterialIndex);
 	OutputDebugStringA(szLog);
 
 	m_iIndices = iNumTriangles * 3; // 인덱스 개수는 삼각형 개수 * 3
@@ -34,7 +34,7 @@ HRESULT CMesh::Initialize_Prototype(CModel::TYPE eModelType, class CModel* pMode
 
 #pragma region VERTEX_BUFFER	
 
-	HRESULT hr = CModel::TYPE_NONANIM == eModelType ? Ready_VertexBuffer_For_NonAnim(cmdList , PreTransformMatrix) : Ready_VertexBuffer_For_Anim(pModel);
+	HRESULT hr = CModel::TYPE_NONANIM == eModelType ? Ready_VertexBuffer_For_NonAnim(cmdList , PreTransformMatrix) : Ready_VertexBuffer_For_Anim(cmdList, pModel);
 
 	if (FAILED(hr))
 		return E_FAIL;
@@ -105,9 +105,62 @@ HRESULT CMesh::Ready_VertexBuffer_For_NonAnim(ID3D12GraphicsCommandList* cmdList
 	return S_OK;
 }
 
-HRESULT CMesh::Ready_VertexBuffer_For_Anim(class CModel* pModel)
+HRESULT CMesh::Ready_VertexBuffer_For_Anim(ID3D12GraphicsCommandList* cmdList, class CModel* pModel)
 {
-	// 정보 받아서 buffer 생성
+	m_pGameInstance->Read_File(m_iNumBones);
+
+	for (size_t i = 0; i < m_iNumBones; i++)
+	{
+		_float4x4	OffsetMatrix = {};
+		m_pGameInstance->Read_File(OffsetMatrix);
+		m_BoneOffsetMatrices.push_back(OffsetMatrix);
+	}
+	for (size_t i = 0; i < m_iNumBones; i++)
+	{
+		_uint		Boneindex;
+		m_pGameInstance->Read_File(Boneindex);
+		m_BoneIndices.push_back(Boneindex);
+	}
+
+	if (0 == m_iNumBones)
+	{
+		m_iNumBones = 1;
+
+		m_BoneIndices.push_back(pModel->Get_BoneIndex(m_szName));
+
+		_float4x4		OffsetMatrix;
+		XMStoreFloat4x4(&OffsetMatrix, XMMatrixIdentity());
+
+		m_BoneOffsetMatrices.push_back(OffsetMatrix);
+	}
+
+	vector<VTXMESH> vertices;
+	vertices.resize(m_iVertices);
+
+	for (_uint i = 0; i < m_iVertices; ++i)
+		m_pGameInstance->Read_File(vertices[i].vPosition);
+
+	for (_uint i = 0; i < m_iVertices; ++i)
+		m_pGameInstance->Read_File(vertices[i].vNormal);
+
+	for (_uint i = 0; i < m_iVertices; ++i)
+		m_pGameInstance->Read_File(vertices[i].vTexcoord);
+
+	for (_uint i = 0; i < m_iVertices; ++i)
+		m_pGameInstance->Read_File(vertices[i].vTangent);
+
+	m_iVertexStride = sizeof(VTXMESH);
+	_uint vertexBufferSize = sizeof(VTXMESH) * m_iVertices;
+
+	if (FAILED(Create_Buffer(cmdList, m_pVertexBuffer.GetAddressOf(), m_pVertexUploadBuffer.GetAddressOf(),
+		vertexBufferSize, vertices.data(), false)))
+		return E_FAIL;
+
+	m_vertexBufferView.BufferLocation = m_pVertexBuffer->GetGPUVirtualAddress();
+	m_vertexBufferView.StrideInBytes = m_iVertexStride;
+	m_vertexBufferView.SizeInBytes = vertexBufferSize;
+
+	return S_OK;
 
 	return S_OK;
 }

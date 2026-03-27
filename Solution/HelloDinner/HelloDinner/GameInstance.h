@@ -56,8 +56,8 @@ public: /* For.Load_Manager */
 	void	Read_File(_float4& read);
 	void	Read_File(_float4x4& read);
 	void	Read_File(VTXMESH& read);
-	//void	Read_File(VTXANIMMESH& read);
-	//void	Read_File(KEYFRAME& read);
+	void	Read_File(VTXANIMMESH& read);
+	void	Read_File(KEYFRAME& read);
 	void	Read_File(char(&read)[MAX_PATH]);
 	void	Read_File(_tchar(&read)[MAX_PATH]);
 

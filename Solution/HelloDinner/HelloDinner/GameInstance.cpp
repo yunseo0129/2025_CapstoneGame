@@ -282,7 +282,6 @@ void CGameInstance::Read_File(VTXMESH& read)
 	m_pLoad_Manager->Read_File(read);
 }
 
-/*
 void CGameInstance::Read_File(VTXANIMMESH& read)
 {
 	m_pLoad_Manager->Read_File(read);
@@ -292,7 +291,6 @@ void CGameInstance::Read_File(KEYFRAME& read)
 {
 	m_pLoad_Manager->Read_File(read);
 }
-*/
 
 void CGameInstance::Read_File(char(&read)[MAX_PATH])
 {
