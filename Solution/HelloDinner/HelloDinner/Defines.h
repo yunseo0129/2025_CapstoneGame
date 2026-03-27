@@ -174,7 +174,7 @@ typedef struct
 	XMFLOAT3		vNormal;		// 12bytes
 	XMFLOAT2		vTexcoord;		// 8bytes
 	XMFLOAT3		vTangent;		// 12bytes
-	XMUINT4		vBlendIndices;	// 16bytes
+	XMUINT4			vBlendIndices;	// 16bytes
 	XMFLOAT4		vBlendWeights;	// 16bytes
 }VTXANIMMESH;
 
