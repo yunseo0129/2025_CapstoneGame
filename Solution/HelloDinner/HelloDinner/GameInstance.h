@@ -54,6 +54,7 @@ public: /* For.Load_Manager */
 	void	Read_File(_float2& read);
 	void	Read_File(_float3& read);
 	void	Read_File(_float4& read);
+	void	Read_File(XMUINT4& read);
 	void	Read_File(_float4x4& read);
 	void	Read_File(VTXMESH& read);
 	void	Read_File(VTXANIMMESH& read);

@@ -274,6 +274,11 @@ void CGameInstance::Read_File(_float4& read)
 	m_pLoad_Manager->Read_File(read);
 }
 
+void CGameInstance::Read_File(XMUINT4& read)
+{
+	m_pLoad_Manager->Read_File(read);
+}
+
 void CGameInstance::Read_File(_float4x4& read)
 {
 	m_pLoad_Manager->Read_File(read);
