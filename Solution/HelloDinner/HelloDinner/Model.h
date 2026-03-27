@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Component.h"
-#include "Graphic_Device.h"
 
 //		컴포넌트 상속
 class CModel final : public CComponent
@@ -49,7 +48,7 @@ public:
 	const _float4x4* Get_BoneMatrix(const _char* pBoneName) const;
 
 	// 랜더 때마다 호출 셰이더에 바인딩해줌
-	HRESULT Bind_BoneMatrices(ID3D12GraphicsCommandList* _cmdList, _uint iMeshIndex);
+	HRESULT Bind_BoneMatrices(class CShader* pShader, const _char* pConstantName, _uint iMeshIndex);
 
 public:
 // 인자값으로 넘어온 매쉬번호에 맞는 매쉬를 그려줌 (상위 클래스의 랜더에서 매쉬개수만큼 부를거임)
@@ -95,16 +94,6 @@ private:
 	_float4x4					m_PreTransformMatrix = {};
 
 private:
-	ID3D12Device* m_pDevice = { nullptr };
-
-	// 본 매트릭스 Constant Buffer (프레임별)
-	static const _int FRAME_COUNT = CGraphic_Device::SWAP_CHAIN_BUFFER_COUNT;
-	ComPtr<ID3D12Resource>	m_pBoneBuffers[FRAME_COUNT];
-	CB_BONE_MATRICES* m_pCbMappedBones[FRAME_COUNT] = {};
-
-	HRESULT Create_BoneBuffer();
-
-private:
 	HRESULT Ready_Meshes();
 	HRESULT Ready_Materials(const wchar_t* pModelFilePath);
 	HRESULT Ready_Bones();
@@ -113,6 +102,8 @@ private:
 private:
 	HRESULT Bind_Material(_uint iMeshIndex, TextureType eType, _uint iTextureIndex, ID3D12GraphicsCommandList* _commandList);
 
+private:
+	ID3D12Device* m_pDevice = { nullptr };
 
 public:
 	virtual HRESULT Initialize_Prototype(TYPE eModelType, const wchar_t* pModelFilePath, _fmatrix PreTransformMatrix, MATERIAL_LOAD_MODE eMatMode);
@@ -121,4 +112,5 @@ public:
 	static CModel* Create(ID3D12Device* pDevice, EngineContext* pContext, TYPE eModelType, const wchar_t* pModelFilePath, _fmatrix PreTransformMatrix, MATERIAL_LOAD_MODE eMatMode = MATLOAD_FROM_BINARY);
 	virtual CComponent* Clone(void* pArg) override;
 	virtual void Free() override;
+	
 };
