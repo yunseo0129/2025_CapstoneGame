@@ -265,9 +265,9 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 			desc.iModelLevelIndex = iLevelIndex;
 
 			// 이동
-			desc.vPosition.x = inst["centerPosition"]["x"].get<float>() * 100.f - 4500.f;
-			desc.vPosition.y = inst["centerPosition"]["y"].get<float>() * 100.f - 100.f;
-			desc.vPosition.z = inst["centerPosition"]["z"].get<float>() * 100.f - 6500.f;
+			desc.vPosition.x = inst["position"]["x"].get<float>() * 100.f - 4500.f;
+			desc.vPosition.y = inst["position"]["y"].get<float>() * 100.f - 100.f;
+			desc.vPosition.z = inst["position"]["z"].get<float>() * 100.f - 6500.f;
 
 			// 회전
 			desc.vRotation.x = XMConvertToRadians(inst["rotation"]["x"].get<float>());
@@ -325,7 +325,7 @@ HRESULT CLoader_Map::Check_Fbx_Existence ( const string& strJsonPath )
 		if ( !fbxFile.is_open () )
 		{
 			char szLog[512];
-			sprintf_s ( szLog , "[FBXFile] Name: %s\ not exist\n" , fbxName.c_str () );
+			sprintf_s ( szLog ,"[FBXFile] Name: %s\ not exist\n" , fbxName.c_str () );
 			OutputDebugStringA ( szLog );
 		}
 		fbxFile.close ();

@@ -60,8 +60,6 @@ void CGameObject::Free()
 
 	for (auto& Pair : m_Components) {
 		Safe_Release(Pair.second);
-		Safe_Release(Pair.second);
-		// 두번 호출 해야지 m_Components의 참조 카운트가 0이 되어서 객체가 해제된다.
 	}
 	m_Components.clear();
 

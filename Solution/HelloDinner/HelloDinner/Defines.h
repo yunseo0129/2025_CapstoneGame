@@ -59,6 +59,7 @@ enum RootParameterIndex
 	Camera ,
 	GameObject ,
 	TEXTURE ,
+	BoneMatrix ,
 	// 후에 Material, BoneMatrix 등등 추가할 수 있음
 	End
 };
@@ -152,6 +153,12 @@ typedef struct
 	float							m_fPadding; // 16바이트 정렬을 위한 패딩
 }CB_VS_CAMERA;
 
+// BoneMatrix에서 사용할 본 매트릭스 상수 버퍼 구조체
+typedef struct
+{
+	XMFLOAT4X4						m_BoneMatrices[512];
+}CB_BONE_MATRICES;
+
 // InputLayout에서 사용할 정점 구조체
 typedef struct
 {
@@ -167,6 +174,8 @@ typedef struct
 	XMFLOAT3		vNormal;		// 12bytes
 	XMFLOAT2		vTexcoord;		// 8bytes
 	XMFLOAT3		vTangent;		// 12bytes
+	XMFLOAT4		vBlendIndices;	// 16bytes
+	XMFLOAT4		vBlendWeights;	// 16bytes
 }VTXANIMMESH;
 
 

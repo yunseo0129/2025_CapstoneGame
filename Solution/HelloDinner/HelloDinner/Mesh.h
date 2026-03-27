@@ -24,6 +24,13 @@ public:
 	HRESULT Ready_VertexBuffer_For_NonAnim(ID3D12GraphicsCommandList* cmdList, _fmatrix PreTransformMatrix);
 	HRESULT Ready_VertexBuffer_For_Anim(ID3D12GraphicsCommandList* cmdList, class CModel* pModel);
 
+	
+
+public:
+	void SetUp_BoneMatrices(const vector<CBone*>& Bones, _float4x4* pBoneMatrices);
+	const _float4x4* Get_BoneMatrices() const { return m_BoneMatrices; }
+	_uint Get_NumBones() const { return m_iNumBones; }
+
 private:
 	// 이 매쉬의 이름
 	_char						m_szName[MAX_PATH] = "";

@@ -28,6 +28,18 @@ CModel::CModel(const CModel& Prototype)
 
 	for (auto& pMaterial : m_Materials)
 		Safe_AddRef(pMaterial);
+
+	// Bone은 인스턴스마다 애니메이션 상태가 다르므로 깊은 복사
+	for (auto& pBone : Prototype.m_Bones)
+		m_Bones.push_back(pBone->Clone());
+
+	// Animation도 깊은 복사
+	for (auto& pAnim : Prototype.m_Animations)
+		m_Animations.push_back(pAnim->Clone());
+
+	// 애님 모델이면 본 매트릭스 업로드 버퍼 생성
+	if (TYPE_ANIM == m_eModelType)
+		Create_BoneBuffer();
 }
 
 HRESULT CModel::Set_MaterialTexture(_uint iMaterialIndex, TextureType eType, CTexture* pTexture)
@@ -94,6 +106,48 @@ HRESULT CModel::Render(ID3D12GraphicsCommandList* _commandList, _uint iMeshIndex
 	// 2. 메쉬 렌더 (IASet + DrawIndexedInstanced)
 	m_Meshes[iMeshIndex]->Render(_commandList);
 
+
+	return S_OK;
+}
+
+HRESULT CModel::Create_BoneBuffer()
+{
+	_uint ncbElementBytes = ((sizeof(CB_BONE_MATRICES) + 255) & ~255);
+
+	D3D12_HEAP_PROPERTIES d3dHeapPropertiesDesc;
+	::ZeroMemory(&d3dHeapPropertiesDesc, sizeof(D3D12_HEAP_PROPERTIES));
+	d3dHeapPropertiesDesc.Type = D3D12_HEAP_TYPE_UPLOAD;
+	d3dHeapPropertiesDesc.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+	d3dHeapPropertiesDesc.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+	d3dHeapPropertiesDesc.CreationNodeMask = 1;
+	d3dHeapPropertiesDesc.VisibleNodeMask = 1;
+
+	D3D12_RESOURCE_DESC d3dResourceDesc;
+	::ZeroMemory(&d3dResourceDesc, sizeof(D3D12_RESOURCE_DESC));
+	d3dResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+	d3dResourceDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+	d3dResourceDesc.Width = ncbElementBytes;
+	d3dResourceDesc.Height = 1;
+	d3dResourceDesc.DepthOrArraySize = 1;
+	d3dResourceDesc.MipLevels = 1;
+	d3dResourceDesc.Format = DXGI_FORMAT_UNKNOWN;
+	d3dResourceDesc.SampleDesc.Count = 1;
+	d3dResourceDesc.SampleDesc.Quality = 0;
+	d3dResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+	d3dResourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+	for (_int i = 0; i < FRAME_COUNT; ++i)
+	{
+		HRESULT hResult = m_pDevice->CreateCommittedResource(
+			&d3dHeapPropertiesDesc, D3D12_HEAP_FLAG_NONE,
+			&d3dResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ,
+			NULL, __uuidof(ID3D12Resource), (void**)&m_pBoneBuffers[i]);
+
+		if (FAILED(hResult))
+			return E_FAIL;
+
+		m_pBoneBuffers[i]->Map(0, NULL, (void**)&m_pCbMappedBones[i]);
+	}
 
 	return S_OK;
 }
@@ -339,7 +393,20 @@ const _float4x4* CModel::Get_BoneMatrix(const _char* pBoneName) const
 	return (*iter)->Get_CombinedTransformationFloat4x4();
 }
 
-HRESULT CModel::Bind_BoneMatrices(CShader* pShader, const _char* pConstantName, _uint iMeshIndex)
+HRESULT CModel::Bind_BoneMatrices(ID3D12GraphicsCommandList* _cmdList, _uint iMeshIndex)
 {
+	if (iMeshIndex >= m_iNumMeshes)
+		return E_FAIL;
+
+	_int iFrameIndex = m_pGameInstance->GetCurrentFrameIndex();
+
+	// 1. 메쉬의 본 매트릭스 계산 (OffsetMatrix * CombinedMatrix) → 매핑된 버퍼에 직접 기록
+	m_Meshes[iMeshIndex]->SetUp_BoneMatrices(m_Bones, m_pCbMappedBones[iFrameIndex]->m_BoneMatrices);
+
+	// 2. CBV 바인딩
+	_cmdList->SetGraphicsRootConstantBufferView(
+		RootParameterIndex::BoneMatrix,
+		m_pBoneBuffers[iFrameIndex]->GetGPUVirtualAddress());
+
 	return S_OK;
 }

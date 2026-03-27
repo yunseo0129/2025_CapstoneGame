@@ -356,20 +356,20 @@ HRESULT CBinary_Converter::Save_Data_Anim(const _tchar* pComponentTag)
 			FileStream.write((char*)&Tan, sizeof(_float3));
 		}
 
+		for (XMUINT4 BlendIdx : Mesh.mvBlendIndices) //읽는쪽에 없음
+		{
+			FileStream.write((char*)&BlendIdx, sizeof(XMUINT4));
+		}
+
+		for (_float4 Weights : Mesh.mvBlendWeights) //읽는쪽에 없음
+		{
+			FileStream.write((char*)&Weights, sizeof(_float4));
+		}
+
 		for (_uint Idx : Mesh.mvcecIdx)
 		{
 			FileStream.write((char*)&Idx, sizeof(_uint));
 		}
-
-		//for (XMUINT4 BlendIdx : Mesh.mvBlendIndices) //읽는쪽에 없음
-		//{
-		//	FileStream.write((char*)&BlendIdx, sizeof(XMUINT4));
-		//}
-
-		//for (_float4 Weights : Mesh.mvBlendWeights) //읽는쪽에 없음
-		//{
-		//	FileStream.write((char*)&Weights, sizeof(_float4));
-		//}
 	}
 	//---------------------------메테리얼 정보 -----------------------------
 	FileStream.write((char*)&m_tSaveInfo.mNumMaterials, sizeof(_uint));
