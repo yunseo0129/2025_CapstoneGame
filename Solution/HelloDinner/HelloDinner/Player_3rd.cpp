@@ -1,24 +1,24 @@
-#include "Chick_3rd.h"
+#include "Player_3rd.h"
 #include "Transform.h"
 #include "GameInstance.h"
 #include "Model.h"
 
-CChick_3rd::CChick_3rd(EngineContext* pContext)
+CPlayer_3rd::CPlayer_3rd(EngineContext* pContext)
 	: CGameObject(pContext)
 {
 }
 
-CChick_3rd::CChick_3rd(const CChick_3rd& Prototype)
+CPlayer_3rd::CPlayer_3rd(const CPlayer_3rd& Prototype)
 	: CGameObject(Prototype)
 {
 }
 
-HRESULT CChick_3rd::Initialize_Prototype()
+HRESULT CPlayer_3rd::Initialize_Prototype()
 {
 	return S_OK;
 }
 
-HRESULT CChick_3rd::Initialize(void* pArg)
+HRESULT CPlayer_3rd::Initialize(void* pArg)
 {
 	if (nullptr == pArg)
 		return E_FAIL;
@@ -44,20 +44,20 @@ HRESULT CChick_3rd::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CChick_3rd::Priority_Update(_float fTimeDelta)
+void CPlayer_3rd::Priority_Update(_float fTimeDelta)
 {
 }
 
-void CChick_3rd::Update(_float fTimeDelta)
+void CPlayer_3rd::Update(_float fTimeDelta)
 {
 }
 
-void CChick_3rd::Late_Update(_float fTimeDelta)
+void CPlayer_3rd::Late_Update(_float fTimeDelta)
 {
 	m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, this);
 }
 
-void CChick_3rd::Render(ID3D12GraphicsCommandList* _commandList)
+void CPlayer_3rd::Render(ID3D12GraphicsCommandList* _commandList)
 {
 	// Transform 컴포넌트의 월드 행렬을 RootConstantBuffer에 넘겨준다.
 	XMFLOAT4X4 WorldMatrix;
@@ -72,44 +72,35 @@ void CChick_3rd::Render(ID3D12GraphicsCommandList* _commandList)
 	for (_uint i = 0; i < iNumMeshes; ++i)
 	{
 		m_pModelCom->Render(_commandList, i);
+		// m_pModelCom->Bind_BoneMatrices();
 	}
 }
 
-HRESULT CChick_3rd::Ready_Components()
+HRESULT CPlayer_3rd::Ready_Components()
 {
 	if (FAILED(Add_Component(m_iModelLevelIndex, m_strModelTag,
 		TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
 	{
-		MSG_BOX("Failed to Add Component : Model in CChick_3rd");
+		MSG_BOX("Failed to Add Component : Model in Player_3rd");
 		return E_FAIL;
 	}
 
 	return S_OK;
 }
 
-CChick_3rd* CChick_3rd::Create(EngineContext* pContext)
+CPlayer_3rd* CPlayer_3rd::Create(EngineContext* pContext)
 {
-	CChick_3rd* pInstance = new CChick_3rd(pContext);
-	if (FAILED(pInstance->Initialize_Prototype()))
-	{
-		Safe_Release(pInstance);
-		MSG_BOX("Failed to Create : CChick_3rd");
-	}
-	return pInstance;
+	return nullptr;
 }
 
-CGameObject* CChick_3rd::Clone(void* pArg)
+CGameObject* CPlayer_3rd::Clone(void* pArg)
 {
-	CChick_3rd* pInstance = new CChick_3rd(*this);
-	if (FAILED(pInstance->Initialize(pArg)))
-	{
-		Safe_Release(pInstance);
-		MSG_BOX("Failed to Clone : CChick_3rd");
-	}
-	return pInstance;
+	return nullptr;
 }
 
-void CChick_3rd::Free()
+void CPlayer_3rd::Free()
 {
 	__super::Free();
+
+	Safe_Release(m_pModelCom);
 }

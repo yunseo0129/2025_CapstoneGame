@@ -162,14 +162,17 @@
     <Filter Include="소스 파일\02. Game\GameObject\02. Player">
       <UniqueIdentifier>{e45e7ca3-9609-4d91-99c7-c874544ab09e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\02. Game\GameObject\02. Player\01. Chick_3rd">
-      <UniqueIdentifier>{f2529a22-d40c-4172-a809-89cfcdf43b52}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\02. Game\GameObject\02. Player\02. Pig_3rd">
-      <UniqueIdentifier>{9aba5cd5-4666-4e53-918a-1e314fb854df}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\01. Engine\04. Components\02. Model\Animation\Channel">
       <UniqueIdentifier>{4d17e0f3-2e12-4984-b1bd-3d6b577dc634}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\GameObject\02. Player\Player_3rd">
+      <UniqueIdentifier>{3d7d23fa-b3c5-45ab-9182-7c4e95faf21b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\GameObject\02. Player\Player_3rd\02. Pig_3rd">
+      <UniqueIdentifier>{9aba5cd5-4666-4e53-918a-1e314fb854df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\GameObject\02. Player\Player_3rd\01. Chick_3rd">
+      <UniqueIdentifier>{f2529a22-d40c-4172-a809-89cfcdf43b52}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -296,11 +299,8 @@
     <ClInclude Include="Common\WICTextureLoader12.h">
       <Filter>외부 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Chick_3rd.h">
-      <Filter>소스 파일\02. Game\GameObject\02. Player\01. Chick_3rd</Filter>
-    </ClInclude>
     <ClInclude Include="Pig_3rd.h">
-      <Filter>소스 파일\02. Game\GameObject\02. Player\02. Pig_3rd</Filter>
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd\02. Pig_3rd</Filter>
     </ClInclude>
     <ClInclude Include="Channel.h">
       <Filter>소스 파일\01. Engine\04. Components\02. Model\Animation\Channel</Filter>
@@ -310,6 +310,9 @@
     </ClInclude>
     <ClInclude Include="Bone.h">
       <Filter>소스 파일\01. Engine\04. Components\02. Model\Bone</Filter>
+    </ClInclude>
+    <ClInclude Include="Player_3rd.h">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -418,11 +421,8 @@
     <ClCompile Include="Common\WICTextureLoader12.cpp">
       <Filter>외부 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Chick_3rd.cpp">
-      <Filter>소스 파일\02. Game\GameObject\02. Player\01. Chick_3rd</Filter>
-    </ClCompile>
     <ClCompile Include="Pig_3rd.cpp">
-      <Filter>소스 파일\02. Game\GameObject\02. Player\02. Pig_3rd</Filter>
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd\02. Pig_3rd</Filter>
     </ClCompile>
     <ClCompile Include="Channel.cpp">
       <Filter>소스 파일\01. Engine\04. Components\02. Model\Animation\Channel</Filter>
@@ -432,6 +432,9 @@
     </ClCompile>
     <ClCompile Include="Bone.cpp">
       <Filter>소스 파일\01. Engine\04. Components\02. Model\Bone</Filter>
+    </ClCompile>
+    <ClCompile Include="Player_3rd.cpp">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
