@@ -1,16 +1,12 @@
 #pragma once
-#include "GameObject.h"
+#include "Player_3rd.h"
 
-class CPig_3rd : public CGameObject
+class CPig_3rd : public CPlayer_3rd
 {
 public:
-	struct Player_3rd_DESC : public CGameObject::GAMEOBJECT_DESC
-	{
-		_float3		vPosition = {};
-		_float3		vRotation = {};		// degree ¥‹¿ß
-		_float3		vScale = { 1.f, 1.f, 1.f };
-		_wstring	strModelTag = L"";
-		_uint		iModelLevelIndex = 0;
+	enum PIG_3RD_STATE {
+		STATE_NONE,
+		STATE_IDLE
 	};
 
 private:
@@ -30,10 +26,6 @@ private:
 	HRESULT Ready_Components();
 
 private:
-	class CModel* m_pModelCom = { nullptr };
-
-	_wstring	m_strModelTag = L"";
-	_uint		m_iModelLevelIndex = 0;
 
 public:
 	static CPig_3rd* Create(EngineContext* _pcontext);

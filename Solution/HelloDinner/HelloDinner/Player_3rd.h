@@ -1,7 +1,7 @@
 #pragma once
 #include "GameObject.h"
 
-class CChick_3rd : public CGameObject
+class CPlayer_3rd : public CGameObject
 {
 public:
 	struct Player_3rd_DESC : public CGameObject::GAMEOBJECT_DESC
@@ -13,10 +13,10 @@ public:
 		_uint		iModelLevelIndex = 0;
 	};
 
-private:
-	CChick_3rd(EngineContext* _pcontext);
-	CChick_3rd(const CChick_3rd& Prototype);
-	virtual ~CChick_3rd() = default;
+protected:
+	CPlayer_3rd(EngineContext* _pcontext);
+	CPlayer_3rd(const CPlayer_3rd& Prototype);
+	virtual ~CPlayer_3rd() = default;
 
 public:
 	virtual HRESULT Initialize_Prototype() override;
@@ -26,17 +26,18 @@ public:
 	virtual void Late_Update(_float fTimeDelta) override;
 	virtual void Render(ID3D12GraphicsCommandList* _commandList) override;
 
-private:
+protected:
 	HRESULT Ready_Components();
 
-private:
+protected:
 	class CModel* m_pModelCom = { nullptr };
 
 	_wstring	m_strModelTag = L"";
 	_uint		m_iModelLevelIndex = 0;
+	_uint		m_iState = 0;			// 애니메이션 상태
 
 public:
-	static CChick_3rd* Create(EngineContext* _pcontext);
+	static CPlayer_3rd* Create(EngineContext* _pcontext);
 	virtual CGameObject* Clone(void* pArg) override;
 	virtual void Free() override;
 };

@@ -135,7 +135,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="Channel.h" />
-    <ClInclude Include="Chick_3rd.h" />
+    <ClInclude Include="Player_3rd.h" />
     <ClInclude Include="Common\WICTextureLoader12.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="Cube.h" />
@@ -190,7 +190,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Channel.cpp" />
-    <ClCompile Include="Chick_3rd.cpp" />
+    <ClCompile Include="Player_3rd.cpp" />
     <ClCompile Include="Common\DDSTextureLoader12.cpp" />
     <ClCompile Include="Common\WICTextureLoader12.cpp" />
     <ClCompile Include="Component.cpp" />

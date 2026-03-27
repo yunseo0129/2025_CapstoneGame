@@ -49,7 +49,6 @@ public:
 
 	// 랜더 때마다 호출 셰이더에 바인딩해줌
 	HRESULT Bind_BoneMatrices(class CShader* pShader, const _char* pConstantName, _uint iMeshIndex);
-	HRESULT Bind_Material(class CShader* pShader, const _char* pConstantName, _uint iMeshIndex, TextureType eType, _uint iTextureIndex = 0);
 
 public:
 // 인자값으로 넘어온 매쉬번호에 맞는 매쉬를 그려줌 (상위 클래스의 랜더에서 매쉬개수만큼 부를거임)

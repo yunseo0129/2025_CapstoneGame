@@ -343,8 +343,3 @@ HRESULT CModel::Bind_BoneMatrices(CShader* pShader, const _char* pConstantName, 
 {
 	return S_OK;
 }
-
-HRESULT CModel::Bind_Material(CShader* pShader, const _char* pConstantName, _uint iMeshIndex, TextureType eType, _uint iTextureIndex)
-{
-	return S_OK;
-}
