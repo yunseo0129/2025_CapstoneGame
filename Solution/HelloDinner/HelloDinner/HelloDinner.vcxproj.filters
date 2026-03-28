@@ -314,6 +314,24 @@
     <ClInclude Include="Player_3rd.h">
       <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd</Filter>
     </ClInclude>
+    <ClInclude Include="Bounding.h">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="Bounding_AABB.h">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="Bounding_OBB.h">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="Bounding_Sphere.h">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="Collider.h">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugDraw.h">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -435,6 +453,24 @@
     </ClCompile>
     <ClCompile Include="Player_3rd.cpp">
       <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd</Filter>
+    </ClCompile>
+    <ClCompile Include="Bounding.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="Bounding_AABB.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="Bounding_OBB.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="Bounding_Sphere.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="Collider.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugDraw.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
