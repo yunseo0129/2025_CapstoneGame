@@ -6,7 +6,7 @@ int SessionManager::GetNewClientId()
     for (int i = 0; i < MAX_USER; ++i) {
         lock_guard<mutex> ll{ m_clients[i].m_s_lock };
         if (m_clients[i].m_state == ST_FREE) {
-            cout << i << ". New Client Connected." << endl;
+            cout << i + 1 << ". New Client Connected." << endl;
             return i;
         }
     }
@@ -17,12 +17,13 @@ int SessionManager::GetNewClientId()
 void SessionManager::ProcessPacket(int c_id, char* packet)
 {
     switch (packet[1]) {
+        // 로그인 패킷 처리
     case CS_LOGIN: {
         CS_LOGIN_PACKET* p = reinterpret_cast<CS_LOGIN_PACKET*>(packet);
         strcpy_s(m_clients[c_id].m_name, p->name);
         m_clients[c_id].x = rand() % W_WIDTH;
         m_clients[c_id].y = rand() % W_HEIGHT;
-		m_clients[c_id].z = 0;
+        m_clients[c_id].z = 0;
 
         m_clients[c_id].Send_Login_Info_Packet();
         {
@@ -40,6 +41,7 @@ void SessionManager::ProcessPacket(int c_id, char* packet)
         }
         break;
     }
+        // 이동 패킷 처리
     case CS_MOVE: {
         CS_MOVE_PACKET* p = reinterpret_cast<CS_MOVE_PACKET*>(packet);
         m_clients[c_id].m_last_move_time = p->move_time;

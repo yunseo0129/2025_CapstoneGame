@@ -19,6 +19,9 @@
     <Filter Include="소스 파일\OverlappedEXP">
       <UniqueIdentifier>{af9c0784-295e-4fee-ac58-b242acc26ead}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Session\SessionManager">
+      <UniqueIdentifier>{875d49e2-ce19-4692-84ef-3bf827bb1f93}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -29,6 +32,9 @@
     </ClCompile>
     <ClCompile Include="OverllapedEXP.cpp">
       <Filter>소스 파일\OverlappedEXP</Filter>
+    </ClCompile>
+    <ClCompile Include="SessionManager.cpp">
+      <Filter>소스 파일\Session\SessionManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -43,6 +49,9 @@
     </ClInclude>
     <ClInclude Include="OverllapedEXP.h">
       <Filter>소스 파일\OverlappedEXP</Filter>
+    </ClInclude>
+    <ClInclude Include="SessionManager.h">
+      <Filter>소스 파일\Session\SessionManager</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

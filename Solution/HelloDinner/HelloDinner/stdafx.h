@@ -49,6 +49,17 @@ using namespace std;
 #include "Defines.h"
 #include "Utiles.h"
 
+// Server와 Client가 공유하는 프로토콜 헤더(패킷 구조체)
+#include "../Server/protocol.h"
+
+#include <thread>
+#include <mutex>
+#include <WS2tcpip.h>
+#include <WinSock2.h>
+
+#pragma comment(lib, "WS2_32.lib")
+#pragma comment(lib, "MSWSock.lib")
+
 typedef		bool						_bool;
 
 typedef		signed char					_byte;

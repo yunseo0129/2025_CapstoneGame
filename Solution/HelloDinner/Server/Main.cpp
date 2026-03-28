@@ -3,7 +3,7 @@
 SOCKET g_s_socket, g_c_socket;
 OverllapedEXP g_a_over;
 
-void worker_thread(HANDLE h_iocp)
+void WorkerThread(HANDLE h_iocp)
 {
 	auto* sm = SessionManager::GetInstance();
 
@@ -13,6 +13,7 @@ void worker_thread(HANDLE h_iocp)
 		WSAOVERLAPPED* over = nullptr;
 		BOOL ret = GetQueuedCompletionStatus(h_iocp, &num_bytes, &key, &over, INFINITE);
 		OverllapedEXP* ex_over = reinterpret_cast<OverllapedEXP*>(over);
+
 		if (FALSE == ret) {
 			if (ex_over->m_comp_type == OP_ACCEPT) cout << "Accept Error";
 			else {
@@ -29,6 +30,7 @@ void worker_thread(HANDLE h_iocp)
 			continue;
 		}
 
+		// 작업 완료된 IOCP 패킷의 종류에 따라 처리
 		switch (ex_over->m_comp_type) {
 		case OP_ACCEPT: {
 			int client_id = sm->GetNewClientId();
@@ -84,7 +86,7 @@ void worker_thread(HANDLE h_iocp)
 	}
 }
 
-void print_server_ip()
+void PrintServerIP()
 {
 	char hostname[256];
 	if (gethostname(hostname, sizeof(hostname)) == SOCKET_ERROR) {
@@ -157,7 +159,7 @@ int main()
 	}
 
 	cout << "Server is running on port " << PORT_NUM << endl;
-	print_server_ip();
+	PrintServerIP();
 
 	g_c_socket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
 	g_a_over.m_comp_type = OP_ACCEPT;
@@ -166,7 +168,7 @@ int main()
 	vector<thread> worker_threads;
 	int num_threads = std::thread::hardware_concurrency();
 	for (int i = 0; i < num_threads; ++i)
-		worker_threads.emplace_back(worker_thread, h_iocp);
+		worker_threads.emplace_back(WorkerThread, h_iocp);
 	for (auto& th : worker_threads)
 		th.join();
 	closesocket(g_s_socket);

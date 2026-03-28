@@ -186,6 +186,9 @@
     <Filter Include="소스 파일\02. Game\GameObject\02. Player\Player_1rd\Character\Pig_1rd">
       <UniqueIdentifier>{364c7b64-8a24-46a7-93a4-d9f9703fc69f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\03. Network">
+      <UniqueIdentifier>{7d0008e1-e34c-4b50-bd28-09cb01b271d9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -344,6 +347,9 @@
     <ClInclude Include="DebugDraw.h">
       <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
     </ClInclude>
+    <ClInclude Include="NetworkClient.h">
+      <Filter>소스 파일\03. Network</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -483,6 +489,9 @@
     </ClCompile>
     <ClCompile Include="DebugDraw.cpp">
       <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkClient.cpp">
+      <Filter>소스 파일\03. Network</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
