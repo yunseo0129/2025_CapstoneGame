@@ -178,9 +178,11 @@ void CMesh::SetUp_BoneMatrices(const vector<CBone*>& Bones, _float4x4* pBoneMatr
 		// OffsetMatrix * CombinedMatrix = 최종 본 매트릭스
 		
 		_matrix OffsetMatrix = XMLoadFloat4x4(&m_BoneOffsetMatrices[i]);
-		_matrix CombinedMatrix = Bones[m_BoneIndices[i]]->Get_CombinedTransformationMatrix();
 
+		_matrix CombinedMatrix = Bones[m_BoneIndices[i]]->Get_CombinedTransformationMatrix();
 		XMStoreFloat4x4(&pBoneMatrices[i], OffsetMatrix * CombinedMatrix);
+
+		//XMStoreFloat4x4(&pBoneMatrices[i], XMMatrixInverse(nullptr, OffsetMatrix));
 	}
 }
 

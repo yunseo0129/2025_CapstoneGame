@@ -32,7 +32,7 @@ public:
 	}
 
 public:
-	HRESULT Initialize(_char* Name, _float4x4 TransformMatrix, _int ParentIndex);
+	HRESULT Initialize(_char* Name, _float4x4 TransformMatrix, _int ParentIndex, _float4x4 CombindTransformationMatrix);
 	// 매 프레임 불림
 	// 루트본은 프리트랜스폼, 나머지는 자신의 부모 컴바인드 행렬을 받아와 컴바인드 행렬을 만든다
 	void Update_CombinedTransformationMatrix(const vector<CBone*>& Bones, _fmatrix PreTransformMatrix);
@@ -51,7 +51,7 @@ private:
 	_int				m_iParentBoneIndex = { -1 };
 
 public:
-	static CBone* Create(_char* Name, _float4x4 TransformMatrix, _int ParentIndex);
+	static CBone* Create(_char* Name, _float4x4 TransformMatrix, _int ParentIndex, _float4x4 CombindTransformationMatrix);
 	virtual CBone* Clone();
 	virtual void Free() override;
 };

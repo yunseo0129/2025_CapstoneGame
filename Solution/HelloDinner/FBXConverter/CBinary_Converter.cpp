@@ -306,7 +306,7 @@ HRESULT CBinary_Converter::Save_Data_Anim(const _tchar* pComponentTag)
 	{
 		FileStream.write((char*)&node.mName, MAX_PATH);
 		FileStream.write((char*)&node.mTransformation, sizeof(_float4x4));
-		FileStream.write((char*)&node.mCombindTransformationMatrix, sizeof(_float4x4)); // 읽는쪽에 없음
+		FileStream.write((char*)&node.mCombindTransformationMatrix, sizeof(_float4x4));
 		FileStream.write((char*)&node.miParentBoneIndex, sizeof(_int));
 	}
 
