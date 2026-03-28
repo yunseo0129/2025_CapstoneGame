@@ -22,6 +22,9 @@
     <Filter Include="소스 파일\Session\SessionManager">
       <UniqueIdentifier>{875d49e2-ce19-4692-84ef-3bf827bb1f93}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\IOCPServer">
+      <UniqueIdentifier>{a6499801-2110-405f-b453-0789741e438e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -35,6 +38,9 @@
     </ClCompile>
     <ClCompile Include="SessionManager.cpp">
       <Filter>소스 파일\Session\SessionManager</Filter>
+    </ClCompile>
+    <ClCompile Include="IOCPServer.cpp">
+      <Filter>소스 파일\IOCPServer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -52,6 +58,9 @@
     </ClInclude>
     <ClInclude Include="SessionManager.h">
       <Filter>소스 파일\Session\SessionManager</Filter>
+    </ClInclude>
+    <ClInclude Include="IOCPServer.h">
+      <Filter>소스 파일\IOCPServer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
