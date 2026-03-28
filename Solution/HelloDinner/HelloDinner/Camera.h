@@ -55,8 +55,6 @@ private:
 
 
 private:
-	ComPtr<ID3D12Device> m_pDevice;
-
 	static const _int FRAME_COUNT = CGraphic_Device::SWAP_CHAIN_BUFFER_COUNT;
 	ComPtr<ID3D12Resource> m_pCameraBuffers[FRAME_COUNT];
 	CB_VS_CAMERA* m_pCbMappedCameras[FRAME_COUNT] = {};

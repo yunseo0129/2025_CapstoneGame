@@ -6,11 +6,16 @@
 CMap::CMap(EngineContext* pContext)
 	: CGameObject(pContext)
 {
+	Safe_AddRef(m_pModelCom);
 }
 
 CMap::CMap(const CMap& Prototype)
-	: CGameObject(Prototype)
+	: CGameObject(Prototype.m_pContext)
 {
+	m_strModelTag = Prototype.m_strModelTag;
+	m_iModelLevelIndex = Prototype.m_iModelLevelIndex;
+	m_pModelCom = Prototype.m_pModelCom;
+	Safe_AddRef(m_pModelCom);
 }
 
 HRESULT CMap::Initialize_Prototype()
@@ -114,6 +119,4 @@ CGameObject* CMap::Clone(void* pArg)
 void CMap::Free()
 {
 	__super::Free();
-
-	
 }

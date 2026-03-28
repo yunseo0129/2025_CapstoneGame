@@ -161,8 +161,6 @@ CObject_Manager* CObject_Manager::Create(_uint iNumLevels)
 
 void CObject_Manager::Free()
 {
-	__super::Free();
-
 	for (_uint i = 0; i < m_iNumLevels; ++i)
 	{
 		for (auto& Pair : m_pLayers[i])
@@ -173,5 +171,7 @@ void CObject_Manager::Free()
 
 	Safe_Delete_Array(m_pLayers);
 	Safe_Release(m_pGameInstance);
+
+	__super::Free();
 }
 

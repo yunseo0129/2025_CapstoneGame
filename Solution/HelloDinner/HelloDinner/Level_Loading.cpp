@@ -15,11 +15,8 @@
 #include "Pig_3rd.h"
 #include "NetworkClient.h"
 
-CLevel_Loading::CLevel_Loading(ID3D12Device* pDevice, EngineContext* pContext)
-	: CLevel{ pDevice, pContext }
-	, m_pDevice{ pDevice }
-	, m_pContext{ pContext }
-	, m_pGameInstance{ CGameInstance::GetInstance() }
+CLevel_Loading::CLevel_Loading(EngineContext* pContext)
+	: CLevel{pContext }
 {
 	
 }
@@ -28,29 +25,32 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 {
 	m_eNextLevelID = eNextLevelID;
 
+	Add_Camera();
 
+/*
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_Component_VIBuffer_VtxCube",
-		CVIBuffer_Cube::Create(m_pDevice, m_pContext->cmdList))))
+		CVIBuffer_Cube::Create(m_pContext))))
 		return E_FAIL;
 
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_Component_VIBuffer_Skybox",
-		CVIBuffer_Skybox::Create(m_pDevice, m_pContext->cmdList))))
+		CVIBuffer_Skybox::Create(m_pContext))))
 		return E_FAIL;
 
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_Component_Texture_Cube",
-		CTexture::Create(m_pDevice, m_pContext->cmdList, L"Resources/Textures/Rock.dds", 1))))
+		CTexture::Create(m_pContext, L"Resources/Textures/Rock.dds", 1))))
 		return E_FAIL;
 	
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_Component_Texture_Skybox",
-		CTexture::Create(m_pDevice, m_pContext->cmdList, L"Resources/Textures/Skybox_Cube.dds", 1, TEX_CUBE))))
+		CTexture::Create(m_pContext, L"Resources/Textures/Skybox_Cube.dds", 1, TEX_CUBE))))
 		return E_FAIL;
-
-	Add_Camera();
 
 	Ready_TestLoader();
 	
+	*/
+
+
 	// 1. MaterialData.json → 텍스처 Prototype 먼저 등록
-	CLoader_Map* pMapLoader = CLoader_Map::Create(m_pDevice, m_pContext);
+	CLoader_Map* pMapLoader = CLoader_Map::Create(m_pContext);
 	if (FAILED(pMapLoader->Load_MaterialData("Resources/Map/MaterialData.json", LEVEL_LOADING)))
 	{
 		MSG_BOX("Failed to load material data");
@@ -86,7 +86,7 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 	{
 		_matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(0.01f, 0.01f, 0.01f);
 		if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Pig_3rd"),
-			CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Pig/Prototype_Component_Pig.txt", PreTransformMatrix))))
+			CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Pig/Prototype_Component_Pig.txt", PreTransformMatrix))))
 			return E_FAIL;
 		if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_GameObject_Pig_3rd"),
 			CPig_3rd::Create(m_pContext))))
@@ -208,9 +208,9 @@ HRESULT CLevel_Loading::Ready_TestLoader()
 	return S_OK;
 }
 
-CLevel_Loading* CLevel_Loading::Create(ID3D12Device* pDevice, EngineContext* pContext, LEVELID eNextLevelID)
+CLevel_Loading* CLevel_Loading::Create(EngineContext* pContext, LEVELID eNextLevelID)
 {
-	CLevel_Loading* pInstance = new CLevel_Loading(pDevice, pContext);
+	CLevel_Loading* pInstance = new CLevel_Loading(pContext);
 
 	if (FAILED(pInstance->Initialize(eNextLevelID)))
 	{

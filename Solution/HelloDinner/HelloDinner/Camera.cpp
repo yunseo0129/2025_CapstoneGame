@@ -3,7 +3,6 @@
 
 CCamera::CCamera(EngineContext* pContext)
 	: CGameObject{ pContext }
-	, m_pDevice {pContext->device}
 {
 	XMStoreFloat4x4 ( &m_xmf4x4View , XMMatrixIdentity () );
 	XMStoreFloat4x4 ( &m_xmf4x4Projection , XMMatrixIdentity () );
@@ -11,9 +10,11 @@ CCamera::CCamera(EngineContext* pContext)
 }
 
 CCamera::CCamera(const CCamera& Prototype)
-	: CGameObject{ Prototype }
+	: CGameObject{ Prototype.m_pContext }
 {
-
+	m_xmf3Position = Prototype.m_xmf3Position;
+	XMStoreFloat4x4(&m_xmf4x4View, XMLoadFloat4x4(&Prototype.m_xmf4x4View));
+	XMStoreFloat4x4(&m_xmf4x4Projection, XMLoadFloat4x4(&Prototype.m_xmf4x4Projection));
 }
 
 HRESULT CCamera::Initialize_Prototype()
@@ -134,7 +135,7 @@ HRESULT CCamera::Create_CameraBuffer ()
 
 	for ( _int i = 0; i < FRAME_COUNT; ++i )
 	{
-		HRESULT hResult = m_pDevice->CreateCommittedResource (
+		HRESULT hResult = m_pContext->device->CreateCommittedResource (
 			&d3dHeapPropertiesDesc , D3D12_HEAP_FLAG_NONE ,
 			&d3dResourceDesc , D3D12_RESOURCE_STATE_GENERIC_READ ,
 			NULL , __uuidof( ID3D12Resource ) , ( void** )&m_pCameraBuffers[i] );
@@ -158,15 +159,10 @@ void CCamera::Free()
 {
 	for ( _int i = 0; i < FRAME_COUNT; ++i )
 	{
-		if ( m_pCameraBuffers[i] )
+		if (m_pCbMappedCameras[i])
 		{
-			m_pCameraBuffers[i]->Unmap ( 0 , nullptr );
-			m_pCameraBuffers[i].Reset ();
 			m_pCbMappedCameras[i] = nullptr;
 		}
 	}
-
-
-	m_pDevice.Reset();
 	__super::Free();
 }

@@ -420,7 +420,6 @@ void CGameInstance::Release_Engine()
 
 void CGameInstance::Free()
 {
-	__super::Free();
 
 	if ( m_pGraphic_Device )
 		m_pGraphic_Device->WaitForGpuComplete ();
@@ -450,4 +449,6 @@ void CGameInstance::Free()
 
 	// 10. Device를 가장 마지막에 해제
 	Safe_Release ( m_pGraphic_Device );
+
+	__super::Free();
 }

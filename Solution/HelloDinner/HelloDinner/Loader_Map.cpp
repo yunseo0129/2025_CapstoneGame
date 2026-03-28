@@ -9,9 +9,8 @@
 #include "json.hpp"
 using json = nlohmann::json;
 
-CLoader_Map::CLoader_Map(ID3D12Device* pDevice, EngineContext* pContext)
-	: m_pDevice{ pDevice }
-	, m_pContext{ pContext }
+CLoader_Map::CLoader_Map(EngineContext* pContext)
+	: m_pContext{ pContext }
 	, m_pGameInstance{ CGameInstance::GetInstance() }
 {
 	Safe_AddRef(m_pGameInstance);
@@ -68,7 +67,7 @@ HRESULT CLoader_Map::Load_MaterialData(const string& strJsonPath, _uint iLevelIn
 			{
 				_wstring strPath = L"Resources/Map/dds/" + _wstring(albedoFile.begin(), albedoFile.end());
 
-				CTexture* pTexture = CTexture::Create(m_pDevice, m_pContext->cmdList, strPath.c_str());
+				CTexture* pTexture = CTexture::Create(m_pContext, strPath.c_str());
 				if (pTexture != nullptr)
 				{
 					if (FAILED(m_pGameInstance->Add_Prototype(iLevelIndex, strAlbedoTag, pTexture)))
@@ -99,7 +98,7 @@ HRESULT CLoader_Map::Load_MaterialData(const string& strJsonPath, _uint iLevelIn
 			{
 				_wstring strPath = L"Resources/Map/dds/" + _wstring(normalFile.begin(), normalFile.end());
 
-				CTexture* pTexture = CTexture::Create(m_pDevice, m_pContext->cmdList, strPath.c_str());
+				CTexture* pTexture = CTexture::Create(m_pContext, strPath.c_str());
 				if (pTexture != nullptr)
 				{
 					if (FAILED(m_pGameInstance->Add_Prototype(iLevelIndex, strNormalTag, pTexture)))
@@ -179,7 +178,7 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 			// Clone 실패 = 프로토타입이 없다는 뜻 → 새로 등록
 			_wstring strBinaryPath = Get_BinaryPath(fbxName);
 
-			CModel* pModel = CModel::Create(m_pDevice, m_pContext,
+			CModel* pModel = CModel::Create(m_pContext,
 				CModel::TYPE_NONANIM, strBinaryPath.c_str(), XMMatrixIdentity(), CModel::MATLOAD_SKIP_TEXTURE);
 
 			if (nullptr == pModel)
@@ -358,18 +357,17 @@ _wstring CLoader_Map::Get_TextureTag(const string& strPngFileName)
 	return _wstring(tag.begin(), tag.end());
 }
 
-CLoader_Map* CLoader_Map::Create(ID3D12Device* pDevice, EngineContext* pContext)
+CLoader_Map* CLoader_Map::Create(EngineContext* pContext)
 {
-	CLoader_Map* pInstance = new CLoader_Map(pDevice, pContext);
+	CLoader_Map* pInstance = new CLoader_Map(pContext);
 	return pInstance;
 }
 
 void CLoader_Map::Free()
 {
-	__super::Free();
-
 	// 혹시 남아있을 수 있는 보류 리소스 정리
 	ReleasePendingResources();
-
 	Safe_Release(m_pGameInstance);
+	__super::Free();
+
 }
