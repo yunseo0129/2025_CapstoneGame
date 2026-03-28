@@ -86,3 +86,25 @@ void Session::Send_Remove_Player_Packet(int c_id)
 
 	Send(&p);
 }
+
+void Session::Send_Match_Wait_Packet(int queue_size)
+{
+	SC_MATCH_WAIT_PACKET p;
+	p.size = sizeof(SC_MATCH_WAIT_PACKET);
+	p.type = SC_MATCH_WAIT;
+	p.queue_size = queue_size;
+
+	Send(&p);
+}
+
+void Session::Send_Match_Success_Packet(int room_id, int player_count, const int* player_ids)
+{
+	SC_MATCH_SUCCESS_PACKET p;
+	p.size = sizeof(SC_MATCH_SUCCESS_PACKET);
+	p.type = SC_MATCH_SUCCESS;
+	p.room_id = room_id;
+	p.player_count = player_count;
+	memcpy(p.player_ids, player_ids, sizeof(int) * player_count);
+
+	Send(&p);
+}

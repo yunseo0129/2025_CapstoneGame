@@ -41,9 +41,9 @@ bool NetworkClient::ConnectWithConsole()
     freopen_s(&fp, "CONIN$", "r", stdin);
     freopen_s(&fp, "CONOUT$", "w", stdout);
 
-    std::cout << "=============================================\n";
+    std::cout << "========================================\n";
     std::cout << "       HelloDinner - Connect to Server\n";
-    std::cout << "=============================================\n\n";
+    std::cout << "========================================\n\n";
 
     // 서버 IP 입력
     char serverIP[64] = {};
@@ -116,19 +116,6 @@ void NetworkClient::Send_Move(char direction)
     CS_MOVE_PACKET p{};
     p.size = sizeof(CS_MOVE_PACKET);
     p.type = CS_MOVE;
-    p.direction = direction;
-    p.move_time = 0;
-    Send(&p, p.size);
-}
-
-void NetworkClient::Send_Logout()
-{
-    if (!m_bConnected || m_iMyId == -1) return;
-
-    CS_LOGOUT_PACKET p{};
-    p.size = sizeof(CS_LOGOUT_PACKET);
-    p.type = CS_LOGOUT;
-    p.id = m_iMyId;
     Send(&p, p.size);
 }
 
@@ -201,6 +188,36 @@ void NetworkClient::ProcessPacket(char* packet)
         m_bLoggedIn = true;
         break;
     }
+    case SC_MATCH_WAIT: {
+        SC_MATCH_WAIT_PACKET* p = reinterpret_cast<SC_MATCH_WAIT_PACKET*>(packet);
+        m_iQueueSize = p->queue_size;
+
+        {
+            NetEvent evt{};
+            evt.type = NetEventType::MATCH_WAIT;
+            evt.queueSize = p->queue_size;
+
+            std::lock_guard<std::mutex> lk(m_eventLock);
+            m_pendingEvents.push_back(evt);
+        }
+        break;
+    }
+    case SC_MATCH_SUCCESS: {
+        SC_MATCH_SUCCESS_PACKET* p = reinterpret_cast<SC_MATCH_SUCCESS_PACKET*>(packet);
+        m_iRoomId = p->room_id;
+        m_bMatched = true;
+
+        {
+            NetEvent evt{};
+            evt.type = NetEventType::MATCH_SUCCESS;
+            evt.roomId = p->room_id;
+            memcpy(evt.playerIds, p->player_ids, sizeof(int) * ROOM_MAX_PLAYER);
+
+            std::lock_guard<std::mutex> lk(m_eventLock);
+            m_pendingEvents.push_back(evt);
+        }
+        break;
+    }
     case SC_ADD_PLAYER: {
         SC_ADD_PLAYER_PACKET* p = reinterpret_cast<SC_ADD_PLAYER_PACKET*>(packet);
         _float3 pos = { p->positionX, p->positionY, p->positionZ };
@@ -265,13 +282,11 @@ void NetworkClient::PopAllEvents(std::vector<NetEvent>& outEvents)
 
 void NetworkClient::Disconnect()
 {
-    if (!m_bConnected) return;
-
-    // 서버에 로그아웃 패킷 전송 후 소켓 종료
-    Send_Logout();
-
     m_bConnected = false;
     m_bLoggedIn = false;
+    m_bMatched = false;
+    m_iRoomId = -1;
+    m_iQueueSize = 0;
     if (m_socket != INVALID_SOCKET) {
         closesocket(m_socket);
         m_socket = INVALID_SOCKET;

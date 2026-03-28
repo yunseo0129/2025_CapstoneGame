@@ -94,8 +94,8 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 		CPig_3rd::Player_3rd_DESC cdesc;
 		cdesc.strModelTag = L"Prototype_Component_Pig_3rd";
 		cdesc.iModelLevelIndex = 1;
-		m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Pig_3rd"),
-			1, TEXT("Layer_Player_Pig_3rd"), &cdesc);
+		//m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Pig_3rd"),
+		//	1, TEXT("Layer_Player_Pig_3rd"), &cdesc);
 	}
 
 
@@ -108,7 +108,7 @@ void CLevel_Loading::Update(_float fTimeDelta)
 {
 	__super::Update(fTimeDelta);
 
-	// 네트워크 이벤트 처리: 플레이어 추가/제거/이동
+	// 네트워크 이벤트 처리
 	NetworkClient* pNetwork = NetworkClient::GetInstance();
 	if (!pNetwork->IsConnected())
 		return;
@@ -118,8 +118,23 @@ void CLevel_Loading::Update(_float fTimeDelta)
 
 	for (auto& evt : events) {
 		switch (evt.type) {
+		case NetworkClient::NetEventType::MATCH_WAIT: {
+			// TODO [GUI]: 매칭 대기 UI 갱신
+			// evt.queueSize 로 현재 인원 확인 가능
+			// 예: 매칭 UI 오브젝트의 텍스트를 "2/6" 으로 갱신
+			break;
+		}
+		case NetworkClient::NetEventType::MATCH_SUCCESS: {
+			// TODO [GUI]: 매칭 성공 UI 표시 후 게임 레벨로 전환
+			// evt.roomId, evt.playerIds 사용 가능
+			// 예: m_pGameInstance->Open_Level(LEVEL_GAMEPLAY, ...)
+			break;
+		}
 		case NetworkClient::NetEventType::PLAYER_ADD: {
-			// 새 플레이어 접속 → CPig_3rd 생성
+			// 매칭 성공 후에만 플레이어 스폰
+			//if (!pNetwork->IsMatched())
+			//	break;
+
 			CPig_3rd::Player_3rd_DESC desc;
 			desc.strModelTag = L"Prototype_Component_Pig_3rd";
 			desc.iModelLevelIndex = 1;

@@ -11,12 +11,14 @@ class Session
 		S_STATE		m_state;
 		int			m_id;
 		SOCKET		m_socket;
+
+		// Player Á¤º¸
 		float		m_Positionx, m_Positiony, m_Positionz;
 		float		m_Rotationx, m_Rotationy, m_Rotationz;
 		char		m_name[NAME_SIZE];
-		int			m_prev_remain;
-		int			m_last_move_time;
 
+		int			m_prev_remain;
+		int			m_room_id;
 	public:
 		Session();
 		~Session() = default;
@@ -28,5 +30,7 @@ class Session
 		void Send_Move_Packet(int c_id);
 		void Send_Add_Player_Packet(int c_id);
 		void Send_Remove_Player_Packet(int c_id);
+		void Send_Match_Wait_Packet(int queue_size);
+		void Send_Match_Success_Packet(int room_id, int player_count, const int* player_ids);
 };
 

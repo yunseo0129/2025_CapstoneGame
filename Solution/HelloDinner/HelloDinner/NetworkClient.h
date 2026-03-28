@@ -10,6 +10,8 @@ public:
         PLAYER_ADD,
         PLAYER_REMOVE,
         PLAYER_MOVE,
+        MATCH_WAIT,        // 매칭 대기 중
+        MATCH_SUCCESS,     // 매칭 성공
     };
 
     // 메인 스레드에서 처리할 이벤트 구조체
@@ -19,6 +21,9 @@ public:
         _float3			position = {};
         _float3			rotation = {};
         char			name[NAME_SIZE] = {};
+        int				roomId = -1;
+        int				queueSize = 0;
+        int				playerIds[ROOM_MAX_PLAYER] = {};
     };
 
 public:
@@ -34,16 +39,16 @@ public:
     // 이동 패킷 전송
     void Send_Move(char direction);
 
-    // 로그아웃 패킷 전송
-    void Send_Logout();
-
     // 접속 해제
     void Disconnect();
 
     bool IsConnected() const { return m_bConnected; }
     bool IsLoggedIn() const { return m_bLoggedIn; }
+    bool IsMatched() const { return m_bMatched; }
 
     int GetMyId() const { return m_iMyId; }
+    int GetRoomId() const { return m_iRoomId; }
+    int GetQueueSize() const { return m_iQueueSize; }
 
     // 다른 플레이어 정보
     struct PlayerInfo {
@@ -75,8 +80,11 @@ private:
     SOCKET		m_socket = INVALID_SOCKET;
     bool		m_bConnected = false;
     bool		m_bLoggedIn = false;
+    bool		m_bMatched = false;
 
     int			m_iMyId = -1;
+    int			m_iRoomId = -1;
+    int			m_iQueueSize = 0;
 
     _float3	    m_vMyPosition = {};
     _float3     m_vMyRotation = {};

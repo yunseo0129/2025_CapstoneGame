@@ -134,15 +134,19 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="MatchManager.cpp" />
     <ClCompile Include="OverllapedEXP.cpp" />
+    <ClCompile Include="Room.cpp" />
     <ClCompile Include="Session.cpp" />
     <ClCompile Include="SessionManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IOCPServer.h" />
+    <ClInclude Include="MatchManager.h" />
     <ClInclude Include="OverllapedEXP.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="protocol.h" />
+    <ClInclude Include="Room.h" />
     <ClInclude Include="Session.h" />
     <ClInclude Include="SessionManager.h" />
   </ItemGroup>
