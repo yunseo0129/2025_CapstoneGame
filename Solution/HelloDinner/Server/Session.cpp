@@ -1,4 +1,5 @@
 #include "Session.h"
+#include "SessionManager.h"
 
 Session::Session()
 {
@@ -43,12 +44,30 @@ void Session::Send_Login_Info_Packet()
 
 void Session::Send_Move_Packet(int c_id)
 {
+	auto& target = SessionManager::GetInstance()->GetClient(c_id);
+	SC_MOVE_PLAYER_PACKET p;
+	p.size = sizeof(SC_MOVE_PLAYER_PACKET);
+	p.type = SC_MOVE_PLAYER;
+	p.id = c_id;
+	p.x = target.x;
+	p.y = target.y;
+	p.move_time = target.m_last_move_time;
 
+	Send(&p);
 }
 
 void Session::Send_Add_Player_Packet(int c_id)
 {
+	auto& target = SessionManager::GetInstance()->GetClient(c_id);
+	SC_ADD_PLAYER_PACKET p;
+	p.size = sizeof(SC_ADD_PLAYER_PACKET);
+	p.type = SC_ADD_PLAYER;
+	p.id = c_id;
+	p.x = target.x;
+	p.y = target.y;
+	strcpy_s(p.name, target.m_name);
 
+	Send(&p);
 }
 
 void Session::Send_Remove_Player_Packet(int c_id)

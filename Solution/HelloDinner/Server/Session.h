@@ -11,7 +11,7 @@ class Session
 		S_STATE		m_state;
 		int			m_id;
 		SOCKET		m_socket;
-		short		x, y;
+		short		x, y, z;
 		char		m_name[NAME_SIZE];
 		int			m_prev_remain;
 		int			m_last_move_time;

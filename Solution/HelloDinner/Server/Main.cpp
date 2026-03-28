@@ -1,88 +1,12 @@
-#include "Session.h"
+#include "SessionManager.h"
 
-array<Session, MAX_USER> clients;
 SOCKET g_s_socket, g_c_socket;
 OverllapedEXP g_a_over;
 
-int get_new_client_id()
-{
-	for (int i = 0; i < MAX_USER; ++i) {
-		lock_guard <mutex> ll{ clients[i].m_s_lock };
-		if (clients[i].m_state == ST_FREE)
-			cout << i << "New Client Connected." << endl;
-
-			return i;
-	}
-	return -1;
-}
-
-// 클라이언트로부터 받은 패킷을 처리하는 함수
-void process_packet(int c_id, char* packet)
-{
-	switch (packet[1]) {
-	case CS_LOGIN: {
-		CS_LOGIN_PACKET* p = reinterpret_cast<CS_LOGIN_PACKET*>(packet);
-		strcpy_s(clients[c_id].m_name, p->name);
-		clients[c_id].x = rand() % W_WIDTH;
-		clients[c_id].y = rand() % W_HEIGHT;
-		clients[c_id].Send_Login_Info_Packet();
-		{
-			lock_guard<mutex> ll{ clients[c_id].m_s_lock };
-			clients[c_id].m_state = ST_INGAME;
-		}
-		for (auto& pl : clients) {
-			{
-				lock_guard<mutex> ll(pl.m_s_lock);
-				if (ST_INGAME != pl.m_state) continue;
-			}
-			if (pl.m_id == c_id) continue;
-			pl.Send_Add_Player_Packet(c_id);
-			clients[c_id].Send_Add_Player_Packet(pl.m_id);
-		}
-		break;
-	}
-	case CS_MOVE: {
-		CS_MOVE_PACKET* p = reinterpret_cast<CS_MOVE_PACKET*>(packet);
-		clients[c_id].m_last_move_time = p->move_time;
-		short x = clients[c_id].x;
-		short y = clients[c_id].y;
-		switch (p->direction) {
-		case 0: if (y > 0) y--; break;
-		case 1: if (y < W_HEIGHT - 1) y++; break;
-		case 2: if (x > 0) x--; break;
-		case 3: if (x < W_WIDTH - 1) x++; break;
-		}
-		clients[c_id].x = x;
-		clients[c_id].y = y;
-
-		for (auto& cl : clients) {
-			if (cl.m_state != ST_INGAME) continue;
-			cl.Send_Move_Packet(c_id);
-
-		}
-	}
-	}
-}
-
-void disconnect(int c_id)
-{
-	for (auto& pl : clients) {
-		{
-			lock_guard<mutex> ll(pl.m_s_lock);
-			if (ST_INGAME != pl.m_state) continue;
-		}
-		if (pl.m_id == c_id) continue;
-		pl.Send_Remove_Player_Packet(c_id);
-	}
-	closesocket(clients[c_id].m_socket);
-
-	lock_guard<mutex> ll(clients[c_id].m_s_lock);
-	clients[c_id].m_state = ST_FREE;
-}
-
-// IOCP worker thread 함수
 void worker_thread(HANDLE h_iocp)
 {
+	auto* sm = SessionManager::GetInstance();
+
 	while (true) {
 		DWORD num_bytes;
 		ULONG_PTR key;
@@ -93,35 +17,36 @@ void worker_thread(HANDLE h_iocp)
 			if (ex_over->m_comp_type == OP_ACCEPT) cout << "Accept Error";
 			else {
 				cout << "GQCS Error on client[" << key << "]\n";
-				disconnect(static_cast<int>(key));
+				sm->Disconnect(static_cast<int>(key));
 				if (ex_over->m_comp_type == OP_SEND) delete ex_over;
 				continue;
 			}
 		}
 
 		if ((0 == num_bytes) && ((ex_over->m_comp_type == OP_RECV) || (ex_over->m_comp_type == OP_SEND))) {
-			disconnect(static_cast<int>(key));
+			sm->Disconnect(static_cast<int>(key));
 			if (ex_over->m_comp_type == OP_SEND) delete ex_over;
 			continue;
 		}
 
 		switch (ex_over->m_comp_type) {
 		case OP_ACCEPT: {
-			int client_id = get_new_client_id();
+			int client_id = sm->GetNewClientId();
 			if (client_id != -1) {
+				auto& client = sm->GetClient(client_id);
 				{
-					lock_guard<mutex> ll(clients[client_id].m_s_lock);
-					clients[client_id].m_state = ST_ALLOC;
+					lock_guard<mutex> ll(client.m_s_lock);
+					client.m_state = ST_ALLOC;
 				}
-				clients[client_id].x = 0;
-				clients[client_id].y = 0;
-				clients[client_id].m_id = client_id;
-				clients[client_id].m_name[0] = 0;
-				clients[client_id].m_prev_remain = 0;
-				clients[client_id].m_socket = g_c_socket;
+				client.x = 0;
+				client.y = 0;
+				client.m_id = client_id;
+				client.m_name[0] = 0;
+				client.m_prev_remain = 0;
+				client.m_socket = g_c_socket;
 				CreateIoCompletionPort(reinterpret_cast<HANDLE>(g_c_socket),
 					h_iocp, client_id, 0);
-				clients[client_id].Recv();
+				client.Recv();
 				g_c_socket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
 			}
 			else {
@@ -133,22 +58,23 @@ void worker_thread(HANDLE h_iocp)
 			break;
 		}
 		case OP_RECV: {
-			int remain_data = num_bytes + clients[key].m_prev_remain;
+			auto& client = sm->GetClient(static_cast<int>(key));
+			int remain_data = num_bytes + client.m_prev_remain;
 			char* p = ex_over->m_send_buf;
 			while (remain_data > 0) {
 				int packet_size = p[0];
 				if (packet_size <= remain_data) {
-					process_packet(static_cast<int>(key), p);
+					sm->ProcessPacket(static_cast<int>(key), p);
 					p = p + packet_size;
 					remain_data = remain_data - packet_size;
 				}
 				else break;
 			}
-			clients[key].m_prev_remain = remain_data;
+			client.m_prev_remain = remain_data;
 			if (remain_data > 0) {
 				memcpy(ex_over->m_send_buf, p, remain_data);
 			}
-			clients[key].Recv();
+			client.Recv();
 			break;
 		}
 		case OP_SEND:
@@ -156,6 +82,33 @@ void worker_thread(HANDLE h_iocp)
 			break;
 		}
 	}
+}
+
+void print_server_ip()
+{
+	char hostname[256];
+	if (gethostname(hostname, sizeof(hostname)) == SOCKET_ERROR) {
+		cout << "gethostname failed.\n";
+		return;
+	}
+
+	struct addrinfo hints{}, *info = nullptr;
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+
+	if (getaddrinfo(hostname, nullptr, &hints, &info) != 0) {
+		cout << "getaddrinfo failed.\n";
+		return;
+	}
+
+	for (auto p = info; p != nullptr; p = p->ai_next) {
+		char ip[INET_ADDRSTRLEN];
+		sockaddr_in* addr = reinterpret_cast<sockaddr_in*>(p->ai_addr);
+		inet_ntop(AF_INET, &addr->sin_addr, ip, sizeof(ip));
+		cout << "Server IP: " << ip << endl;
+	}
+
+	freeaddrinfo(info);
 }
 
 int main()
@@ -204,13 +157,13 @@ int main()
 	}
 
 	cout << "Server is running on port " << PORT_NUM << endl;
+	print_server_ip();
 
-	// 클라이언트 연결 수락 및 IOCP 작업 등록
 	g_c_socket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
 	g_a_over.m_comp_type = OP_ACCEPT;
 	AcceptEx(g_s_socket, g_c_socket, g_a_over.m_send_buf, 0, addr_size + 16, addr_size + 16, 0, &g_a_over.m_over);
 
-	vector <thread> worker_threads;
+	vector<thread> worker_threads;
 	int num_threads = std::thread::hardware_concurrency();
 	for (int i = 0; i < num_threads; ++i)
 		worker_threads.emplace_back(worker_thread, h_iocp);
