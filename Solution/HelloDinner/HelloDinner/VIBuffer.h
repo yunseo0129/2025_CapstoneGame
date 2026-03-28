@@ -7,7 +7,7 @@ class CVIBuffer abstract : public CComponent
 {
 protected:
     // 부모 생성자: Device와 Context(CommandList)를 받아옴
-    CVIBuffer(ID3D12Device* _device);
+    CVIBuffer(EngineContext* _pContext);
     // 복사 생성자: 프로토타입의 데이터를 복사 (얕은 복사로 리소스 공유)
     CVIBuffer(const CVIBuffer& Prototype);
     virtual ~CVIBuffer() = default;
@@ -23,11 +23,10 @@ public:
     virtual void SetResourceDesc(D3D12_RESOURCE_DESC& _resourceDesc, UINT64 _width);
 
 protected: // 자식 클래스들이 공통으로 쓸 변수
-    ComPtr<ID3D12Device>                m_pDevice;
 
 	// Vertex Buffer 관련 멤버 변수
-    ComPtr<ID3D12Resource>      m_pVertexBuffer = nullptr;
-    ComPtr<ID3D12Resource>      m_pVertexUploadBuffer = nullptr;
+    ID3D12Resource*      m_pVertexBuffer = nullptr;
+    ID3D12Resource*      m_pVertexUploadBuffer = nullptr;
     D3D12_VERTEX_BUFFER_VIEW    m_vertexBufferView;
 
     _uint                       m_iVertices = 0;
@@ -35,8 +34,8 @@ protected: // 자식 클래스들이 공통으로 쓸 변수
     D3D12_PRIMITIVE_TOPOLOGY    m_ePrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 	// Index Buffer 관련 멤버 변수
-    ComPtr<ID3D12Resource>		m_pIndexBuffer = nullptr;
-    ComPtr<ID3D12Resource>		m_pIndexUploadBuffer = nullptr;
+    ID3D12Resource*		m_pIndexBuffer = nullptr;
+    ID3D12Resource*		m_pIndexUploadBuffer = nullptr;
     D3D12_INDEX_BUFFER_VIEW		m_indexBufferView;
 
     _uint						m_iIndices = 0;

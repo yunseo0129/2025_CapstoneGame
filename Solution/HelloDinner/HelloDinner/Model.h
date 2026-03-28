@@ -15,7 +15,7 @@ public:
 		MATLOAD_SKIP_TEXTURE     // 바이너리는 읽되 텍스처 생성 스킵 (맵용, 외부에서 Set)
 	};
 private:
-	CModel(ID3D12Device* pDevice, EngineContext* pContext);
+	CModel(EngineContext* pContext);
 	CModel(const CModel& Prototype);
 	virtual ~CModel() = default;
 
@@ -95,7 +95,6 @@ private:
 	_float4x4					m_PreTransformMatrix = {};
 
 private:
-	ID3D12Device* m_pDevice = { nullptr };
 
 	// 본 매트릭스 Constant Buffer (프레임별)
 	static const _int FRAME_COUNT = CGraphic_Device::SWAP_CHAIN_BUFFER_COUNT;
@@ -118,7 +117,7 @@ public:
 	virtual HRESULT Initialize_Prototype(TYPE eModelType, const wchar_t* pModelFilePath, _fmatrix PreTransformMatrix, MATERIAL_LOAD_MODE eMatMode);
 	virtual HRESULT Initialize(void* pArg) override;
 
-	static CModel* Create(ID3D12Device* pDevice, EngineContext* pContext, TYPE eModelType, const wchar_t* pModelFilePath, _fmatrix PreTransformMatrix, MATERIAL_LOAD_MODE eMatMode = MATLOAD_FROM_BINARY);
+	static CModel* Create(EngineContext* pContext, TYPE eModelType, const wchar_t* pModelFilePath, _fmatrix PreTransformMatrix, MATERIAL_LOAD_MODE eMatMode = MATLOAD_FROM_BINARY);
 	virtual CComponent* Clone(void* pArg) override;
 	virtual void Free() override;
 };

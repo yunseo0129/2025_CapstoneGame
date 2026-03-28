@@ -5,6 +5,12 @@ CGameObject::CGameObject(EngineContext* _pcontext)
 	: m_pContext{ _pcontext }
 	, m_pGameInstance{ CGameInstance::GetInstance() }
 {
+	Safe_AddRef(m_pContext->device);
+	Safe_AddRef(m_pContext->cmdList);
+	Safe_AddRef(m_pContext->cmdQueue);
+	Safe_AddRef(m_pContext->dsvHeap);
+	Safe_AddRef(m_pContext->rtvHeap);
+	Safe_AddRef(m_pContext->srvHeap);
 	Safe_AddRef(m_pGameInstance);
 }
 
@@ -12,6 +18,12 @@ CGameObject::CGameObject(const CGameObject& Prototype)
 	: m_pContext{ Prototype.m_pContext }
 	, m_pGameInstance{ Prototype.m_pGameInstance }
 {
+	Safe_AddRef(m_pContext->device);
+	Safe_AddRef(m_pContext->cmdList);
+	Safe_AddRef(m_pContext->cmdQueue);
+	Safe_AddRef(m_pContext->dsvHeap);
+	Safe_AddRef(m_pContext->rtvHeap);
+	Safe_AddRef(m_pContext->srvHeap);
 	Safe_AddRef(m_pGameInstance);
 }
 
@@ -56,8 +68,12 @@ void CGameObject::Render(ID3D12GraphicsCommandList* _commandList)
 
 void CGameObject::Free()
 {
-	__super::Free();
-
+	Safe_Release(m_pContext->device);
+	Safe_Release(m_pContext->cmdList);
+	Safe_Release(m_pContext->cmdQueue);
+	Safe_Release(m_pContext->dsvHeap);
+	Safe_Release(m_pContext->rtvHeap);
+	Safe_Release(m_pContext->srvHeap);
 	for (auto& Pair : m_Components) {
 		Safe_Release(Pair.second);
 	}
@@ -65,6 +81,8 @@ void CGameObject::Free()
 
 	Safe_Release(m_pTransformCom);
 	Safe_Release(m_pGameInstance);
+
+	__super::Free();
 }
 
 CComponent* CGameObject::Find_Component(const _wstring& strComponentTag)

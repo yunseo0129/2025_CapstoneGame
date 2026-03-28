@@ -25,8 +25,6 @@ private:
 	class CVIBuffer* m_pVIBufferCom = { nullptr };
 	class CTexture* m_pTextureCom = { nullptr };
 
-	ID3D12Device* m_pDevice = { nullptr };
-
 public:
 	static CCube* Create(EngineContext* _pcontext);
 	virtual CGameObject* Clone(void* pArg) override;

@@ -5,7 +5,7 @@
 class CLevel abstract : public CBase
 {
 protected:
-	CLevel(ID3D12Device* pDevice, EngineContext * pContext);
+	CLevel(EngineContext * pContext);
 	virtual ~CLevel() = default;
 
 public:
@@ -18,7 +18,6 @@ public:
 	void Bind_CameraBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameterIndex _eIndex, CAMERA_TYPE _eType);
 
 protected:
-	ID3D12Device* m_pDevice = { nullptr };
 	EngineContext* m_pContext = { nullptr };
 	class CGameInstance* m_pGameInstance = { nullptr };
 	vector<class CCamera*> m_pCamera { nullptr };

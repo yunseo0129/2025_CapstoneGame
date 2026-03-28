@@ -9,7 +9,7 @@ CPig_3rd::CPig_3rd(EngineContext* pContext)
 }
 
 CPig_3rd::CPig_3rd(const CPig_3rd& Prototype)
-	: CPlayer_3rd(Prototype)
+	: CPlayer_3rd(Prototype.m_pContext)
 {
 }
 

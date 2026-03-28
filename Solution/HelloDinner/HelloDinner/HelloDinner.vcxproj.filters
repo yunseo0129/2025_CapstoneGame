@@ -454,9 +454,6 @@
     <ClCompile Include="Player_3rd.cpp">
       <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd</Filter>
     </ClCompile>
-    <ClCompile Include="Bounding.cpp">
-      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
-    </ClCompile>
     <ClCompile Include="Bounding_AABB.cpp">
       <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
     </ClCompile>
@@ -470,6 +467,9 @@
       <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
     </ClCompile>
     <ClCompile Include="DebugDraw.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="Bounding.cpp">
       <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
     </ClCompile>
   </ItemGroup>

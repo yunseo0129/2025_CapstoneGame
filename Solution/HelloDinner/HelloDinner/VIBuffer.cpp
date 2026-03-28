@@ -1,9 +1,8 @@
 #include "VIBuffer.h"
 
 // engine_context까지는 필요없을 듯
-CVIBuffer::CVIBuffer(ID3D12Device* _device)
-    : CComponent(nullptr)
-    , m_pDevice(_device)
+CVIBuffer::CVIBuffer(EngineContext* _pContext)
+    : CComponent(_pContext)
 {
     m_ePrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	m_vertexBufferView.BufferLocation = 0;
@@ -15,8 +14,7 @@ CVIBuffer::CVIBuffer(ID3D12Device* _device)
 }
 
 CVIBuffer::CVIBuffer(const CVIBuffer& Prototype)
-    : CComponent(Prototype)
-    , m_pDevice(Prototype.m_pDevice)
+    : CComponent(Prototype.m_pContext)
     , m_pVertexBuffer(Prototype.m_pVertexBuffer)             // 리소스 공유
     , m_vertexBufferView(Prototype.m_vertexBufferView)       // 뷰 정보 복사
     , m_iVertices(Prototype.m_iVertices)
@@ -79,8 +77,8 @@ void CVIBuffer::LogBufferViews ( const D3D12_VERTEX_BUFFER_VIEW& vbv , const D3D
 
 void CVIBuffer::ReleaseUploadBuffer()
 {
-    if (m_pVertexUploadBuffer) m_pVertexUploadBuffer.Reset();
-    if (m_pIndexUploadBuffer) m_pIndexUploadBuffer.Reset();
+    if (m_pVertexUploadBuffer) m_pVertexUploadBuffer->Release();
+    if (m_pIndexUploadBuffer) m_pIndexUploadBuffer->Release();
 }
 
 void CVIBuffer::SetHeapProperties(D3D12_HEAP_PROPERTIES& _heapProps, D3D12_HEAP_TYPE _type)
@@ -121,7 +119,7 @@ HRESULT CVIBuffer::Create_Buffer(ID3D12GraphicsCommandList* _pCommandList, ID3D1
 
 
     // 1. Default Heap (GPU 전용) 생성
-    ThrowIfFailed(m_pDevice->CreateCommittedResource(
+    ThrowIfFailed(m_pContext->device->CreateCommittedResource(
         &DefaultheapProps,
         D3D12_HEAP_FLAG_NONE,
         &resourceDesc,
@@ -130,7 +128,7 @@ HRESULT CVIBuffer::Create_Buffer(ID3D12GraphicsCommandList* _pCommandList, ID3D1
         IID_PPV_ARGS(_ppDefaultBuffer)));
 
     // 2. Upload Heap (CPU -> GPU 전달용) 생성
-    ThrowIfFailed(m_pDevice->CreateCommittedResource(
+    ThrowIfFailed(m_pContext->device->CreateCommittedResource(
         &UploadheapProps,
         D3D12_HEAP_FLAG_NONE,
         &resourceDesc,
@@ -170,8 +168,8 @@ HRESULT CVIBuffer::Create_Buffer(ID3D12GraphicsCommandList* _pCommandList, ID3D1
 
 void CVIBuffer::Free()
 {
-	m_pVertexBuffer.Reset();
-	m_pIndexBuffer.Reset();
-	m_pDevice.Reset();
+	Safe_Release(m_pVertexBuffer);
+	Safe_Release(m_pIndexBuffer);
+
     __super::Free();
 }

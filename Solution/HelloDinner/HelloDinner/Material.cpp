@@ -76,8 +76,6 @@ void CMaterial::Free()
 		{
 			Safe_Release(pTexture);
 		}
-		TextureList.clear();
 	}
-	m_Textures.clear();
-	CBase::Free();
+	__super::Free();
 }

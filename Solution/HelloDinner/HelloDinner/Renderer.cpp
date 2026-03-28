@@ -119,8 +119,6 @@ CRenderer* CRenderer::Create(ID3D12Device* pDevice, ID3D12GraphicsCommandList* _
 
 void CRenderer::Free()
 {
-	__super::Free();
-
 	for (size_t i = 0; i < RG_END; i++)
 	{
 		for (auto& pRenderObject : m_RenderObjects[i])
@@ -132,5 +130,8 @@ void CRenderer::Free()
 	m_pDevice.Reset();
 	m_pCommandlist.Reset();
 	Safe_Release(m_pGameInstance);
+
+	__super::Free();
+
 }
 

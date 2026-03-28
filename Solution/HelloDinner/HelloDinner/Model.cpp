@@ -6,15 +6,13 @@
 #include "Bone.h"
 #include "Animation.h"
 
-CModel::CModel(ID3D12Device* pDevice, EngineContext* pContext)
+CModel::CModel(EngineContext* pContext)
 	: CComponent{ pContext }
-	, m_pDevice{ pDevice }
 {
 }
 
 CModel::CModel(const CModel& Prototype)
-	: CComponent{ Prototype }
-	, m_pDevice{ Prototype.m_pDevice }
+	: CComponent{ Prototype.m_pContext }
 	, m_eModelType{ Prototype.m_eModelType }
 	, m_eMatLoadMode{ Prototype.m_eMatLoadMode }
 	, m_iNumMeshes{ Prototype.m_iNumMeshes }
@@ -138,7 +136,7 @@ HRESULT CModel::Create_BoneBuffer()
 
 	for (_int i = 0; i < FRAME_COUNT; ++i)
 	{
-		HRESULT hResult = m_pDevice->CreateCommittedResource(
+		HRESULT hResult = m_pContext->device->CreateCommittedResource(
 			&d3dHeapPropertiesDesc, D3D12_HEAP_FLAG_NONE,
 			&d3dResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ,
 			NULL, __uuidof(ID3D12Resource), (void**)&m_pBoneBuffers[i]);
@@ -208,7 +206,7 @@ HRESULT CModel::Ready_Meshes()
 	
 	for (size_t i = 0; i < m_iNumMeshes; i++)
 	{
-		CMesh* pMesh = CMesh::Create(m_pDevice, m_pContext, m_eModelType, this, XMLoadFloat4x4(&m_PreTransformMatrix));
+		CMesh* pMesh = CMesh::Create(m_pContext, m_eModelType, this, XMLoadFloat4x4(&m_PreTransformMatrix));
 		if (nullptr == pMesh)
 			return E_FAIL;
 
@@ -227,7 +225,7 @@ HRESULT CModel::Ready_Materials(const wchar_t* pModelFilePath)
 
 	for (size_t i = 0; i < m_iNumMaterials; i++)
 	{
-		m_Materials[i] = CMaterial::Create(m_pDevice);
+		m_Materials[i] = CMaterial::Create(m_pContext->device);
 
 		for (size_t j = 0; j < 25; j++)
 		{
@@ -248,7 +246,7 @@ HRESULT CModel::Ready_Materials(const wchar_t* pModelFilePath)
 			_tchar szPerfectPath[MAX_PATH] = TEXT("");
 			MultiByteToWideChar(CP_ACP, 0, szPath, -1, szPerfectPath, MAX_PATH);
 
-			CTexture* pTexture = CTexture::Create(m_pDevice, m_pContext->cmdList, szPerfectPath);
+			CTexture* pTexture = CTexture::Create(m_pContext, szPerfectPath);
 			if (pTexture != nullptr)
 			{
 				m_Materials[i]->Add_Texture((TextureType)j, pTexture);
@@ -270,9 +268,9 @@ HRESULT CModel::Bind_Material(_uint iMeshIndex, TextureType eType, _uint iTextur
 	return S_OK;
 }
 
-CModel* CModel::Create(ID3D12Device* pDevice, EngineContext* pContext, TYPE eModelType, const wchar_t* pModelFilePath, _fmatrix PreTransformMatrix, MATERIAL_LOAD_MODE eMatMode)
+CModel* CModel::Create(EngineContext* pContext, TYPE eModelType, const wchar_t* pModelFilePath, _fmatrix PreTransformMatrix, MATERIAL_LOAD_MODE eMatMode)
 {
-	CModel* pInstance = new CModel(pDevice, pContext);
+	CModel* pInstance = new CModel(pContext);
 
 	if (FAILED(pInstance->Initialize_Prototype(eModelType, pModelFilePath, PreTransformMatrix, eMatMode)))
 	{

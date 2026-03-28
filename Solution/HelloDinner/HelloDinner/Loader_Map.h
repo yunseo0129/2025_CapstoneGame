@@ -6,7 +6,7 @@
 class CLoader_Map final : public CBase
 {
 private:
-	CLoader_Map(ID3D12Device* pDevice, EngineContext* pContext);
+	CLoader_Map(EngineContext* pContext);
 	virtual ~CLoader_Map() = default;
 
 public:
@@ -38,7 +38,6 @@ private:
 	vector<class CComponent*> m_PendingReleases;
 	//
 private:
-	ID3D12Device* m_pDevice = { nullptr };
 	EngineContext* m_pContext = { nullptr };
 	class CGameInstance* m_pGameInstance = { nullptr };
 
@@ -50,6 +49,6 @@ private:
 	unordered_map<string, _wstring> m_mapMaterialToNormalTag;
 
 public:
-	static CLoader_Map* Create(ID3D12Device* pDevice, EngineContext* pContext);
+	static CLoader_Map* Create(EngineContext* pContext);
 	virtual void Free() override;
 };

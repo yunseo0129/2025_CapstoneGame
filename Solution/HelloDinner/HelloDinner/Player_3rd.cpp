@@ -6,11 +6,13 @@
 CPlayer_3rd::CPlayer_3rd(EngineContext* pContext)
 	: CGameObject(pContext)
 {
+	Safe_AddRef(m_pModelCom);
 }
 
 CPlayer_3rd::CPlayer_3rd(const CPlayer_3rd& Prototype)
-	: CGameObject(Prototype)
+	: CGameObject(Prototype.m_pContext)
 {
+	Safe_AddRef(m_pModelCom);
 }
 
 HRESULT CPlayer_3rd::Initialize_Prototype()
@@ -100,7 +102,6 @@ CGameObject* CPlayer_3rd::Clone(void* pArg)
 
 void CPlayer_3rd::Free()
 {
-	__super::Free();
-
 	Safe_Release(m_pModelCom);
+	__super::Free();
 }
