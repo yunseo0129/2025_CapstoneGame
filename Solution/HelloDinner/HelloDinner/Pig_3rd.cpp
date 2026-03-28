@@ -36,12 +36,7 @@ void CPig_3rd::Priority_Update(_float fTimeDelta)
 
 void CPig_3rd::Update(_float fTimeDelta)
 {
-	
-	if (m_pModelCom->Play_Animation(fTimeDelta))
-	{
-		m_iState = STATE_IDLE;
-		m_pModelCom->Change_Animation(0, 5.f, true);
-	}
+	m_pModelCom->Play_Animation(fTimeDelta);
 	
 	__super::Update(fTimeDelta);
 }

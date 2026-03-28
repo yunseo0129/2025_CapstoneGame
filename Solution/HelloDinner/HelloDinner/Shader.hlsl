@@ -17,8 +17,8 @@ struct VS_IN_ANIM
     float3 vNormal : NORMAL;
     float2 vUV : TEXCOORD0;
     float3 vTangent : TANGENT;
-    uint4 vBoneIndices : BLENDINDICES; // 본 인덱스 (최대 4개)
-    float4 vBoneWeights : BLENDWEIGHT; // 본 가중치 (최대 4개)
+    uint4  vBoneIndices : BLENDINDICES; // 본 인덱스 (최대 4개)
+    float4 vBoneWeights : BLENDWEIGHT;  // 본 가중치 (최대 4개)
 };
 
 struct VS_OUT
@@ -84,11 +84,11 @@ VS_OUT VS_Main_Anim(VS_IN_ANIM In)
     float3 vSkinnedNormal = mul(In.vNormal, (float3x3) BoneMatrix);
 
     // 2. [Skinned Local -> World] 변환
-    // float4 vWorldPos = mul(vSkinnedPos, g_matWorld);
-    Out.vWorldPos = vSkinnedPos.xyz;
+    float4 vWorldPos = mul(vSkinnedPos, g_matWorld);
+    Out.vWorldPos = vWorldPos.xyz;
 
     // 3. [World -> Clip] 변환
-    float4 vViewPos = mul(vSkinnedPos, g_matView);
+    float4 vViewPos = mul(vWorldPos, g_matView);
     Out.vPosition = mul(vViewPos, g_matProj);
 
     // 4. 노멀 변환 (Skinned -> World)

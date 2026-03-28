@@ -157,8 +157,8 @@ HRESULT CMesh::Ready_VertexBuffer_For_Anim(ID3D12GraphicsCommandList* cmdList, c
 		m_pGameInstance->Read_File(vertices[i].vBlendWeights);
 
 
-	m_iVertexStride = sizeof(VTXMESH);
-	_uint vertexBufferSize = sizeof(VTXMESH) * m_iVertices;
+	m_iVertexStride = sizeof(VTXANIMMESH);
+	_uint vertexBufferSize = sizeof(VTXANIMMESH) * m_iVertices;
 
 	if (FAILED(Create_Buffer(cmdList, m_pVertexBuffer.GetAddressOf(), m_pVertexUploadBuffer.GetAddressOf(),
 		vertexBufferSize, vertices.data(), false)))
@@ -169,8 +169,6 @@ HRESULT CMesh::Ready_VertexBuffer_For_Anim(ID3D12GraphicsCommandList* cmdList, c
 	m_vertexBufferView.SizeInBytes = vertexBufferSize;
 
 	return S_OK;
-
-	return S_OK;
 }
 
 void CMesh::SetUp_BoneMatrices(const vector<CBone*>& Bones, _float4x4* pBoneMatrices)
@@ -178,10 +176,11 @@ void CMesh::SetUp_BoneMatrices(const vector<CBone*>& Bones, _float4x4* pBoneMatr
 	for (_uint i = 0; i < m_iNumBones; ++i)
 	{
 		// OffsetMatrix * CombinedMatrix = 최종 본 매트릭스
+		
 		_matrix OffsetMatrix = XMLoadFloat4x4(&m_BoneOffsetMatrices[i]);
 		_matrix CombinedMatrix = Bones[m_BoneIndices[i]]->Get_CombinedTransformationMatrix();
 
-		XMStoreFloat4x4(&pBoneMatrices[i], XMMatrixTranspose(OffsetMatrix * CombinedMatrix));
+		XMStoreFloat4x4(&pBoneMatrices[i], OffsetMatrix * CombinedMatrix);
 	}
 }
 
