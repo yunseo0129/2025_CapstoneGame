@@ -40,8 +40,6 @@ void WorkerThread(HANDLE h_iocp)
 					lock_guard<mutex> ll(client.m_s_lock);
 					client.m_state = ST_ALLOC;
 				}
-				client.x = 0;
-				client.y = 0;
 				client.m_id = client_id;
 				client.m_name[0] = 0;
 				client.m_prev_remain = 0;

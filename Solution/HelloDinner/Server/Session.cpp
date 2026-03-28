@@ -5,7 +5,8 @@ Session::Session()
 {
 	m_id = -1;
 	m_socket = 0;
-	x = y = 0;
+	m_Positionx = m_Positiony = m_Positionz = 0;
+	m_Rotationx = m_Rotationy = m_Rotationz = 0;
 	m_name[0] = 0;
 	m_state = ST_FREE;
 	m_prev_remain = 0;
@@ -36,9 +37,12 @@ void Session::Send_Login_Info_Packet()
 	p.id = m_id;
 	p.size = sizeof(SC_LOGIN_INFO_PACKET);
 	p.type = SC_LOGIN_INFO;
-	p.x = x;
-	p.y = y;
-
+	p.positionX = m_Positionx;
+	p.positionY = m_Positiony;
+	p.positionZ = m_Positionz;
+	p.rotationX = m_Rotationx;
+	p.rotationY = m_Rotationy;
+	p.rotationZ = m_Rotationz;
 	Send(&p);
 }
 
@@ -49,9 +53,8 @@ void Session::Send_Move_Packet(int c_id)
 	p.size = sizeof(SC_MOVE_PLAYER_PACKET);
 	p.type = SC_MOVE_PLAYER;
 	p.id = c_id;
-	p.x = target.x;
-	p.y = target.y;
-	p.move_time = target.m_last_move_time;
+
+	// 움직임 패킷 재구성 필요
 
 	Send(&p);
 }
@@ -63,8 +66,12 @@ void Session::Send_Add_Player_Packet(int c_id)
 	p.size = sizeof(SC_ADD_PLAYER_PACKET);
 	p.type = SC_ADD_PLAYER;
 	p.id = c_id;
-	p.x = target.x;
-	p.y = target.y;
+	p.positionX = target.m_Positionx;
+	p.positionY = target.m_Positiony;
+	p.positionZ = target.m_Positionz;
+	p.rotationX = target.m_Rotationx;
+	p.rotationY = target.m_Rotationy;
+	p.rotationZ = target.m_Rotationz;
 	strcpy_s(p.name, target.m_name);
 
 	Send(&p);

@@ -27,7 +27,7 @@ NetworkClient::~NetworkClient()
 
 void NetworkClient::CloseConsole()
 {
-    // 표준 입출력 핸들 해제 후 콘솔 창 닫기
+	// 콘솔 창 닫기
     fclose(stdin);
     fclose(stdout);
     FreeConsole();
@@ -151,58 +151,129 @@ void NetworkClient::RecvThread()
     }
 }
 
+// 서버에서 받은 패킷을 처리
 void NetworkClient::ProcessPacket(char* packet)
 {
     switch (packet[1]) {
     case SC_LOGIN_INFO: {
         SC_LOGIN_INFO_PACKET* p = reinterpret_cast<SC_LOGIN_INFO_PACKET*>(packet);
         m_iMyId = p->id;
-        m_sMyX = p->x;
-        m_sMyY = p->y;
-        m_sMyZ = p->z;
-        
-        std::lock_guard<std::mutex> lk(m_lock);
-        m_players[m_iMyId].id = m_iMyId;
-        m_players[m_iMyId].x = p->x;
-        m_players[m_iMyId].y = p->y;
-        m_players[m_iMyId].z = p->z;
-        strcpy_s(m_players[m_iMyId].name, m_szName);
-        m_players[m_iMyId].active = true;
-        
+        m_vMyPosition.x = p->positionX;
+        m_vMyPosition.y = p->positionY;
+        m_vMyPosition.z = p->positionZ;
+        m_vMyRotation.x = p->rotationX;
+        m_vMyRotation.y = p->rotationY;
+        m_vMyRotation.z = p->rotationZ;
+
+        {
+            std::lock_guard<std::mutex> lk(m_lock);
+            m_players[m_iMyId].id = m_iMyId;
+            m_players[m_iMyId].position = m_vMyPosition;
+            m_players[m_iMyId].rotation = m_vMyRotation;
+            strcpy_s(m_players[m_iMyId].name, m_szName);
+            m_players[m_iMyId].active = true;
+        }
+
+        // 내 플레이어 생성 이벤트를 큐에 추가
+        {
+            NetEvent evt{};
+            evt.type = NetEventType::PLAYER_ADD;
+            evt.id = m_iMyId;
+            evt.position = m_vMyPosition;
+            evt.rotation = m_vMyRotation;
+            strcpy_s(evt.name, m_szName);
+
+            std::lock_guard<std::mutex> lk(m_eventLock);
+            m_pendingEvents.push_back(evt);
+        }
+
+        m_bLoggedIn = true;
         break;
     }
     case SC_ADD_PLAYER: {
         SC_ADD_PLAYER_PACKET* p = reinterpret_cast<SC_ADD_PLAYER_PACKET*>(packet);
-        std::lock_guard<std::mutex> lk(m_lock);
-        m_players[p->id].id = p->id;
-        m_players[p->id].x = p->x;
-        m_players[p->id].y = p->y;
-        m_players[p->id].z = p->z;
-        strcpy_s(m_players[p->id].name, p->name);
-        m_players[p->id].active = true;
+        _float3 pos = { p->positionX, p->positionY, p->positionZ };
+        _float3 rot = { p->rotationX, p->rotationY, p->rotationZ };
+
+        {
+            std::lock_guard<std::mutex> lk(m_lock);
+            m_players[p->id].id = p->id;
+            m_players[p->id].position = pos;
+            m_players[p->id].rotation = rot;
+            strcpy_s(m_players[p->id].name, p->name);
+            m_players[p->id].active = true;
+        }
+
+        // 다른 플레이어 생성 이벤트를 큐에 추가
+        {
+            NetEvent evt{};
+            evt.type = NetEventType::PLAYER_ADD;
+            evt.id = p->id;
+            evt.position = pos;
+            evt.rotation = rot;
+            strcpy_s(evt.name, p->name);
+
+            std::lock_guard<std::mutex> lk(m_eventLock);
+            m_pendingEvents.push_back(evt);
+        }
         break;
     }
     case SC_REMOVE_PLAYER: {
         SC_REMOVE_PLAYER_PACKET* p = reinterpret_cast<SC_REMOVE_PLAYER_PACKET*>(packet);
-        std::lock_guard<std::mutex> lk(m_lock);
-        m_players[p->id].active = false;
+
+        {
+            std::lock_guard<std::mutex> lk(m_lock);
+            m_players[p->id].active = false;
+        }
+
+        // 플레이어 제거 이벤트를 큐에 추가
+        {
+            NetEvent evt{};
+            evt.type = NetEventType::PLAYER_REMOVE;
+            evt.id = p->id;
+
+            std::lock_guard<std::mutex> lk(m_eventLock);
+            m_pendingEvents.push_back(evt);
+        }
         break;
     }
     case SC_MOVE_PLAYER: {
         SC_MOVE_PLAYER_PACKET* p = reinterpret_cast<SC_MOVE_PLAYER_PACKET*>(packet);
-        std::lock_guard<std::mutex> lk(m_lock);
-        m_players[p->id].x = p->x;
-        m_players[p->id].y = p->y;
-        m_players[p->id].z = p->z;
+        //_float3 pos = { p->positionX, p->positionY, p->positionZ };
+        //_float3 rot = { p->rotationX, p->rotationY, p->rotationZ };
 
-        if (p->id == m_iMyId) {
-            m_sMyX = p->x;
-            m_sMyY = p->y;
-            m_sMyZ = p->z;
-        }
+        //{
+        //    std::lock_guard<std::mutex> lk(m_lock);
+        //    m_players[p->id].position = pos;
+        //    m_players[p->id].rotation = rot;
+
+        //    if (p->id == m_iMyId) {
+        //        m_vMyPosition = pos;
+        //        m_vMyRotation = rot;
+        //    }
+        //}
+
+        //// 이동 이벤트를 큐에 추가
+        //{
+        //    NetEvent evt{};
+        //    evt.type = NetEventType::PLAYER_MOVE;
+        //    evt.id = p->id;
+        //    evt.position = pos;
+        //    evt.rotation = rot;
+
+        //    std::lock_guard<std::mutex> lk(m_eventLock);
+        //    m_pendingEvents.push_back(evt);
+        //}
         break;
     }
     }
+}
+
+void NetworkClient::PopAllEvents(std::vector<NetEvent>& outEvents)
+{
+    std::lock_guard<std::mutex> lk(m_eventLock);
+    outEvents.swap(m_pendingEvents);
+    m_pendingEvents.clear();
 }
 
 void NetworkClient::Disconnect()

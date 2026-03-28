@@ -13,6 +13,7 @@
 #include "Camera_FPV.h"
 #include "Model.h"
 #include "Pig_3rd.h"
+#include "NetworkClient.h"
 
 CLevel_Loading::CLevel_Loading(ID3D12Device* pDevice, EngineContext* pContext)
 	: CLevel{ pDevice, pContext }
@@ -106,6 +107,43 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 void CLevel_Loading::Update(_float fTimeDelta)
 {
 	__super::Update(fTimeDelta);
+
+	// 네트워크 이벤트 처리: 플레이어 추가/제거/이동
+	NetworkClient* pNetwork = NetworkClient::GetInstance();
+	if (!pNetwork->IsConnected())
+		return;
+
+	std::vector<NetworkClient::NetEvent> events;
+	pNetwork->PopAllEvents(events);
+
+	for (auto& evt : events) {
+		switch (evt.type) {
+		case NetworkClient::NetEventType::PLAYER_ADD: {
+			// 새 플레이어 접속 → CPig_3rd 생성
+			CPig_3rd::Player_3rd_DESC desc;
+			desc.strModelTag = L"Prototype_Component_Pig_3rd";
+			desc.iModelLevelIndex = 1;
+			desc.vPosition = evt.position;
+			desc.vRotation = evt.rotation;
+
+			// 레이어 이름에 id를 붙여 개별 관리
+			_wstring strLayerTag = L"Layer_Player_Pig_" + std::to_wstring(evt.id);
+
+			m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Pig_3rd"),
+				1, strLayerTag, &desc);
+			break;
+		}
+		case NetworkClient::NetEventType::PLAYER_REMOVE: {
+			// TODO: 플레이어 제거 처리
+			// 해당 id의 레이어에서 오브젝트를 찾아 삭제하는 로직 필요
+			break;
+		}
+		case NetworkClient::NetEventType::PLAYER_MOVE: {
+			// TODO: 해당 id 플레이어의 Transform 갱신
+			break;
+		}
+		}
+	}
 }
 
 HRESULT CLevel_Loading::Render()

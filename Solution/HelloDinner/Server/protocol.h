@@ -1,3 +1,4 @@
+
 constexpr int PORT_NUM = 4000;
 constexpr int BUF_SIZE = 200;
 constexpr int NAME_SIZE = 20;
@@ -66,7 +67,12 @@ struct SC_LOGIN_INFO_PACKET {
 	unsigned char size;
 	char	type;
 	int		id;
-	short	x, y, z;
+	float   positionX;
+	float	positionY;
+	float	positionZ;
+	float	rotationX;
+	float	rotationY;
+	float	rotationZ;
 };
 
 struct SC_LOGIN_FAIL_PACKET {
@@ -79,7 +85,12 @@ struct SC_ADD_PLAYER_PACKET {
 	unsigned char size;
 	char	type;
 	int		id;
-	short	x, y, z;
+	float   positionX;
+	float	positionY;
+	float	positionZ;
+	float	rotationX;
+	float	rotationY;
+	float	rotationZ;
 	char	name[NAME_SIZE];
 };
 

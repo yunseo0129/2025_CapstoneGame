@@ -21,9 +21,14 @@ void SessionManager::ProcessPacket(int c_id, char* packet)
     case CS_LOGIN: {
         CS_LOGIN_PACKET* p = reinterpret_cast<CS_LOGIN_PACKET*>(packet);
         strcpy_s(m_clients[c_id].m_name, p->name);
-        m_clients[c_id].x = rand() % W_WIDTH;
-        m_clients[c_id].y = rand() % W_HEIGHT;
-        m_clients[c_id].z = 0;
+
+        // 임의의 위치로 설정
+        m_clients[c_id].m_Positionx = c_id * 100;
+        m_clients[c_id].m_Positiony = 0;
+        m_clients[c_id].m_Positionz = 0;
+        m_clients[c_id].m_Rotationx = 0;
+        m_clients[c_id].m_Rotationy = 0;
+        m_clients[c_id].m_Rotationz = 0;
 
         m_clients[c_id].Send_Login_Info_Packet();
         {
@@ -44,20 +49,8 @@ void SessionManager::ProcessPacket(int c_id, char* packet)
         // 이동 패킷 처리
     case CS_MOVE: {
         CS_MOVE_PACKET* p = reinterpret_cast<CS_MOVE_PACKET*>(packet);
-        m_clients[c_id].m_last_move_time = p->move_time;
-        short x = m_clients[c_id].x;
-        short y = m_clients[c_id].y;
-        short z = m_clients[c_id].z;
-
-        switch (p->direction) {
-        case 0: if (y > 0) y--; break;
-        case 1: if (y < W_HEIGHT - 1) y++; break;
-        case 2: if (x > 0) x--; break;
-        case 3: if (x < W_WIDTH - 1) x++; break;
-        }
-        m_clients[c_id].x = x;
-        m_clients[c_id].y = y;
-        m_clients[c_id].z = z;
+        
+        // 움직임 로직
 
         for (auto& cl : m_clients) {
             if (cl.m_state != ST_INGAME) continue;

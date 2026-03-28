@@ -5,6 +5,23 @@
 class NetworkClient
 {
 public:
+    // 네트워크 이벤트 종류
+    enum class NetEventType {
+        PLAYER_ADD,
+        PLAYER_REMOVE,
+        PLAYER_MOVE,
+    };
+
+    // 메인 스레드에서 처리할 이벤트 구조체
+    struct NetEvent {
+        NetEventType	type;
+        int				id = -1;
+        _float3			position = {};
+        _float3			rotation = {};
+        char			name[NAME_SIZE] = {};
+    };
+
+public:
     static NetworkClient* GetInstance();
     static void DestroyInstance();
 
@@ -24,19 +41,20 @@ public:
     bool IsLoggedIn() const { return m_bLoggedIn; }
 
     int GetMyId() const { return m_iMyId; }
-    short GetMyX() const { return m_sMyX; }
-    short GetMyY() const { return m_sMyY; }
-    short GetMyZ() const { return m_sMyZ; }
 
     // 다른 플레이어 정보
     struct PlayerInfo {
-        int		id = -1;
-        short	x = 0, y = 0, z = 0;
-        char	name[NAME_SIZE] = {};
-        bool	active = false;
+        int		    id = -1;
+        _float3	    position = {};
+        _float3     rotation = {};
+        char	    name[NAME_SIZE] = {};
+        bool	    active = false;
     };
 
     const PlayerInfo& GetPlayer(int id) const { return m_players[id]; }
+
+    // 메인 스레드에서 호출: 대기 중인 이벤트를 꺼내감
+    void PopAllEvents(std::vector<NetEvent>& outEvents);
 
 private:
     NetworkClient() = default;
@@ -56,12 +74,17 @@ private:
     bool		m_bLoggedIn = false;
 
     int			m_iMyId = -1;
-    short		m_sMyX = 0;
-    short		m_sMyY = 0;
-    short		m_sMyZ = 0;
+
+    _float3	    m_vMyPosition = {};
+    _float3     m_vMyRotation = {};
+
     char		m_szName[NAME_SIZE] = {};
 
     PlayerInfo	m_players[MAX_USER] = {};
+
+    // 이벤트 큐 (RecvThread에서 push, 메인 스레드에서 pop)
+    std::vector<NetEvent>	m_pendingEvents;
+    std::mutex				m_eventLock;
 
     std::thread	m_recvThread;
     std::mutex	m_lock;
