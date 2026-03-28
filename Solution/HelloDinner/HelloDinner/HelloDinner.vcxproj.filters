@@ -174,6 +174,18 @@
     <Filter Include="소스 파일\02. Game\GameObject\02. Player\Player_3rd\01. Chick_3rd">
       <UniqueIdentifier>{f2529a22-d40c-4172-a809-89cfcdf43b52}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\01. Engine\04. Components\03. Collider\Bounding">
+      <UniqueIdentifier>{9eb82d57-bc2f-4905-a06c-5e71bdd58fd0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\04. Components\03. Collider\Bounding\Bounding_AABB">
+      <UniqueIdentifier>{89fbc07f-d303-4908-9135-02b8332a7620}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\04. Components\03. Collider\Bounding\Bounding_OBB">
+      <UniqueIdentifier>{d43318d4-dc59-4426-8e3c-18f69322dd2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\04. Components\03. Collider\Bounding\Bounding_Sphere">
+      <UniqueIdentifier>{49110479-6579-4e16-a508-07be6281233f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -314,23 +326,23 @@
     <ClInclude Include="Player_3rd.h">
       <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd</Filter>
     </ClInclude>
-    <ClInclude Include="Bounding.h">
-      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
-    </ClInclude>
-    <ClInclude Include="Bounding_AABB.h">
-      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
-    </ClInclude>
-    <ClInclude Include="Bounding_OBB.h">
-      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
-    </ClInclude>
-    <ClInclude Include="Bounding_Sphere.h">
-      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
-    </ClInclude>
     <ClInclude Include="Collider.h">
       <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
     </ClInclude>
     <ClInclude Include="DebugDraw.h">
       <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="Bounding.h">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\Bounding</Filter>
+    </ClInclude>
+    <ClInclude Include="Bounding_AABB.h">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\Bounding\Bounding_AABB</Filter>
+    </ClInclude>
+    <ClInclude Include="Bounding_OBB.h">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\Bounding\Bounding_OBB</Filter>
+    </ClInclude>
+    <ClInclude Include="Bounding_Sphere.h">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\Bounding\Bounding_Sphere</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -454,15 +466,6 @@
     <ClCompile Include="Player_3rd.cpp">
       <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd</Filter>
     </ClCompile>
-    <ClCompile Include="Bounding_AABB.cpp">
-      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
-    </ClCompile>
-    <ClCompile Include="Bounding_OBB.cpp">
-      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
-    </ClCompile>
-    <ClCompile Include="Bounding_Sphere.cpp">
-      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
-    </ClCompile>
     <ClCompile Include="Collider.cpp">
       <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
     </ClCompile>
@@ -470,7 +473,16 @@
       <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
     </ClCompile>
     <ClCompile Include="Bounding.cpp">
-      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\Bounding</Filter>
+    </ClCompile>
+    <ClCompile Include="Bounding_AABB.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\Bounding\Bounding_AABB</Filter>
+    </ClCompile>
+    <ClCompile Include="Bounding_OBB.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\Bounding\Bounding_OBB</Filter>
+    </ClCompile>
+    <ClCompile Include="Bounding_Sphere.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\Bounding\Bounding_Sphere</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

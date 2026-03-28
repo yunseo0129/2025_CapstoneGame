@@ -115,5 +115,7 @@ CGameObject* CSkybox::Clone(void* pArg)
 
 void CSkybox::Free()
 {
+	Safe_Release(m_pVIBufferCom);
+	Safe_Release(m_pTextureCom);
 	__super::Free();
 }

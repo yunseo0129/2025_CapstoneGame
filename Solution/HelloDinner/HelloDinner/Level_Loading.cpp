@@ -24,7 +24,9 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 {
 	m_eNextLevelID = eNextLevelID;
 
+	Add_Camera();
 
+/*
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_Component_VIBuffer_VtxCube",
 		CVIBuffer_Cube::Create(m_pContext))))
 		return E_FAIL;
@@ -41,10 +43,11 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 		CTexture::Create(m_pContext, L"Resources/Textures/Skybox_Cube.dds", 1, TEX_CUBE))))
 		return E_FAIL;
 
-	Add_Camera();
-
 	Ready_TestLoader();
 	
+	*/
+
+
 	// 1. MaterialData.json → 텍스처 Prototype 먼저 등록
 	CLoader_Map* pMapLoader = CLoader_Map::Create(m_pContext);
 	if (FAILED(pMapLoader->Load_MaterialData("Resources/Map/MaterialData.json", LEVEL_LOADING)))

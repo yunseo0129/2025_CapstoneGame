@@ -92,7 +92,7 @@ HRESULT CTexture::Initialize_Prototype(ID3D12GraphicsCommandList* _cmdList, cons
   
 
 		// 4. 텍스처의 리소스 설명자 정보 저장
-        if (FAILED(SetResourceDesc(m_Textures[i], _iTextureType )))
+        if (FAILED(SetResourceDesc(m_Textures[i].Get(), _iTextureType)))
 			return E_FAIL;
 
         // 5. Shader Resource View (SRV) 생성
@@ -119,7 +119,7 @@ HRESULT CTexture::Bind_ShaderResource(ID3D12GraphicsCommandList* pCommandList, R
         return E_FAIL;
 
     // 1. Descriptor Heap 설정 (커맨드 리스트에 힙을 알림)
-    ID3D12DescriptorHeap* ppHeaps[] = { m_pSrvDescriptorHeap };
+    ID3D12DescriptorHeap* ppHeaps[] = { m_pSrvDescriptorHeap.Get()};
     pCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
     // 2. GPU 핸들 계산
@@ -139,7 +139,7 @@ void CTexture::Release_UploadBuffer()
     // GPU 전송이 확실히 끝난 후 호출해야 함 (Fence 동기화 이후)
     for (auto& buffer : m_UploadBuffers)
     {
-        Safe_Release(buffer); // ComPtr 해제
+        buffer.Reset(); // ComPtr 해제
     }
     m_UploadBuffers.clear();
 }
@@ -155,7 +155,7 @@ HRESULT CTexture::Load_DDSTexture(ID3D12GraphicsCommandList* pCommandList, const
         return E_FAIL;
 
     UINT nSubresources{ (UINT)subresources.size() };
-    const UINT64 TextureSize{ GetRequiredIntermediateSize(m_Textures[_iIndex], 0, nSubresources) };
+    const UINT64 TextureSize{ GetRequiredIntermediateSize(m_Textures[_iIndex].Get(), 0, nSubresources)};
 
     // UploadBuffer 생성
     D3D12_HEAP_PROPERTIES heapUploadProps;
@@ -174,10 +174,10 @@ HRESULT CTexture::Load_DDSTexture(ID3D12GraphicsCommandList* pCommandList, const
     )))
         return E_FAIL;
 
-    UpdateSubresources(pCommandList, m_Textures[_iIndex], m_UploadBuffers[_iIndex], 0, 0, nSubresources, subresources.data());
+    UpdateSubresources(pCommandList, m_Textures[_iIndex].Get(), m_UploadBuffers[_iIndex].Get(), 0, 0, nSubresources, subresources.data());
 
     CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-        m_Textures[_iIndex],
+        m_Textures[_iIndex].Get(),
         D3D12_RESOURCE_STATE_COPY_DEST , D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE );
     pCommandList->ResourceBarrier(1, &barrier);
 
@@ -193,7 +193,7 @@ HRESULT CTexture::Load_WICTexture(ID3D12GraphicsCommandList* pCommandList, const
         &m_Textures[_iIndex], wicData, subresource)))
         return E_FAIL;
 
-    const UINT64 TextureSize = GetRequiredIntermediateSize(m_Textures[_iIndex], 0, 1);
+    const UINT64 TextureSize = GetRequiredIntermediateSize(m_Textures[_iIndex].Get(), 0, 1);
 
     // UploadBuffer 생성
     D3D12_HEAP_PROPERTIES heapUploadProps;
@@ -211,11 +211,11 @@ HRESULT CTexture::Load_WICTexture(ID3D12GraphicsCommandList* pCommandList, const
         IID_PPV_ARGS(&m_UploadBuffers[_iIndex]))))
         return E_FAIL;
 
-    UpdateSubresources(pCommandList, m_Textures[_iIndex], m_UploadBuffers[_iIndex],
+    UpdateSubresources(pCommandList, m_Textures[_iIndex].Get(), m_UploadBuffers[_iIndex].Get(),
         0, 0, 1, &subresource);
 
     CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-        m_Textures[_iIndex],
+        m_Textures[_iIndex].Get(),
         D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
     pCommandList->ResourceBarrier(1, &barrier);
 
@@ -282,7 +282,7 @@ HRESULT CTexture::CreateShaderResourceView(CD3DX12_CPU_DESCRIPTOR_HANDLE _descri
     default:
         break;
     }
-    m_pContext->device->CreateShaderResourceView(m_Textures[_iIndex], &srvDesc, _descriptorHandle);
+    m_pContext->device->CreateShaderResourceView(m_Textures[_iIndex].Get(), &srvDesc, _descriptorHandle);
 
     return S_OK;
 }
@@ -342,8 +342,8 @@ void CTexture::Free()
 {
     for (auto& texture : m_Textures)
     {
-        Safe_Release(texture);
+		texture.Reset(); // ComPtr 해제
 	}
-    Safe_Release(m_pSrvDescriptorHeap);
+    m_pSrvDescriptorHeap.Reset();
 	__super::Free();
 }

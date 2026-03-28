@@ -29,11 +29,11 @@ protected:
 	_uint									m_iNumTextures = { 0 };
 
 	// 여러 장의 텍스처(애니메이션 등)를 지원하기 위해 vector로 관리 
-	vector<ID3D12Resource*>			m_Textures;
-	vector<ID3D12Resource*>			m_UploadBuffers; // 업로드용 임시 버퍼
+	vector<ComPtr<ID3D12Resource>>			m_Textures;
+	vector<ComPtr<ID3D12Resource>>			m_UploadBuffers; // 업로드용 임시 버퍼
 
 	// SRV(Shader Resource View)를 담는 힙 
-	ID3D12DescriptorHeap*			m_pSrvDescriptorHeap;
+	ComPtr<ID3D12DescriptorHeap>			m_pSrvDescriptorHeap;
 	_uint							m_iCbvSrvUavDescriptorSize = { 0 }; // 핸들 크기 저장
 
 	// [메타데이터 정보]

@@ -77,8 +77,8 @@ void CVIBuffer::LogBufferViews ( const D3D12_VERTEX_BUFFER_VIEW& vbv , const D3D
 
 void CVIBuffer::ReleaseUploadBuffer()
 {
-    if (m_pVertexUploadBuffer) m_pVertexUploadBuffer->Release();
-    if (m_pIndexUploadBuffer) m_pIndexUploadBuffer->Release();
+	if (m_pVertexUploadBuffer) m_pVertexUploadBuffer.Reset();
+    if (m_pIndexUploadBuffer) m_pIndexUploadBuffer.Reset();
 }
 
 void CVIBuffer::SetHeapProperties(D3D12_HEAP_PROPERTIES& _heapProps, D3D12_HEAP_TYPE _type)
@@ -168,8 +168,5 @@ HRESULT CVIBuffer::Create_Buffer(ID3D12GraphicsCommandList* _pCommandList, ID3D1
 
 void CVIBuffer::Free()
 {
-	Safe_Release(m_pVertexBuffer);
-	Safe_Release(m_pIndexBuffer);
-
     __super::Free();
 }

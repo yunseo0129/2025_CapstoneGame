@@ -13,9 +13,9 @@ CCube::CCube(EngineContext* pContext)
 
 CCube::CCube(const CCube& Prototype)
 	: CGameObject(Prototype.m_pContext)
+	, m_pTextureCom(Prototype.m_pTextureCom)
+	, m_pVIBufferCom(Prototype.m_pVIBufferCom)
 {
-	m_pTextureCom = Prototype.m_pTextureCom;
-	m_pVIBufferCom = Prototype.m_pVIBufferCom;
 	Safe_AddRef(m_pTextureCom);
 	Safe_AddRef(m_pVIBufferCom);
 }

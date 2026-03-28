@@ -21,9 +21,6 @@ HRESULT CLevel_Manager::Open_Level(_int iLevelIndex, CLevel* pNewLevel)
 		//m_pGameInstance->Clear(m_iCurrentLevelID);
 	}
 
-
-
-
 	Safe_Release(m_pCurrentLevel);
 
 	m_pCurrentLevel = pNewLevel;
@@ -62,8 +59,8 @@ CLevel_Manager* CLevel_Manager::Create()
 
 void CLevel_Manager::Free()
 {
-	__super::Free();
-
 	Safe_Release(m_pGameInstance);
 	Safe_Release(m_pCurrentLevel);
+
+	__super::Free();
 }

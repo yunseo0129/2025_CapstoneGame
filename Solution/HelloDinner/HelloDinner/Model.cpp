@@ -21,13 +21,8 @@ CModel::CModel(const CModel& Prototype)
 	, m_Materials{ Prototype.m_Materials }
 	, m_PreTransformMatrix{ Prototype.m_PreTransformMatrix }
 {
-	for (auto& pMesh : m_Meshes)
-		Safe_AddRef(pMesh);
-
-	for (auto& pMaterial : m_Materials)
-		Safe_AddRef(pMaterial);
-
 	// Bone은 인스턴스마다 애니메이션 상태가 다르므로 깊은 복사
+
 	for (auto& pBone : Prototype.m_Bones)
 		m_Bones.push_back(pBone->Clone());
 
@@ -225,7 +220,7 @@ HRESULT CModel::Ready_Materials(const wchar_t* pModelFilePath)
 
 	for (size_t i = 0; i < m_iNumMaterials; i++)
 	{
-		m_Materials[i] = CMaterial::Create(m_pContext->device);
+		m_Materials[i] = CMaterial::Create();
 
 		for (size_t j = 0; j < 25; j++)
 		{
@@ -296,17 +291,27 @@ CComponent* CModel::Clone(void* pArg)
 
 void CModel::Free()
 {
-	__super::Free();
 
 	for (auto& pMesh : m_Meshes)
 		Safe_Release(pMesh);
 
-	m_Meshes.clear();
-
 	for (auto& pMaterial : m_Materials)
 		Safe_Release(pMaterial);
-	m_Materials.clear();
 
+	for (auto& pBone : m_Bones)
+		Safe_Release(pBone);
+
+	for (auto& pAnim : m_Animations)
+		Safe_Release(pAnim);
+
+	for (int i = 0; i < FRAME_COUNT; ++i) {
+
+		if (m_pCbMappedBones[i] != nullptr) {
+			m_pCbMappedBones[i] = nullptr;
+		}
+	}
+
+	__super::Free();
 }
 
 void CModel::Off_Blend()

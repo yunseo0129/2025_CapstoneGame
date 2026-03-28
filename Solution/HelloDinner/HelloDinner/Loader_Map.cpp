@@ -13,12 +13,6 @@ CLoader_Map::CLoader_Map(EngineContext* pContext)
 	: m_pContext{ pContext }
 	, m_pGameInstance{ CGameInstance::GetInstance() }
 {
-	Safe_AddRef(m_pContext->device);
-	Safe_AddRef(m_pContext->cmdList);
-	Safe_AddRef(m_pContext->cmdQueue);
-	Safe_AddRef(m_pContext->srvHeap);
-	Safe_AddRef(m_pContext->rtvHeap);
-	Safe_AddRef(m_pContext->dsvHeap);
 	Safe_AddRef(m_pGameInstance);
 }
 
@@ -371,17 +365,9 @@ CLoader_Map* CLoader_Map::Create(EngineContext* pContext)
 
 void CLoader_Map::Free()
 {
-
 	// 혹시 남아있을 수 있는 보류 리소스 정리
 	ReleasePendingResources();
-
 	Safe_Release(m_pGameInstance);
-	Safe_Release(m_pContext->device);
-	Safe_Release(m_pContext->cmdList);
-	Safe_Release(m_pContext->cmdQueue);
-	Safe_Release(m_pContext->srvHeap);
-	Safe_Release(m_pContext->rtvHeap);
-	Safe_Release(m_pContext->dsvHeap);
 	__super::Free();
 
 }

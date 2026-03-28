@@ -2,8 +2,8 @@
 #include "Bounding_AABB.h"
 #include "Bounding_OBB.h"
 
-CBounding_Sphere::CBounding_Sphere(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
-	: CBounding{ pDevice, pContext }
+CBounding_Sphere::CBounding_Sphere(EngineContext* pContext)
+	: CBounding{ pContext }
 {
 }
 
@@ -23,10 +23,12 @@ void CBounding_Sphere::Update(_fmatrix WorldMatrix)
 	m_pOriginalBoundDesc->Transform(*m_pBoundDesc, WorldMatrix);
 }
 
+/*
 void CBounding_Sphere::Render(PrimitiveBatch<VertexPositionColor>* pBatch)
 {
 	DX::Draw(pBatch, *m_pBoundDesc, m_isColl == true ? XMVectorSet(1.f, 0.f, 0.f, 1.f) : XMVectorSet(0.f, 1.f, 0.f, 1.f));
 }
+*/
 
 _bool CBounding_Sphere::Intersect(CCollider::COLLIDERTYPE eType, CBounding* pTargetBounding)
 {
@@ -55,9 +57,9 @@ _float3 CBounding_Sphere::Get_Center()
 	return m_pBoundDesc->Center;
 }
 
-CBounding_Sphere* CBounding_Sphere::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const BOUND_DESC* pBoundDesc)
+CBounding_Sphere* CBounding_Sphere::Create(EngineContext* pContext, const BOUND_DESC* pBoundDesc)
 {
-	CBounding_Sphere* pInstance = new CBounding_Sphere(pDevice, pContext);
+	CBounding_Sphere* pInstance = new CBounding_Sphere(pContext);
 
 	if (FAILED(pInstance->Initialize(pBoundDesc)))
 	{

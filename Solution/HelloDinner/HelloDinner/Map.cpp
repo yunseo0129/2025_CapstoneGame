@@ -6,6 +6,7 @@
 CMap::CMap(EngineContext* pContext)
 	: CGameObject(pContext)
 {
+	Safe_AddRef(m_pModelCom);
 }
 
 CMap::CMap(const CMap& Prototype)
@@ -117,6 +118,5 @@ CGameObject* CMap::Clone(void* pArg)
 
 void CMap::Free()
 {
-	Safe_Release(m_pModelCom);
 	__super::Free();
 }

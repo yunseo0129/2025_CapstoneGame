@@ -159,10 +159,8 @@ void CCamera::Free()
 {
 	for ( _int i = 0; i < FRAME_COUNT; ++i )
 	{
-		if ( m_pCameraBuffers[i] )
+		if (m_pCbMappedCameras[i])
 		{
-			m_pCameraBuffers[i]->Unmap ( 0 , nullptr );
-			Safe_Release(m_pCameraBuffers[i]);
 			m_pCbMappedCameras[i] = nullptr;
 		}
 	}

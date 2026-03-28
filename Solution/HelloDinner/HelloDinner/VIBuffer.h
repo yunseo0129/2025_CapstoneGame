@@ -25,8 +25,8 @@ public:
 protected: // 자식 클래스들이 공통으로 쓸 변수
 
 	// Vertex Buffer 관련 멤버 변수
-    ID3D12Resource*      m_pVertexBuffer = nullptr;
-    ID3D12Resource*      m_pVertexUploadBuffer = nullptr;
+    ComPtr<ID3D12Resource>      m_pVertexBuffer = nullptr;
+    ComPtr<ID3D12Resource>      m_pVertexUploadBuffer = nullptr;
     D3D12_VERTEX_BUFFER_VIEW    m_vertexBufferView;
 
     _uint                       m_iVertices = 0;
@@ -34,8 +34,8 @@ protected: // 자식 클래스들이 공통으로 쓸 변수
     D3D12_PRIMITIVE_TOPOLOGY    m_ePrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 	// Index Buffer 관련 멤버 변수
-    ID3D12Resource*		m_pIndexBuffer = nullptr;
-    ID3D12Resource*		m_pIndexUploadBuffer = nullptr;
+    ComPtr<ID3D12Resource>  	m_pIndexBuffer = nullptr;
+    ComPtr<ID3D12Resource>  	m_pIndexUploadBuffer = nullptr;
     D3D12_INDEX_BUFFER_VIEW		m_indexBufferView;
 
     _uint						m_iIndices = 0;

@@ -1,26 +1,30 @@
 #include "Collider.h"
 
-//#include "Bounding_AABB.h"
+#include "Bounding_AABB.h"
+#include "Bounding_OBB.h"
+#include "Bounding_Sphere.h"
 #include "GameInstance.h"
 
-CCollider::CCollider(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
-	: CComponent{ pDevice, pContext }
+CCollider::CCollider(EngineContext* pContext)
+	: CComponent{ pContext }
 {
 }
 
 CCollider::CCollider(const CCollider& Prototype)
-	: CComponent{ Prototype }
+	: CComponent{ Prototype.m_pContext }
 	, m_eType{ Prototype.m_eType }
 #ifdef _DEBUG
+	/*
 	, m_pEffect{ Prototype.m_pEffect }
 	, m_pBatch{ Prototype.m_pBatch }
 	, m_pInputLayout{ Prototype.m_pInputLayout }
+	*/
 #endif // _DEBUG
 
 	
 {
 #ifdef _DEBUG
-	Safe_AddRef(m_pInputLayout);
+	//Safe_AddRef(m_pInputLayout);
 #endif // _DEBUG
 }
 
@@ -30,7 +34,9 @@ HRESULT CCollider::Initialize_Prototype(COLLIDERTYPE eColliderType)
 
 
 #ifdef _DEBUG
+	
 	/* 박스, 구를 그려내기위한 객체들을 선언해놓는다. */
+	/*
 	m_pBatch = new PrimitiveBatch<VertexPositionColor>(m_pContext);
 	m_pEffect = new BasicEffect(m_pDevice);
 
@@ -43,7 +49,7 @@ HRESULT CCollider::Initialize_Prototype(COLLIDERTYPE eColliderType)
 
 	if (FAILED(m_pDevice->CreateInputLayout(VertexPositionColor::InputElements, VertexPositionColor::InputElementCount, pShaderByteCode, iShaderByteCodeLength, &m_pInputLayout)))
 		return E_FAIL;
-
+	*/
 #endif
 	return S_OK;
 }
@@ -55,13 +61,13 @@ HRESULT CCollider::Initialize(void* pArg)
 	switch (m_eType)
 	{
 	case TYPE_AABB:
-		m_pBounding = CBounding_AABB::Create(m_pDevice, m_pContext, pDesc);
+		m_pBounding = CBounding_AABB::Create(m_pContext, pDesc);
 		break;
 	case TYPE_OBB:
-		m_pBounding = CBounding_OBB::Create(m_pDevice, m_pContext, pDesc);
+		m_pBounding = CBounding_OBB::Create(m_pContext, pDesc);
 		break;
 	case TYPE_SPHERE:
-		m_pBounding = CBounding_Sphere::Create(m_pDevice, m_pContext, pDesc);
+		m_pBounding = CBounding_Sphere::Create(m_pContext, pDesc);
 		break;
 	}
 
@@ -79,6 +85,7 @@ void CCollider::Update(_fmatrix WorldMatrix)
 }
 
 #ifdef _DEBUG
+/*
 HRESULT CCollider::Render()
 {
 	m_pEffect->SetWorld(XMMatrixIdentity());
@@ -96,6 +103,7 @@ HRESULT CCollider::Render()
 
 	return S_OK;
 }
+*/
 #endif
 
 _bool CCollider::Intersect(const CCollider* pTargetCollider)
@@ -109,9 +117,9 @@ _float3 CCollider::Get_Center()
 	return m_pBounding->Get_Center();
 }
 
-CCollider* CCollider::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, COLLIDERTYPE eColliderType)
+CCollider* CCollider::Create(EngineContext* pContext, COLLIDERTYPE eColliderType)
 {
-	CCollider* pInstance = new CCollider(pDevice, pContext);
+	CCollider* pInstance = new CCollider(pContext);
 
 	if (FAILED(pInstance->Initialize_Prototype(eColliderType)))
 	{
@@ -139,6 +147,7 @@ void CCollider::Free()
 
 	Safe_Release(m_pBounding);
 #ifdef _DEBUG
+	/*
 	if (false == m_isCloned)
 	{
 		Safe_Delete(m_pBatch);
@@ -146,5 +155,6 @@ void CCollider::Free()
 	}
 
 	Safe_Release(m_pInputLayout);
+	*/
 #endif
 }
