@@ -41,9 +41,9 @@ bool NetworkClient::ConnectWithConsole()
     freopen_s(&fp, "CONIN$", "r", stdin);
     freopen_s(&fp, "CONOUT$", "w", stdout);
 
-    std::cout << "========================================\n";
+    std::cout << "=============================================\n";
     std::cout << "       HelloDinner - Connect to Server\n";
-    std::cout << "========================================\n\n";
+    std::cout << "=============================================\n\n";
 
     // 서버 IP 입력
     char serverIP[64] = {};
@@ -118,6 +118,17 @@ void NetworkClient::Send_Move(char direction)
     p.type = CS_MOVE;
     p.direction = direction;
     p.move_time = 0;
+    Send(&p, p.size);
+}
+
+void NetworkClient::Send_Logout()
+{
+    if (!m_bConnected || m_iMyId == -1) return;
+
+    CS_LOGOUT_PACKET p{};
+    p.size = sizeof(CS_LOGOUT_PACKET);
+    p.type = CS_LOGOUT;
+    p.id = m_iMyId;
     Send(&p, p.size);
 }
 
@@ -239,31 +250,7 @@ void NetworkClient::ProcessPacket(char* packet)
     }
     case SC_MOVE_PLAYER: {
         SC_MOVE_PLAYER_PACKET* p = reinterpret_cast<SC_MOVE_PLAYER_PACKET*>(packet);
-        //_float3 pos = { p->positionX, p->positionY, p->positionZ };
-        //_float3 rot = { p->rotationX, p->rotationY, p->rotationZ };
-
-        //{
-        //    std::lock_guard<std::mutex> lk(m_lock);
-        //    m_players[p->id].position = pos;
-        //    m_players[p->id].rotation = rot;
-
-        //    if (p->id == m_iMyId) {
-        //        m_vMyPosition = pos;
-        //        m_vMyRotation = rot;
-        //    }
-        //}
-
-        //// 이동 이벤트를 큐에 추가
-        //{
-        //    NetEvent evt{};
-        //    evt.type = NetEventType::PLAYER_MOVE;
-        //    evt.id = p->id;
-        //    evt.position = pos;
-        //    evt.rotation = rot;
-
-        //    std::lock_guard<std::mutex> lk(m_eventLock);
-        //    m_pendingEvents.push_back(evt);
-        //}
+		// Todo : 패킷에서 위치/회전 정보 받아서 업데이트
         break;
     }
     }
@@ -278,7 +265,13 @@ void NetworkClient::PopAllEvents(std::vector<NetEvent>& outEvents)
 
 void NetworkClient::Disconnect()
 {
+    if (!m_bConnected) return;
+
+    // 서버에 로그아웃 패킷 전송 후 소켓 종료
+    Send_Logout();
+
     m_bConnected = false;
+    m_bLoggedIn = false;
     if (m_socket != INVALID_SOCKET) {
         closesocket(m_socket);
         m_socket = INVALID_SOCKET;

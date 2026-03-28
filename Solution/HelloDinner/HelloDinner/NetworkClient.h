@@ -34,6 +34,9 @@ public:
     // 이동 패킷 전송
     void Send_Move(char direction);
 
+    // 로그아웃 패킷 전송
+    void Send_Logout();
+
     // 접속 해제
     void Disconnect();
 

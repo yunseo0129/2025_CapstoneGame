@@ -1,7 +1,7 @@
 #pragma once
 #include "OverllapedEXP.h"
 
-// 클라이언트 세션을 관리하는 클래스
+// 클라이언트 정보를 관리하는 클래스
 class Session
 {
 	OverllapedEXP m_recv_over;

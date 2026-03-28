@@ -6,7 +6,7 @@ int SessionManager::GetNewClientId()
     for (int i = 0; i < MAX_USER; ++i) {
         lock_guard<mutex> ll{ m_clients[i].m_s_lock };
         if (m_clients[i].m_state == ST_FREE) {
-            cout << i + 1 << ". New Client Connected." << endl;
+            cout << " New Client[" << i << "] Connected." << endl;
             return i;
         }
     }
@@ -44,18 +44,25 @@ void SessionManager::ProcessPacket(int c_id, char* packet)
             pl.Send_Add_Player_Packet(c_id);
             m_clients[c_id].Send_Add_Player_Packet(pl.m_id);
         }
+		std::cout << "Client [" << c_id << "] logged in as " << p->name << "." << std::endl;
         break;
     }
         // 이동 패킷 처리
     case CS_MOVE: {
         CS_MOVE_PACKET* p = reinterpret_cast<CS_MOVE_PACKET*>(packet);
         
-        // 움직임 로직
+        // Todo: 움직임 로직
 
         for (auto& cl : m_clients) {
             if (cl.m_state != ST_INGAME) continue;
             cl.Send_Move_Packet(c_id);
         }
+        break;
+    }
+        // 로그아웃 패킷 처리
+    case CS_LOGOUT: {
+        cout << "Client [" << c_id << "] logout requested." << endl;
+        Disconnect(c_id);
         break;
     }
     }
@@ -64,12 +71,17 @@ void SessionManager::ProcessPacket(int c_id, char* packet)
 // 연결 해제
 void SessionManager::Disconnect(int c_id)
 {
+    {
+        lock_guard<mutex> ll(m_clients[c_id].m_s_lock);
+        if (m_clients[c_id].m_state == ST_FREE) return;
+    }
+
     for (auto& pl : m_clients) {
         {
             lock_guard<mutex> ll(pl.m_s_lock);
             if (ST_INGAME != pl.m_state) continue;
         }
-        if (pl.m_id == c_id) continue;
+        if (pl.m_id == c_id) continue; 
         pl.Send_Remove_Player_Packet(c_id);
     }
     closesocket(m_clients[c_id].m_socket);

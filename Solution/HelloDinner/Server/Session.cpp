@@ -54,7 +54,7 @@ void Session::Send_Move_Packet(int c_id)
 	p.type = SC_MOVE_PLAYER;
 	p.id = c_id;
 
-	// 움직임 패킷 재구성 필요
+	// 이동 패킷 재구성 필요
 
 	Send(&p);
 }

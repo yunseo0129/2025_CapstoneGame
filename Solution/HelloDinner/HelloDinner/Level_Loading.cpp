@@ -134,8 +134,12 @@ void CLevel_Loading::Update(_float fTimeDelta)
 			break;
 		}
 		case NetworkClient::NetEventType::PLAYER_REMOVE: {
-			// TODO: 플레이어 제거 처리
-			// 해당 id의 레이어에서 오브젝트를 찾아 삭제하는 로직 필요
+			// 해당 id의 레이어에서 오브젝트를 찾아 Dead 처리
+			_wstring strLayerTag = L"Layer_Player_Pig_" + std::to_wstring(evt.id);
+
+			CGameObject* pObj = m_pGameInstance->Get_GameObject_To_Layer(1, strLayerTag, 0);
+			if (pObj != nullptr)
+				pObj->SetDead();
 			break;
 		}
 		case NetworkClient::NetEventType::PLAYER_MOVE: {
