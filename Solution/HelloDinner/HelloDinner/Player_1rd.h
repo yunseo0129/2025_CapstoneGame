@@ -7,7 +7,7 @@ class CPlayer_1rd final : public CContainerObj
 public:
 	struct Player_1RD_DESC : public CContainerObj::CONTAINEROBJ_DESC
 	{
-		_vector				vPos = {};
+		_float3 			vPos = _float3(1.f, 1.f, 1.f);
 		_uint				iModelLevelIndex = 0;
 		_wstring			strModelTag = L"";
 	};

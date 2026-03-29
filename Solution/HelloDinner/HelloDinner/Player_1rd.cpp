@@ -31,7 +31,8 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
 		return E_FAIL;
 
 	m_pTransformCom->Scaling(1.f, 1.f, 1.f);
-	m_pTransformCom->Set_State(CTransform::STATE_POSITION, pDesc->vPos);
+	m_pTransformCom->Set_State(CTransform::STATE_POSITION,
+		XMVectorSet(pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z, 1.f));
 
 	if (FAILED(Ready_Components()))
 		return E_FAIL;
