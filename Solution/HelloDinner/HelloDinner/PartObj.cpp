@@ -7,7 +7,7 @@ CPartObj::CPartObj(EngineContext* pContext)
 }
 
 CPartObj::CPartObj(const CPartObj& Prototype)
-	: CGameObject{ Prototype }
+	: CGameObject{ Prototype.m_pContext }
 {
 
 }

@@ -1,6 +1,7 @@
 #include "Player_1rd.h"
 #include "GameInstance.h"
 #include "Transform.h"
+#include "Ketchup_Gun.h"
 
 CPlayer_1rd::CPlayer_1rd(EngineContext* _pcontext)
 	: CContainerObj{ _pcontext }
@@ -27,6 +28,8 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
 	Player_1RD_DESC* pDesc = static_cast<Player_1RD_DESC*>(pArg);
 	m_strModelTag = pDesc->strModelTag;
 	m_iModelLevelIndex = pDesc->iModelLevelIndex;
+	pDesc->iNumPartObj = 1;
+	pDesc->fSpeedPerSec = 10.f;
 
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
@@ -41,11 +44,15 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
 	m_iState = 0;
 	m_pModelCom->SetUp_Animation(0, true);
 
+	if (FAILED(Ready_PartObjects()))
+		return E_FAIL;
+
 	return S_OK;
 }
 
 void CPlayer_1rd::Priority_Update(_float fTimeDelta)
 {
+	m_pTransformCom->Go_Left(fTimeDelta);
 	__super::Priority_Update(fTimeDelta);
 }
 
@@ -81,8 +88,18 @@ void CPlayer_1rd::Render(ID3D12GraphicsCommandList* _commandList)
 
 HRESULT CPlayer_1rd::Ready_PartObjects()
 {
-	// 모델에 붙을 다른 파츠모델들을 Add_GameObject_ToLayer하지않고 Clone_Prototype해서 m_PartObjects에 추가해준다.
-	// 파츠오브젝트는 레이어에 넣어서 사용하지않음 왜냐? 컨테이너오브젝트 내부에서 관리하며 업데이트등 함수들을 제때불러줄거기때문.
+	// 케첩건
+	{
+		CKetchup_Gun::KETCHUP_GUN_DESC cdesc;
+		cdesc.strModelTag = L"Prototype_Component_ketchupGun";
+		cdesc.iModelLevelIndex = 1;
+		cdesc.pParentMatrix = m_pTransformCom->Get_WorldFloat4x4_Ptr();
+		cdesc.pSocketMatrix = m_pModelCom->Get_BoneMatrix("hand.L");
+		cdesc.vScale = _float3(0.2f, 0.2f, 0.2f);
+		m_PartObjects[0] = static_cast<CPartObj*>(m_pGameInstance->Clone_Prototype(Engine::PROTOTYPE::PROTO_GAMEOBJ, 1, TEXT("Prototype_GameObject_Ketchup_Gun"), &cdesc));
+		if (nullptr == m_PartObjects[0])
+			return E_FAIL;
+	}
 	return S_OK;
 }
 

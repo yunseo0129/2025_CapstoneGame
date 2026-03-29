@@ -16,6 +16,7 @@
 #include "NetworkClient.h"
 #include "Collider.h"
 #include "Player_1rd.h"
+#include "Ketchup_Gun.h"
 
 #include "Obj_CollisionTest.h"
 
@@ -141,10 +142,26 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 	*/
 
 	// 돼지 모델 로드
-	_matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(0.01f, 0.01f, 0.01f);
-	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Pig_3rd"),
-		CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Pig/Prototype_Component_Pig.txt", PreTransformMatrix))))
-		return E_FAIL;
+	{
+		_matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(0.01f, 0.01f, 0.01f);
+		if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Pig_3rd"),
+			CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Pig/Prototype_Component_Pig.txt", PreTransformMatrix))))
+			return E_FAIL;
+	}
+
+	// Ketchup_gun 모델 로드
+	{
+		// 프리트랜스폼 영향 안받음 왜인진모름
+		if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_ketchupGun"),
+			CModel::Create(m_pContext, CModel::TYPE_NONANIM, L"Resources/NonAnim/Gun/Prototype_Component_ketchupGun.txt", XMMatrixIdentity()))))
+			return E_FAIL;
+	}
+	// Ketchup_gun 프로토타입생성
+	{
+		if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_GameObject_Ketchup_Gun"),
+			CKetchup_Gun::Create(m_pContext))))
+			return E_FAIL;
+	}
 
 	// 애님모델 돼지 CPig_3rd
 	/*{
@@ -169,6 +186,7 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 		m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Player_1rd"),
 			1, TEXT("Layer_Player_1rd"), &cdesc);
 	}
+
 
 
 	// m_pLoader = CLoader::Create(m_pDevice, m_pContext, m_eNextLevelID)
