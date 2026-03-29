@@ -292,8 +292,11 @@ CComponent* CModel::Clone(void* pArg)
 void CModel::Free()
 {
 
-	for (auto& pMesh : m_Meshes)
-		Safe_Release(pMesh);
+	for ( auto& pMesh : m_Meshes ) {
+		if ( pMesh ) {
+			Safe_Release ( pMesh );
+		}
+	}
 
 	for (auto& pMaterial : m_Materials)
 		Safe_Release(pMaterial);

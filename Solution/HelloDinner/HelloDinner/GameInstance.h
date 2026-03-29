@@ -64,7 +64,8 @@ public: /* For.Load_Manager */
 
 public: /* for.Level_Manager */
 	HRESULT Open_Level(_int iLevelIndex, class CLevel* pNewLevel);
-
+	XMFLOAT4X4 Get_CurrentCameraView ();
+	XMFLOAT4X4 Get_CurrentCameraProjection ();
 
 public: /* For.Prototype_Manager */
 	HRESULT Add_Prototype(_uint iLevelIndex, const _wstring& strPrototypeTag, class CBase* pPrototype);

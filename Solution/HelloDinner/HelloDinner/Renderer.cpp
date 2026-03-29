@@ -2,6 +2,8 @@
 #include "GameObject.h"
 #include "GameInstance.h"
 
+#include "Collider.h"
+
 CRenderer::CRenderer(ID3D12Device* pDevice, ID3D12GraphicsCommandList* _pCommandlist)
 	: m_pDevice{ pDevice }
 	, m_pCommandlist{ _pCommandlist }
@@ -39,6 +41,10 @@ HRESULT CRenderer::Draw_RenderObject(ID3D12GraphicsCommandList* _CmdList)
 	//if (FAILED(Render_UI()))
 		//return E_FAIL;
 
+#ifdef _DEBUG
+	if ( FAILED ( Render_Collider ( _CmdList ) ) )
+		return E_FAIL;
+#endif // DEBUG
 
 	return S_OK;
 }
@@ -47,9 +53,14 @@ HRESULT CRenderer::Render_Priority( ID3D12GraphicsCommandList* _CmdList )
 {
 	for (auto& pRenderObject : m_RenderObjects[RG_PRIORITY])
 	{
-		if (nullptr != pRenderObject)
-			pRenderObject->Render( _CmdList );
-
+		if ( nullptr != pRenderObject ) {
+			pRenderObject->Render ( _CmdList );
+			CComponent* pColliderCom = pRenderObject->Find_Component(TEXT("Com_Collider"));
+			if (nullptr != pColliderCom)	{
+				m_RenderColliders.push_back(static_cast<CCollider*>(pColliderCom));
+				Safe_AddRef(m_RenderColliders.back());
+			}
+		}
 		Safe_Release(pRenderObject);
 	}
 	m_RenderObjects[RG_PRIORITY].clear();
@@ -63,9 +74,14 @@ HRESULT CRenderer::Render_NonBlend( ID3D12GraphicsCommandList* _CmdList )
 
 	for (auto& pRenderObject : m_RenderObjects[RG_NONBLEND])
 	{
-		if (nullptr != pRenderObject)
-			pRenderObject->Render( _CmdList );
-
+		if ( nullptr != pRenderObject ) {
+			pRenderObject->Render ( _CmdList );
+			CComponent* pColliderCom = pRenderObject->Find_Component ( TEXT ( "Com_Collider" ) );
+			if ( nullptr != pColliderCom ) {
+				m_RenderColliders.push_back ( static_cast< CCollider* >( pColliderCom ) );
+				Safe_AddRef ( m_RenderColliders.back () );
+			}
+		}
 		Safe_Release(pRenderObject);
 	}
 	m_RenderObjects[RG_NONBLEND].clear();
@@ -77,13 +93,30 @@ HRESULT CRenderer::Render_Blend( ID3D12GraphicsCommandList* _CmdList )
 {
 	for (auto& pRenderObject : m_RenderObjects[RG_BLEND])
 	{
-		if (nullptr != pRenderObject)
-			pRenderObject->Render( _CmdList );
-
+		if ( nullptr != pRenderObject ) {
+			pRenderObject->Render ( _CmdList );
+			CComponent* pColliderCom = pRenderObject->Find_Component ( TEXT ( "Com_Collider" ) );
+			if ( nullptr != pColliderCom ) {
+				m_RenderColliders.push_back ( static_cast< CCollider* >( pColliderCom ) );
+				Safe_AddRef ( m_RenderColliders.back () );
+			}
+		}
 		Safe_Release(pRenderObject);
 	}
 	m_RenderObjects[RG_BLEND].clear();
 
+	return S_OK;
+}
+
+HRESULT CRenderer::Render_Collider ( ID3D12GraphicsCommandList* _CmdList )
+{
+	for ( auto& pRenderCollider : m_RenderColliders )
+	{
+		if ( nullptr != pRenderCollider )
+			pRenderCollider->Render ( _CmdList );
+		Safe_Release(pRenderCollider);
+	}
+	m_RenderColliders.clear ();
 	return S_OK;
 }
 

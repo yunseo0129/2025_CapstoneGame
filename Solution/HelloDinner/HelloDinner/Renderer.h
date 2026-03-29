@@ -21,12 +21,14 @@ private:
 	ComPtr<ID3D12GraphicsCommandList> m_pCommandlist = { nullptr };
 	class CGameInstance* m_pGameInstance = { nullptr };
 	list<class CGameObject*>			m_RenderObjects[RG_END];
+	list<class CCollider*>				m_RenderColliders;
 
 private:
 	HRESULT Render_Priority( ID3D12GraphicsCommandList* _CmdList );
 	HRESULT Render_NonBlend( ID3D12GraphicsCommandList* _CmdList );
 	HRESULT Render_Blend( ID3D12GraphicsCommandList* _CmdList );
 	//HRESULT Render_UI();
+	HRESULT Render_Collider ( ID3D12GraphicsCommandList* _CmdList );
 
 public:
 	static CRenderer* Create(ID3D12Device* pDevice, ID3D12GraphicsCommandList* _commandList);

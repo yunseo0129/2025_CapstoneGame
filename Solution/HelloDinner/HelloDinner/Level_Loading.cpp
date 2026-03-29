@@ -14,6 +14,7 @@
 #include "Model.h"
 #include "Pig_3rd.h"
 #include "NetworkClient.h"
+#include "Collider.h"
 
 CLevel_Loading::CLevel_Loading(EngineContext* pContext)
 	: CLevel{pContext }
@@ -26,6 +27,8 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 	m_eNextLevelID = eNextLevelID;
 
 	Add_Camera();
+
+
 
 /*
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_Component_VIBuffer_VtxCube",
@@ -87,6 +90,9 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 		_matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(0.01f, 0.01f, 0.01f);
 		if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Pig_3rd"),
 			CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Pig/Prototype_Component_Pig.txt", PreTransformMatrix))))
+			return E_FAIL;
+		if ( FAILED ( m_pGameInstance->Add_Prototype ( 1 , TEXT("Prototype_Component_AABB") ,
+			CCollider::Create ( m_pContext , CCollider::TYPE_AABB ) ) ) )
 			return E_FAIL;
 		if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_GameObject_Pig_3rd"),
 			CPig_3rd::Create(m_pContext))))
