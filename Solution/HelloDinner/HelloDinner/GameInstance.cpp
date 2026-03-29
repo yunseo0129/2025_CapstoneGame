@@ -425,6 +425,13 @@ HRESULT CGameInstance::Add_RenderObject(CRenderer::RENDERGROUP eRenderGroup, CGa
 	return m_pRenderer->Add_RenderObject(eRenderGroup, pRenderObject);
 }
 
+HRESULT CGameInstance::Add_RenderCollider(CCollider* pColliderCom)
+{
+	if (nullptr == m_pRenderer)
+		return E_FAIL;
+	return m_pRenderer->Add_RenderCollider(pColliderCom);
+}
+
 void CGameInstance::Release_Engine()
 {
 	CGameInstance::GetInstance()->Free();

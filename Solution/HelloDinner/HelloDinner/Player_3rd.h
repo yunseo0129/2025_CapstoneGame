@@ -31,6 +31,7 @@ protected:
 
 protected:
 	class CModel* m_pModelCom = { nullptr };
+	vector<class CCollider*> m_vColliderComs;
 	_wstring	m_strModelTag = L"";
 	_uint		m_iModelLevelIndex = 0;
 	_uint		m_iState = 0;			// 애니메이션 상태

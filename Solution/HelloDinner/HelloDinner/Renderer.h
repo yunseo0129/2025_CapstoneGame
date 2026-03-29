@@ -27,10 +27,12 @@ private:
 	HRESULT Render_Priority( ID3D12GraphicsCommandList* _CmdList );
 	HRESULT Render_NonBlend( ID3D12GraphicsCommandList* _CmdList );
 	HRESULT Render_Blend( ID3D12GraphicsCommandList* _CmdList );
-	void Add_RenderCollider(CGameObject*& pRenderObject);
 	//HRESULT Render_UI();
 
 #ifdef _DEBUG
+public:
+	HRESULT Add_RenderCollider ( class CCollider* pColliderCom );
+private:
 	HRESULT Render_Collider ( ID3D12GraphicsCommandList* _CmdList );
 #endif
 

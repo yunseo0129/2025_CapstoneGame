@@ -86,7 +86,7 @@ public: /* For.Shader_Manager */
 
 public: /* For.Renderer */
 	HRESULT Add_RenderObject(CRenderer::RENDERGROUP eRenderGroup, class CGameObject* pRenderObject);
-
+	HRESULT Add_RenderCollider(class CCollider* pColliderCom);
 
 private:
 	class CGraphic_Device*		m_pGraphic_Device = { nullptr };
