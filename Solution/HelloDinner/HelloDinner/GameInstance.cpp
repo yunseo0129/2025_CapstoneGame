@@ -425,7 +425,7 @@ HRESULT CGameInstance::Add_RenderObject(CRenderer::RENDERGROUP eRenderGroup, CGa
 	return m_pRenderer->Add_RenderObject(eRenderGroup, pRenderObject);
 }
 
-#ifdef _DEBBUG
+#ifdef _DEBUG
 HRESULT CGameInstance::Add_RenderCollider(CCollider* pColliderCom)
 {
 	if (nullptr == m_pRenderer)

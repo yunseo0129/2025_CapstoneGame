@@ -128,7 +128,7 @@ void CPig_3rd::Render(ID3D12GraphicsCommandList* _commandList)
 	for ( CCollider* pCollider : m_vColliderComs )
 	{
 		if ( pCollider != nullptr )
-			m_pGameInstance->Add_RenderCollider ( pCollider );
+			m_pGameInstance->Add_RenderCollider(pCollider);
 	}
 #endif
 }
@@ -139,8 +139,6 @@ HRESULT CPig_3rd::Ready_Components()
 	if (FAILED(__super::Ready_Components()))
 		return E_FAIL;
 	*/
-	
-	// 배열로 만들자?
 
 	// Main Collider
 	m_vColliderComs.resize ( 2 , nullptr );		// 일단 2개만 (Main AABB, Head Sphere)

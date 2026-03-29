@@ -38,7 +38,7 @@ HRESULT CCollider::Initialize_Prototype(COLLIDERTYPE eColliderType)
 	EffectPipelineStateDescription pd(
 		&VertexPositionColor::InputLayout,
 		CommonStates::Opaque,
-		CommonStates::DepthNone,
+		CommonStates::DepthDefault,
 		CommonStates::CullNone,
 		rtState,
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE
