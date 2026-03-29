@@ -148,8 +148,13 @@
     </ClInclude>
     <ClInclude Include="Channel.h" />
     <ClInclude Include="Collider.h" />
+    <ClInclude Include="ContainerObj.h" />
     <ClInclude Include="DebugDraw.h" />
+    <ClInclude Include="Ketchup_Gun.h" />
     <ClInclude Include="NetworkClient.h" />
+    <ClInclude Include="PartObj.h" />
+    <ClInclude Include="Pig_1rd.h" />
+    <ClInclude Include="Player_1rd.h" />
     <ClInclude Include="Player_3rd.h" />
     <ClInclude Include="Common\WICTextureLoader12.h" />
     <ClInclude Include="Component.h" />
@@ -212,8 +217,15 @@
     <ClCompile Include="Collider.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="ContainerObj.cpp" />
     <ClCompile Include="DebugDraw.cpp" />
+    <ClCompile Include="Ketchup_Gun.cpp" />
     <ClCompile Include="NetworkClient.cpp" />
+    <ClCompile Include="PartObj.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Pig_1rd.cpp" />
+    <ClCompile Include="Player_1rd.cpp" />
     <ClCompile Include="Player_3rd.cpp" />
     <ClCompile Include="Common\DDSTextureLoader12.cpp" />
     <ClCompile Include="Common\WICTextureLoader12.cpp" />

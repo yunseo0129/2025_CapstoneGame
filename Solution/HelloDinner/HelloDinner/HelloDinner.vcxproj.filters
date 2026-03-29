@@ -350,6 +350,21 @@
     <ClInclude Include="NetworkClient.h">
       <Filter>소스 파일\03. Network</Filter>
     </ClInclude>
+    <ClInclude Include="PartObj.h">
+      <Filter>소스 파일\01. Engine\03. Objects\PartObject</Filter>
+    </ClInclude>
+    <ClInclude Include="ContainerObj.h">
+      <Filter>소스 파일\01. Engine\03. Objects\ContainerObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Pig_1rd.h">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_1rd\Character\Pig_1rd</Filter>
+    </ClInclude>
+    <ClInclude Include="Ketchup_Gun.h">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_1rd\Gun\Ketchup</Filter>
+    </ClInclude>
+    <ClInclude Include="Player_1rd.h">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_1rd</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -469,9 +484,6 @@
     <ClCompile Include="Bone.cpp">
       <Filter>소스 파일\01. Engine\04. Components\02. Model\Bone</Filter>
     </ClCompile>
-    <ClCompile Include="Player_3rd.cpp">
-      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd</Filter>
-    </ClCompile>
     <ClCompile Include="Bounding.cpp">
       <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
     </ClCompile>
@@ -492,6 +504,24 @@
     </ClCompile>
     <ClCompile Include="NetworkClient.cpp">
       <Filter>소스 파일\03. Network</Filter>
+    </ClCompile>
+    <ClCompile Include="PartObj.cpp">
+      <Filter>소스 파일\01. Engine\03. Objects\PartObject</Filter>
+    </ClCompile>
+    <ClCompile Include="ContainerObj.cpp">
+      <Filter>소스 파일\01. Engine\03. Objects\ContainerObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Pig_1rd.cpp">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_1rd\Character\Pig_1rd</Filter>
+    </ClCompile>
+    <ClCompile Include="Ketchup_Gun.cpp">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_1rd\Gun\Ketchup</Filter>
+    </ClCompile>
+    <ClCompile Include="Player_1rd.cpp">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_1rd</Filter>
+    </ClCompile>
+    <ClCompile Include="Player_3rd.cpp">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -24,7 +24,7 @@ HRESULT CPig_3rd::Initialize(void* pArg)
 		return E_FAIL;
 
 	m_iState = STATE_IDLE;
-	m_pModelCom->SetUp_Animation(0, false);
+	m_pModelCom->SetUp_Animation(0, true);
 
 	return S_OK;
 }
