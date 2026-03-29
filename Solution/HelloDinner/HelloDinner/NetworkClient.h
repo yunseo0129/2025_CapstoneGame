@@ -10,15 +10,23 @@ public:
         PLAYER_ADD,
         PLAYER_REMOVE,
         PLAYER_MOVE,
+        MATCH_WAIT,
+        MATCH_SUCCESS,
     };
 
     // 메인 스레드에서 처리할 이벤트 구조체
     struct NetEvent {
         NetEventType	type;
         int				id = -1;
-        _float3			position = {};
-        _float3			rotation = {};
+        _float3			cameraPos = {};		// 카메라(=플레이어) 위치
+        float			cameraYaw = 0.f;		// Y축 회전
+        float			cameraPitch = 0.f;		// X축 회전
+        _float3			cameraLook = {};		// look 벡터
+        unsigned char	keyInput = 0;
         char			name[NAME_SIZE] = {};
+        int				roomId = -1;
+        int				queueSize = 0;
+        int				playerIds[ROOM_MAX_PLAYER] = {};
     };
 
 public:
@@ -31,25 +39,28 @@ public:
     // 패킷 수신 처리 루프 (별도 스레드)
     void RecvThread();
 
-    // 이동 패킷 전송
-    void Send_Move(char direction);
-
-    // 로그아웃 패킷 전송
-    void Send_Logout();
+    // 이동 패킷 전송 (카메라 정보 + 키인풋)
+    void Send_Move(unsigned char keyInput, const _float3& camPos, float camYaw, float camPitch, const _float3& camLook);
 
     // 접속 해제
     void Disconnect();
 
     bool IsConnected() const { return m_bConnected; }
     bool IsLoggedIn() const { return m_bLoggedIn; }
+    bool IsMatched() const { return m_bMatched; }
 
     int GetMyId() const { return m_iMyId; }
+    int GetRoomId() const { return m_iRoomId; }
+    int GetQueueSize() const { return m_iQueueSize; }
 
     // 다른 플레이어 정보
     struct PlayerInfo {
         int		    id = -1;
-        _float3	    position = {};
-        _float3     rotation = {};
+        _float3	    camPos = {};		// 카메라(=플레이어) 위치
+        float       camYaw = 0.f;		// Y축 회전
+        float       camPitch = 0.f;		// X축 회전
+        _float3     camLook = {};		// look 벡터
+        unsigned char keyInput = 0;
         char	    name[NAME_SIZE] = {};
         bool	    active = false;
     };
@@ -74,12 +85,18 @@ private:
 
     SOCKET		m_socket = INVALID_SOCKET;
     bool		m_bConnected = false;
+    // 내 정보
     bool		m_bLoggedIn = false;
+    bool		m_bMatched = false;
 
     int			m_iMyId = -1;
+    int			m_iRoomId = -1;
+    int			m_iQueueSize = 0;
 
-    _float3	    m_vMyPosition = {};
-    _float3     m_vMyRotation = {};
+    _float3	    m_vCamPos = {};
+    float       m_fCamYaw = 0.f;
+    float       m_fCamPitch = 0.f;
+    _float3     m_vCamLook = {};
 
     char		m_szName[NAME_SIZE] = {};
 

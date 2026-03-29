@@ -41,9 +41,9 @@ bool NetworkClient::ConnectWithConsole()
     freopen_s(&fp, "CONIN$", "r", stdin);
     freopen_s(&fp, "CONOUT$", "w", stdout);
 
-    std::cout << "=============================================\n";
+    std::cout << "========================================\n";
     std::cout << "       HelloDinner - Connect to Server\n";
-    std::cout << "=============================================\n\n";
+    std::cout << "========================================\n\n";
 
     // 서버 IP 입력
     char serverIP[64] = {};
@@ -111,24 +111,20 @@ void NetworkClient::Send(void* packet, int size)
     ::send(m_socket, reinterpret_cast<char*>(packet), size, 0);
 }
 
-void NetworkClient::Send_Move(char direction)
+void NetworkClient::Send_Move(unsigned char keyInput, const _float3& camPos, float camYaw, float camPitch, const _float3& camLook)
 {
     CS_MOVE_PACKET p{};
     p.size = sizeof(CS_MOVE_PACKET);
     p.type = CS_MOVE;
-    p.direction = direction;
-    p.move_time = 0;
-    Send(&p, p.size);
-}
-
-void NetworkClient::Send_Logout()
-{
-    if (!m_bConnected || m_iMyId == -1) return;
-
-    CS_LOGOUT_PACKET p{};
-    p.size = sizeof(CS_LOGOUT_PACKET);
-    p.type = CS_LOGOUT;
-    p.id = m_iMyId;
+    p.keyInput = keyInput;
+    p.cameraPosX = camPos.x;
+    p.cameraPosY = camPos.y;
+    p.cameraPosZ = camPos.z;
+    p.cameraYaw = camYaw;
+    p.cameraPitch = camPitch;
+    p.cameraLookX = camLook.x;
+    p.cameraLookY = camLook.y;
+    p.cameraLookZ = camLook.z;
     Send(&p, p.size);
 }
 
@@ -169,29 +165,28 @@ void NetworkClient::ProcessPacket(char* packet)
     case SC_LOGIN_INFO: {
         SC_LOGIN_INFO_PACKET* p = reinterpret_cast<SC_LOGIN_INFO_PACKET*>(packet);
         m_iMyId = p->id;
-        m_vMyPosition.x = p->positionX;
-        m_vMyPosition.y = p->positionY;
-        m_vMyPosition.z = p->positionZ;
-        m_vMyRotation.x = p->rotationX;
-        m_vMyRotation.y = p->rotationY;
-        m_vMyRotation.z = p->rotationZ;
+        m_vCamPos = { p->cameraPosX, p->cameraPosY, p->cameraPosZ };
+        m_fCamYaw = p->cameraYaw;
+        m_fCamPitch = p->cameraPitch;
 
         {
             std::lock_guard<std::mutex> lk(m_lock);
             m_players[m_iMyId].id = m_iMyId;
-            m_players[m_iMyId].position = m_vMyPosition;
-            m_players[m_iMyId].rotation = m_vMyRotation;
+            m_players[m_iMyId].camPos = m_vCamPos;
+            m_players[m_iMyId].camYaw = m_fCamYaw;
+            m_players[m_iMyId].camPitch = m_fCamPitch;
             strcpy_s(m_players[m_iMyId].name, m_szName);
             m_players[m_iMyId].active = true;
         }
 
-        // 내 플레이어 생성 이벤트를 큐에 추가
+        // 내 플레이어 생성 이벤트
         {
             NetEvent evt{};
             evt.type = NetEventType::PLAYER_ADD;
             evt.id = m_iMyId;
-            evt.position = m_vMyPosition;
-            evt.rotation = m_vMyRotation;
+            evt.cameraPos = m_vCamPos;
+            evt.cameraYaw = m_fCamYaw;
+            evt.cameraPitch = m_fCamPitch;
             strcpy_s(evt.name, m_szName);
 
             std::lock_guard<std::mutex> lk(m_eventLock);
@@ -201,16 +196,46 @@ void NetworkClient::ProcessPacket(char* packet)
         m_bLoggedIn = true;
         break;
     }
+    case SC_MATCH_WAIT: {
+        SC_MATCH_WAIT_PACKET* p = reinterpret_cast<SC_MATCH_WAIT_PACKET*>(packet);
+        m_iQueueSize = p->queue_size;
+
+        {
+            NetEvent evt{};
+            evt.type = NetEventType::MATCH_WAIT;
+            evt.queueSize = p->queue_size;
+
+            std::lock_guard<std::mutex> lk(m_eventLock);
+            m_pendingEvents.push_back(evt);
+        }
+        break;
+    }
+    case SC_MATCH_SUCCESS: {
+        SC_MATCH_SUCCESS_PACKET* p = reinterpret_cast<SC_MATCH_SUCCESS_PACKET*>(packet);
+        m_iRoomId = p->room_id;
+        m_bMatched = true;
+
+        {
+            NetEvent evt{};
+            evt.type = NetEventType::MATCH_SUCCESS;
+            evt.roomId = p->room_id;
+            memcpy(evt.playerIds, p->player_ids, sizeof(int) * ROOM_MAX_PLAYER);
+
+            std::lock_guard<std::mutex> lk(m_eventLock);
+            m_pendingEvents.push_back(evt);
+        }
+        break;
+    }
     case SC_ADD_PLAYER: {
         SC_ADD_PLAYER_PACKET* p = reinterpret_cast<SC_ADD_PLAYER_PACKET*>(packet);
-        _float3 pos = { p->positionX, p->positionY, p->positionZ };
-        _float3 rot = { p->rotationX, p->rotationY, p->rotationZ };
+        _float3 pos = { p->cameraPosX, p->cameraPosY, p->cameraPosZ };
 
         {
             std::lock_guard<std::mutex> lk(m_lock);
             m_players[p->id].id = p->id;
-            m_players[p->id].position = pos;
-            m_players[p->id].rotation = rot;
+            m_players[p->id].camPos = pos;
+            m_players[p->id].camYaw = p->cameraYaw;
+            m_players[p->id].camPitch = p->cameraPitch;
             strcpy_s(m_players[p->id].name, p->name);
             m_players[p->id].active = true;
         }
@@ -220,8 +245,9 @@ void NetworkClient::ProcessPacket(char* packet)
             NetEvent evt{};
             evt.type = NetEventType::PLAYER_ADD;
             evt.id = p->id;
-            evt.position = pos;
-            evt.rotation = rot;
+            evt.cameraPos = pos;
+            evt.cameraYaw = p->cameraYaw;
+            evt.cameraPitch = p->cameraPitch;
             strcpy_s(evt.name, p->name);
 
             std::lock_guard<std::mutex> lk(m_eventLock);
@@ -250,7 +276,31 @@ void NetworkClient::ProcessPacket(char* packet)
     }
     case SC_MOVE_PLAYER: {
         SC_MOVE_PLAYER_PACKET* p = reinterpret_cast<SC_MOVE_PLAYER_PACKET*>(packet);
-		// Todo : 패킷에서 위치/회전 정보 받아서 업데이트
+        _float3 pos = { p->cameraPosX, p->cameraPosY, p->cameraPosZ };
+        _float3 look = { p->cameraLookX, p->cameraLookY, p->cameraLookZ };
+
+        {
+            std::lock_guard<std::mutex> lk(m_lock);
+            m_players[p->id].camPos = pos;
+            m_players[p->id].camYaw = p->cameraYaw;
+            m_players[p->id].camPitch = p->cameraPitch;
+            m_players[p->id].camLook = look;
+            m_players[p->id].keyInput = p->keyInput;
+        }
+
+        {
+            NetEvent evt{};
+            evt.type = NetEventType::PLAYER_MOVE;
+            evt.id = p->id;
+            evt.keyInput = p->keyInput;
+            evt.cameraPos = pos;
+            evt.cameraYaw = p->cameraYaw;
+            evt.cameraPitch = p->cameraPitch;
+            evt.cameraLook = look;
+
+            std::lock_guard<std::mutex> lk(m_eventLock);
+            m_pendingEvents.push_back(evt);
+        }
         break;
     }
     }
@@ -265,13 +315,11 @@ void NetworkClient::PopAllEvents(std::vector<NetEvent>& outEvents)
 
 void NetworkClient::Disconnect()
 {
-    if (!m_bConnected) return;
-
-    // 서버에 로그아웃 패킷 전송 후 소켓 종료
-    Send_Logout();
-
     m_bConnected = false;
     m_bLoggedIn = false;
+    m_bMatched = false;
+    m_iRoomId = -1;
+    m_iQueueSize = 0;
     if (m_socket != INVALID_SOCKET) {
         closesocket(m_socket);
         m_socket = INVALID_SOCKET;
