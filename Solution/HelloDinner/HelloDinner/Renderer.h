@@ -27,6 +27,7 @@ private:
 	HRESULT Render_Priority( ID3D12GraphicsCommandList* _CmdList );
 	HRESULT Render_NonBlend( ID3D12GraphicsCommandList* _CmdList );
 	HRESULT Render_Blend( ID3D12GraphicsCommandList* _CmdList );
+	void Add_RenderCollider(CGameObject*& pRenderObject);
 	//HRESULT Render_UI();
 
 #ifdef _DEBUG

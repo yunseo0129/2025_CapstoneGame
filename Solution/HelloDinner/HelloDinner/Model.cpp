@@ -65,6 +65,20 @@ HRESULT CModel::Initialize_Prototype(TYPE eModelType, const wchar_t* pModelFileP
 		return E_FAIL;
 
 	m_pGameInstance->Close_File();
+
+	for (size_t i = 0; i < m_Bones.size(); ++i)
+	{
+		if (m_Bones[i] != nullptr)
+		{
+			// 1. 출력할 문자열을 예쁘게 조립합니다. (인덱스 번호와 이름을 같이 출력)
+			char szDebugMsg[256] = "";
+			sprintf_s(szDebugMsg, "[Bone Info] Index: %3zu | Name: %s\n", i, m_Bones[i]->Get_Name());
+
+			// 2. Visual Studio의 '출력(Output)' 창으로 쏴줍니다!
+			OutputDebugStringA(szDebugMsg);
+		}
+	}
+
 	return S_OK;
 }
 

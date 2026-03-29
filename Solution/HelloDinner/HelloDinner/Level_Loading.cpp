@@ -28,6 +28,17 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 
 	Add_Camera();
 
+	// 충돌체 Prototype 등록
+	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_AABB"),
+		CCollider::Create(m_pContext, CCollider::TYPE_AABB))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_OBB"),
+		CCollider::Create(m_pContext, CCollider::TYPE_OBB))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Sphere"),
+		CCollider::Create(m_pContext, CCollider::TYPE_SPHERE))))
+		return E_FAIL;
+
 
 
 /*
@@ -90,9 +101,6 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 		_matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(0.01f, 0.01f, 0.01f);
 		if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Pig_3rd"),
 			CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Pig/Prototype_Component_Pig.txt", PreTransformMatrix))))
-			return E_FAIL;
-		if ( FAILED ( m_pGameInstance->Add_Prototype ( 1 , TEXT("Prototype_Component_AABB") ,
-			CCollider::Create ( m_pContext , CCollider::TYPE_AABB ) ) ) )
 			return E_FAIL;
 		if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_GameObject_Pig_3rd"),
 			CPig_3rd::Create(m_pContext))))

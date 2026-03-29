@@ -53,13 +53,9 @@ HRESULT CRenderer::Render_Priority( ID3D12GraphicsCommandList* _CmdList )
 {
 	for (auto& pRenderObject : m_RenderObjects[RG_PRIORITY])
 	{
-		if ( nullptr != pRenderObject ) {
-			pRenderObject->Render ( _CmdList );
-			CComponent* pColliderCom = pRenderObject->Find_Component(TEXT("Com_Collider"));
-			if (nullptr != pColliderCom)	{
-				m_RenderColliders.push_back(static_cast<CCollider*>(pColliderCom));
-				Safe_AddRef(m_RenderColliders.back());
-			}
+		if (nullptr != pRenderObject) {
+			pRenderObject->Render (_CmdList);
+			Add_RenderCollider(pRenderObject);
 		}
 		Safe_Release(pRenderObject);
 	}
@@ -74,13 +70,9 @@ HRESULT CRenderer::Render_NonBlend( ID3D12GraphicsCommandList* _CmdList )
 
 	for (auto& pRenderObject : m_RenderObjects[RG_NONBLEND])
 	{
-		if ( nullptr != pRenderObject ) {
-			pRenderObject->Render ( _CmdList );
-			CComponent* pColliderCom = pRenderObject->Find_Component ( TEXT ( "Com_Collider" ) );
-			if ( nullptr != pColliderCom ) {
-				m_RenderColliders.push_back ( static_cast< CCollider* >( pColliderCom ) );
-				Safe_AddRef ( m_RenderColliders.back () );
-			}
+		if (nullptr != pRenderObject) {
+			pRenderObject->Render (_CmdList);
+			Add_RenderCollider(pRenderObject);
 		}
 		Safe_Release(pRenderObject);
 	}
@@ -94,18 +86,37 @@ HRESULT CRenderer::Render_Blend( ID3D12GraphicsCommandList* _CmdList )
 	for (auto& pRenderObject : m_RenderObjects[RG_BLEND])
 	{
 		if ( nullptr != pRenderObject ) {
-			pRenderObject->Render ( _CmdList );
-			CComponent* pColliderCom = pRenderObject->Find_Component ( TEXT ( "Com_Collider" ) );
-			if ( nullptr != pColliderCom ) {
-				m_RenderColliders.push_back ( static_cast< CCollider* >( pColliderCom ) );
-				Safe_AddRef ( m_RenderColliders.back () );
-			}
+			pRenderObject->Render(_CmdList);
+			Add_RenderCollider(pRenderObject);
 		}
 		Safe_Release(pRenderObject);
 	}
 	m_RenderObjects[RG_BLEND].clear();
 
 	return S_OK;
+}
+
+void CRenderer::Add_RenderCollider(CGameObject*& pRenderObject)
+{
+	// 나중에 배열로 바꿔서 여러 콜라이더 태그를 검사할 수 있도록 수정하기
+	const _tchar* szColliderTags[] = {
+		TEXT("Com_Collider"),       // 기본 단일 콜라이더
+		TEXT("Com_Collider_Head"),  // 머리
+		TEXT("Com_Collider_Body"),  // 몸통
+		TEXT("Com_Collider_L_UpperArm"), // 왼U팔
+		TEXT("Com_Collider_R_UpperArm"), // 오른U팔
+		TEXT("Com_Collider_L_LoewrArm"), // 왼L팔
+		TEXT("Com_Collider_R_LoewrArm"), // 오른L팔
+		TEXT("Com_Collider_L_Leg"), // 왼다리
+		TEXT("Com_Collider_R_Leg")  // 오른다리
+	};
+	for (const _tchar* szTag : szColliderTags) {
+		CComponent* pColliderCom = pRenderObject->Find_Component(szTag);
+		if (nullptr != pColliderCom) {
+			m_RenderColliders.push_back(static_cast<CCollider*>(pColliderCom));
+			Safe_AddRef(m_RenderColliders.back());
+		}
+	}
 }
 
 #ifdef _DEBUG
