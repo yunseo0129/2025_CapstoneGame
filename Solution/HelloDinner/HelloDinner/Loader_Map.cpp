@@ -324,7 +324,7 @@ HRESULT CLoader_Map::Check_Fbx_Existence ( const string& strJsonPath )
 		if ( !fbxFile.is_open () )
 		{
 			char szLog[512];
-			sprintf_s ( szLog ,"[FBXFile] Name: %s\ not exist\n" , fbxName.c_str () );
+			sprintf_s ( szLog ,"[FBXFile] Name: %s not exist\n" , fbxName.c_str () );
 			OutputDebugStringA ( szLog );
 		}
 		fbxFile.close ();
