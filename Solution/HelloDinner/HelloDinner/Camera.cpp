@@ -66,17 +66,14 @@ HRESULT CCamera::Bind_CameraBuffer ( ID3D12GraphicsCommandList* pCmdList , RootP
 {
 	_int iFrameIndex = m_pGameInstance->GetCurrentFrameIndex ();
 
-	XMFLOAT4X4 xmf4x4View , xmf4x4Proj;
+	XMStoreFloat4x4(&m_xmf4x4View, m_pTransformCom->Get_WorldMatrix_Inverse());
+	memcpy(&m_pCbMappedCameras[iFrameIndex]->m_xmf4x4View, &m_xmf4x4View, sizeof (_float4x4));
 
-	XMStoreFloat4x4 ( &xmf4x4View , m_pTransformCom->Get_WorldMatrix_Inverse() );
-	memcpy ( &m_pCbMappedCameras[iFrameIndex]->m_xmf4x4View , &xmf4x4View , sizeof (_float4x4));
-
-	XMStoreFloat4x4 ( &xmf4x4Proj , XMMatrixPerspectiveFovLH( m_fFovy , m_fAspect , m_fNear , m_fFar ) );
-	memcpy ( &m_pCbMappedCameras[iFrameIndex]->m_xmf4x4Proj , &xmf4x4Proj , sizeof ( _float4x4 ) );
+	XMStoreFloat4x4(&m_xmf4x4Projection, XMMatrixPerspectiveFovLH(m_fFovy, m_fAspect, m_fNear, m_fFar));
+	memcpy(&m_pCbMappedCameras[iFrameIndex]->m_xmf4x4Proj, &m_xmf4x4Projection, sizeof(_float4x4));
 	
-	XMFLOAT3 xmf3Pos;
-	XMStoreFloat3 ( &xmf3Pos , m_pTransformCom->Get_State( CTransform::STATE_POSITION ) );
-	memcpy ( &m_pCbMappedCameras[iFrameIndex]->m_xmf3Position , &xmf3Pos , sizeof ( _float3 ) );
+	XMStoreFloat3(&m_xmf3Position, m_pTransformCom->Get_State(CTransform::STATE_POSITION));
+	memcpy(&m_pCbMappedCameras[iFrameIndex]->m_xmf3Position, &m_xmf3Position, sizeof(_float3));
 
 	// 디버그 출력
 	// DebugPrintMatrix ( "View" , xmf4x4View );
@@ -85,6 +82,8 @@ HRESULT CCamera::Bind_CameraBuffer ( ID3D12GraphicsCommandList* pCmdList , RootP
 
 
 	pCmdList->SetGraphicsRootConstantBufferView ( _eIndex , m_pCameraBuffers[iFrameIndex]->GetGPUVirtualAddress ());
+
+
 	return S_OK;
 }
 

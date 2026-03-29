@@ -42,6 +42,20 @@ void CLevel_Manager::Bind_CameraBuffer(ID3D12GraphicsCommandList* pCmdList, Root
 		m_pCurrentLevel->Bind_CameraBuffer(pCmdList, _eIndex, _eType);
 }
 
+XMFLOAT4X4 CLevel_Manager::Get_CurrentCameraView ()
+{
+	if (nullptr != m_pCurrentLevel)
+		return m_pCurrentLevel->Get_CurrentCameraView();
+	return XMFLOAT4X4 ();
+}
+
+XMFLOAT4X4 CLevel_Manager::Get_CurrentCameraProjection ()
+{
+	if (nullptr != m_pCurrentLevel)
+		return m_pCurrentLevel->Get_CurrentCameraProjection();
+	return XMFLOAT4X4 ();
+}
+
 HRESULT CLevel_Manager::Render()
 {
 	if (nullptr != m_pCurrentLevel)

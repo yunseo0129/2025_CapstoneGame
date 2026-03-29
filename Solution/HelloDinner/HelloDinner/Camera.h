@@ -36,6 +36,12 @@ public:
 
 	// CBV 바인딩 함수
 	HRESULT Bind_CameraBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameterIndex _eIndex);
+	XMFLOAT4X4 Get_CameraView() {
+		return m_xmf4x4View;
+	}
+	XMFLOAT4X4 Get_CameraProjection() {
+		return m_xmf4x4Projection;
+	}
 
 	static void DebugPrintMatrix ( const char* name , const XMFLOAT4X4& m );
 

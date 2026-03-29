@@ -2,6 +2,8 @@
 #include "Transform.h"
 #include "GameInstance.h"
 #include "Model.h"
+#include "Collider.h"
+#include "Bounding_AABB.h"
 
 CPlayer_3rd::CPlayer_3rd(EngineContext* pContext)
 	: CGameObject(pContext)
@@ -52,6 +54,14 @@ void CPlayer_3rd::Priority_Update(_float fTimeDelta)
 
 void CPlayer_3rd::Update(_float fTimeDelta)
 {
+	// 충돌체가 오브젝트 잘 따라가는지 확인하기 위해서 x축 이동
+	_vector vCurrentPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+	vCurrentPos = XMVectorAdd(vCurrentPos, XMVectorSet(10.f * fTimeDelta, 0.f, 0.f, 0.f));
+	m_pTransformCom->Set_State(CTransform::STATE_POSITION, vCurrentPos);
+
+	if (m_pColliderCom != nullptr)	{
+		m_pColliderCom->Update(m_pTransformCom->Get_WorldMatrix());
+	}
 }
 
 void CPlayer_3rd::Late_Update(_float fTimeDelta)
@@ -87,6 +97,16 @@ HRESULT CPlayer_3rd::Ready_Components()
 		return E_FAIL;
 	}
 
+	CBounding_AABB::BOUND_AABB_DESC ColliderDesc;
+	ColliderDesc.vExtents = _float3(50.f , 100.0f , 50.f);
+	ColliderDesc.vCenter = _float3(0.0f , 100.0f , 0.0f);
+	if (FAILED(Add_Component( m_iModelLevelIndex, TEXT("Prototype_Component_AABB"),
+		TEXT("Com_Collider"), reinterpret_cast<CComponent**>(&m_pColliderCom), &ColliderDesc)))
+	{
+		MSG_BOX("Failed to Add Component : Collider in Player_3rd");
+		return E_FAIL;
+	}
+
 	return S_OK;
 }
 
@@ -102,6 +122,5 @@ CGameObject* CPlayer_3rd::Clone(void* pArg)
 
 void CPlayer_3rd::Free()
 {
-	Safe_Release(m_pModelCom);
 	__super::Free();
 }
