@@ -14,6 +14,7 @@
 #include "Model.h"
 #include "Pig_3rd.h"
 #include "NetworkClient.h"
+#include "Player_1rd.h"
 
 CLevel_Loading::CLevel_Loading(EngineContext* pContext)
 	: CLevel{pContext }
@@ -82,12 +83,14 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 		1, TEXT("Layer_Player_chick"), &desc);
 	*/
 
-	// 애님모델 돼지
-	{
-		_matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(0.01f, 0.01f, 0.01f);
-		if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Pig_3rd"),
-			CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Pig/Prototype_Component_Pig.txt", PreTransformMatrix))))
-			return E_FAIL;
+	// 돼지 모델 로드
+	_matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(0.01f, 0.01f, 0.01f);
+	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Pig_3rd"),
+		CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Pig/Prototype_Component_Pig.txt", PreTransformMatrix))))
+		return E_FAIL;
+
+	// 애님모델 돼지 CPig_3rd
+	/*{
 		if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_GameObject_Pig_3rd"),
 			CPig_3rd::Create(m_pContext))))
 			return E_FAIL;
@@ -95,7 +98,19 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 		cdesc.strModelTag = L"Prototype_Component_Pig_3rd";
 		cdesc.iModelLevelIndex = 1;
 		m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Pig_3rd"),
-			1, TEXT("Layer_Player_Pig_3rd"), &cdesc);
+			1, TEXT("Layer_Player_3rd"), &cdesc);
+	}*/
+
+	// 애님모델 돼지 Player_1rd로 생성
+	{
+		if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_GameObject_Player_1rd"),
+			CPlayer_1rd::Create(m_pContext))))
+			return E_FAIL;
+		CPlayer_1rd::Player_1RD_DESC cdesc;
+		cdesc.strModelTag = L"Prototype_Component_Pig_3rd";
+		cdesc.iModelLevelIndex = 1;
+		m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Player_1rd"),
+			1, TEXT("Layer_Player_1rd"), &cdesc);
 	}
 
 
@@ -120,17 +135,15 @@ void CLevel_Loading::Update(_float fTimeDelta)
 		switch (evt.type) {
 		case NetworkClient::NetEventType::PLAYER_ADD: {
 			// 새 플레이어 접속 → CPig_3rd 생성
-			CPig_3rd::Player_3rd_DESC desc;
-			desc.strModelTag = L"Prototype_Component_Pig_3rd";
-			desc.iModelLevelIndex = 1;
-			desc.vPosition = evt.position;
-			desc.vRotation = evt.rotation;
+			//CPlayer_1rd::Player_1RD_DESC desc;
+			//desc.strModelTag = L"Prototype_Component_Pig_3rd";
+			//desc.iModelLevelIndex = 1;
 
-			// 레이어 이름에 id를 붙여 개별 관리
-			_wstring strLayerTag = L"Layer_Player_Pig_" + std::to_wstring(evt.id);
+			//// 레이어 이름에 id를 붙여 개별 관리
+			//_wstring strLayerTag = L"Layer_Player_Pig_" + std::to_wstring(evt.id);
 
-			m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Pig_3rd"),
-				1, strLayerTag, &desc);
+			//m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Pig_3rd"),
+			//	1, strLayerTag, &desc);
 			break;
 		}
 		case NetworkClient::NetEventType::PLAYER_REMOVE: {

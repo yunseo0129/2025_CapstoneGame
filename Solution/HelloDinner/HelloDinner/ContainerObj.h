@@ -6,7 +6,7 @@ class CContainerObj abstract : public CGameObject
 public:
 	struct CONTAINEROBJ_DESC : public CGameObject::GAMEOBJECT_DESC
 	{
-		_uint			iNumPartObj;
+		_uint			iNumPartObj = 0;
 	};
 
 protected:
@@ -21,7 +21,10 @@ public:
 	virtual void Late_Update(_float fTimeDelta) override;
 	virtual void Render(ID3D12GraphicsCommandList* _commandList) override;
 
-	/* 이 객체를 구성하기위한 부품(몸, 헤드, 무기, 이펙트, 사운드) 객체들 */
+protected:
+	virtual HRESULT				Ready_PartObjects() PURE;
+	virtual HRESULT				Ready_Components() PURE;
+
 protected:
 	vector<CGameObject*>			m_PartObjects;
 

@@ -23,7 +23,7 @@ public:
 	virtual void Render(ID3D12GraphicsCommandList* _commandList) override;
 
 private:
-	HRESULT Ready_Components();
+	virtual HRESULT Ready_Components();
 
 private:
 

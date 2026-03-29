@@ -6,7 +6,7 @@ CContainerObj::CContainerObj(EngineContext* pContext)
 }
 
 CContainerObj::CContainerObj(const CContainerObj& Prototype)
-	: CGameObject{ Prototype }
+	: CGameObject{ Prototype.m_pContext }
 {
 
 }
