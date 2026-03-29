@@ -28,7 +28,10 @@ private:
 	HRESULT Render_NonBlend( ID3D12GraphicsCommandList* _CmdList );
 	HRESULT Render_Blend( ID3D12GraphicsCommandList* _CmdList );
 	//HRESULT Render_UI();
+
+#ifdef _DEBUG
 	HRESULT Render_Collider ( ID3D12GraphicsCommandList* _CmdList );
+#endif
 
 public:
 	static CRenderer* Create(ID3D12Device* pDevice, ID3D12GraphicsCommandList* _commandList);

@@ -108,6 +108,7 @@ HRESULT CRenderer::Render_Blend( ID3D12GraphicsCommandList* _CmdList )
 	return S_OK;
 }
 
+#ifdef _DEBUG
 HRESULT CRenderer::Render_Collider ( ID3D12GraphicsCommandList* _CmdList )
 {
 	for ( auto& pRenderCollider : m_RenderColliders )
@@ -119,6 +120,7 @@ HRESULT CRenderer::Render_Collider ( ID3D12GraphicsCommandList* _CmdList )
 	m_RenderColliders.clear ();
 	return S_OK;
 }
+#endif
 
 //HRESULT CRenderer::Render_UI()
 //{
