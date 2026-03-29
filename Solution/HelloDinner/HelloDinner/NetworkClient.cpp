@@ -98,7 +98,6 @@ bool NetworkClient::ConnectWithConsole()
 
     // 수신 스레드 시작
     m_recvThread = std::thread(&NetworkClient::RecvThread, this);
-    m_recvThread.detach();
 
     std::cout << "Login sent. Waiting for response...\n";
 
@@ -320,8 +319,13 @@ void NetworkClient::Disconnect()
     m_bMatched = false;
     m_iRoomId = -1;
     m_iQueueSize = 0;
+    // 소켓 닫기 → RecvThread의 recv()가 에러 리턴하며 루프 탈출
     if (m_socket != INVALID_SOCKET) {
         closesocket(m_socket);
         m_socket = INVALID_SOCKET;
     }
+
+    // RecvThread가 완전히 종료될 때까지 대기
+    if (m_recvThread.joinable())
+        m_recvThread.join();
 }

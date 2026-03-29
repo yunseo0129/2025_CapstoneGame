@@ -83,4 +83,7 @@
       <Filter>소스 파일\Defines</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="NetworkClient_Architecture.md" />
+  </ItemGroup>
 </Project>

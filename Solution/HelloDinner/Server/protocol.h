@@ -9,10 +9,10 @@ constexpr int ROOM_MAX_PLAYER = 6;		// 6ÀÎ ¸ÅÄª
 constexpr int MAX_ROOM = MAX_USER / ROOM_MAX_PLAYER;			
 
 // Å°ÀÎÇ² 
-constexpr char KEY_W = 0;
-constexpr char KEY_A = 1;
-constexpr char KEY_S = 2;
-constexpr char KEY_D = 3;
+constexpr char KEY_W = 1;
+constexpr char KEY_A = 2;
+constexpr char KEY_S = 3;
+constexpr char KEY_D = 4;
 
 // ÆÐÅ¶ ID
 constexpr char CS_LOGIN = 0;

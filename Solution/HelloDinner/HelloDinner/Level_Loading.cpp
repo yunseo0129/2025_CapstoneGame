@@ -148,25 +148,11 @@ void CLevel_Loading::Update(_float fTimeDelta)
 	for (auto& evt : events) {
 		switch (evt.type) {
 		case NetworkClient::NetEventType::PLAYER_ADD: {
-			// 새 플레이어 접속 → CPig_3rd 생성
-			//CPlayer_1rd::Player_1RD_DESC desc;
-			//desc.strModelTag = L"Prototype_Component_Pig_3rd";
-			//desc.iModelLevelIndex = 1;
-
-			//// 레이어 이름에 id를 붙여 개별 관리
-			//_wstring strLayerTag = L"Layer_Player_Pig_" + std::to_wstring(evt.id);
-
-			//m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Pig_3rd"),
-			//	1, strLayerTag, &desc);
+			// TODO: evt.id 플레이어 생성 + evt.cameraPos 위치에 배치 + evt.name 이름 설정
 			break;
 		}
 		case NetworkClient::NetEventType::PLAYER_REMOVE: {
-			// 해당 id의 레이어에서 오브젝트를 찾아 Dead 처리
-			_wstring strLayerTag = L"Layer_Player_Pig_" + std::to_wstring(evt.id);
-
-			CGameObject* pObj = m_pGameInstance->Get_GameObject_To_Layer(1, strLayerTag, 0);
-			if (pObj != nullptr)
-				pObj->SetDead();
+			// TODO: evt.id 플레이어 제거
 			break;
 		}
 		case NetworkClient::NetEventType::PLAYER_MOVE: {

@@ -8,6 +8,4 @@ int main()
 		return 1;
 
 	server.Run();
-
-	return 0;
 }
