@@ -145,6 +145,7 @@
     <ClInclude Include="MatchManager.h" />
     <ClInclude Include="OverllapedEXP.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="PlayerInfo.h" />
     <ClInclude Include="protocol.h" />
     <ClInclude Include="Room.h" />
     <ClInclude Include="Session.h" />

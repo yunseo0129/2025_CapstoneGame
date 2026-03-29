@@ -9,14 +9,12 @@ class Session
 	public:
 		mutex		m_s_lock;
 		S_STATE		m_state;
-		int			m_id;
 		SOCKET		m_socket;
 
 		// Player Á¤º¸
-		float		m_Positionx, m_Positiony, m_Positionz;
-		float		m_Rotationx, m_Rotationy, m_Rotationz;
-		char		m_name[NAME_SIZE];
-
+		PlayerInfo	m_player;
+		CameraInfo	m_camera;
+		
 		int			m_prev_remain;
 		int			m_room_id;
 	public:

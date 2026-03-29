@@ -9,7 +9,7 @@ void MatchManager::EnqueuePlayer(int c_id)
 	auto* sm = SessionManager::GetInstance();
 	int queue_size = static_cast<int>(m_wait_queue.size());
 
-	cout << "[Match] Player " << c_id << " (" << sm->GetClient(c_id).m_name
+	cout << "[Match] Player " << c_id << " (" << sm->GetClient(c_id).m_player.name
 		<< ") entered queue. Waiting: " << queue_size << "/" << ROOM_MAX_PLAYER << endl;
 
 	// 대기 중인 모든 플레이어에게 대기 상태 알림
@@ -68,7 +68,7 @@ void MatchManager::TryMatch()
 			client.m_state = ST_INGAME;
 			client.m_room_id = room_id;
 		}
-		cout << " " << pid << "(" << client.m_name << ")";
+		cout << " " << pid << "(" << client.m_player.name << ")";
 		client.Send_Match_Success_Packet(room_id, ROOM_MAX_PLAYER, player_ids_arr);
 	}
 	cout << endl;

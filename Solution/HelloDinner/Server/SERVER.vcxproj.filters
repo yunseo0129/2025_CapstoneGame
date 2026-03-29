@@ -21,14 +21,14 @@
     <Filter Include="소스 파일\IOCPServer">
       <UniqueIdentifier>{a6499801-2110-405f-b453-0789741e438e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\Pch">
-      <UniqueIdentifier>{ffa8f014-92e3-45c4-b1f4-42aab59a3fd2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\Room">
       <UniqueIdentifier>{39f4e390-70ed-4aa1-b4c3-0d6043837393}</UniqueIdentifier>
     </Filter>
     <Filter Include="소스 파일\Room\MatchManager">
       <UniqueIdentifier>{124f6481-73bf-4014-8942-a5a2cdd3b8b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Defines">
+      <UniqueIdentifier>{ffa8f014-92e3-45c4-b1f4-42aab59a3fd2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -68,16 +68,19 @@
       <Filter>소스 파일\IOCPServer</Filter>
     </ClInclude>
     <ClInclude Include="protocol.h">
-      <Filter>소스 파일\Pch</Filter>
+      <Filter>소스 파일\Defines</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
-      <Filter>소스 파일\Pch</Filter>
+      <Filter>소스 파일\Defines</Filter>
     </ClInclude>
     <ClInclude Include="MatchManager.h">
       <Filter>소스 파일\Room\MatchManager</Filter>
     </ClInclude>
     <ClInclude Include="Room.h">
       <Filter>소스 파일\Room</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerInfo.h">
+      <Filter>소스 파일\Defines</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

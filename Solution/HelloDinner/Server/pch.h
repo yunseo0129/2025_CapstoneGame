@@ -8,7 +8,7 @@
 #include <mutex>
 #include <random>
 #include <unordered_set>
-
+#include "PlayerInfo.h"
 #include "protocol.h"
 
 // 윈속 라이브러리

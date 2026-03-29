@@ -21,15 +21,17 @@ void SessionManager::ProcessPacket(int c_id, char* packet)
         // 로그인 패킷 처리 → 매칭 대기큐에 진입
     case CS_LOGIN: {
         CS_LOGIN_PACKET* p = reinterpret_cast<CS_LOGIN_PACKET*>(packet);
-        strcpy_s(m_clients[c_id].m_name, p->name);
+        strcpy_s(m_clients[c_id].m_player.name, p->name);
 
         // 초기 위치 설정
-        m_clients[c_id].m_Positionx = c_id * 100.0f;
-        m_clients[c_id].m_Positiony = 0;
-        m_clients[c_id].m_Positionz = 0;
-        m_clients[c_id].m_Rotationx = 0;
-        m_clients[c_id].m_Rotationy = 0;
-        m_clients[c_id].m_Rotationz = 0;
+        m_clients[c_id].m_camera.positionX = c_id * 100.0f;
+        m_clients[c_id].m_camera.positionY = 0;
+        m_clients[c_id].m_camera.positionZ = 0;
+        m_clients[c_id].m_camera.yaw = 0;
+        m_clients[c_id].m_camera.pitch = 0;
+        m_clients[c_id].m_camera.lookX = 0;
+        m_clients[c_id].m_camera.lookY = 0;
+        m_clients[c_id].m_camera.lookZ = 1;
 
         m_clients[c_id].Send_Login_Info_Packet();
         {
@@ -46,7 +48,31 @@ void SessionManager::ProcessPacket(int c_id, char* packet)
     case CS_MOVE: {
         CS_MOVE_PACKET* p = reinterpret_cast<CS_MOVE_PACKET*>(packet);
 
-        // Todo: 움직임 로직
+        // 클라이언트가 보낸 데이터를 세션에 저장
+        m_clients[c_id].m_player.keyInput = p->keyInput;
+        m_clients[c_id].m_camera.lookX = p->cameraLookX;
+        m_clients[c_id].m_camera.lookY = p->cameraLookY;
+        m_clients[c_id].m_camera.lookZ = p->cameraLookZ;
+        
+		// Todo: 움직임 로직 수정 필요 (현재는 단순히 키 입력에 따라 위치 변경)
+        switch (m_clients[c_id].m_player.keyInput)
+        {
+        case KEY_W:
+            m_clients[c_id].m_camera.positionZ += 10.0f;
+			break;
+		case KEY_A:
+			m_clients[c_id].m_camera.positionX -= 10.0f;
+			break;
+		case KEY_S:
+			m_clients[c_id].m_camera.positionZ -= 10.0f;
+            break;
+        case KEY_D:
+            m_clients[c_id].m_camera.positionX += 10.0f;
+			break;
+
+        default:
+            break;
+        }
 
         int room_id = m_clients[c_id].m_room_id;
         if (room_id == -1) break;

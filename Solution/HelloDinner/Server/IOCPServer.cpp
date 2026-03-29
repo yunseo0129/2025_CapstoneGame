@@ -113,8 +113,8 @@ void IOCPServer::WorkerThread()
                     lock_guard<mutex> ll(client.m_s_lock);
                     client.m_state = ST_ALLOC;
                 }
-                client.m_id = client_id;
-                client.m_name[0] = 0;
+                client.m_player.id = client_id;
+                client.m_player.name[0] = 0;
                 client.m_prev_remain = 0;
                 client.m_socket = m_client_socket;
                 CreateIoCompletionPort(reinterpret_cast<HANDLE>(m_client_socket),
