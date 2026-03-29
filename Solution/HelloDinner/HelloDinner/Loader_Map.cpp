@@ -192,7 +192,7 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 
 			// textureNames 배열을 이용하여 각 MatIdx에 텍스처 설정
 			
-			/*	출력 위치 수정 필요
+			//	출력 위치 수정 필요
 			char szDebug[512];
 #ifndef _DEBUG
 			sprintf_s(szDebug, "[LoadMap] Model has %u materials, textureNames has %zu entries\n",
@@ -248,7 +248,7 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 
 					if (pNormal != nullptr)
 					{
-						/* 출력 위치 수정 필요
+						// 출력 위치 수정 필요
 						HRESULT hr = pModel->Set_MaterialTexture(matIdx, (TextureType)TextureType_NORMALS, pNormal);
 #ifndef _DEBUG
 						sprintf_s(szDebug, "[LoadMap] Set_MaterialTexture(Normal) result: 0x%08X\n", hr);
