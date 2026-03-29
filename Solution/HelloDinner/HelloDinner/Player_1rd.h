@@ -33,7 +33,7 @@ private:
 	virtual HRESULT				Ready_Components();
 
 private:
-	class CModel* m_pModelCom = { nullptr };
+	class CModel*		m_pModelCom = { nullptr };
 	// CCollider* m_pColliderCom = { nullptr };
 	_uint				m_iState = 0;
 	_int				m_iHealth = 0;

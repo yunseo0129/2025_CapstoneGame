@@ -23,7 +23,6 @@ public:
 
 protected:
 	virtual HRESULT				Ready_PartObjects() PURE;
-	virtual HRESULT				Ready_Components() PURE;
 
 protected:
 	vector<CGameObject*>			m_PartObjects;
