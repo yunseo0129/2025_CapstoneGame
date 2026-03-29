@@ -28,6 +28,14 @@ using namespace Microsoft::WRL;
 #include <DirectXPackedVector.h>
 #include <DirectXColors.h>
 #include <DirectXCollision.h>
+
+// DirectX Tool Kit 헤더 파일입니다.
+#include <PrimitiveBatch.h>
+#include <VertexTypes.h>
+#include <DirectXColors.h>
+#include <Effects.h>
+//
+
 using namespace DirectX;
 using namespace DirectX::PackedVector;
 

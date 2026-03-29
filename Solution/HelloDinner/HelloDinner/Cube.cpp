@@ -7,13 +7,17 @@
 CCube::CCube(EngineContext* pContext)
 	: CGameObject(pContext)
 {
-	
+	Safe_AddRef(m_pTextureCom);
+	Safe_AddRef(m_pVIBufferCom);
 }
 
 CCube::CCube(const CCube& Prototype)
-	: CGameObject(Prototype)
+	: CGameObject(Prototype.m_pContext)
+	, m_pTextureCom(Prototype.m_pTextureCom)
+	, m_pVIBufferCom(Prototype.m_pVIBufferCom)
 {
-	
+	Safe_AddRef(m_pTextureCom);
+	Safe_AddRef(m_pVIBufferCom);
 }
 
 HRESULT CCube::Initialize_Prototype()
@@ -117,5 +121,7 @@ CGameObject* CCube::Clone(void* pArg)
 
 void CCube::Free()
 {
+	Safe_Release(m_pVIBufferCom);
+	Safe_Release(m_pTextureCom);
 	__super::Free();
 }

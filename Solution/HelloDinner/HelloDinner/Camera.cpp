@@ -3,7 +3,6 @@
 
 CCamera::CCamera(EngineContext* pContext)
 	: CGameObject{ pContext }
-	, m_pDevice {pContext->device}
 {
 	XMStoreFloat4x4 ( &m_xmf4x4View , XMMatrixIdentity () );
 	XMStoreFloat4x4 ( &m_xmf4x4Projection , XMMatrixIdentity () );
@@ -11,9 +10,11 @@ CCamera::CCamera(EngineContext* pContext)
 }
 
 CCamera::CCamera(const CCamera& Prototype)
-	: CGameObject{ Prototype }
+	: CGameObject{ Prototype.m_pContext }
 {
-
+	m_xmf3Position = Prototype.m_xmf3Position;
+	XMStoreFloat4x4(&m_xmf4x4View, XMLoadFloat4x4(&Prototype.m_xmf4x4View));
+	XMStoreFloat4x4(&m_xmf4x4Projection, XMLoadFloat4x4(&Prototype.m_xmf4x4Projection));
 }
 
 HRESULT CCamera::Initialize_Prototype()
@@ -65,17 +66,14 @@ HRESULT CCamera::Bind_CameraBuffer ( ID3D12GraphicsCommandList* pCmdList , RootP
 {
 	_int iFrameIndex = m_pGameInstance->GetCurrentFrameIndex ();
 
-	XMFLOAT4X4 xmf4x4View , xmf4x4Proj;
+	XMStoreFloat4x4(&m_xmf4x4View, m_pTransformCom->Get_WorldMatrix_Inverse());
+	memcpy(&m_pCbMappedCameras[iFrameIndex]->m_xmf4x4View, &m_xmf4x4View, sizeof (_float4x4));
 
-	XMStoreFloat4x4 ( &xmf4x4View , m_pTransformCom->Get_WorldMatrix_Inverse() );
-	memcpy ( &m_pCbMappedCameras[iFrameIndex]->m_xmf4x4View , &xmf4x4View , sizeof (_float4x4));
-
-	XMStoreFloat4x4 ( &xmf4x4Proj , XMMatrixPerspectiveFovLH( m_fFovy , m_fAspect , m_fNear , m_fFar ) );
-	memcpy ( &m_pCbMappedCameras[iFrameIndex]->m_xmf4x4Proj , &xmf4x4Proj , sizeof ( _float4x4 ) );
+	XMStoreFloat4x4(&m_xmf4x4Projection, XMMatrixPerspectiveFovLH(m_fFovy, m_fAspect, m_fNear, m_fFar));
+	memcpy(&m_pCbMappedCameras[iFrameIndex]->m_xmf4x4Proj, &m_xmf4x4Projection, sizeof(_float4x4));
 	
-	XMFLOAT3 xmf3Pos;
-	XMStoreFloat3 ( &xmf3Pos , m_pTransformCom->Get_State( CTransform::STATE_POSITION ) );
-	memcpy ( &m_pCbMappedCameras[iFrameIndex]->m_xmf3Position , &xmf3Pos , sizeof ( _float3 ) );
+	XMStoreFloat3(&m_xmf3Position, m_pTransformCom->Get_State(CTransform::STATE_POSITION));
+	memcpy(&m_pCbMappedCameras[iFrameIndex]->m_xmf3Position, &m_xmf3Position, sizeof(_float3));
 
 	// 디버그 출력
 	// DebugPrintMatrix ( "View" , xmf4x4View );
@@ -84,6 +82,8 @@ HRESULT CCamera::Bind_CameraBuffer ( ID3D12GraphicsCommandList* pCmdList , RootP
 
 
 	pCmdList->SetGraphicsRootConstantBufferView ( _eIndex , m_pCameraBuffers[iFrameIndex]->GetGPUVirtualAddress ());
+
+
 	return S_OK;
 }
 
@@ -134,7 +134,7 @@ HRESULT CCamera::Create_CameraBuffer ()
 
 	for ( _int i = 0; i < FRAME_COUNT; ++i )
 	{
-		HRESULT hResult = m_pDevice->CreateCommittedResource (
+		HRESULT hResult = m_pContext->device->CreateCommittedResource (
 			&d3dHeapPropertiesDesc , D3D12_HEAP_FLAG_NONE ,
 			&d3dResourceDesc , D3D12_RESOURCE_STATE_GENERIC_READ ,
 			NULL , __uuidof( ID3D12Resource ) , ( void** )&m_pCameraBuffers[i] );
@@ -158,15 +158,10 @@ void CCamera::Free()
 {
 	for ( _int i = 0; i < FRAME_COUNT; ++i )
 	{
-		if ( m_pCameraBuffers[i] )
+		if (m_pCbMappedCameras[i])
 		{
-			m_pCameraBuffers[i]->Unmap ( 0 , nullptr );
-			m_pCameraBuffers[i].Reset ();
 			m_pCbMappedCameras[i] = nullptr;
 		}
 	}
-
-
-	m_pDevice.Reset();
 	__super::Free();
 }

@@ -321,6 +321,20 @@ HRESULT CGameInstance::Open_Level(_int iLevelIndex, CLevel* pNewLevel)
 	return m_pLevel_Manager->Open_Level(iLevelIndex, pNewLevel);
 }
 
+XMFLOAT4X4 CGameInstance::Get_CurrentCameraView()
+{
+	if (nullptr == m_pLevel_Manager)
+		return XMFLOAT4X4();
+	return m_pLevel_Manager->Get_CurrentCameraView();
+}
+
+XMFLOAT4X4 CGameInstance::Get_CurrentCameraProjection()
+{
+	if (nullptr == m_pLevel_Manager)
+		return XMFLOAT4X4();
+	return m_pLevel_Manager->Get_CurrentCameraProjection();
+}
+
 // ------------------------------------------------------------------------
 // Prototype_Manager
 // ------------------------------------------------------------------------
@@ -420,7 +434,6 @@ void CGameInstance::Release_Engine()
 
 void CGameInstance::Free()
 {
-	__super::Free();
 
 	if ( m_pGraphic_Device )
 		m_pGraphic_Device->WaitForGpuComplete ();
@@ -450,4 +463,6 @@ void CGameInstance::Free()
 
 	// 10. Device를 가장 마지막에 해제
 	Safe_Release ( m_pGraphic_Device );
+
+	__super::Free();
 }

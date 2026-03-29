@@ -2,14 +2,12 @@
 #include "Camera.h"
 #include "GameInstance.h"
 
-CLevel::CLevel(ID3D12Device* pDevice, EngineContext* pContext)
-	: m_pDevice{ pDevice }
-	, m_pContext{ pContext }
+CLevel::CLevel( EngineContext* pContext)
+	: m_pContext{ pContext }
 	, m_pGameInstance{ CGameInstance::GetInstance() }
 {
 	m_pCamera.resize(CAMERA_END, nullptr);
 	Safe_AddRef(m_pGameInstance);
-	Safe_AddRef(m_pDevice);
 }
 
 HRESULT CLevel::Initialize()
@@ -42,17 +40,26 @@ void CLevel::Bind_CameraBuffer(ID3D12GraphicsCommandList* pCmdList, RootParamete
 	if (m_pCamera[_eType] == nullptr)
 		return;
 	m_pCamera[_eType]->Bind_CameraBuffer(pCmdList, _eIndex);
+
+	Get_CameraMatrix(_eType);
+}
+
+void CLevel::Get_CameraMatrix(CAMERA_TYPE _eType)
+{
+	if (m_pCamera[_eType] != nullptr)
+	{
+		m_xmf4x4CurrentView = m_pCamera[_eType]->Get_CameraView();
+		m_xmf4x4CurrentProjection = m_pCamera[_eType]->Get_CameraProjection();
+	}
 }
 
 void CLevel::Free()
 {
-	__super::Free();
-
 	for (auto& pCamera : m_pCamera)
 		Safe_Release(pCamera);
 	m_pCamera.clear();
 
 	Safe_Release(m_pGameInstance);
-	Safe_Release(m_pDevice);
-	
+
+	__super::Free();
 }

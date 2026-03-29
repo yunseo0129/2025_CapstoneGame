@@ -21,9 +21,6 @@ HRESULT CLevel_Manager::Open_Level(_int iLevelIndex, CLevel* pNewLevel)
 		//m_pGameInstance->Clear(m_iCurrentLevelID);
 	}
 
-
-
-
 	Safe_Release(m_pCurrentLevel);
 
 	m_pCurrentLevel = pNewLevel;
@@ -45,6 +42,20 @@ void CLevel_Manager::Bind_CameraBuffer(ID3D12GraphicsCommandList* pCmdList, Root
 		m_pCurrentLevel->Bind_CameraBuffer(pCmdList, _eIndex, _eType);
 }
 
+XMFLOAT4X4 CLevel_Manager::Get_CurrentCameraView ()
+{
+	if (nullptr != m_pCurrentLevel)
+		return m_pCurrentLevel->Get_CurrentCameraView();
+	return XMFLOAT4X4 ();
+}
+
+XMFLOAT4X4 CLevel_Manager::Get_CurrentCameraProjection ()
+{
+	if (nullptr != m_pCurrentLevel)
+		return m_pCurrentLevel->Get_CurrentCameraProjection();
+	return XMFLOAT4X4 ();
+}
+
 HRESULT CLevel_Manager::Render()
 {
 	if (nullptr != m_pCurrentLevel)
@@ -62,8 +73,8 @@ CLevel_Manager* CLevel_Manager::Create()
 
 void CLevel_Manager::Free()
 {
-	__super::Free();
-
 	Safe_Release(m_pGameInstance);
 	Safe_Release(m_pCurrentLevel);
+
+	__super::Free();
 }

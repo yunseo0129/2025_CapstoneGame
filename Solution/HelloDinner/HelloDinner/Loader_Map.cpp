@@ -9,9 +9,8 @@
 #include "json.hpp"
 using json = nlohmann::json;
 
-CLoader_Map::CLoader_Map(ID3D12Device* pDevice, EngineContext* pContext)
-	: m_pDevice{ pDevice }
-	, m_pContext{ pContext }
+CLoader_Map::CLoader_Map(EngineContext* pContext)
+	: m_pContext{ pContext }
 	, m_pGameInstance{ CGameInstance::GetInstance() }
 {
 	Safe_AddRef(m_pGameInstance);
@@ -68,7 +67,7 @@ HRESULT CLoader_Map::Load_MaterialData(const string& strJsonPath, _uint iLevelIn
 			{
 				_wstring strPath = L"Resources/Map/dds/" + _wstring(albedoFile.begin(), albedoFile.end());
 
-				CTexture* pTexture = CTexture::Create(m_pDevice, m_pContext->cmdList, strPath.c_str());
+				CTexture* pTexture = CTexture::Create(m_pContext, strPath.c_str());
 				if (pTexture != nullptr)
 				{
 					if (FAILED(m_pGameInstance->Add_Prototype(iLevelIndex, strAlbedoTag, pTexture)))
@@ -99,7 +98,7 @@ HRESULT CLoader_Map::Load_MaterialData(const string& strJsonPath, _uint iLevelIn
 			{
 				_wstring strPath = L"Resources/Map/dds/" + _wstring(normalFile.begin(), normalFile.end());
 
-				CTexture* pTexture = CTexture::Create(m_pDevice, m_pContext->cmdList, strPath.c_str());
+				CTexture* pTexture = CTexture::Create(m_pContext, strPath.c_str());
 				if (pTexture != nullptr)
 				{
 					if (FAILED(m_pGameInstance->Add_Prototype(iLevelIndex, strNormalTag, pTexture)))
@@ -125,10 +124,12 @@ HRESULT CLoader_Map::Load_MaterialData(const string& strJsonPath, _uint iLevelIn
 		FlushCommandList();
 	//
 
+	/*
 	char szLog[512];
 	sprintf_s(szLog, "[MaterialData] Registered %zu textures, %zu materials\n",
 		registeredTextures.size(), m_mapMaterialToAlbedoTag.size());
 	OutputDebugStringA(szLog);
+	*/
 
 	return S_OK;
 }
@@ -179,7 +180,7 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 			// Clone 실패 = 프로토타입이 없다는 뜻 → 새로 등록
 			_wstring strBinaryPath = Get_BinaryPath(fbxName);
 
-			CModel* pModel = CModel::Create(m_pDevice, m_pContext,
+			CModel* pModel = CModel::Create(m_pContext,
 				CModel::TYPE_NONANIM, strBinaryPath.c_str(), XMMatrixIdentity(), CModel::MATLOAD_SKIP_TEXTURE);
 
 			if (nullptr == pModel)
@@ -190,10 +191,13 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 			}
 
 			// textureNames 배열을 이용하여 각 MatIdx에 텍스처 설정
+			
+			/*	출력 위치 수정 필요
 			char szDebug[512];
 			sprintf_s(szDebug, "[LoadMap] Model has %u materials, textureNames has %zu entries\n",
 				pModel->Get_NumMaterials(), materialNames.size());
 			OutputDebugStringA(szDebug);
+			*/
 
 			for (_uint matIdx = 0; matIdx < (_uint)materialNames.size(); matIdx++)
 			{
@@ -209,15 +213,19 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 						m_pGameInstance->Clone_Prototype(
 							Engine::PROTOTYPE::PROTO_COMPONENT, iLevelIndex, strAlbedoTag, nullptr));
 
+					/* 출력 위치 수정 필요
 					sprintf_s(szDebug, "[LoadMap] matIdx=%u, matName=%s, albedoTag=%ls, pAlbedo=0x%p\n",
 						matIdx, matName.c_str(), strAlbedoTag.c_str(), pAlbedo);
 					OutputDebugStringA(szDebug);
+					*/
 
 					if (pAlbedo != nullptr)
 					{
 						HRESULT hr = pModel->Set_MaterialTexture(matIdx, (TextureType)TextureType_DIFFUSE, pAlbedo);
+						/* 출력 위치 수정필요
 						sprintf_s(szDebug, "[LoadMap] Set_MaterialTexture(Albedo) result: 0x%08X\n", hr);
 						OutputDebugStringA(szDebug);
+						*/
 					}
 				}
 
@@ -231,15 +239,19 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 						m_pGameInstance->Clone_Prototype(
 							Engine::PROTOTYPE::PROTO_COMPONENT, iLevelIndex, strNormalTag, nullptr));
 
+					/* 출력 위치 수정필요
 					sprintf_s(szDebug, "[LoadMap] matIdx=%u, matName=%s, normalTag=%ls, pNormal=0x%p\n",
 						matIdx, matName.c_str(), strNormalTag.c_str(), pNormal);
 					OutputDebugStringA(szDebug);
+					*/
 
 					if (pNormal != nullptr)
 					{
+						/* 출력 위치 수정 필요
 						HRESULT hr = pModel->Set_MaterialTexture(matIdx, (TextureType)TextureType_NORMALS, pNormal);
 						sprintf_s(szDebug, "[LoadMap] Set_MaterialTexture(Normal) result: 0x%08X\n", hr);
 						OutputDebugStringA(szDebug);
+						*/
 					}
 				}
 			}
@@ -325,7 +337,7 @@ HRESULT CLoader_Map::Check_Fbx_Existence ( const string& strJsonPath )
 		if ( !fbxFile.is_open () )
 		{
 			char szLog[512];
-			sprintf_s ( szLog ,"[FBXFile] Name: %s\ not exist\n" , fbxName.c_str () );
+			sprintf_s ( szLog ,"[FBXFile] Name: %s not exist\n" , fbxName.c_str () );
 			OutputDebugStringA ( szLog );
 		}
 		fbxFile.close ();
@@ -358,18 +370,17 @@ _wstring CLoader_Map::Get_TextureTag(const string& strPngFileName)
 	return _wstring(tag.begin(), tag.end());
 }
 
-CLoader_Map* CLoader_Map::Create(ID3D12Device* pDevice, EngineContext* pContext)
+CLoader_Map* CLoader_Map::Create(EngineContext* pContext)
 {
-	CLoader_Map* pInstance = new CLoader_Map(pDevice, pContext);
+	CLoader_Map* pInstance = new CLoader_Map(pContext);
 	return pInstance;
 }
 
 void CLoader_Map::Free()
 {
-	__super::Free();
-
 	// 혹시 남아있을 수 있는 보류 리소스 정리
 	ReleasePendingResources();
-
 	Safe_Release(m_pGameInstance);
+	__super::Free();
+
 }
