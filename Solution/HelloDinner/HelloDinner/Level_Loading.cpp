@@ -17,6 +17,8 @@
 #include "Collider.h"
 #include "Player_1rd.h"
 
+#include "Obj_CollisionTest.h"
+
 CLevel_Loading::CLevel_Loading(EngineContext* pContext)
 	: CLevel{pContext }
 {
@@ -40,6 +42,47 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 		CCollider::Create(m_pContext, CCollider::TYPE_SPHERE))))
 		return E_FAIL;
 
+
+	// Ãæµ¹ Å×½ºÆ®¿ë ¿ÀºêÁ§Æ®
+	// AABB
+	{
+		if(FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_TestObject_AABB") ,
+			CObj_CollisionTest::Create ( m_pContext ) ) ) )
+			return E_FAIL;
+		CObj_CollisionTest::Obj_CollisionTest_DESC cdesc;
+		cdesc.vPosition = _float3 ( 0.f , 0.f , 0.f );
+		cdesc.vRotation = _float3 ( 0.f , 0.f , 0.f );
+		cdesc.vScale = _float3 ( 1.f , 1.f , 1.f );
+		cdesc.eColliderType = CCollider::TYPE_AABB;
+		m_pGameInstance->Add_GameObject_ToLayer ( 1 , TEXT("Prototype_TestObject_AABB") ,
+			1 , TEXT ( "Layer_CollisionTest" ) , &cdesc );
+	}
+	// Sphere
+	{
+		if ( FAILED ( m_pGameInstance->Add_Prototype ( 1 , TEXT ( "Prototype_TestObject_Sphere" ) ,
+			CObj_CollisionTest::Create ( m_pContext ) ) ) )
+			return E_FAIL;
+		CObj_CollisionTest::Obj_CollisionTest_DESC cdesc;
+		cdesc.vPosition = _float3 ( 200.f , 0.f , 0.f );
+		cdesc.vRotation = _float3 ( 0.f , 0.f , 0.f );
+		cdesc.vScale = _float3 ( 1.f , 1.f , 1.f );
+		cdesc.eColliderType = CCollider::TYPE_SPHERE;
+		m_pGameInstance->Add_GameObject_ToLayer ( 1 , TEXT ( "Prototype_TestObject_Sphere" ) ,
+			1 , TEXT ( "Layer_CollisionTest" ) , &cdesc );
+	}
+	// OBB
+	{
+		if ( FAILED ( m_pGameInstance->Add_Prototype ( 1 , TEXT ( "Prototype_TestObject_OBB" ) ,
+			CObj_CollisionTest::Create ( m_pContext ) ) ) )
+			return E_FAIL;
+		CObj_CollisionTest::Obj_CollisionTest_DESC cdesc;
+		cdesc.vPosition = _float3 ( 400.f , 0.f , 0.f );
+		cdesc.vRotation = _float3 ( 0.f , 45.f , 45.f );
+		cdesc.vScale = _float3 ( 1.f , 1.f , 1.f );
+		cdesc.eColliderType = CCollider::TYPE_OBB;
+		m_pGameInstance->Add_GameObject_ToLayer ( 1 , TEXT ( "Prototype_TestObject_OBB" ) ,
+			1 , TEXT ( "Layer_CollisionTest" ) , &cdesc );
+	}
 
 
 /*
@@ -104,7 +147,7 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 		return E_FAIL;
 
 	// ¾Ö´Ô¸ðµ¨ µÅÁö CPig_3rd
-	{
+	/*{
 		if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_GameObject_Pig_3rd"),
 			CPig_3rd::Create(m_pContext))))
 			return E_FAIL;
@@ -113,10 +156,10 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 		cdesc.iModelLevelIndex = 1;
 		m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Pig_3rd"),
 			1, TEXT("Layer_Player_3rd"), &cdesc);
-	}
+	}*/
 
 	// ¾Ö´Ô¸ðµ¨ µÅÁö Player_1rd·Î »ý¼º
-	/*{
+	{
 		if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_GameObject_Player_1rd"),
 			CPlayer_1rd::Create(m_pContext))))
 			return E_FAIL;
@@ -125,7 +168,7 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 		cdesc.iModelLevelIndex = 1;
 		m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Player_1rd"),
 			1, TEXT("Layer_Player_1rd"), &cdesc);
-	}*/
+	}
 
 
 	// m_pLoader = CLoader::Create(m_pDevice, m_pContext, m_eNextLevelID)

@@ -377,6 +377,7 @@
     <ClInclude Include="Player_1rd.h">
       <Filter>소스 파일\02. Game\GameObject\02. Player\Player_1rd</Filter>
     </ClInclude>
+    <ClInclude Include="Obj_CollisionTest.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -549,6 +550,9 @@
     </ClCompile>
     <ClCompile Include="Player_3rd.cpp">
       <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd</Filter>
+    </ClCompile>
+    <ClCompile Include="Obj_CollisionTest.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
