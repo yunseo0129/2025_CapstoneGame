@@ -5,6 +5,7 @@
 CPlayer_1rd::CPlayer_1rd(EngineContext* _pcontext)
 	: CContainerObj{ _pcontext }
 {
+
 }
 
 CPlayer_1rd::CPlayer_1rd(const CPlayer_1rd& Prototype)
@@ -124,5 +125,4 @@ void CPlayer_1rd::Free()
 	__super::Free();
 
 	//Safe_Release(m_pColliderCom);
-	Safe_Release(m_pModelCom);
 }

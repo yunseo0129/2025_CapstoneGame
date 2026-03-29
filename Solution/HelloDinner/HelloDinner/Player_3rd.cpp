@@ -7,13 +7,13 @@
 CPlayer_3rd::CPlayer_3rd(EngineContext* pContext)
 	: CGameObject(pContext)
 {
-	Safe_AddRef(m_pModelCom);
+
 }
 
 CPlayer_3rd::CPlayer_3rd(const CPlayer_3rd& Prototype)
 	: CGameObject(Prototype.m_pContext)
 {
-	Safe_AddRef(m_pModelCom);
+
 }
 
 HRESULT CPlayer_3rd::Initialize_Prototype()
