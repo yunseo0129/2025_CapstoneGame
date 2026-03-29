@@ -103,11 +103,13 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>../HelloDinner</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../HelloDinner;../HelloDinner/ThirdParty/Inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>../HelloDinner/ThirdParty/Lib/Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>DirectXTK12.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -127,11 +129,13 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>../HelloDinner</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../HelloDinner;../HelloDinner/ThirdParty/Inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>../HelloDinner/ThirdParty/Lib/Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>DirectXTK12.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -148,8 +152,13 @@
     </ClInclude>
     <ClInclude Include="Channel.h" />
     <ClInclude Include="Collider.h" />
+    <ClInclude Include="ContainerObj.h" />
     <ClInclude Include="DebugDraw.h" />
+    <ClInclude Include="Ketchup_Gun.h" />
     <ClInclude Include="NetworkClient.h" />
+    <ClInclude Include="PartObj.h" />
+    <ClInclude Include="Pig_1rd.h" />
+    <ClInclude Include="Player_1rd.h" />
     <ClInclude Include="Player_3rd.h" />
     <ClInclude Include="Common\WICTextureLoader12.h" />
     <ClInclude Include="Component.h" />
@@ -212,8 +221,15 @@
     <ClCompile Include="Collider.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="ContainerObj.cpp" />
     <ClCompile Include="DebugDraw.cpp" />
+    <ClCompile Include="Ketchup_Gun.cpp" />
     <ClCompile Include="NetworkClient.cpp" />
+    <ClCompile Include="PartObj.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Pig_1rd.cpp" />
+    <ClCompile Include="Player_1rd.cpp" />
     <ClCompile Include="Player_3rd.cpp" />
     <ClCompile Include="Common\DDSTextureLoader12.cpp" />
     <ClCompile Include="Common\WICTextureLoader12.cpp" />
@@ -274,16 +290,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\directxtk12_desktop_2019.2025.10.28.1\build\native\directxtk12_desktop_2019.targets" Condition="Exists('..\packages\directxtk12_desktop_2019.2025.10.28.1\build\native\directxtk12_desktop_2019.targets')" />
-  </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>이 프로젝트는 이 컴퓨터에 없는 NuGet 패키지를 참조합니다. 해당 패키지를 다운로드하려면 NuGet 패키지 복원을 사용하십시오. 자세한 내용은 http://go.microsoft.com/fwlink/?LinkID=322105를 참조하십시오. 누락된 파일은 {0}입니다.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\directxtk12_desktop_2019.2025.10.28.1\build\native\directxtk12_desktop_2019.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxtk12_desktop_2019.2025.10.28.1\build\native\directxtk12_desktop_2019.targets'))" />
-  </Target>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

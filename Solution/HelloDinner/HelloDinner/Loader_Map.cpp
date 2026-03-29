@@ -192,12 +192,13 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 
 			// textureNames 배열을 이용하여 각 MatIdx에 텍스처 설정
 			
-			/*	출력 위치 수정 필요
+			//	출력 위치 수정 필요
 			char szDebug[512];
+#ifndef _DEBUG
 			sprintf_s(szDebug, "[LoadMap] Model has %u materials, textureNames has %zu entries\n",
 				pModel->Get_NumMaterials(), materialNames.size());
 			OutputDebugStringA(szDebug);
-			*/
+#endif
 
 			for (_uint matIdx = 0; matIdx < (_uint)materialNames.size(); matIdx++)
 			{
@@ -213,19 +214,19 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 						m_pGameInstance->Clone_Prototype(
 							Engine::PROTOTYPE::PROTO_COMPONENT, iLevelIndex, strAlbedoTag, nullptr));
 
-					/* 출력 위치 수정 필요
+#ifndef _DEBUG
 					sprintf_s(szDebug, "[LoadMap] matIdx=%u, matName=%s, albedoTag=%ls, pAlbedo=0x%p\n",
 						matIdx, matName.c_str(), strAlbedoTag.c_str(), pAlbedo);
 					OutputDebugStringA(szDebug);
-					*/
+#endif // !_DEBUG
 
 					if (pAlbedo != nullptr)
 					{
 						HRESULT hr = pModel->Set_MaterialTexture(matIdx, (TextureType)TextureType_DIFFUSE, pAlbedo);
-						/* 출력 위치 수정필요
+#ifndef _DEBUG
 						sprintf_s(szDebug, "[LoadMap] Set_MaterialTexture(Albedo) result: 0x%08X\n", hr);
 						OutputDebugStringA(szDebug);
-						*/
+#endif
 					}
 				}
 
@@ -239,19 +240,20 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 						m_pGameInstance->Clone_Prototype(
 							Engine::PROTOTYPE::PROTO_COMPONENT, iLevelIndex, strNormalTag, nullptr));
 
-					/* 출력 위치 수정필요
+#ifndef _DEBUG
 					sprintf_s(szDebug, "[LoadMap] matIdx=%u, matName=%s, normalTag=%ls, pNormal=0x%p\n",
 						matIdx, matName.c_str(), strNormalTag.c_str(), pNormal);
 					OutputDebugStringA(szDebug);
-					*/
+#endif
 
 					if (pNormal != nullptr)
 					{
-						/* 출력 위치 수정 필요
+						// 출력 위치 수정 필요
 						HRESULT hr = pModel->Set_MaterialTexture(matIdx, (TextureType)TextureType_NORMALS, pNormal);
+#ifndef _DEBUG
 						sprintf_s(szDebug, "[LoadMap] Set_MaterialTexture(Normal) result: 0x%08X\n", hr);
 						OutputDebugStringA(szDebug);
-						*/
+#endif
 					}
 				}
 			}
