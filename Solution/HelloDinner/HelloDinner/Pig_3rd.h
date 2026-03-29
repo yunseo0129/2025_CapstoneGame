@@ -27,15 +27,6 @@ private:
 	virtual HRESULT Ready_Components();
 
 private:
-	class CCollider* m_pMainColliderCom = { nullptr };
-	class CCollider* m_pHeadColliderCom = { nullptr };
-	class CCollider* m_pBodyColliderCom = { nullptr };
-	class CCollider* m_pLLegColliderCom = { nullptr };
-	class CCollider* m_pRLegColliderCom = { nullptr };
-	class CCollider* m_pRUpperArmColliderCom = { nullptr };
-	class CCollider* m_pLUpperArmColliderCom = { nullptr };
-	class CCollider* m_pRLowerArmColliderCom = { nullptr };
-	class CCollider* m_pLLowerArmColliderCom = { nullptr };
 
 public:
 	static CPig_3rd* Create(EngineContext* _pcontext);

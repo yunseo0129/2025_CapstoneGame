@@ -7,13 +7,17 @@
 CPlayer_3rd::CPlayer_3rd(EngineContext* pContext)
 	: CGameObject(pContext)
 {
-
 }
 
 CPlayer_3rd::CPlayer_3rd(const CPlayer_3rd& Prototype)
 	: CGameObject(Prototype.m_pContext)
 {
-
+	m_vColliderComs = Prototype.m_vColliderComs;
+	for (auto& pCollider : m_vColliderComs)
+	{
+		if (pCollider != nullptr)
+			Safe_AddRef(pCollider);
+	}
 }
 
 HRESULT CPlayer_3rd::Initialize_Prototype()
@@ -81,6 +85,8 @@ void CPlayer_3rd::Render(ID3D12GraphicsCommandList* _commandList)
 		m_pModelCom->Bind_BoneMatrices(_commandList, i);
 		m_pModelCom->Render(_commandList, i);
 	}
+
+
 }
 
 HRESULT CPlayer_3rd::Ready_Components()

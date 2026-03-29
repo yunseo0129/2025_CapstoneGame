@@ -46,71 +46,74 @@ void CPig_3rd::Update(_float fTimeDelta)
 	
 	__super::Update(fTimeDelta);
 
+
 	// 충돌체 업데이트
 	_matrix WorldMatrix = m_pTransformCom->Get_WorldMatrix();
 	// 1. Main Collider (AABB) - Root 뼈 기준
-	if (m_pMainColliderCom != nullptr) {
-		m_pMainColliderCom->Update(m_pTransformCom->Get_WorldMatrix());
+	if ( m_vColliderComs[0] != nullptr) {
+		m_vColliderComs[0]->Update (m_pTransformCom->Get_WorldMatrix ());
 	}
 
 	// 2. Head Collider (Sphere) - "head" 뼈
-	if (nullptr != m_pHeadColliderCom)
+	if (nullptr != m_vColliderComs[1])
 	{
 		// 뼈의 Combined Matrix를 가져옵니다.
 		_matrix BoneMatrix = XMLoadFloat4x4(m_pModelCom->Get_BoneMatrix("head"));
 		// 뼈 행렬 * 월드 행렬 = 최종 소켓 월드 행렬
 		_matrix SocketMatrix = XMMatrixMultiply(BoneMatrix, WorldMatrix);
-		m_pHeadColliderCom->Update(SocketMatrix);
+		m_vColliderComs[1]->Update (SocketMatrix);
 	}
 
+	/*
 	// 3. Body Collider (OBB) - "spine" 뼈 (또는 torso)
-	if (nullptr != m_pBodyColliderCom)
+	if (nullptr != m_vColliderComs[2])
 	{
 		_matrix BoneMatrix = XMLoadFloat4x4(m_pModelCom->Get_BoneMatrix("spine"));
-		m_pBodyColliderCom->Update(XMMatrixMultiply(BoneMatrix, WorldMatrix));
+		m_vColliderComs[2]->Update(XMMatrixMultiply(BoneMatrix, WorldMatrix));
 	}
 
 	// 4. L_UpperArm Collider (OBB) - "upper_arm.L" 뼈
-	if (nullptr != m_pLUpperArmColliderCom)
+	if (nullptr != m_vColliderComs[3])
 	{
 		_matrix BoneMatrix = XMLoadFloat4x4(m_pModelCom->Get_BoneMatrix("upper_arm.L"));
-		m_pLUpperArmColliderCom->Update(XMMatrixMultiply(BoneMatrix, WorldMatrix));
+		m_vColliderComs[3]->Update(XMMatrixMultiply(BoneMatrix, WorldMatrix));
 	}
 
 	// 5. L_LowerArm Collider (OBB) - "lower_arm.L" 뼈
-	if (nullptr != m_pLLowerArmColliderCom)
+	if (nullptr != m_vColliderComs[4])
 	{
 		_matrix BoneMatrix = XMLoadFloat4x4(m_pModelCom->Get_BoneMatrix("lower_arm.L"));
-		m_pLLowerArmColliderCom->Update(XMMatrixMultiply(BoneMatrix, WorldMatrix));
+		m_vColliderComs[4]->Update(XMMatrixMultiply(BoneMatrix, WorldMatrix));
 	}
 
 	// 6. R_UpperArm Collider (OBB) - "upper_arm.R" 뼈
-	if (nullptr != m_pRUpperArmColliderCom)
+	if (nullptr != m_vColliderComs[5])
 	{
 		_matrix BoneMatrix = XMLoadFloat4x4(m_pModelCom->Get_BoneMatrix("upper_arm.R"));
-		m_pRUpperArmColliderCom->Update(XMMatrixMultiply(BoneMatrix, WorldMatrix));
+		m_vColliderComs[5]->Update(XMMatrixMultiply(BoneMatrix, WorldMatrix));
 	}
 
 	// 7. R_LowerArm Collider (OBB) - "lower_arm.R" 뼈
-	if (nullptr != m_pRLowerArmColliderCom)
+	if (nullptr != m_vColliderComs[6])
 	{
 		_matrix BoneMatrix = XMLoadFloat4x4(m_pModelCom->Get_BoneMatrix("lower_arm.R"));
-		m_pRLowerArmColliderCom->Update(XMMatrixMultiply(BoneMatrix, WorldMatrix));
+		m_vColliderComs[6]->Update(XMMatrixMultiply(BoneMatrix, WorldMatrix));
 	}
 
 	// 8. L_Leg Collider (OBB)
-	if (nullptr != m_pLLegColliderCom)
+	if (nullptr != m_vColliderComs[7])
 	{
 		_matrix BoneMatrix = XMLoadFloat4x4(m_pModelCom->Get_BoneMatrix("thigh.L"));
-		m_pLLegColliderCom->Update(XMMatrixMultiply(BoneMatrix, WorldMatrix));
+		m_vColliderComs[7]->Update(XMMatrixMultiply(BoneMatrix, WorldMatrix));
 	}
 
 	// 9. R_Leg Collider (OBB)
-	if (nullptr != m_pRLegColliderCom)
+	if (nullptr != m_vColliderComs[8])
 	{
 		_matrix BoneMatrix = XMLoadFloat4x4(m_pModelCom->Get_BoneMatrix("thigh.R"));
-		m_pRLegColliderCom->Update(XMMatrixMultiply(BoneMatrix, WorldMatrix));
+		m_vColliderComs[8]->Update(XMMatrixMultiply(BoneMatrix, WorldMatrix));
 	}
+	*/
 }
 
 void CPig_3rd::Late_Update(_float fTimeDelta)
@@ -121,6 +124,13 @@ void CPig_3rd::Late_Update(_float fTimeDelta)
 void CPig_3rd::Render(ID3D12GraphicsCommandList* _commandList)
 {
 	__super::Render(_commandList);
+#ifdef _DEBUG
+	for ( CCollider* pCollider : m_vColliderComs )
+	{
+		if ( pCollider != nullptr )
+			m_pGameInstance->Add_RenderCollider(pCollider);
+	}
+#endif
 }
 
 HRESULT CPig_3rd::Ready_Components()
@@ -129,15 +139,15 @@ HRESULT CPig_3rd::Ready_Components()
 	if (FAILED(__super::Ready_Components()))
 		return E_FAIL;
 	*/
-	
-	// 배열로 만들자?
 
 	// Main Collider
+	m_vColliderComs.resize ( 2 , nullptr );		// 일단 2개만 (Main AABB, Head Sphere)
+
 	CBounding_AABB::BOUND_AABB_DESC ColliderDesc;
 	ColliderDesc.vExtents = _float3(50.f, 125.0f, 50.f);
 	ColliderDesc.vCenter = _float3(0.0f, 125.0f, 0.0f);
 	if (FAILED(Add_Component(m_iModelLevelIndex, TEXT("Prototype_Component_AABB"),
-		TEXT("Com_Collider"), reinterpret_cast<CComponent**>(&m_pMainColliderCom), &ColliderDesc)))
+		TEXT("Com_Collider"), reinterpret_cast<CComponent**>(&m_vColliderComs[0] ) , &ColliderDesc)) )
 	{
 		MSG_BOX("Failed to Add Component : Collider in Player_3rd");
 		return E_FAIL;
@@ -148,7 +158,7 @@ HRESULT CPig_3rd::Ready_Components()
 	HeadColliderDesc.fRadius = 55.f;
 	HeadColliderDesc.vCenter = _float3(0.f, 40.f, 0.f);
 	if (FAILED(Add_Component(m_iModelLevelIndex, TEXT("Prototype_Component_Sphere"),
-		TEXT("Com_Collider_Head"), reinterpret_cast<CComponent**>(&m_pHeadColliderCom), &HeadColliderDesc)))
+		TEXT("Com_Collider_Head"), reinterpret_cast<CComponent**>(&m_vColliderComs[1] ) , &HeadColliderDesc)) )
 	{
 		MSG_BOX("Failed to Add Component : Head Collider in Player_3rd");
 		return E_FAIL;
@@ -162,7 +172,7 @@ HRESULT CPig_3rd::Ready_Components()
 	BodyColliderDesc.vCenter = _float3(0.f, 15.f, 0.f);
 	BodyColliderDesc.vRotation = _float3(0.f, 0.f, 0.f);
 	if (FAILED(Add_Component(m_iModelLevelIndex, TEXT("Prototype_Component_OBB"),
-		TEXT("Com_Collider_Body"), reinterpret_cast<CComponent**>(&m_pBodyColliderCom), &BodyColliderDesc)))
+		TEXT("Com_Collider_Body"), reinterpret_cast<CComponent**>(&m_vColliderComs[2]), &BodyColliderDesc)))
 	{
 		MSG_BOX("Failed to Add Component : Body Collider");
 		return E_FAIL;
@@ -175,7 +185,7 @@ HRESULT CPig_3rd::Ready_Components()
 	LUpperArmColliderDesc.vRotation = _float3(0.f, 0.f, 0.f);
 
 	if (FAILED(Add_Component(m_iModelLevelIndex, TEXT("Prototype_Component_OBB"),
-		TEXT("Com_Collider_L_UpperArm"), reinterpret_cast<CComponent**>(&m_pLUpperArmColliderCom), &LUpperArmColliderDesc)))
+		TEXT("Com_Collider_L_UpperArm"), reinterpret_cast<CComponent**>(&m_vColliderComs[3]), &LUpperArmColliderDesc)))
 	{
 		MSG_BOX("Failed to Add Component : L_UpperArm Collider");
 		return E_FAIL;
@@ -187,7 +197,7 @@ HRESULT CPig_3rd::Ready_Components()
 	LLowerArmColliderDesc.vCenter = _float3(0.f, 10.f, 0.f);
 	LLowerArmColliderDesc.vRotation = _float3(0.f, 0.f, 0.f);
 	if (FAILED(Add_Component(m_iModelLevelIndex, TEXT("Prototype_Component_OBB"),
-		TEXT("Com_Collider_L_LoewrArm"), reinterpret_cast<CComponent**>(&m_pLLowerArmColliderCom), &LLowerArmColliderDesc)))
+		TEXT("Com_Collider_L_LoewrArm"), reinterpret_cast<CComponent**>(&m_vColliderComs[4]), &LLowerArmColliderDesc)))
 	{
 		MSG_BOX("Failed to Add Component : L_LowerArm Collider");
 		return E_FAIL;
@@ -199,7 +209,7 @@ HRESULT CPig_3rd::Ready_Components()
 	RUpperArmColliderDesc.vCenter = _float3(0.f, 10.f, 0.f);
 	RUpperArmColliderDesc.vRotation = _float3(0.f, 0.f, 0.f);
 	if (FAILED(Add_Component(m_iModelLevelIndex, TEXT("Prototype_Component_OBB"),
-		TEXT("Com_Collider_R_UpperArm"), reinterpret_cast<CComponent**>(&m_pRUpperArmColliderCom), &RUpperArmColliderDesc)))
+		TEXT("Com_Collider_R_UpperArm"), reinterpret_cast<CComponent**>(&m_vColliderComs[5]), &RUpperArmColliderDesc)))
 	{
 		MSG_BOX("Failed to Add Component : R_UpperArm Collider");
 		return E_FAIL;
@@ -211,7 +221,7 @@ HRESULT CPig_3rd::Ready_Components()
 	RLowerArmColliderDesc.vCenter = _float3(0.f, 10.f, 0.f);
 	RLowerArmColliderDesc.vRotation = _float3(0.f, 0.f, 0.f);
 	if (FAILED(Add_Component(m_iModelLevelIndex, TEXT("Prototype_Component_OBB"),
-		TEXT("Com_Collider_R_LoewrArm"), reinterpret_cast<CComponent**>(&m_pRLowerArmColliderCom), &RLowerArmColliderDesc)))
+		TEXT("Com_Collider_R_LoewrArm"), reinterpret_cast<CComponent**>(&m_vColliderComs[6]), &RLowerArmColliderDesc)))
 	{
 		MSG_BOX("Failed to Add Component : R_LowerArm Collider");
 		return E_FAIL;
@@ -223,7 +233,7 @@ HRESULT CPig_3rd::Ready_Components()
 	LLegColliderDesc.vCenter = _float3(0.f, 50.f, 0.f);
 	LLegColliderDesc.vRotation = _float3(0.f, 0.f, 0.f);
 	if (FAILED(Add_Component(m_iModelLevelIndex, TEXT("Prototype_Component_OBB"),
-		TEXT("Com_Collider_L_Leg"), reinterpret_cast<CComponent**>(&m_pLLegColliderCom), &LLegColliderDesc)))
+		TEXT("Com_Collider_L_Leg"), reinterpret_cast<CComponent**>(&m_vColliderComs[7]), &LLegColliderDesc)))
 	{
 		MSG_BOX("Failed to Add Component : L_Leg Collider");
 		return E_FAIL;
@@ -235,7 +245,7 @@ HRESULT CPig_3rd::Ready_Components()
 	RLegColliderDesc.vCenter = _float3(0.f, 50.f, 0.f);
 	RLegColliderDesc.vRotation = _float3(0.f, 0.f, 0.f);
 	if (FAILED(Add_Component(m_iModelLevelIndex, TEXT("Prototype_Component_OBB"),
-		TEXT("Com_Collider_R_Leg"), reinterpret_cast<CComponent**>(&m_pRLegColliderCom), &RLegColliderDesc)))
+		TEXT("Com_Collider_R_Leg"), reinterpret_cast<CComponent**>(&m_vColliderComs[8]), &RLegColliderDesc)))
 	{
 		MSG_BOX("Failed to Add Component : R_Leg Collider");
 		return E_FAIL;
