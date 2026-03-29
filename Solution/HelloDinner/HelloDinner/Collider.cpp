@@ -5,6 +5,8 @@
 #include "Bounding_Sphere.h"
 #include "GameInstance.h"
 
+#include <CommonStates.h>
+
 CCollider::CCollider(EngineContext* pContext)
 	: CComponent{ pContext }
 {
@@ -14,18 +16,10 @@ CCollider::CCollider(const CCollider& Prototype)
 	: CComponent{ Prototype.m_pContext }
 	, m_eType{ Prototype.m_eType }
 #ifdef _DEBUG
-	/*
 	, m_pEffect{ Prototype.m_pEffect }
 	, m_pBatch{ Prototype.m_pBatch }
-	, m_pInputLayout{ Prototype.m_pInputLayout }
-	*/
 #endif // _DEBUG
-
-	
 {
-#ifdef _DEBUG
-	//Safe_AddRef(m_pInputLayout);
-#endif // _DEBUG
 }
 
 HRESULT CCollider::Initialize_Prototype(COLLIDERTYPE eColliderType)
@@ -34,22 +28,24 @@ HRESULT CCollider::Initialize_Prototype(COLLIDERTYPE eColliderType)
 
 
 #ifdef _DEBUG
-	
-	/* 박스, 구를 그려내기위한 객체들을 선언해놓는다. */
-	/*
-	m_pBatch = new PrimitiveBatch<VertexPositionColor>(m_pContext);
-	m_pEffect = new BasicEffect(m_pDevice);
+	// 1. RenderTargetState 설정 
+	DXGI_FORMAT renderTargetFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+	DXGI_FORMAT depthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
-	const void* pShaderByteCode = { nullptr };
-	size_t		iShaderByteCodeLength = { 0 };
+	RenderTargetState rtState(renderTargetFormat, depthStencilFormat);
 
-	m_pEffect->SetVertexColorEnabled(true);
+	// 2. PSO 설정
+	EffectPipelineStateDescription pd(
+		&VertexPositionColor::InputLayout,
+		CommonStates::Opaque,
+		CommonStates::DepthNone,
+		CommonStates::CullNone,
+		rtState,
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE
+	);
 
-	m_pEffect->GetVertexShaderBytecode(&pShaderByteCode, &iShaderByteCodeLength);
-
-	if (FAILED(m_pDevice->CreateInputLayout(VertexPositionColor::InputElements, VertexPositionColor::InputElementCount, pShaderByteCode, iShaderByteCodeLength, &m_pInputLayout)))
-		return E_FAIL;
-	*/
+	m_pEffect = new DirectX::BasicEffect(m_pContext->device, DirectX::EffectFlags::VertexColor, pd);
+	m_pBatch = new DirectX::PrimitiveBatch<DirectX::VertexPositionColor>(m_pContext->device);
 #endif
 	return S_OK;
 }
@@ -73,6 +69,7 @@ HRESULT CCollider::Initialize(void* pArg)
 
 	m_isCloned = true;
 
+
 	return S_OK;
 }
 
@@ -85,25 +82,22 @@ void CCollider::Update(_fmatrix WorldMatrix)
 }
 
 #ifdef _DEBUG
-/*
-HRESULT CCollider::Render()
+HRESULT CCollider::Render(ID3D12GraphicsCommandList* _pcmdList)
 {
+	XMFLOAT4X4 viewMatrix = m_pGameInstance->Get_CurrentCameraView ();
+	XMFLOAT4X4 projMatrix = m_pGameInstance->Get_CurrentCameraProjection ();
+
 	m_pEffect->SetWorld(XMMatrixIdentity());
-	m_pEffect->SetView(m_pGameInstance->Get_TransformMatrix(CPipeLine::D3DTS_VIEW));
-	m_pEffect->SetProjection(m_pGameInstance->Get_TransformMatrix(CPipeLine::D3DTS_PROJ));
+	m_pEffect->SetView(XMLoadFloat4x4(&viewMatrix));
+	m_pEffect->SetProjection(XMLoadFloat4x4(&projMatrix));
 
-	m_pEffect->Apply(m_pContext);
-	m_pContext->IASetInputLayout(m_pInputLayout);
-
-	m_pBatch->Begin();
-
+	m_pEffect->Apply(_pcmdList);
+	m_pBatch->Begin(_pcmdList);
 	m_pBounding->Render(m_pBatch);
-
-	m_pBatch->End();
+	m_pBatch->End ();
 
 	return S_OK;
 }
-*/
 #endif
 
 _bool CCollider::Intersect(const CCollider* pTargetCollider)
@@ -147,14 +141,11 @@ void CCollider::Free()
 
 	Safe_Release(m_pBounding);
 #ifdef _DEBUG
-	/*
+	
 	if (false == m_isCloned)
 	{
 		Safe_Delete(m_pBatch);
 		Safe_Delete(m_pEffect);
 	}
-
-	Safe_Release(m_pInputLayout);
-	*/
 #endif
 }

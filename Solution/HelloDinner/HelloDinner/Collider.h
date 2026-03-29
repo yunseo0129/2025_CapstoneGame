@@ -19,7 +19,7 @@ public:
 	virtual HRESULT Initialize(void* pArg) override;
 	virtual void Update(_fmatrix WorldMatrix);
 #ifdef _DEBUG
-	// virtual HRESULT Render();
+	virtual HRESULT Render(ID3D12GraphicsCommandList* pCommandList);
 #endif	
 
 public:
@@ -35,11 +35,10 @@ private:
 	_bool	m_isOnOff = { true };
 
 #ifdef _DEBUG
-	/*
+	
 	PrimitiveBatch<VertexPositionColor>* m_pBatch = { nullptr };
 	BasicEffect* m_pEffect = { nullptr };
-	ID3D11InputLayout* m_pInputLayout = { nullptr };
-	*/
+
 #endif
 
 public:

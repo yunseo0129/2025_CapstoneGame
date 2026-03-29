@@ -22,7 +22,7 @@ protected:
 public:
 	virtual HRESULT Initialize();
 	virtual void Update(_fmatrix WorldMatrix) = 0;
-	//virtual void Render(PrimitiveBatch<VertexPositionColor>* pBatch) = 0;
+	virtual void Render(PrimitiveBatch<VertexPositionColor>* pBatch) = 0;
 	virtual _bool Intersect(CCollider::COLLIDERTYPE eType, CBounding* pTargetBounding) = 0;
 	virtual _float3 Get_Center() = 0;
 

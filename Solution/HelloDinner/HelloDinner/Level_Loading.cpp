@@ -14,6 +14,7 @@
 #include "Model.h"
 #include "Pig_3rd.h"
 #include "NetworkClient.h"
+#include "Collider.h"
 #include "Player_1rd.h"
 
 CLevel_Loading::CLevel_Loading(EngineContext* pContext)
@@ -27,6 +28,19 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 	m_eNextLevelID = eNextLevelID;
 
 	Add_Camera();
+
+	// 충돌체 Prototype 등록
+	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_AABB"),
+		CCollider::Create(m_pContext, CCollider::TYPE_AABB))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_OBB"),
+		CCollider::Create(m_pContext, CCollider::TYPE_OBB))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Sphere"),
+		CCollider::Create(m_pContext, CCollider::TYPE_SPHERE))))
+		return E_FAIL;
+
+
 
 /*
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_Component_VIBuffer_VtxCube",

@@ -59,10 +59,13 @@ HRESULT CTexture::Initialize_Prototype(ID3D12GraphicsCommandList* _cmdList, cons
         char szLog[1024];
         char szPathA[MAX_PATH];
         char szExtA[MAX_PATH];
+
+        /*
         WideCharToMultiByte(CP_ACP, 0, szTextureFilePath, -1, szPathA, MAX_PATH, nullptr, nullptr);
         WideCharToMultiByte(CP_ACP, 0, szEXT, -1, szExtA, MAX_PATH, nullptr, nullptr);
         sprintf_s(szLog, "[Texture] Path: %s | Ext: '%s'\n", szPathA, szExtA);
         OutputDebugStringA(szLog);
+        */
 
         // 3. 텍스처 파일 로드
         if (false == lstrcmpW(szEXT, TEXT(".dds")))

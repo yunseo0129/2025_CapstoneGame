@@ -29,12 +29,10 @@ void CBounding_AABB::Update(_fmatrix WorldMatrix)
 	m_pOriginalBoundDesc->Transform(*m_pBoundDesc, TransformMatrix);
 }
 
-/*
 void CBounding_AABB::Render(PrimitiveBatch<VertexPositionColor>* pBatch)
 {
 	DX::Draw(pBatch, *m_pBoundDesc, m_isColl == true ? XMVectorSet(1.f, 0.f, 0.f, 1.f) : XMVectorSet(0.f, 1.f, 0.f, 1.f));
 }
-*/
 
 _bool CBounding_AABB::Intersect(CCollider::COLLIDERTYPE eType, CBounding* pTargetBounding)
 {

@@ -2,6 +2,7 @@
 #include "Transform.h"
 #include "GameInstance.h"
 #include "Model.h"
+#include "Bounding_AABB.h"
 
 CPlayer_3rd::CPlayer_3rd(EngineContext* pContext)
 	: CGameObject(pContext)
@@ -52,6 +53,10 @@ void CPlayer_3rd::Priority_Update(_float fTimeDelta)
 
 void CPlayer_3rd::Update(_float fTimeDelta)
 {
+	// 충돌체가 오브젝트 잘 따라가는지 확인하기 위해서 x축 이동
+	_vector vCurrentPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+	vCurrentPos = XMVectorAdd(vCurrentPos, XMVectorSet(10.f * fTimeDelta, 0.f, 0.f, 0.f));
+	m_pTransformCom->Set_State(CTransform::STATE_POSITION, vCurrentPos);
 }
 
 void CPlayer_3rd::Late_Update(_float fTimeDelta)
@@ -102,6 +107,5 @@ CGameObject* CPlayer_3rd::Clone(void* pArg)
 
 void CPlayer_3rd::Free()
 {
-	Safe_Release(m_pModelCom);
 	__super::Free();
 }

@@ -23,12 +23,12 @@ void CBounding_Sphere::Update(_fmatrix WorldMatrix)
 	m_pOriginalBoundDesc->Transform(*m_pBoundDesc, WorldMatrix);
 }
 
-/*
+
 void CBounding_Sphere::Render(PrimitiveBatch<VertexPositionColor>* pBatch)
 {
 	DX::Draw(pBatch, *m_pBoundDesc, m_isColl == true ? XMVectorSet(1.f, 0.f, 0.f, 1.f) : XMVectorSet(0.f, 1.f, 0.f, 1.f));
 }
-*/
+
 
 _bool CBounding_Sphere::Intersect(CCollider::COLLIDERTYPE eType, CBounding* pTargetBounding)
 {

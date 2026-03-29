@@ -19,7 +19,7 @@ public:
 public:
 	virtual HRESULT Initialize(const BOUND_DESC* pBoundDesc);
 	virtual void Update(_fmatrix WorldMatrix) override;
-	//virtual void Render(PrimitiveBatch<VertexPositionColor>* pBatch) override;
+	virtual void Render(PrimitiveBatch<VertexPositionColor>* pBatch) override;
 	virtual _bool Intersect(CCollider::COLLIDERTYPE eType, CBounding* pTargetBounding) override;
 	virtual _float3 Get_Center() override;
 

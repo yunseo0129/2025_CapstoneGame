@@ -24,12 +24,10 @@ void CBounding_OBB::Update(_fmatrix WorldMatrix)
 	m_pOriginalBoundDesc->Transform(*m_pBoundDesc, WorldMatrix);
 }
 
-/*
 void CBounding_OBB::Render(PrimitiveBatch<VertexPositionColor>* pBatch)
 {
 	DX::Draw(pBatch, *m_pBoundDesc, m_isColl == true ? XMVectorSet(1.f, 0.f, 0.f, 1.f) : XMVectorSet(0.f, 1.f, 0.f, 1.f));
 }
-*/
 
 _bool CBounding_OBB::Intersect(CCollider::COLLIDERTYPE eType, CBounding* pTargetBounding)
 {
@@ -42,7 +40,6 @@ _bool CBounding_OBB::Intersect(CCollider::COLLIDERTYPE eType, CBounding* pTarget
 		break;
 
 	case CCollider::TYPE_OBB:
-		// m_isColl = m_pBoundDesc->Intersects(*static_cast<CBounding_OBB*>(pTargetBounding)->Get_Desc());
 		m_isColl = Intersect_to_OBB(static_cast<CBounding_OBB*>(pTargetBounding));
 		break;
 

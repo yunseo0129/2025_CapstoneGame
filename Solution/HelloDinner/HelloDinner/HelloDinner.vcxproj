@@ -103,11 +103,13 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>../HelloDinner</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../HelloDinner;../HelloDinner/ThirdParty/Inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>../HelloDinner/ThirdParty/Lib/Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>DirectXTK12.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -127,11 +129,13 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>../HelloDinner</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../HelloDinner;../HelloDinner/ThirdParty/Inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>../HelloDinner/ThirdParty/Lib/Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>DirectXTK12.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -288,6 +292,5 @@
     </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>
