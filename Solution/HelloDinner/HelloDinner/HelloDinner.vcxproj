@@ -153,7 +153,7 @@
     </ClInclude>
     <ClInclude Include="Channel.h" />
     <ClInclude Include="Collider.h" />
-    <ClInclude Include="DefaultTexture_Manager.h" />
+    <ClInclude Include="Texture_Manager.h" />
     <ClInclude Include="Obj_CollisionTest.h" />
     <ClInclude Include="ContainerObj.h" />
     <ClInclude Include="DebugDraw.h" />
@@ -226,7 +226,7 @@
     <ClCompile Include="Collider.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="DefaultTexture_Manager.cpp" />
+    <ClCompile Include="Texture_Manager.cpp" />
     <ClCompile Include="Obj_CollisionTest.cpp" />
     <ClCompile Include="ContainerObj.cpp" />
     <ClCompile Include="DebugDraw.cpp" />

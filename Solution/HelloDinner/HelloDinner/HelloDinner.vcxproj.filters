@@ -386,7 +386,7 @@
     <ClInclude Include="DebugDraw.h">
       <Filter>소스 파일\01. Engine\04. Components\03. Collider\render</Filter>
     </ClInclude>
-    <ClInclude Include="DefaultTexture_Manager.h">
+    <ClInclude Include="Texture_Manager.h">
       <Filter>소스 파일\01. Engine\04. Components\05. Texture</Filter>
     </ClInclude>
   </ItemGroup>
@@ -565,7 +565,7 @@
     <ClCompile Include="DebugDraw.cpp">
       <Filter>소스 파일\01. Engine\04. Components\03. Collider\render</Filter>
     </ClCompile>
-    <ClCompile Include="DefaultTexture_Manager.cpp">
+    <ClCompile Include="Texture_Manager.cpp">
       <Filter>소스 파일\01. Engine\04. Components\05. Texture</Filter>
     </ClCompile>
   </ItemGroup>

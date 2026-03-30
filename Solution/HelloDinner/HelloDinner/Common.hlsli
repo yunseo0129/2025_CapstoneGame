@@ -61,18 +61,18 @@ float4 PS_Main_Lit(VS_OUT In) : SV_TARGET
     float4 normalColor = g_NormalTextures.Sample(g_samWrap, In.vUV);
 
 // R과 B 채널의 순서를 강제로 바꿉니다.
-    normalColor.rgb = normalColor.bgr;
+    // normalColor.rgb = normalColor.bgr;
 
-    return normalColor;
+    // return normalColor;
     
-    // float4 texColor = g_DiffuseTextures.Sample(g_samWrap, In.vUV);
+     float4 texColor = g_DiffuseTextures.Sample(g_samWrap, In.vUV);
         
     // sRGB -> Linear 변환 (감마 보정)
     // texColor.rgb = pow(texColor.rgb, 2.2f);
     
-    // clip(texColor.a - 0.001f); // 알파 테스트
+     clip(texColor.a - 0.001f); // 알파 테스트
    
-    // return float4(texColor);
+     return float4(texColor);
 }
 
 #endif
