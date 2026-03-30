@@ -9,7 +9,7 @@
 #include "Prototype_Manager.h"
 #include "Load_Manager.h"
 #include "Shader_Manager.h"
-
+#include "DefaultTexture_Manager.h"
 #include "Camera.h"
 
 IMPLEMENT_SINGLETON(CGameInstance)
@@ -59,14 +59,15 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineCo
 	if (nullptr == m_pLoad_Manager)
 		return E_FAIL;
 
+	m_pDefaultTexture_Manager = CDefaultTexture_Manager::Create(_pcontext);
+	if (nullptr == m_pDefaultTexture_Manager)
+		return E_FAIL;
 
 	// 테스트용
 	// Camera.h 변경해야할 것들
 	// 1. abstract 설정
 	// 2. Clone = 0;
 	// 3. 생성자, 소멸자 protected로 변경
-
-	// 카메라는 게임인스턴스에 있으면 안됨. 레이어에 있어야함 테스트할거면 메인에 있어야함
 
 	return S_OK;
 }
@@ -414,6 +415,15 @@ void CGameInstance::Set_RootSignature(ID3D12GraphicsCommandList* pCmdList)
 	m_pShader_Manager->Set_RootSignature(pCmdList);
 }
 
+CTexture* CGameInstance::Get_Texture(_uint _eType)
+{
+	if (nullptr == m_pDefaultTexture_Manager) {
+		MSG_BOX("CGameInstance::Get_Texture() : DefaultTexture_Manager is nullptr");
+		return nullptr;
+	}
+	return	m_pDefaultTexture_Manager->Get_DefaultNormalTexture();
+}
+
 // ------------------------------------------------------------------------
 // Renderer
 // ------------------------------------------------------------------------
@@ -464,6 +474,7 @@ void CGameInstance::Free()
 
 	// 8. 셰이더 매니저 해제 (PSO, RootSignature 해제)
 	Safe_Release ( m_pShader_Manager );
+	Safe_Release(m_pDefaultTexture_Manager);
 
 	// 9. 나머지 매니저 해제
 	Safe_Release ( m_pLoad_Manager );

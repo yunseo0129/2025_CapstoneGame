@@ -79,12 +79,12 @@ HRESULT CModel::Render(ID3D12GraphicsCommandList* _commandList, _uint iMeshIndex
 	if (iMeshIndex >= m_iNumMeshes)
 		return E_FAIL;
 
-	// 1. 이 메쉬가 참조하는 머티리얼의 Diffuse 텍스처 바인딩
+	// 이 메쉬가 참조하는 머티리얼의 Diffuse 텍스처 바인딩
 	_uint iMaterialIndex = m_Meshes[iMeshIndex]->Get_MaterialIndex();
 
 	if (iMaterialIndex < m_iNumMaterials)
 	{
-		// ★ 텍스처가 실제로 있는지 확인
+		// 텍스처가 실제로 있는지 확인
 		CTexture* pTex = m_Materials[iMaterialIndex]->Get_Texture((TextureType)TextureType_DIFFUSE, 0);
 		if (pTex == nullptr)
 		{
@@ -93,8 +93,17 @@ HRESULT CModel::Render(ID3D12GraphicsCommandList* _commandList, _uint iMeshIndex
 				iMeshIndex, iMaterialIndex, this);
 			OutputDebugStringA(szLog);
 		}
+		else {
+			Bind_Material(iMaterialIndex, (TextureType)TextureType_DIFFUSE, 0, _commandList);
+		}
 
-		Bind_Material(iMaterialIndex, (TextureType)TextureType_DIFFUSE, 0, _commandList);
+		CTexture* pTexNormal = m_Materials[iMaterialIndex]->Get_Texture((TextureType)TextureType_NORMALS, 0);
+		if (pTexNormal == nullptr)
+		{
+		}
+		else {
+			Bind_Material(iMaterialIndex, (TextureType)TextureType_NORMALS, 0, _commandList);
+		}
 	}
 
 	// 2. 메쉬 렌더 (IASet + DrawIndexedInstanced)
@@ -257,7 +266,10 @@ HRESULT CModel::Bind_Material(_uint iMeshIndex, TextureType eType, _uint iTextur
 		return E_FAIL;
 
 	// RootParameterIndex 추가 후 변경
-	RootParameterIndex rootParameterIndex = RootParameterIndex::TEXTURE;
+	RootParameterIndex rootParameterIndex = RootParameterIndex::TEXTURE_Diffuse;
+
+	if (eType == TextureType_NORMALS)
+		rootParameterIndex = RootParameterIndex::TEXTURE_Normal;
 
 	m_Materials[iMeshIndex]->Bind_ShaderResource(_commandList, eType, rootParameterIndex, iTextureIndex);
 	return S_OK;

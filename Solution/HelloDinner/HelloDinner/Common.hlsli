@@ -28,11 +28,11 @@ cbuffer cbBoneMatrices : register(b2)
 // ------------------------------------------------
 // Textures & Samplers
 // ------------------------------------------------
-// t0 : 텍스처 정보
-Texture2D g_Textures : register(t0);
-
+// t0 ~ t1 : 텍스처 정보
+Texture2D g_DiffuseTextures : register(t0);
+Texture2D g_NormalTextures : register(t1);
 // t0, space1 : 큐브맵 텍스처 (Skybox 전용, 별도 space 사용)
-TextureCube g_TexCube : register(t0);
+TextureCube g_DiffuseTexCube : register(t0);
 
 // Static Samplers
 SamplerState g_samWrap : register(s0); // 일반 3D
@@ -58,14 +58,21 @@ struct VS_OUT
 // 일반/애니메이션 메쉬 공통 사용
 float4 PS_Main_Lit(VS_OUT In) : SV_TARGET
 {
-    float4 texColor = g_Textures.Sample(g_samWrap, In.vUV);
+    float4 normalColor = g_NormalTextures.Sample(g_samWrap, In.vUV);
+
+// R과 B 채널의 순서를 강제로 바꿉니다.
+    normalColor.rgb = normalColor.bgr;
+
+    return normalColor;
+    
+    // float4 texColor = g_DiffuseTextures.Sample(g_samWrap, In.vUV);
         
     // sRGB -> Linear 변환 (감마 보정)
     // texColor.rgb = pow(texColor.rgb, 2.2f);
     
     // clip(texColor.a - 0.001f); // 알파 테스트
    
-    return float4(texColor);
+    // return float4(texColor);
 }
 
 #endif

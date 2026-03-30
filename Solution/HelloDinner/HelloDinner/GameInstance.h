@@ -84,6 +84,9 @@ public: /* For.Shader_Manager */
 	void Set_PipelineState(ID3D12GraphicsCommandList* pCmdList, const PSO_TYPE& _eType);
 	void Set_RootSignature(ID3D12GraphicsCommandList* pCmdList);
 
+public: /* For.DefaultTexture_Manager */
+	class CTexture* Get_Texture(_uint _eType);
+
 public: /* For.Renderer */
 	HRESULT Add_RenderObject(CRenderer::RENDERGROUP eRenderGroup, class CGameObject* pRenderObject);
 #ifdef _DEBUG
@@ -101,6 +104,7 @@ private:
 	class CShader_Manager*		m_pShader_Manager = { nullptr };
 	class CRenderer*			m_pRenderer = { nullptr };
 	class CLoad_Manager*		m_pLoad_Manager = { nullptr };
+	class CDefaultTexture_Manager* m_pDefaultTexture_Manager = { nullptr };
 
 	ComPtr<ID3D12GraphicsCommandList> m_pCommandList = { nullptr };
 

@@ -69,7 +69,7 @@ void CSkybox::Render(ID3D12GraphicsCommandList* _commandList)
 	// PSO ¹ÙÀÎµù
 	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::SKYBOX);
 
-	if (FAILED(m_pTextureCom->Bind_ShaderResource(_commandList, RootParameterIndex::TEXTURE))) {
+	if (FAILED(m_pTextureCom->Bind_ShaderResource(_commandList, RootParameterIndex::TEXTURE_Diffuse))) {
 		MSG_BOX("Failed to Bind Texture Resource in Skybox");
 		return;
 	}

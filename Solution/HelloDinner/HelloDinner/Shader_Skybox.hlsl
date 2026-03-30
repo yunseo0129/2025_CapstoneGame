@@ -38,6 +38,6 @@ VS_OUT_SKYBOX VS_Main_Skybox(VS_IN_STATIC In)
 // Skybox PS 
 float4 PS_Main_Skybox(VS_OUT_SKYBOX In) : SV_TARGET
 {
-    float4 texColor = g_TexCube.Sample(g_samClamp, In.vTexCoord);
+    float4 texColor = g_DiffuseTexCube.Sample(g_samClamp, In.vTexCoord);
     return texColor;
 }

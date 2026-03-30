@@ -47,8 +47,13 @@ HRESULT CShader_Manager::Create_GlobalRootSignature ()
 	// NumDescriptors: 1
 	// BaseShaderRegister: 0 (t0 부터 시작)
 	// RegisterSpace: 0 (space0)
-	CD3DX12_DESCRIPTOR_RANGE ranges[1]; // 텍스처 테이블용 1개
-	ranges[0].Init ( D3D12_DESCRIPTOR_RANGE_TYPE_SRV , 1 , 0 , 0 );
+	CD3DX12_DESCRIPTOR_RANGE rangesDiffuse[1]; // 
+	rangesDiffuse[0].Init ( D3D12_DESCRIPTOR_RANGE_TYPE_SRV , 1 , 0 , 0 );	//t0
+
+	CD3DX12_DESCRIPTOR_RANGE rangesNormal[1]; // 
+	rangesNormal[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);	//t1
+
+
 
 	// Material용으로 추가
 
@@ -62,9 +67,10 @@ HRESULT CShader_Manager::Create_GlobalRootSignature ()
 	// Transform 정보
 	parameters[RootParameterIndex::GameObject].InitAsConstants ( 16 , 1 );
 
-	// [Parameter 2] : Texture Table
-	// -> g_Textures[] : register(t0, space1)
-	parameters[RootParameterIndex::TEXTURE].InitAsDescriptorTable ( 1 , &ranges[0] );
+	// [Parameter 2, 3] : Texture Table
+	// Diffuse Texture (t0)과 Normal Texture (t1)로 나눠서 관리
+	parameters[RootParameterIndex::TEXTURE_Diffuse].InitAsDescriptorTable ( 1 , &rangesDiffuse[0] );
+	parameters[RootParameterIndex::TEXTURE_Normal].InitAsDescriptorTable(1, &rangesNormal[0]);
 
 	// [Parameter 3] : CBV (BoneMatrix)
 	// -> cbBoneMatrices : register(b2)
@@ -96,6 +102,7 @@ HRESULT CShader_Manager::Create_GlobalRootSignature ()
 		D3D12_TEXTURE_ADDRESS_MODE_CLAMP );
 
 	// s3: Anisotropic (지형, 바닥 - 멀리서도 선명함)
+	// 잘 안 쓸듯?
 	samplers[3].Init ( 3 ,
 		D3D12_FILTER_ANISOTROPIC ,
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP ,

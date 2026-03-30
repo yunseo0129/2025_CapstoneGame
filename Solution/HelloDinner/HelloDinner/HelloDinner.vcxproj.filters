@@ -386,6 +386,9 @@
     <ClInclude Include="DebugDraw.h">
       <Filter>소스 파일\01. Engine\04. Components\03. Collider\render</Filter>
     </ClInclude>
+    <ClInclude Include="DefaultTexture_Manager.h">
+      <Filter>소스 파일\01. Engine\04. Components\05. Texture</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -561,6 +564,9 @@
     </ClCompile>
     <ClCompile Include="DebugDraw.cpp">
       <Filter>소스 파일\01. Engine\04. Components\03. Collider\render</Filter>
+    </ClCompile>
+    <ClCompile Include="DefaultTexture_Manager.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\05. Texture</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
