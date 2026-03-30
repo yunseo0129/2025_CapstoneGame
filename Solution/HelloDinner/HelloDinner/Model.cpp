@@ -58,26 +58,13 @@ HRESULT CModel::Initialize_Prototype(TYPE eModelType, const wchar_t* pModelFileP
 	if (FAILED(Ready_Meshes()))
 		return E_FAIL;
 
-	if (FAILED(Ready_Materials(pModelFilePath)))
+	if (FAILED(Ready_Materials(pModelFilePath, eMatMode)))
 		return E_FAIL;
 
 	if (FAILED(Ready_Animations()))
 		return E_FAIL;
 
 	m_pGameInstance->Close_File();
-
-	for (size_t i = 0; i < m_Bones.size(); ++i)
-	{
-		if (m_Bones[i] != nullptr)
-		{
-			// 1. 출력할 문자열을 예쁘게 조립합니다. (인덱스 번호와 이름을 같이 출력)
-			char szDebugMsg[256] = "";
-			sprintf_s(szDebugMsg, "[Bone Info] Index: %3zu | Name: %s\n", i, m_Bones[i]->Get_Name());
-
-			// 2. Visual Studio의 '출력(Output)' 창으로 쏴줍니다!
-			OutputDebugStringA(szDebugMsg);
-		}
-	}
 
 	return S_OK;
 }
@@ -226,7 +213,7 @@ HRESULT CModel::Ready_Meshes()
 	return S_OK;
 }
 
-HRESULT CModel::Ready_Materials(const wchar_t* pModelFilePath)
+HRESULT CModel::Ready_Materials(const wchar_t* pModelFilePath, MATERIAL_LOAD_MODE eMatMode)
 {
 	m_pGameInstance->Read_File(m_iNumMaterials);
 
@@ -246,9 +233,8 @@ HRESULT CModel::Ready_Materials(const wchar_t* pModelFilePath)
 			if (strcmp(szPath, "Not_Data") == 0)
 				continue;
 
-			//    맵 모드: 바이너리 경로 읽기만 하고 텍스처 생성은 스킵
-			//    (외부에서 Set_MaterialTexture로 설정)
-			if (m_eMatLoadMode == MATLOAD_SKIP_TEXTURE)
+			// 미리 dds 파일로 만들어 뒀다면 dds 파일로 읽어오기
+			if (eMatMode == MATLOAD_DDS_FILE)
 				continue;
 
 			// char → wchar_t 변환
@@ -428,5 +414,18 @@ HRESULT CModel::Bind_BoneMatrices(ID3D12GraphicsCommandList* _cmdList, _uint iMe
 		RootParameterIndex::BoneMatrix,
 		m_pBoneBuffers[iFrameIndex]->GetGPUVirtualAddress());
 
+	return S_OK;
+}
+
+HRESULT CModel::Ready_MapMaterial(const wchar_t* pModelFilePath, int _nMaterial, TextureType _eType )
+{
+	CTexture* pTexture = CTexture::Create(m_pContext, pModelFilePath);
+	if (pTexture != nullptr)
+	{
+		m_Materials[_nMaterial]->Add_Texture(_eType, pTexture);
+	}
+	else {
+		return E_FAIL;
+	}
 	return S_OK;
 }

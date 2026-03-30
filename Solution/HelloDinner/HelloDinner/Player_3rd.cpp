@@ -114,4 +114,8 @@ CGameObject* CPlayer_3rd::Clone(void* pArg)
 void CPlayer_3rd::Free()
 {
 	__super::Free();
+	for (auto& pCollider : m_vColliderComs)
+	{
+		Safe_Release(pCollider);
+	}
 }

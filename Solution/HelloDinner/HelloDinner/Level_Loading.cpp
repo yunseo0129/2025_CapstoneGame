@@ -32,15 +32,13 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 
 	Add_Camera();
 
-	// 1. MaterialData.json → 텍스처 Prototype 먼저 등록
+	// MapData.json → 모델 생성 + 텍스처 바인딩 + 맵 배치
 	CLoader_Map* pMapLoader = CLoader_Map::Create(m_pContext);
-	if (FAILED(pMapLoader->Load_MaterialData("Resources/Map/MaterialData.json", LEVEL_LOADING)))
+	if (FAILED(pMapLoader->Load_MaterialData("Resources/NonAnim/Map/MaterialData.json")))
 	{
 		MSG_BOX("Failed to load material data");
 	}
-
-	// 2. MapData.json → 모델 생성 + 텍스처 바인딩 + 맵 배치
-	if (FAILED(pMapLoader->Load_MapData("Resources/Map/MapData.json", LEVEL_LOADING)))
+	if (FAILED(pMapLoader->Load_MapData("Resources/NonAnim/Map/MapData.json", LEVEL_LOADING)))
 	{
 		MSG_BOX("Failed to load map data");
 	}

@@ -560,6 +560,9 @@ void CGraphic_Device::Free()
 	m_pDsvHeap.Reset();
 	m_pRtvHeap.Reset();
 	m_pSwapChain.Reset();
+
+	m_pGraphicsMemory.reset();
+
 	// Device Reset 전에 남은 객체 확인
 #ifdef _DEBUG
 	{
