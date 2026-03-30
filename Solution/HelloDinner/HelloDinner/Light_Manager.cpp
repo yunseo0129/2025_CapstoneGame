@@ -4,7 +4,6 @@
 CLight_Manager::CLight_Manager(EngineContext* pContext)
 	: m_pContext{ pContext }
 {
-	Safe_AddRef(m_pContext);
 }
 
 
@@ -58,6 +57,5 @@ void CLight_Manager::Free()
 
 	m_Lights.clear();
 
-	Safe_Release(m_pContext);
 }
 

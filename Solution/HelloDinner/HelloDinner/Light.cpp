@@ -3,7 +3,6 @@
 CLight::CLight(EngineContext* pContext)
 	: m_pContext{ pContext }
 {
-	Safe_AddRef(m_pContext);
 }
 
 HRESULT CLight::Initialize(const LIGHT_DESC& LightDesc)
@@ -30,5 +29,5 @@ CLight* CLight::Create(EngineContext* pContext, const LIGHT_DESC& LightDesc)
 void CLight::Free()
 {
 	__super::Free();
-	Safe_Release(m_pContext);
+
 }
