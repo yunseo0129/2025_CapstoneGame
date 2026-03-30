@@ -24,6 +24,17 @@ cbuffer cbBoneMatrices : register(b2)
     row_major matrix g_BoneMatrices[512];
 };
 
+// b3 : 조명 정보 (매 프레임 갱신)
+cbuffer LightParams : register(b3)
+{
+    float4 g_vLightDir;
+    float4 g_vLightPos;
+    float4 g_vLightDiffuse;
+    float4 g_vLightAmbient;
+    float4 g_vLightSpecular;
+    float g_fLightRange;
+    float3 g_vPadding;
+};
 
 // ------------------------------------------------
 // Textures & Samplers
@@ -47,9 +58,11 @@ SamplerState g_samAnisotropic : register(s3); // 지형
 struct VS_OUT
 {
     float4 vPosition : SV_POSITION; // 화면 좌표
-    float3 vWorldPos : POSITION; // 월드 좌표 (조명 계산용)
+    float3 vWorldPos : TEXCOORD1; // 월드 좌표 (조명 계산용)
     float3 vNormal : NORMAL; // 노멀
     float2 vUV : TEXCOORD0; // UV
+    float3 vBinormal : BINORMAL; 
+    float3 vTangent : TANGENT;
 };
 
 // --------------------------------------------------------
@@ -58,21 +71,29 @@ struct VS_OUT
 // 일반/애니메이션 메쉬 공통 사용
 float4 PS_Main_Lit(VS_OUT In) : SV_TARGET
 {
-    float4 normalColor = g_NormalTextures.Sample(g_samWrap, In.vUV);
-
-// R과 B 채널의 순서를 강제로 바꿉니다.
-    // normalColor.rgb = normalColor.bgr;
-
-    // return normalColor;
+    float4 normalMapColor = g_NormalTextures.Sample(g_samWrap, In.vUV);
+    float x = normalMapColor.r * 2.0f - 1.0f;
+    float y = normalMapColor.g * 2.0f - 1.0f;
+    float z = sqrt(max(1.0f - (x * x + y * y), 0.0f));
     
-     float4 texColor = g_DiffuseTextures.Sample(g_samWrap, In.vUV);
-        
-    // sRGB -> Linear 변환 (감마 보정)
-    // texColor.rgb = pow(texColor.rgb, 2.2f);
-    
-     clip(texColor.a - 0.001f); // 알파 테스트
-   
-     return float4(texColor);
+    float3 vNormal = float3(x, y, z);
+
+    // 2. World Normal 변환
+    float3x3 matTBN = float3x3(normalize(In.vTangent),
+                               normalize(In.vBinormal),
+                               normalize(In.vNormal));
+    float3 vWorldNormal = normalize(mul(vNormal, matTBN));
+
+    // 3. 라이팅
+    float3 vL = normalize(g_vLightDir.xyz * -1.0f);
+    float fDiffuseIdx = max(dot(vWorldNormal, vL), 0.0f);
+
+    float4 diffuseColor = g_DiffuseTextures.Sample(g_samWrap, In.vUV);
+
+    float3 vDiffuse = diffuseColor.rgb * (g_vLightDiffuse.rgb * fDiffuseIdx);
+    float3 vAmbient = diffuseColor.rgb * g_vLightAmbient.rgb;
+
+    return float4(vDiffuse + vAmbient, diffuseColor.a);
 }
 
 #endif

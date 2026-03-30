@@ -1,5 +1,6 @@
 #include "Level.h"
 #include "Camera.h"
+#include "Light.h"
 #include "GameInstance.h"
 
 CLevel::CLevel( EngineContext* pContext)
@@ -42,6 +43,17 @@ void CLevel::Bind_CameraBuffer(ID3D12GraphicsCommandList* pCmdList, RootParamete
 	m_pCamera[_eType]->Bind_CameraBuffer(pCmdList, _eIndex);
 
 	Get_CameraMatrix(_eType);
+}
+
+void CLevel::Bind_LightBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameterIndex _eIndex)
+{
+	if (_eIndex >= RootParameterIndex::End)
+		return;
+	for (auto& pLight : m_pLights) {
+		if (pLight == nullptr)
+			continue;
+		pLight->Bind_LightBuffer(pCmdList, _eIndex);
+	}
 }
 
 void CLevel::Get_CameraMatrix(CAMERA_TYPE _eType)

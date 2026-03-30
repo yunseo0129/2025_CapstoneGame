@@ -2,7 +2,6 @@
 #include "Prototype_Manager.h"
 #include "Renderer.h"
 
-
 class CGameInstance final : public CBase
 {
 	DECLARE_SINGLETON(CGameInstance)
@@ -79,7 +78,6 @@ public: /* For.Object_Manager */
 	list<class CGameObject*> Get_List(_uint iLevelIndex, const _wstring& strLayerTag);
 	class CGameObject* Get_GameObject_To_Layer(_uint iLevelIndex, const _wstring& strLayerTag, _uint Index);
 
-
 public: /* For.Shader_Manager */
 	void Set_PipelineState(ID3D12GraphicsCommandList* pCmdList, const PSO_TYPE& _eType);
 	void Set_RootSignature(ID3D12GraphicsCommandList* pCmdList);
@@ -104,6 +102,7 @@ private:
 	class CLevel_Manager*		m_pLevel_Manager = { nullptr };
 	class CPrototype_Manager*	m_pPrototype_Manager = { nullptr };
 	class CObject_Manager*		m_pObject_Manager = { nullptr };
+	class CLight_Manager* m_pLight_Manager = { nullptr };
 	class CPipeLine*			m_pPipeLine = { nullptr };
 	class CShader_Manager*		m_pShader_Manager = { nullptr };
 	class CRenderer*			m_pRenderer = { nullptr };

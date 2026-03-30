@@ -154,7 +154,6 @@
     <ClInclude Include="Channel.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="Light.h" />
-    <ClInclude Include="Light_Manager.h" />
     <ClInclude Include="Texture_Manager.h" />
     <ClInclude Include="Obj_CollisionTest.h" />
     <ClInclude Include="ContainerObj.h" />
@@ -229,7 +228,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Light.cpp" />
-    <ClCompile Include="Light_Manager.cpp" />
     <ClCompile Include="Texture_Manager.cpp" />
     <ClCompile Include="Obj_CollisionTest.cpp" />
     <ClCompile Include="ContainerObj.cpp" />

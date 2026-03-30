@@ -19,6 +19,7 @@ public:
 	void Update(_float fTimeDelta);
 	HRESULT Render();
 	void Bind_CameraBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameterIndex _eIndex, CAMERA_TYPE _eType);
+	void Bind_LightBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameterIndex _eIndex);
 	XMFLOAT4X4 Get_CurrentCameraView();
 	XMFLOAT4X4 Get_CurrentCameraProjection();
 

@@ -93,6 +93,7 @@ HRESULT CGameInstance::Render_Begin(const _float4& vClearColor)
 HRESULT CGameInstance::Draw()
 {
 	m_pLevel_Manager->Bind_CameraBuffer(m_pCommandList.Get(), RootParameterIndex::Camera, CAMERA_FPV);
+	m_pLevel_Manager->Bind_LightBuffer(m_pCommandList.Get(), RootParameterIndex::Light);
 	m_pRenderer->Draw_RenderObject ( m_pCommandList.Get () );
 	return S_OK;
 }

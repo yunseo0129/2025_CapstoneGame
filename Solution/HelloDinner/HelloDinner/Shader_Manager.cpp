@@ -76,6 +76,10 @@ HRESULT CShader_Manager::Create_GlobalRootSignature ()
 	// -> cbBoneMatrices : register(b2)
 	parameters[RootParameterIndex::BoneMatrix].InitAsConstantBufferView(2, 0);
 
+	// [Parameter 4] : CBV (Light)
+	// -> cbLight : register(b3)
+	parameters[RootParameterIndex::Light].InitAsConstantBufferView(3, 0);
+
 	//----------------------------------------------------------------------
 	// Static Sampler s0 ~ s4
 	//----------------------------------------------------------------------
