@@ -6,7 +6,7 @@ CVIBuffer_Skybox::CVIBuffer_Skybox(EngineContext* _pContext)
 }
 
 CVIBuffer_Skybox::CVIBuffer_Skybox(const CVIBuffer_Skybox& Prototype)
-    : CVIBuffer(Prototype.m_pContext)
+    : CVIBuffer(Prototype)
 {
 }
 

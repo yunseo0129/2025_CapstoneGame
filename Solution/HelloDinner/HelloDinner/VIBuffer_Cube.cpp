@@ -6,7 +6,7 @@ CVIBuffer_Cube::CVIBuffer_Cube(EngineContext* _pContext)
 }
 
 CVIBuffer_Cube::CVIBuffer_Cube(const CVIBuffer_Cube& Prototype)
-    : CVIBuffer(Prototype.m_pContext)
+    : CVIBuffer(Prototype)
 {
 }
 
