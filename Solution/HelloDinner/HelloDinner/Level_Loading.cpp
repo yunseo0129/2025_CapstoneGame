@@ -31,7 +31,17 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 	m_eNextLevelID = eNextLevelID;
 
 	Add_Camera();
+	
+	if (FAILED(Ready_Component_Prototype()))
+		return E_FAIL;
+	
+	if (FAILED(Ready_GameObject_Prototype()))
+		return E_FAIL;
 
+	if (FAILED(Ready_Layer()))
+		return E_FAIL;
+
+	// Collider prototype 때문에 Map 후순위로 변경
 	// MapData.json → 모델 생성 + 텍스처 바인딩 + 맵 배치
 	CLoader_Map* pMapLoader = CLoader_Map::Create(m_pContext);
 	if (FAILED(pMapLoader->Load_MaterialData("Resources/NonAnim/Map/MaterialData.json")))
@@ -43,15 +53,6 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 		MSG_BOX("Failed to load map data");
 	}
 	Safe_Release(pMapLoader);
-	
-	if (FAILED(Ready_Component_Prototype()))
-		return E_FAIL;
-	
-	if (FAILED(Ready_GameObject_Prototype()))
-		return E_FAIL;
-
-	if (FAILED(Ready_Layer()))
-		return E_FAIL;
 
 	return S_OK;
 }

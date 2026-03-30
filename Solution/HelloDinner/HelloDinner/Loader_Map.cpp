@@ -187,6 +187,38 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 			desc.vScale.y = inst["scale"]["y"].get<float>() * 100;
 			desc.vScale.z = inst["scale"]["z"].get<float>() * 100;
 
+			// Collider 정보
+			auto& colliderNode = inst["collider"];
+			std::string strColliderType = colliderNode["colliderType"].get<std::string>();
+
+			// 1. 충돌체 타입
+			if (strColliderType == "AABB")
+				desc.eColliderType = CCollider::TYPE_AABB;
+			else if (strColliderType == "OBB")
+				desc.eColliderType = CCollider::TYPE_OBB;
+			else if (strColliderType == "SPHERE")
+				desc.eColliderType = CCollider::TYPE_SPHERE;
+			else
+				desc.eColliderType = CCollider::TYPE_END; // "NONE" 이거나 알 수 없는 타입
+
+			// 2. 중심 좌표 (position이랑 정확하게 맞춰야됨)
+			desc.vCenterCollider.x = colliderNode["center"]["x"].get<float>() * 100.f;
+			desc.vCenterCollider.y = colliderNode["center"]["y"].get<float>() * 100.f - 150.f;
+			desc.vCenterCollider.z = colliderNode["center"]["z"].get<float>() * 100.f;
+
+			// 3. 사이즈
+			desc.vExtentsCollider.x = colliderNode["extents"]["x"].get<float>() * 100.f;
+			desc.vExtentsCollider.y = colliderNode["extents"]["y"].get<float>() * 100.f;
+			desc.vExtentsCollider.z = colliderNode["extents"]["z"].get<float>() * 100.f;
+
+			// 4. 회전 (메쉬랑 맞춰야됨)
+			desc.vRotationCollider.x = XMConvertToRadians(colliderNode["rotation"]["x"].get<float>());
+			desc.vRotationCollider.y = XMConvertToRadians(colliderNode["rotation"]["y"].get<float>() + 180.f);
+			desc.vRotationCollider.z = XMConvertToRadians(colliderNode["rotation"]["z"].get<float>());
+
+			// 5. 반지름 (구형 충돌체용)
+			desc.fRadius = colliderNode["radius"].get<float>() * 100.f;
+
 			if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
 				iLevelIndex, L"Prototype_GameObject_Map",
 				iLevelIndex, L"Layer_Map", &desc)))
