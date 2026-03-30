@@ -4,6 +4,7 @@
 #include "Ketchup_Gun.h"
 #include "Bounding_AABB.h"
 #include "Bounding_Sphere.h"
+#include "Bounding_OBB.h"
 
 CPlayer_1rd::CPlayer_1rd(EngineContext* _pcontext)
 	: CContainerObj{ _pcontext }
@@ -135,32 +136,48 @@ HRESULT CPlayer_1rd::Ready_Components()
 	 {
 		m_vColliderComs.resize(COLLIDER_END, nullptr);
 
-		// Main Collider
-		CBounding_AABB::BOUND_AABB_DESC ColliderDesc;
-		ColliderDesc.vExtents = _float3(50.f, 125.0f, 50.f);
-		ColliderDesc.vCenter = _float3(0.0f, 0.0f, 0.0f);
-		ColliderDesc.pSocketMatrix = m_pModelCom->Get_BoneMatrix("hand.L");
-		ColliderDesc.pParentMatrix = m_pTransformCom->Get_WorldFloat4x4_Ptr();
-		if (FAILED(Add_Component(m_iModelLevelIndex, TEXT("Prototype_Component_AABB"),
-			TEXT("Com_Collider"), reinterpret_cast<CComponent**>(&m_vColliderComs[COLLIDER_MAIN]), &ColliderDesc)))
+		// Test Collider
 		{
-			MSG_BOX("Failed to Add Component : Collider in Player_3rd");
-			return E_FAIL;
+			CBounding_AABB::BOUND_AABB_DESC ColliderDesc;
+			ColliderDesc.vExtents = _float3(50.f, 125.0f, 50.f);
+			ColliderDesc.vCenter = _float3(0.0f, 0.0f, 0.0f);
+			ColliderDesc.pSocketMatrix = m_pModelCom->Get_BoneMatrix("hand.L");
+			ColliderDesc.pParentMatrix = m_pTransformCom->Get_WorldFloat4x4_Ptr();
+			if (FAILED(Add_Component(m_iModelLevelIndex, TEXT("Prototype_Component_AABB"),
+				TEXT("Com_Collider_AABB"), reinterpret_cast<CComponent**>(&m_vColliderComs[0]), &ColliderDesc)))
+			{
+				MSG_BOX("Failed to Add Component : Collider in Player_3rd");
+				return E_FAIL;
+			}
 		}
-
-		// Head Collider
-		CBounding_Sphere::BOUND_SPHERE_DESC HeadColliderDesc;
-		HeadColliderDesc.fRadius = 55.f;
-		HeadColliderDesc.vCenter = _float3(0.f, 0.f, 0.f);
-		HeadColliderDesc.pSocketMatrix = m_pModelCom->Get_BoneMatrix("hand.L");
-		HeadColliderDesc.pParentMatrix = m_pTransformCom->Get_WorldFloat4x4_Ptr();
-		if (FAILED(Add_Component(m_iModelLevelIndex, TEXT("Prototype_Component_Sphere"),
-			TEXT("Com_Collider_Head"), reinterpret_cast<CComponent**>(&m_vColliderComs[COLLIDER_HEAD]), &HeadColliderDesc)))
+		// Test Collider
 		{
-			MSG_BOX("Failed to Add Component : Head Collider in Player_3rd");
-			return E_FAIL;
+			CBounding_Sphere::BOUND_SPHERE_DESC HeadColliderDesc;
+			HeadColliderDesc.fRadius = 55.f;
+			HeadColliderDesc.vCenter = _float3(0.f, 0.f, 0.f);
+			HeadColliderDesc.pSocketMatrix = m_pModelCom->Get_BoneMatrix("hand.L");
+			HeadColliderDesc.pParentMatrix = m_pTransformCom->Get_WorldFloat4x4_Ptr();
+			if (FAILED(Add_Component(m_iModelLevelIndex, TEXT("Prototype_Component_Sphere"),
+				TEXT("Com_Collider_SPHERE"), reinterpret_cast<CComponent**>(&m_vColliderComs[1]), &HeadColliderDesc)))
+			{
+				MSG_BOX("Failed to Add Component : Head Collider in Player_3rd");
+				return E_FAIL;
+			}
 		}
-
+		// Test Collider
+		{
+			CBounding_OBB::BOUND_OBB_DESC ColliderDesc;
+			ColliderDesc.vExtents = _float3(50.f, 100.0f, 20.f);
+			ColliderDesc.vCenter = _float3(0.0f, 0.0f, 0.0f);
+			ColliderDesc.pSocketMatrix = m_pModelCom->Get_BoneMatrix("hand.L");
+			ColliderDesc.pParentMatrix = m_pTransformCom->Get_WorldFloat4x4_Ptr();
+			if (FAILED(Add_Component(m_iModelLevelIndex, TEXT("Prototype_Component_OBB"),
+				TEXT("Com_Collider_OBB"), reinterpret_cast<CComponent**>(&m_vColliderComs[2]), &ColliderDesc)))
+			{
+				MSG_BOX("Failed to Add Component : Head Collider in Player_3rd");
+				return E_FAIL;
+			}
+		}
 	 }
 
 	return S_OK;
