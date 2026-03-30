@@ -201,6 +201,12 @@
     <Filter Include="소스 파일\01. Engine\04. Components\03. Collider\Bounding\Bounding_Sphere">
       <UniqueIdentifier>{cf76bb72-4e62-4a77-92bf-7307bee10ab0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\01. Engine\04. Components\03. Collider\test">
+      <UniqueIdentifier>{e9a64c2e-715e-4248-afa3-1934340e5bbc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\04. Components\03. Collider\render">
+      <UniqueIdentifier>{4445247f-804d-435a-b1de-25229b6173d3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -344,9 +350,6 @@
     <ClInclude Include="Collider.h">
       <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
     </ClInclude>
-    <ClInclude Include="DebugDraw.h">
-      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
-    </ClInclude>
     <ClInclude Include="NetworkClient.h">
       <Filter>소스 파일\03. Network</Filter>
     </ClInclude>
@@ -378,7 +381,10 @@
       <Filter>소스 파일\02. Game\GameObject\02. Player\Player_1rd</Filter>
     </ClInclude>
     <ClInclude Include="Obj_CollisionTest.h">
-      <Filter>소스 파일\02. Game\GameObject\Object</Filter>
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\test</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugDraw.h">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -517,9 +523,6 @@
     <ClCompile Include="Collider.cpp">
       <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
     </ClCompile>
-    <ClCompile Include="DebugDraw.cpp">
-      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
-    </ClCompile>
     <ClCompile Include="NetworkClient.cpp">
       <Filter>소스 파일\03. Network</Filter>
     </ClCompile>
@@ -554,7 +557,10 @@
       <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd</Filter>
     </ClCompile>
     <ClCompile Include="Obj_CollisionTest.cpp">
-      <Filter>소스 파일\02. Game\GameObject\Object</Filter>
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\test</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugDraw.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\render</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -18,6 +18,7 @@ public:
 	virtual HRESULT Initialize_Prototype(COLLIDERTYPE eColliderType);
 	virtual HRESULT Initialize(void* pArg) override;
 	virtual void Update(_fmatrix WorldMatrix);
+	virtual void Update();
 #ifdef _DEBUG
 	virtual HRESULT Render(ID3D12GraphicsCommandList* pCommandList);
 #endif	
@@ -33,6 +34,8 @@ private:
 	COLLIDERTYPE						m_eType = { TYPE_END };
 	class CBounding* m_pBounding = { nullptr };
 	_bool	m_isOnOff = { true };
+	const _float4x4* m_pSocketMatrix = { nullptr };		// 소켓 매트릭스 (애니메이션이 있는 모델의 경우, 본에 따라 충돌체가 움직여야하므로)
+	const _float4x4* m_pParentMatrix = { nullptr };
 
 #ifdef _DEBUG
 	
