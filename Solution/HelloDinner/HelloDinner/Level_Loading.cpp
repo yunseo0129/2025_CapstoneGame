@@ -144,7 +144,7 @@ HRESULT CLevel_Loading::Ready_Component_Prototype()
 		return E_FAIL;
 	// Prototype_Component_Texture_Skybox
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_Component_Texture_Skybox",
-		CTexture::Create(m_pContext, L"Resources/Textures/Skybox_Cube.dds", 1, TEX_CUBE))))
+		CTexture::Create(m_pContext, L"Resources/Textures/SkyBox_Cube.dds", 1, TEX_CUBE))))
 		return E_FAIL;
 
 
@@ -199,7 +199,8 @@ HRESULT CLevel_Loading::Ready_GameObject_Prototype()
 	}
 
 	// Prototype_GameObject_Skybox
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_GameObject_Skybox", CSkybox::Create(m_pContext))))
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_GameObject_Skybox",
+		CSkybox::Create(m_pContext))))
 		return E_FAIL;
 
 	// Prototype_GameObject_Ketchup_Gun
@@ -257,8 +258,12 @@ HRESULT CLevel_Loading::Ready_Layer()
 	//}
 
 	// Skybox
+	CSkybox::Skybox_DESC SkyboxDesc;
+	SkyboxDesc.strTextureTag = L"Prototype_Component_Texture_Skybox";
+	SkyboxDesc.strVIbufferTag = L"Prototype_Component_VIBuffer_Skybox";
+	SkyboxDesc.iModelLevelIndex = LEVEL_LOADING;
 	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, L"Prototype_GameObject_Skybox", 
-		LEVEL_LOADING, L"Layer_Skybox", nullptr))) 
+		LEVEL_LOADING, L"Layer_Skybox", &SkyboxDesc)))
 	{
 		MSG_BOX("Failed to Add GameObject To Layer : Skybox");
 		return E_FAIL;

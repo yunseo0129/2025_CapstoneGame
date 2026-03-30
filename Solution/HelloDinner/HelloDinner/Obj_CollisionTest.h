@@ -23,7 +23,9 @@ public:
 	virtual void Priority_Update ( _float fTimeDelta ) override;
 	virtual void Update ( _float fTimeDelta ) override;
 	virtual void Late_Update ( _float fTimeDelta ) override;
+#ifdef _DEBUG
 	virtual void Render ( ID3D12GraphicsCommandList* _commandList ) override;
+#endif
 
 protected:
 	HRESULT Ready_Components ();

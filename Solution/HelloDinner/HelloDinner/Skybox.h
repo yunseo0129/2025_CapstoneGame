@@ -1,9 +1,17 @@
 #pragma once
 #include "GameObject.h"
 
-class CSkybox : public CGameObject
+class CSkybox final : public CGameObject
 {
-private:
+public:
+	struct Skybox_DESC : public CGameObject::GAMEOBJECT_DESC
+	{
+		_wstring	strVIbufferTag = L"";
+		_wstring	strTextureTag = L"";
+		_uint		iModelLevelIndex = 0;
+	};
+
+protected:
 	CSkybox(EngineContext* _pcontext);
 	CSkybox(const CSkybox& Prototype);
 	virtual ~CSkybox() = default;
@@ -17,20 +25,19 @@ public:
 	virtual void Render(ID3D12GraphicsCommandList* _commandList) override;
 
 protected:
-	virtual HRESULT Ready_Components();
-	virtual HRESULT Bind_ShaderResources();
+	HRESULT Ready_Components();
 
-private:
-	// ÄÄÆ÷³ÍÆ®µé
-	class CVIBuffer* m_pVIBufferCom = { nullptr };
-	class CTexture* m_pTextureCom = { nullptr };
+protected:
+	class CTexture* m_pTextureCom { nullptr };
+	class CVIBuffer* m_pVIBufferCom{ nullptr };
 
-	ID3D12Device* m_pDevice = { nullptr };
+	_wstring	m_strVIBufferTag = L"";
+	_wstring	m_strTextureTag = L"";
+	_uint		m_iModelLevelIndex = 0;
 
 public:
 	static CSkybox* Create(EngineContext* _pcontext);
 	virtual CGameObject* Clone(void* pArg) override;
 	virtual void Free() override;
-
 };
 

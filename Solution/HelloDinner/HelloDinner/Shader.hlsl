@@ -115,7 +115,6 @@ VS_OUT_SKYBOX VS_Main_Skybox(VS_IN_STATIC In)
     float4 vViewPos = mul(vWorldPos, viewNoTranslation);
     Out.vPosition = mul(vViewPos, g_matProj).xyww;
     Out.vTexCoord = In.vPos;
-
     return Out;
 }
 

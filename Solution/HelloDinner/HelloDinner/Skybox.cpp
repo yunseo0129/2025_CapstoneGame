@@ -7,24 +7,40 @@
 CSkybox::CSkybox(EngineContext* pContext)
 	: CGameObject(pContext)
 {
-
 }
 
 CSkybox::CSkybox(const CSkybox& Prototype)
-	: CGameObject(Prototype)
+	: CGameObject(Prototype.m_pContext)
+	, m_pTextureCom(Prototype.m_pTextureCom)
+	, m_pVIBufferCom(Prototype.m_pVIBufferCom)
 {
-
+	Safe_AddRef(m_pTextureCom);
+	Safe_AddRef(m_pVIBufferCom);
 }
 
 HRESULT CSkybox::Initialize_Prototype()
 {
-	Ready_Components();
 	return S_OK;
 }
 
 HRESULT CSkybox::Initialize(void* pArg)
 {
-	Ready_Components();
+	if (nullptr == pArg)
+		return E_FAIL;
+
+	Skybox_DESC* pDesc = static_cast<Skybox_DESC*>(pArg);
+
+	m_strVIBufferTag = pDesc->strVIbufferTag;
+	m_strTextureTag = pDesc->strTextureTag;
+	m_iModelLevelIndex = pDesc->iModelLevelIndex;
+
+	// CGameObject::Initialize가 Transform 생성 및 속도 설정
+	if (FAILED(__super::Initialize(pArg)))
+		return E_FAIL;
+
+	if (FAILED(Ready_Components()))
+		return E_FAIL;
+
 	return S_OK;
 }
 
@@ -34,6 +50,8 @@ void CSkybox::Priority_Update(_float fTimeDelta)
 
 void CSkybox::Update(_float fTimeDelta)
 {
+	__super::Update(fTimeDelta);
+	_matrix WorldMatrix = m_pTransformCom->Get_WorldMatrix();
 }
 
 void CSkybox::Late_Update(_float fTimeDelta)
@@ -43,50 +61,38 @@ void CSkybox::Late_Update(_float fTimeDelta)
 
 void CSkybox::Render(ID3D12GraphicsCommandList* _commandList)
 {
+	// Transform 컴포넌트의 월드 행렬을 RootConstantBuffer에 넘겨준다.
 	XMFLOAT4X4 WorldMatrix;
 	XMStoreFloat4x4(&WorldMatrix, m_pTransformCom->Get_WorldMatrix());
 	_commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &WorldMatrix, 0);
 
-	// Skybox 전용 PSO 사용 (DEFAULT가 아닌 SKYBOX)
+	// PSO 바인딩
 	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::SKYBOX);
 
 	if (FAILED(m_pTextureCom->Bind_ShaderResource(_commandList, RootParameterIndex::TEXTURE))) {
-		MSG_BOX("Failed to Bind Texture Resource in CSkybox");
+		MSG_BOX("Failed to Bind Texture Resource in Skybox");
 		return;
 	}
 
+	// 정점 버퍼 바인딩 및 렌더링
 	m_pVIBufferCom->Render(_commandList);
 }
 
 HRESULT CSkybox::Ready_Components()
 {
-
-	m_pTransformCom = CTransform::Create(m_pContext);
-
-	if (FAILED(Add_Component(LEVEL_LOADING, L"Prototype_Component_VIBuffer_Skybox",
-		TEXT("Com_VIBuffer"), reinterpret_cast<CComponent**>(&m_pVIBufferCom)))) {
+	if (FAILED(Add_Component(m_iModelLevelIndex, m_strVIBufferTag,
+		TEXT("Com_VIBuffer"), reinterpret_cast<CComponent**>(&m_pVIBufferCom))))
+	{
+		MSG_BOX("Failed to Add Component : VIBuffer in Skybox");
 		return E_FAIL;
 	}
 
-	if (m_pVIBufferCom == nullptr) {
-		MSG_BOX("Failed to Add Component : VIBuffer");
-		return E_FAIL;
-	}
-
-	if (FAILED(Add_Component(LEVEL_LOADING, L"Prototype_Component_Texture_Skybox",
+	if (FAILED(Add_Component(m_iModelLevelIndex, m_strTextureTag,
 		TEXT("Com_Texture"), reinterpret_cast<CComponent**>(&m_pTextureCom))))
-		return E_FAIL;
-
-	if (m_pTextureCom == nullptr) {
-		MSG_BOX("Failed to Add Component : Texture");
+	{
+		MSG_BOX("Failed to Add Component : Texture in Skybox");
 		return E_FAIL;
 	}
-
-	return S_OK;
-}
-
-HRESULT CSkybox::Bind_ShaderResources()
-{
 
 	return S_OK;
 }
@@ -115,7 +121,7 @@ CGameObject* CSkybox::Clone(void* pArg)
 
 void CSkybox::Free()
 {
-	Safe_Release(m_pVIBufferCom);
 	Safe_Release(m_pTextureCom);
+	Safe_Release(m_pVIBufferCom);
 	__super::Free();
 }

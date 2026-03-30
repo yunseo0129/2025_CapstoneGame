@@ -25,6 +25,8 @@ CVIBuffer::CVIBuffer(const CVIBuffer& Prototype)
     , m_iIndices(Prototype.m_iIndices)
     , m_eIndexFormat(Prototype.m_eIndexFormat)
 {
+	Safe_AddRef(m_pVertexBuffer);
+	Safe_AddRef(m_pIndexBuffer);
     // UploadBuffer는 복사할 필요 없음 (이미 GPU에 올라갔으므로)
     // commendlist도 업로드 버퍼 생성 시에만 필요하므로 복사하지 않음
     // Device와 Buffer는 ComPtr로 관리 중이라서 자동 addref 됨.
