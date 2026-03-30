@@ -108,7 +108,7 @@ void CLevel_Loading::Add_Camera()
 	tDesc.fNear = 0.1f;
 	tDesc.fFar = 10000.f;
 	tDesc.fCamMouseSensor = 1.f;
-	tDesc.fCamSpeedPerSec = 2.f;
+	tDesc.fCamSpeedPerSec = 1.f;
 	tDesc.fRotationPerSec = 1.f;
 	tDesc.fSpeedPerSec = 100.f;
 
@@ -268,7 +268,10 @@ HRESULT CLevel_Loading::Ready_Layer()
 	{
 		CPlayer_1rd::Player_1RD_DESC cdesc;
 		cdesc.strModelTag = L"Prototype_Component_Pig_3rd";
+		cdesc.vRotation = _float3(0.f, 0.f, 0.f);
 		cdesc.iModelLevelIndex = LEVEL_LOADING;
+		cdesc.vPos = _float3(0.f, -180.f, -5.f);
+		cdesc.pCamera = static_cast<CCamera_FPV*>(m_pCamera[CAMERA_FPV]);
 		m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_GameObject_Player_1rd"),
 			LEVEL_LOADING, TEXT("Layer_Player_1rd"), &cdesc);
 	}

@@ -31,13 +31,15 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
 	Player_1RD_DESC* pDesc = static_cast<Player_1RD_DESC*>(pArg);
 	m_strModelTag = pDesc->strModelTag;
 	m_iModelLevelIndex = pDesc->iModelLevelIndex;
+	m_pCamera = pDesc->pCamera;
 	pDesc->iNumPartObj = 1;
-	pDesc->fSpeedPerSec = 10.f;
-
+	pDesc->fSpeedPerSec = 100.f;
+	pDesc->fRotationPerSec = 1.f;
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
 
 	m_pTransformCom->Scaling(1.f, 1.f, 1.f);
+	m_pTransformCom->RotationQuaternion(pDesc->vRotation.x, pDesc->vRotation.y, pDesc->vRotation.z);
 	m_pTransformCom->Set_State(CTransform::STATE_POSITION,
 		XMVectorSet(pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z, 1.f));
 
@@ -55,7 +57,101 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
 
 void CPlayer_1rd::Priority_Update(_float fTimeDelta)
 {
-	m_pTransformCom->Go_Left(fTimeDelta);
+	if (m_bOnOff == true)
+	{
+		// 마우스 이동량에 따른 카메라 회전
+		_long		MouseMove = {};
+		if (MouseMove = m_pGameInstance->Get_DIMouseMove(Engine::DIMS_X))
+		{
+			m_pTransformCom->Turn(XMVectorSet(0.f, 1.f, 0.f, 0.f), MouseMove * fTimeDelta * 2.2f);
+		}
+
+		/*if (MouseMove = m_pGameInstance->Get_DIMouseMove(Engine::DIMS_Y))
+		{
+			m_pTransformCom->Turn(m_pTransformCom->Get_State(CTransform::STATE_RIGHT), MouseMove * fTimeDelta * 2.2f);
+		}*/
+
+		// 키보드 입력에 따른 카메라 이동
+		if (m_pGameInstance->Key_Pressing(DIK_W) && m_pGameInstance->Key_Pressing(DIK_S))
+		{
+			if (m_pGameInstance->Key_Pressing(DIK_A) && m_pGameInstance->Key_Pressing(DIK_D))
+			{
+
+			}
+			else if (m_pGameInstance->Key_Pressing(DIK_A))
+			{
+				m_pTransformCom->Go_Left(fTimeDelta);
+			}
+			else if (m_pGameInstance->Key_Pressing(DIK_D))
+			{
+				m_pTransformCom->Go_Right(fTimeDelta);
+			}
+		}
+		else if (m_pGameInstance->Key_Pressing(DIK_W))
+		{
+			if (m_pGameInstance->Key_Pressing(DIK_A) && m_pGameInstance->Key_Pressing(DIK_D))
+			{
+				m_pTransformCom->Go_Straight(fTimeDelta);
+			}
+			else if (m_pGameInstance->Key_Pressing(DIK_A))
+			{
+				m_pTransformCom->Go_Straight(fTimeDelta * 0.7071f);
+				m_pTransformCom->Go_Left(fTimeDelta * 0.7071f);
+			}
+			else if (m_pGameInstance->Key_Pressing(DIK_D))
+			{
+				m_pTransformCom->Go_Straight(fTimeDelta * 0.7071f);
+				m_pTransformCom->Go_Right(fTimeDelta * 0.7071f);
+			}
+			else
+			{
+				m_pTransformCom->Go_Straight(fTimeDelta);
+			}
+		}
+		else if (m_pGameInstance->Key_Pressing(DIK_S))
+		{
+			if (m_pGameInstance->Key_Pressing(DIK_A) && m_pGameInstance->Key_Pressing(DIK_D))
+			{
+				m_pTransformCom->Go_Backward(fTimeDelta);
+			}
+			else if (m_pGameInstance->Key_Pressing(DIK_A))
+			{
+				m_pTransformCom->Go_Backward(fTimeDelta * 0.7071f);
+				m_pTransformCom->Go_Left(fTimeDelta * 0.7071f);
+			}
+			else if (m_pGameInstance->Key_Pressing(DIK_D))
+			{
+				m_pTransformCom->Go_Backward(fTimeDelta * 0.7071f);
+				m_pTransformCom->Go_Right(fTimeDelta * 0.7071f);
+			}
+			else
+			{
+				m_pTransformCom->Go_Backward(fTimeDelta);
+			}
+		}
+		else if (m_pGameInstance->Key_Pressing(DIK_A) && m_pGameInstance->Key_Pressing(DIK_D))
+		{
+
+		}
+		else if (m_pGameInstance->Key_Pressing(DIK_A))
+		{
+			m_pTransformCom->Go_Left(fTimeDelta);
+		}
+		else if (m_pGameInstance->Key_Pressing(DIK_D))
+		{
+			m_pTransformCom->Go_Right(fTimeDelta);
+		}
+
+		if (m_pGameInstance->Key_Pressing(DIK_SPACE))
+		{
+			m_pTransformCom->Go_Up(fTimeDelta);
+		}
+		else if (m_pGameInstance->Key_Pressing(DIK_LCONTROL))
+		{
+			m_pTransformCom->Go_Up(-fTimeDelta);
+		}
+	}
+
 	__super::Priority_Update(fTimeDelta);
 }
 
@@ -113,7 +209,7 @@ HRESULT CPlayer_1rd::Ready_PartObjects()
 		cdesc.strModelTag = L"Prototype_Component_ketchupGun";
 		cdesc.iModelLevelIndex = 1;
 		cdesc.pParentMatrix = m_pTransformCom->Get_WorldFloat4x4_Ptr();
-		cdesc.pSocketMatrix = m_pModelCom->Get_BoneMatrix("hand.L");
+		cdesc.pSocketMatrix = m_pModelCom->Get_BoneMatrix("hand.R");
 		cdesc.vScale = _float3(0.2f, 0.2f, 0.2f);
 		m_PartObjects[0] = static_cast<CPartObj*>(m_pGameInstance->Clone_Prototype(Engine::PROTOTYPE::PROTO_GAMEOBJ, 1, TEXT("Prototype_GameObject_Ketchup_Gun"), &cdesc));
 		if (nullptr == m_PartObjects[0])

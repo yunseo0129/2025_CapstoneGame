@@ -9,7 +9,9 @@ public:
 	{
 		_float3 			vPos = _float3(1.f, 1.f, 1.f);
 		_uint				iModelLevelIndex = 0;
+		_float3				vRotation = {};
 		_wstring			strModelTag = L"";
+		class CCamera_FPV*	pCamera = nullptr;
 	};
 	enum PLAYER_1RD_COLLIDER_TYPE { COLLIDER_MAIN, COLLIDER_HEAD, COLLIDER_BODY, COLLIDER_LEG, COLLIDER_END };
 
@@ -35,6 +37,7 @@ private:
 
 private:
 	class CModel*		m_pModelCom = { nullptr };
+	class CCamera_FPV*	m_pCamera = { nullptr };
 	vector<class CCollider*> m_vColliderComs;
 	_uint				m_iState = 0;
 	_int				m_iHealth = 0;
