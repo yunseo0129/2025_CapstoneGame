@@ -176,7 +176,9 @@
     </ClInclude>
     <ClInclude Include="Layer.h" />
     <ClInclude Include="Level.h" />
-    <ClInclude Include="Level_Loading.h" />
+    <ClInclude Include="Level_Loading.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Level_Manager.h" />
     <ClInclude Include="Load_Manager.h" />
     <ClInclude Include="Loader_Map.h" />

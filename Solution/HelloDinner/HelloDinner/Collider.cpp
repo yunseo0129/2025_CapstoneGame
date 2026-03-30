@@ -67,6 +67,11 @@ HRESULT CCollider::Initialize(void* pArg)
 		break;
 	}
 
+	if (pDesc->pSocketMatrix != nullptr)
+		m_pSocketMatrix = pDesc->pSocketMatrix;
+	if (pDesc->pParentMatrix != nullptr)
+		m_pParentMatrix = pDesc->pParentMatrix;
+
 	m_isCloned = true;
 
 
@@ -79,6 +84,16 @@ void CCollider::Update(_fmatrix WorldMatrix)
 		return;
 
 	m_pBounding->Update(WorldMatrix);
+}
+
+void CCollider::Update()
+{
+	if (nullptr == m_pBounding)
+		return;
+	if (m_pSocketMatrix != nullptr && m_pParentMatrix != nullptr)
+		m_pBounding->Update(XMLoadFloat4x4(m_pSocketMatrix) * XMLoadFloat4x4(m_pParentMatrix));
+	else if (m_pParentMatrix != nullptr)
+		m_pBounding->Update(XMLoadFloat4x4(m_pParentMatrix));
 }
 
 #ifdef _DEBUG

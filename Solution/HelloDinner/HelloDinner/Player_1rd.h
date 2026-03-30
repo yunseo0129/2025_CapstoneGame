@@ -11,6 +11,7 @@ public:
 		_uint				iModelLevelIndex = 0;
 		_wstring			strModelTag = L"";
 	};
+	enum PLAYER_1RD_COLLIDER_TYPE { COLLIDER_MAIN, COLLIDER_HEAD, COLLIDER_BODY, COLLIDER_LEG, COLLIDER_END };
 
 private:
 	CPlayer_1rd(EngineContext* pContext);
@@ -34,7 +35,7 @@ private:
 
 private:
 	class CModel*		m_pModelCom = { nullptr };
-	// CCollider* m_pColliderCom = { nullptr };
+	vector<class CCollider*> m_vColliderComs;
 	_uint				m_iState = 0;
 	_int				m_iHealth = 0;
 	_wstring			m_strModelTag = L"";

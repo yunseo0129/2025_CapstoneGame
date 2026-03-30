@@ -223,38 +223,38 @@ HRESULT CLevel_Loading::Ready_GameObject_Prototype()
 HRESULT CLevel_Loading::Ready_Layer()
 {
 	// Collider Test
-	{
-		// AABB
-		{
-			CObj_CollisionTest::Obj_CollisionTest_DESC cdesc;
-			cdesc.vPosition = _float3(0.f, 0.f, 0.f);
-			cdesc.vRotation = _float3(0.f, 0.f, 0.f);
-			cdesc.vScale = _float3(1.f, 1.f, 1.f);
-			cdesc.eColliderType = CCollider::TYPE_AABB;
-			m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_TestObject_AABB"),
-				LEVEL_LOADING, TEXT("Layer_CollisionTest"), &cdesc);
-		}
-		// Sphere
-		{
-			CObj_CollisionTest::Obj_CollisionTest_DESC cdesc;
-			cdesc.vPosition = _float3(200.f, 0.f, 0.f);
-			cdesc.vRotation = _float3(0.f, 0.f, 0.f);
-			cdesc.vScale = _float3(1.f, 1.f, 1.f);
-			cdesc.eColliderType = CCollider::TYPE_SPHERE;
-			m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_TestObject_Sphere"),
-				LEVEL_LOADING, TEXT("Layer_CollisionTest"), &cdesc);
-		}
-		// OBB
-		{
-			CObj_CollisionTest::Obj_CollisionTest_DESC cdesc;
-			cdesc.vPosition = _float3(400.f, 0.f, 0.f);
-			cdesc.vRotation = _float3(0.f, 45.f, 45.f);
-			cdesc.vScale = _float3(1.f, 1.f, 1.f);
-			cdesc.eColliderType = CCollider::TYPE_OBB;
-			m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_TestObject_OBB"),
-				LEVEL_LOADING, TEXT("Layer_CollisionTest"), &cdesc);
-		}
-	}
+	//{
+	//	// AABB
+	//	{
+	//		CObj_CollisionTest::Obj_CollisionTest_DESC cdesc;
+	//		cdesc.vPosition = _float3(0.f, 0.f, 0.f);
+	//		cdesc.vRotation = _float3(0.f, 0.f, 0.f);
+	//		cdesc.vScale = _float3(1.f, 1.f, 1.f);
+	//		cdesc.eColliderType = CCollider::TYPE_AABB;
+	//		m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_TestObject_AABB"),
+	//			LEVEL_LOADING, TEXT("Layer_CollisionTest"), &cdesc);
+	//	}
+	//	// Sphere
+	//	{
+	//		CObj_CollisionTest::Obj_CollisionTest_DESC cdesc;
+	//		cdesc.vPosition = _float3(200.f, 0.f, 0.f);
+	//		cdesc.vRotation = _float3(0.f, 0.f, 0.f);
+	//		cdesc.vScale = _float3(1.f, 1.f, 1.f);
+	//		cdesc.eColliderType = CCollider::TYPE_SPHERE;
+	//		m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_TestObject_Sphere"),
+	//			LEVEL_LOADING, TEXT("Layer_CollisionTest"), &cdesc);
+	//	}
+	//	// OBB
+	//	{
+	//		CObj_CollisionTest::Obj_CollisionTest_DESC cdesc;
+	//		cdesc.vPosition = _float3(400.f, 0.f, 0.f);
+	//		cdesc.vRotation = _float3(0.f, 45.f, 45.f);
+	//		cdesc.vScale = _float3(1.f, 1.f, 1.f);
+	//		cdesc.eColliderType = CCollider::TYPE_OBB;
+	//		m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_TestObject_OBB"),
+	//			LEVEL_LOADING, TEXT("Layer_CollisionTest"), &cdesc);
+	//	}
+	//}
 
 	// Skybox
 	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, L"Prototype_GameObject_Skybox", 

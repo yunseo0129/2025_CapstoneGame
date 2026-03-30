@@ -12,7 +12,9 @@ class CBounding abstract : public CBase
 public:
 	struct BOUND_DESC
 	{
-		_float3		vCenter;
+		_float3				vCenter;
+		const _float4x4*	pParentMatrix = nullptr;
+		const _float4x4*	pSocketMatrix = nullptr;
 	};
 
 protected:
