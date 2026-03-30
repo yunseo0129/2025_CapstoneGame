@@ -163,7 +163,7 @@ HRESULT CLevel_Loading::Ready_Component_Prototype()
 
 	// Prototype_Component_Pig_3rd
 	{
-		_matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(0.01f, 0.01f, 0.01f);
+		_matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XM_PI);
 		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, TEXT("Prototype_Component_Pig_3rd"),
 			CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Pig/Prototype_Component_Pig.txt", PreTransformMatrix))))
 			return E_FAIL;
@@ -212,6 +212,11 @@ HRESULT CLevel_Loading::Ready_GameObject_Prototype()
 		CPlayer_1rd::Create(m_pContext))))
 		return E_FAIL;
 
+	// Prototype_GameObject_Pig_3rd
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, TEXT("Prototype_GameObject_Pig_3rd"),
+		CPig_3rd::Create(m_pContext))))
+		return E_FAIL;
+
 	return S_OK;
 }
 
@@ -252,7 +257,9 @@ HRESULT CLevel_Loading::Ready_Layer()
 	}
 
 	// Skybox
-	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, L"Prototype_GameObject_Skybox", LEVEL_LOADING, L"Layer_Skybox", nullptr))) {
+	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, L"Prototype_GameObject_Skybox", 
+		LEVEL_LOADING, L"Layer_Skybox", nullptr))) 
+	{
 		MSG_BOX("Failed to Add GameObject To Layer : Skybox");
 		return E_FAIL;
 	}
@@ -261,9 +268,20 @@ HRESULT CLevel_Loading::Ready_Layer()
 	{
 		CPlayer_1rd::Player_1RD_DESC cdesc;
 		cdesc.strModelTag = L"Prototype_Component_Pig_3rd";
-		cdesc.iModelLevelIndex = 1;
-		m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Player_1rd"),
-			1, TEXT("Layer_Player_1rd"), &cdesc);
+		cdesc.iModelLevelIndex = LEVEL_LOADING;
+		m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_GameObject_Player_1rd"),
+			LEVEL_LOADING, TEXT("Layer_Player_1rd"), &cdesc);
+	}
+
+	// Pig_3rd
+	{
+		CPlayer_3rd::Player_3rd_DESC eState;
+		eState.fSpeedPerSec = 0.f;
+		eState.vRotation = _float3(0.f, XM_PI, 0.f);
+		eState.strModelTag = L"Prototype_Component_Pig_3rd";
+		eState.iModelLevelIndex = LEVEL_LOADING;
+		m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_GameObject_Pig_3rd"),
+			LEVEL_LOADING, TEXT("Layer_Pig_3rd"), &eState);
 	}
 	return S_OK;
 }
