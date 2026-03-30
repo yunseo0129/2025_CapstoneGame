@@ -179,6 +179,21 @@ typedef struct
 	XMFLOAT4		vBlendWeights;	// 16bytes
 }VTXANIMMESH;
 
+// Light
+typedef struct
+{
+	enum TYPE { TYPE_POINT, TYPE_DIRECTOINAL, TYPE_END };
+
+	TYPE			eType;
+	XMFLOAT4		vDirection;
+	XMFLOAT4		vPosition;
+	float			fRange;
+
+	XMFLOAT4		vDiffuse;
+	XMFLOAT4		vAmbient;
+	XMFLOAT4		vSpecular;
+}LIGHT_DESC;
+
 
 //-------------------------------------------------------------
 //-------------------------------------------------------------

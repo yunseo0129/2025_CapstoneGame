@@ -174,10 +174,12 @@ HRESULT CModel::Ready_Bones()
 		m_pGameInstance->Read_File(BoneTransformMatrix);
 		m_pGameInstance->Read_File(CombindTransformationMatrix); // 추가함(활용안함) -> 애니메이션 재생 안할때 기본상태값 조정에 사용해야함
 		m_pGameInstance->Read_File(BoneParentIndex);
+
 		CBone* pBone = CBone::Create(BoneName, BoneTransformMatrix, BoneParentIndex, CombindTransformationMatrix);
 
 		if (nullptr == pBone)
 			return E_FAIL;
+
 
 		m_Bones.push_back(pBone);
 	}
