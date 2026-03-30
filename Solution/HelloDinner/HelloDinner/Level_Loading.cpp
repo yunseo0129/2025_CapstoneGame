@@ -32,82 +32,6 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 
 	Add_Camera();
 
-	// 충돌체 Prototype 등록
-	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_AABB"),
-		CCollider::Create(m_pContext, CCollider::TYPE_AABB))))
-		return E_FAIL;
-	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_OBB"),
-		CCollider::Create(m_pContext, CCollider::TYPE_OBB))))
-		return E_FAIL;
-	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Sphere"),
-		CCollider::Create(m_pContext, CCollider::TYPE_SPHERE))))
-		return E_FAIL;
-
-
-	// 충돌 테스트용 오브젝트
-	// AABB
-	{
-		if(FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_TestObject_AABB") ,
-			CObj_CollisionTest::Create ( m_pContext ) ) ) )
-			return E_FAIL;
-		CObj_CollisionTest::Obj_CollisionTest_DESC cdesc;
-		cdesc.vPosition = _float3 ( 0.f , 0.f , 0.f );
-		cdesc.vRotation = _float3 ( 0.f , 0.f , 0.f );
-		cdesc.vScale = _float3 ( 1.f , 1.f , 1.f );
-		cdesc.eColliderType = CCollider::TYPE_AABB;
-		m_pGameInstance->Add_GameObject_ToLayer ( 1 , TEXT("Prototype_TestObject_AABB") ,
-			1 , TEXT ( "Layer_CollisionTest" ) , &cdesc );
-	}
-	// Sphere
-	{
-		if ( FAILED ( m_pGameInstance->Add_Prototype ( 1 , TEXT ( "Prototype_TestObject_Sphere" ) ,
-			CObj_CollisionTest::Create ( m_pContext ) ) ) )
-			return E_FAIL;
-		CObj_CollisionTest::Obj_CollisionTest_DESC cdesc;
-		cdesc.vPosition = _float3 ( 200.f , 0.f , 0.f );
-		cdesc.vRotation = _float3 ( 0.f , 0.f , 0.f );
-		cdesc.vScale = _float3 ( 1.f , 1.f , 1.f );
-		cdesc.eColliderType = CCollider::TYPE_SPHERE;
-		m_pGameInstance->Add_GameObject_ToLayer ( 1 , TEXT ( "Prototype_TestObject_Sphere" ) ,
-			1 , TEXT ( "Layer_CollisionTest" ) , &cdesc );
-	}
-	// OBB
-	{
-		if ( FAILED ( m_pGameInstance->Add_Prototype ( 1 , TEXT ( "Prototype_TestObject_OBB" ) ,
-			CObj_CollisionTest::Create ( m_pContext ) ) ) )
-			return E_FAIL;
-		CObj_CollisionTest::Obj_CollisionTest_DESC cdesc;
-		cdesc.vPosition = _float3 ( 400.f , 0.f , 0.f );
-		cdesc.vRotation = _float3 ( 0.f , 45.f , 45.f );
-		cdesc.vScale = _float3 ( 1.f , 1.f , 1.f );
-		cdesc.eColliderType = CCollider::TYPE_OBB;
-		m_pGameInstance->Add_GameObject_ToLayer ( 1 , TEXT ( "Prototype_TestObject_OBB" ) ,
-			1 , TEXT ( "Layer_CollisionTest" ) , &cdesc );
-	}
-
-
-/*
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_Component_VIBuffer_VtxCube",
-		CVIBuffer_Cube::Create(m_pContext))))
-		return E_FAIL;
-
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_Component_VIBuffer_Skybox",
-		CVIBuffer_Skybox::Create(m_pContext))))
-		return E_FAIL;
-
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_Component_Texture_Cube",
-		CTexture::Create(m_pContext, L"Resources/Textures/Rock.dds", 1))))
-		return E_FAIL;
-	
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_Component_Texture_Skybox",
-		CTexture::Create(m_pContext, L"Resources/Textures/Skybox_Cube.dds", 1, TEX_CUBE))))
-		return E_FAIL;
-
-	Ready_TestLoader();
-	
-	*/
-
-
 	// 1. MaterialData.json → 텍스처 Prototype 먼저 등록
 	CLoader_Map* pMapLoader = CLoader_Map::Create(m_pContext);
 	if (FAILED(pMapLoader->Load_MaterialData("Resources/Map/MaterialData.json", LEVEL_LOADING)))
@@ -122,74 +46,14 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 	}
 	Safe_Release(pMapLoader);
 	
-
-
-	
-	/*if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Chick_3rd"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_NONANIM, L"Resources/NonAnim/chick/Prototype_Component_chicken.txt", _fmatrix()))))
-		return E_FAIL;
-
-	if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_GameObject_Chick_3rd"),
-		CChick_3rd::Create(m_pContext))))
+	if (FAILED(Ready_Component_Prototype()))
 		return E_FAIL;
 	
-	CChick_3rd::Player_3rd_DESC desc;
-	desc.strModelTag = L"Prototype_Component_Chick_3rd";
-	desc.iModelLevelIndex = 1;
-	desc.vScale = _float3(0.1f, 0.1f, 0.1f);
-	m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Chick_3rd"),
-		1, TEXT("Layer_Player_chick"), &desc);
-	*/
+	if (FAILED(Ready_GameObject_Prototype()))
+		return E_FAIL;
 
-	// 돼지 모델 로드
-	{
-		_matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(0.01f, 0.01f, 0.01f);
-		if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_Pig_3rd"),
-			CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Pig/Prototype_Component_Pig.txt", PreTransformMatrix))))
-			return E_FAIL;
-	}
-
-	// Ketchup_gun 모델 로드
-	{
-		// 프리트랜스폼 영향 안받음 왜인진모름
-		if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_Component_ketchupGun"),
-			CModel::Create(m_pContext, CModel::TYPE_NONANIM, L"Resources/NonAnim/Gun/Prototype_Component_ketchupGun.txt", XMMatrixIdentity()))))
-			return E_FAIL;
-	}
-	// Ketchup_gun 프로토타입생성
-	{
-		if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_GameObject_Ketchup_Gun"),
-			CKetchup_Gun::Create(m_pContext))))
-			return E_FAIL;
-	}
-
-	// 애님모델 돼지 CPig_3rd
-	/*{
-		if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_GameObject_Pig_3rd"),
-			CPig_3rd::Create(m_pContext))))
-			return E_FAIL;
-		CPig_3rd::Player_3rd_DESC cdesc;
-		cdesc.strModelTag = L"Prototype_Component_Pig_3rd";
-		cdesc.iModelLevelIndex = 1;
-		m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Pig_3rd"),
-			1, TEXT("Layer_Player_3rd"), &cdesc);
-	}*/
-
-	// 애님모델 돼지 Player_1rd로 생성
-	{
-		if (FAILED(m_pGameInstance->Add_Prototype(1, TEXT("Prototype_GameObject_Player_1rd"),
-			CPlayer_1rd::Create(m_pContext))))
-			return E_FAIL;
-		CPlayer_1rd::Player_1RD_DESC cdesc;
-		cdesc.strModelTag = L"Prototype_Component_Pig_3rd";
-		cdesc.iModelLevelIndex = 1;
-		m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Player_1rd"),
-			1, TEXT("Layer_Player_1rd"), &cdesc);
-	}
-
-
-
-	// m_pLoader = CLoader::Create(m_pDevice, m_pContext, m_eNextLevelID)
+	if (FAILED(Ready_Layer()))
+		return E_FAIL;
 
 	return S_OK;
 }
@@ -254,31 +118,153 @@ void CLevel_Loading::Add_Camera()
 	m_pCamera[CAMERA_FPV] = pCamera;
 }
 
-HRESULT CLevel_Loading::Ready_TestLoader()
+HRESULT CLevel_Loading::Ready_Component_Prototype()
 {
-	// 큐브 하나 그려보기
-	CCube* pCube = CCube::Create(m_pContext);
-
-	
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_GameObject_Cube", pCube)))
-		return E_FAIL;
-	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, L"Prototype_GameObject_Cube", LEVEL_LOADING, L"Layer_Test", nullptr))) {
-		MSG_BOX("Failed to Add GameObject To Layer : Cube");
-		return E_FAIL;
+	// 충돌체 로드
+	// CCollider
+	{
+		// Prototype_Component_AABB
+		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, TEXT("Prototype_Component_AABB"),
+			CCollider::Create(m_pContext, CCollider::TYPE_AABB))))
+			return E_FAIL;
+		// Prototype_Component_OBB
+		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, TEXT("Prototype_Component_OBB"),
+			CCollider::Create(m_pContext, CCollider::TYPE_OBB))))
+			return E_FAIL;
+		// Prototype_Component_Sphere
+		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, TEXT("Prototype_Component_Sphere"),
+			CCollider::Create(m_pContext, CCollider::TYPE_SPHERE))))
+			return E_FAIL;
 	}
-	
-	
+
+	// 텍스쳐 로드
+	// Prototype_Component_Texture_Cube
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_Component_Texture_Cube",
+		CTexture::Create(m_pContext, L"Resources/Textures/Rock.dds", 1))))
+		return E_FAIL;
+	// Prototype_Component_Texture_Skybox
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_Component_Texture_Skybox",
+		CTexture::Create(m_pContext, L"Resources/Textures/Skybox_Cube.dds", 1, TEX_CUBE))))
+		return E_FAIL;
+
+
+	// 모델 로드
+	// 기본 버퍼
+	{
+		// Prototype_Component_VIBuffer_VtxCube
+		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_Component_VIBuffer_VtxCube",
+			CVIBuffer_Cube::Create(m_pContext))))
+			return E_FAIL;
+		// Prototype_Component_VIBuffer_Skybox
+		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_Component_VIBuffer_Skybox",
+			CVIBuffer_Skybox::Create(m_pContext))))
+			return E_FAIL;
+	}
+
+	// Prototype_Component_Pig_3rd
+	{
+		_matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(0.01f, 0.01f, 0.01f);
+		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, TEXT("Prototype_Component_Pig_3rd"),
+			CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Pig/Prototype_Component_Pig.txt", PreTransformMatrix))))
+			return E_FAIL;
+	}
+
+	// Prototype_Component_ketchupGun
+	{
+		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, TEXT("Prototype_Component_ketchupGun"),
+			CModel::Create(m_pContext, CModel::TYPE_NONANIM, L"Resources/NonAnim/Gun/Prototype_Component_ketchupGun.txt", XMMatrixIdentity()))))
+			return E_FAIL;
+	}
+
+	return S_OK;
+}
+
+HRESULT CLevel_Loading::Ready_GameObject_Prototype()
+{
+	// 객체 원형 로드
+	// CCollider
+	{
+		// AABB
+		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, TEXT("Prototype_TestObject_AABB"),
+			CObj_CollisionTest::Create(m_pContext))))
+			return E_FAIL;
+		// Sphere
+		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, TEXT("Prototype_TestObject_Sphere"),
+			CObj_CollisionTest::Create(m_pContext))))
+			return E_FAIL;
+		// OBB
+		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, TEXT("Prototype_TestObject_OBB"),
+			CObj_CollisionTest::Create(m_pContext))))
+			return E_FAIL;
+	}
+
+	// Prototype_GameObject_Skybox
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, L"Prototype_GameObject_Skybox", CSkybox::Create(m_pContext))))
 		return E_FAIL;
 
-	
+	// Prototype_GameObject_Ketchup_Gun
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, TEXT("Prototype_GameObject_Ketchup_Gun"),
+		CKetchup_Gun::Create(m_pContext))))
+		return E_FAIL;
+
+	// Prototype_GameObject_Player_1rd
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, TEXT("Prototype_GameObject_Player_1rd"),
+		CPlayer_1rd::Create(m_pContext))))
+		return E_FAIL;
+
+	return S_OK;
+}
+
+HRESULT CLevel_Loading::Ready_Layer()
+{
+	// Collider Test
+	{
+		// AABB
+		{
+			CObj_CollisionTest::Obj_CollisionTest_DESC cdesc;
+			cdesc.vPosition = _float3(0.f, 0.f, 0.f);
+			cdesc.vRotation = _float3(0.f, 0.f, 0.f);
+			cdesc.vScale = _float3(1.f, 1.f, 1.f);
+			cdesc.eColliderType = CCollider::TYPE_AABB;
+			m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_TestObject_AABB"),
+				LEVEL_LOADING, TEXT("Layer_CollisionTest"), &cdesc);
+		}
+		// Sphere
+		{
+			CObj_CollisionTest::Obj_CollisionTest_DESC cdesc;
+			cdesc.vPosition = _float3(200.f, 0.f, 0.f);
+			cdesc.vRotation = _float3(0.f, 0.f, 0.f);
+			cdesc.vScale = _float3(1.f, 1.f, 1.f);
+			cdesc.eColliderType = CCollider::TYPE_SPHERE;
+			m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_TestObject_Sphere"),
+				LEVEL_LOADING, TEXT("Layer_CollisionTest"), &cdesc);
+		}
+		// OBB
+		{
+			CObj_CollisionTest::Obj_CollisionTest_DESC cdesc;
+			cdesc.vPosition = _float3(400.f, 0.f, 0.f);
+			cdesc.vRotation = _float3(0.f, 45.f, 45.f);
+			cdesc.vScale = _float3(1.f, 1.f, 1.f);
+			cdesc.eColliderType = CCollider::TYPE_OBB;
+			m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_TestObject_OBB"),
+				LEVEL_LOADING, TEXT("Layer_CollisionTest"), &cdesc);
+		}
+	}
+
+	// Skybox
 	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, L"Prototype_GameObject_Skybox", LEVEL_LOADING, L"Layer_Skybox", nullptr))) {
 		MSG_BOX("Failed to Add GameObject To Layer : Skybox");
 		return E_FAIL;
 	}
-	
-	
-	
+
+	// Player_1rd
+	{
+		CPlayer_1rd::Player_1RD_DESC cdesc;
+		cdesc.strModelTag = L"Prototype_Component_Pig_3rd";
+		cdesc.iModelLevelIndex = 1;
+		m_pGameInstance->Add_GameObject_ToLayer(1, TEXT("Prototype_GameObject_Player_1rd"),
+			1, TEXT("Layer_Player_1rd"), &cdesc);
+	}
 	return S_OK;
 }
 

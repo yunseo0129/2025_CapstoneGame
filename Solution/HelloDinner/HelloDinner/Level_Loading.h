@@ -20,7 +20,9 @@ public:
 private:
 	LEVELID			m_eNextLevelID = { LEVEL_END };
 
-	HRESULT Ready_TestLoader();
+	HRESULT Ready_Component_Prototype();
+	HRESULT Ready_GameObject_Prototype();
+	HRESULT Ready_Layer();
 
 public:
 	static CLevel_Loading* Create(EngineContext* pContext, LEVELID eNextLevelID);
