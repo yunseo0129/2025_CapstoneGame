@@ -41,4 +41,31 @@ SamplerState g_samPoint : register(s2); // 도트
 SamplerState g_samAnisotropic : register(s3); // 지형
 // ------------------------------------------------
 
+// --------------------------------------------------------
+// Common Structures
+// --------------------------------------------------------
+struct VS_OUT
+{
+    float4 vPosition : SV_POSITION; // 화면 좌표
+    float3 vWorldPos : POSITION; // 월드 좌표 (조명 계산용)
+    float3 vNormal : NORMAL; // 노멀
+    float2 vUV : TEXCOORD0; // UV
+};
+
+// --------------------------------------------------------
+// Common Pixel Shader (Lit)
+// --------------------------------------------------------
+// 일반/애니메이션 메쉬 공통 사용
+float4 PS_Main_Lit(VS_OUT In) : SV_TARGET
+{
+    float4 texColor = g_Textures.Sample(g_samWrap, In.vUV);
+        
+    // sRGB -> Linear 변환 (감마 보정)
+    // texColor.rgb = pow(texColor.rgb, 2.2f);
+    
+    // clip(texColor.a - 0.001f); // 알파 테스트
+   
+    return float4(texColor);
+}
+
 #endif

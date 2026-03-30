@@ -166,15 +166,15 @@ HRESULT CShader_Manager::Create_PSO ()
 	// 1. 쉐이더 컴파일
 	// ----------------------------------------------------------------
 	// Vertex Shader (Input Layout별)
-	ComPtr<ID3DBlob> vsStatic = Compile_Shader ( L"Shader.hlsl" , "VS_Main_Static" , "vs_5_1" );
-	ComPtr<ID3DBlob> vsSkybox = Compile_Shader ( L"Shader.hlsl" , "VS_Main_Skybox" , "vs_5_1" );
-	ComPtr<ID3DBlob> vsAnim = Compile_Shader ( L"Shader.hlsl" , "VS_Main_Anim" , "vs_5_1" );
-	// ComPtr<ID3DBlob> vsUI = Compile_Shader ( L"UI.hlsl" , "VS_Main_UI" , "vs_5_1" );
+	ComPtr<ID3DBlob> vsStatic = Compile_Shader ( L"Shader_Default.hlsl" , "VS_Main_Static" , "vs_5_1" );
+	ComPtr<ID3DBlob> vsSkybox = Compile_Shader ( L"Shader_Skybox.hlsl" , "VS_Main_Skybox" , "vs_5_1" );
+	ComPtr<ID3DBlob> vsAnim = Compile_Shader ( L"Shader_Anim.hlsl" , "VS_Main_Anim" , "vs_5_1" );
+	// ComPtr<ID3DBlob> vsUI = Compile_Shader ( L"Shader_UI.hlsl" , "VS_Main_UI" , "vs_5_1" );
 
 	// Pixel Shader (재질별)
-	ComPtr<ID3DBlob> psLit = Compile_Shader ( L"Shader.hlsl" , "PS_Main_Lit" , "ps_5_1" ); // 조명 O
-	ComPtr<ID3DBlob> psSkybox = Compile_Shader ( L"Shader.hlsl" , "PS_Main_Skybox" , "ps_5_1" ); // Skybox
-	// ComPtr<ID3DBlob> psUI = Compile_Shader ( L"UI.hlsl" , "PS_Main_UI" , "ps_5_1" ); // 조명 X
+	ComPtr<ID3DBlob> psLit = Compile_Shader ( L"Shader_Default.hlsl" , "PS_Main_Lit" , "ps_5_1" ); // 조명 O
+	ComPtr<ID3DBlob> psSkybox = Compile_Shader ( L"Shader_Skybox.hlsl" , "PS_Main_Skybox" , "ps_5_1" ); // Skybox
+	// ComPtr<ID3DBlob> psUI = Compile_Shader ( L"Shader_UI.hlsl" , "PS_Main_UI" , "ps_5_1" ); // 조명 X
 
 	// ----------------------------------------------------------------
 	// 2. 기본 PSO Desc 작성 (공통 설정)
