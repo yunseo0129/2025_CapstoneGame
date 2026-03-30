@@ -76,11 +76,13 @@ void CObj_CollisionTest::Late_Update ( _float fTimeDelta )
 	m_pGameInstance->Add_RenderObject ( CRenderer::RG_NONBLEND , this );
 }
 
+#ifdef _DEBUG
 void CObj_CollisionTest::Render ( ID3D12GraphicsCommandList* _commandList )
 {
 	// Transform 컴포넌트의 월드 행렬을 RootConstantBuffer에 넘겨준다.
 	m_pGameInstance->Add_RenderCollider(m_pColliderCom );
 }
+#endif
 
 HRESULT CObj_CollisionTest::Ready_Components ()
 {
