@@ -49,37 +49,64 @@ HRESULT CRenderer::Draw_RenderObject(ID3D12GraphicsCommandList* _CmdList)
 	return S_OK;
 }
 
-HRESULT CRenderer::Render_Priority( ID3D12GraphicsCommandList* _CmdList )
+HRESULT CRenderer::ShadowDraw_RenderObject(ID3D12GraphicsCommandList* _CmdList)
 {
-	for (auto& pRenderObject : m_RenderObjects[RG_PRIORITY])
-	{
-		if (nullptr != pRenderObject) {
-			pRenderObject->Render (_CmdList);
+	if (FAILED(Render_Priority(_CmdList, true)))
+		return E_FAIL;
+	if (FAILED(Render_NonBlend(_CmdList, true)))
+		return E_FAIL;
+	return S_OK;
+}
+
+HRESULT CRenderer::Render_Priority( ID3D12GraphicsCommandList* _CmdList , bool _IsShadow)
+{
+	if (_IsShadow) {
+		for (auto& pRenderObject : m_RenderObjects[RG_PRIORITY])
+		{
+			if (nullptr != pRenderObject) {
+				pRenderObject->ShadowRender(_CmdList);
+			}
 		}
-		Safe_Release(pRenderObject);
 	}
-	m_RenderObjects[RG_PRIORITY].clear();
+	else {
+		for (auto& pRenderObject : m_RenderObjects[RG_PRIORITY])
+		{
+			if (nullptr != pRenderObject) {
+				pRenderObject->Render(_CmdList);
+			}
+			Safe_Release(pRenderObject);
+		}
+		m_RenderObjects[RG_PRIORITY].clear();
+	}
 
 	return S_OK;
 }
 
-HRESULT CRenderer::Render_NonBlend( ID3D12GraphicsCommandList* _CmdList )
+HRESULT CRenderer::Render_NonBlend( ID3D12GraphicsCommandList* _CmdList, bool _IsShadow)
 {
-	//m_pGameInstance->Render_BlockList();
-
-	for (auto& pRenderObject : m_RenderObjects[RG_NONBLEND])
-	{
-		if (nullptr != pRenderObject) {
-			pRenderObject->Render (_CmdList);
+	if (_IsShadow) {
+		for (auto& pRenderObject : m_RenderObjects[RG_NONBLEND])
+		{
+			if (nullptr != pRenderObject) {
+				pRenderObject->ShadowRender(_CmdList);
+			}
 		}
-		Safe_Release(pRenderObject);
 	}
-	m_RenderObjects[RG_NONBLEND].clear();
+	else {
+		for (auto& pRenderObject : m_RenderObjects[RG_NONBLEND])
+		{
+			if (nullptr != pRenderObject) {
+				pRenderObject->Render(_CmdList);
+			}
+			Safe_Release(pRenderObject);
+		}
+		m_RenderObjects[RG_NONBLEND].clear();
+	}
 
 	return S_OK;
 }
 
-HRESULT CRenderer::Render_Blend( ID3D12GraphicsCommandList* _CmdList )
+HRESULT CRenderer::Render_Blend( ID3D12GraphicsCommandList* _CmdList, bool _IsShadow)
 {
 	for (auto& pRenderObject : m_RenderObjects[RG_BLEND])
 	{

@@ -17,6 +17,8 @@ public:
 	void BeforeRender(const _float4& vClearColor);
 	void AfterRender();
 
+	void initRenderTargetAndDepthStencil(ID3D12GraphicsCommandList* cmdList);
+
 	void CloseCmdList ();
 	
 	const ComPtr<ID3D12GraphicsCommandList>& GetCommandList() const { return m_pCommandList; }

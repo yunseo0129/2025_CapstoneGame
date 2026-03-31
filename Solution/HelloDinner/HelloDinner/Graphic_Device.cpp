@@ -137,6 +137,15 @@ void CGraphic_Device::AfterRender()
 	MoveToNextFrame();
 }
 
+void CGraphic_Device::initRenderTargetAndDepthStencil(ID3D12GraphicsCommandList* cmdList)
+{
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = CurrentBackBufferView();
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = DepthStencilView();
+	cmdList->OMSetRenderTargets(1, &rtvHandle, TRUE, &dsvHandle);
+	cmdList->RSSetViewports(1, &m_ScreenViewport);
+	cmdList->RSSetScissorRects(1, &m_ScissorRect);
+}
+
 void CGraphic_Device::CloseCmdList ()
 {
 	// command list에 기록 완료

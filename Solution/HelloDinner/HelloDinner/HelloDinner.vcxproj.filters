@@ -213,6 +213,9 @@
     <Filter Include="소스 파일\01. Engine\07. Light\Manager">
       <UniqueIdentifier>{061c2507-670e-4418-8d96-766479a0c8ab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\01. Engine\08. Shadow">
+      <UniqueIdentifier>{6e761fcd-17b0-4292-af41-e8731b9566c9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -398,6 +401,9 @@
     <ClInclude Include="Light.h">
       <Filter>소스 파일\01. Engine\07. Light</Filter>
     </ClInclude>
+    <ClInclude Include="Shadow.h">
+      <Filter>소스 파일\01. Engine\08. Shadow</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -580,6 +586,9 @@
     <ClCompile Include="Light.cpp">
       <Filter>소스 파일\01. Engine\07. Light</Filter>
     </ClCompile>
+    <ClCompile Include="Shadow.cpp">
+      <Filter>소스 파일\01. Engine\08. Shadow</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="HelloDinner.rc">
@@ -595,7 +604,7 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shader_Default.hlsl">
+    <FxCompile Include="Shader_Static.hlsl">
       <Filter>셰이더 파일</Filter>
     </FxCompile>
     <FxCompile Include="Shader_Skybox.hlsl">

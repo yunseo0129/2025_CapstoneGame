@@ -17,7 +17,8 @@ private:
 public:
 	HRESULT Open_Level(_int iLevelIndex, class CLevel* pNewLevel);
 	void Update(_float fTimeDelta);
-	HRESULT Render();
+	void ShadowRender(ID3D12GraphicsCommandList* cmdList);
+	void Set_CurrentCamera(CAMERA_TYPE _etype);
 	void Bind_CameraBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameterIndex _eIndex, CAMERA_TYPE _eType);
 	void Bind_LightBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameterIndex _eIndex);
 	XMFLOAT4X4 Get_CurrentCameraView();

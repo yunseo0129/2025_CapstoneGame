@@ -36,6 +36,20 @@ void CLevel_Manager::Update(_float fTimeDelta)
 		m_pCurrentLevel->Update(fTimeDelta);
 }
 
+void CLevel_Manager::ShadowRender(ID3D12GraphicsCommandList* cmdList)
+{
+	if (nullptr != m_pCurrentLevel) {
+		m_pCurrentLevel->ShadowRender_Begin();
+		m_pCurrentLevel->ShadowRender(cmdList);
+	}	
+}
+
+void CLevel_Manager::Set_CurrentCamera(CAMERA_TYPE _etype)
+{
+	if (nullptr != m_pCurrentLevel)
+		m_pCurrentLevel->Set_CurrentCamera(_etype);
+}
+
 void CLevel_Manager::Bind_CameraBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameterIndex _eIndex, CAMERA_TYPE _eType)
 {
 	if (nullptr != m_pCurrentLevel)
@@ -60,14 +74,6 @@ XMFLOAT4X4 CLevel_Manager::Get_CurrentCameraProjection ()
 	if (nullptr != m_pCurrentLevel)
 		return m_pCurrentLevel->Get_CurrentCameraProjection();
 	return XMFLOAT4X4 ();
-}
-
-HRESULT CLevel_Manager::Render()
-{
-	if (nullptr != m_pCurrentLevel)
-		m_pCurrentLevel->Render();
-
-	return S_OK;
 }
 
 CLevel_Manager* CLevel_Manager::Create()

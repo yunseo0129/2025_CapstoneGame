@@ -23,14 +23,6 @@ HRESULT CTexture_Manager::Initialize()
 	return S_OK;
 }
 
-_uint CTexture_Manager::Allocate_Descriptors(_uint _iCount)
-{
-	_uint iAllocatedIndex = m_iCurrentIndex;
-	m_iCurrentIndex += _iCount;
-	return iAllocatedIndex;
-
-	return _uint();
-}
 
 // CPU 핸들 계산
 CD3DX12_CPU_DESCRIPTOR_HANDLE CTexture_Manager::Get_CPUHandle()

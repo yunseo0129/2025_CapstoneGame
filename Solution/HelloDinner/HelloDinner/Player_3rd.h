@@ -25,6 +25,7 @@ public:
 	virtual void Update(_float fTimeDelta) override;
 	virtual void Late_Update(_float fTimeDelta) override;
 	virtual void Render(ID3D12GraphicsCommandList* _commandList) override;
+	virtual void ShadowRender(ID3D12GraphicsCommandList* _commandList) override;
 
 protected:
 	HRESULT Ready_Components();

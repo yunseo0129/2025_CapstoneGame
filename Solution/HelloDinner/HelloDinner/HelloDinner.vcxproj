@@ -154,6 +154,7 @@
     <ClInclude Include="Channel.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="Light.h" />
+    <ClInclude Include="Shadow.h" />
     <ClInclude Include="Texture_Manager.h" />
     <ClInclude Include="Obj_CollisionTest.h" />
     <ClInclude Include="ContainerObj.h" />
@@ -228,6 +229,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Light.cpp" />
+    <ClCompile Include="Shadow.cpp" />
     <ClCompile Include="Texture_Manager.cpp" />
     <ClCompile Include="Obj_CollisionTest.cpp" />
     <ClCompile Include="ContainerObj.cpp" />
@@ -313,7 +315,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="Shader_Default.hlsl">
+    <FxCompile Include="Shader_Static.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geometry</ShaderType>

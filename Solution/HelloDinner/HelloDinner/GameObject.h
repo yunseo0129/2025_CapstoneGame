@@ -22,6 +22,7 @@ public:
 	virtual void		Update(_float fTimeDelta);
 	virtual void		Late_Update(_float fTimeDelta);
 	virtual void		Render(ID3D12GraphicsCommandList* _commandList);
+	virtual void		ShadowRender(ID3D12GraphicsCommandList* _commandList);
 
 public:
 	class CComponent*	Find_Component(const _wstring& strComponentTag);

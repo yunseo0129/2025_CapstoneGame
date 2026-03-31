@@ -96,6 +96,25 @@ void CMap::Render(ID3D12GraphicsCommandList* _commandList)
 #endif
 }
 
+void CMap::ShadowRender(ID3D12GraphicsCommandList* _commandList)
+{
+	// Transform 컴포넌트의 월드 행렬을 RootConstantBuffer에 넘겨준다.
+	XMFLOAT4X4 WorldMatrix;
+	XMStoreFloat4x4(&WorldMatrix, m_pTransformCom->Get_WorldMatrix());
+	_commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &WorldMatrix, 0);
+
+	// 2. PSO 설정
+	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::SHADOW_STATIC);
+
+	// 3. 메쉬별 렌더링 (머티리얼 바인딩 + DrawIndexedInstanced)
+	_uint iNumMeshes = m_pModelCom->Get_NumMeshes();
+	for (_uint i = 0; i < iNumMeshes; ++i)
+	{
+		m_pModelCom->Render(_commandList, i, true);
+	}
+
+}
+
 HRESULT CMap::Ready_Components()
 {
 	if (FAILED(Add_Component(m_iModelLevelIndex, m_strModelTag,

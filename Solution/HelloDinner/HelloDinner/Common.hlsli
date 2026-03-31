@@ -34,6 +34,7 @@ cbuffer LightParams : register(b3)
     float4 g_vLightSpecular;
     float g_fLightRange;
     float3 g_vPadding;
+    row_major matrix g_matLightTransform;
 };
 
 // ------------------------------------------------
@@ -42,6 +43,7 @@ cbuffer LightParams : register(b3)
 // t0 ~ t1 : 텍스처 정보
 Texture2D g_DiffuseTextures : register(t0);
 Texture2D g_NormalTextures : register(t1);
+Texture2D g_ShadowMap : register(t2);
 // t0, space1 : 큐브맵 텍스처 (Skybox 전용, 별도 space 사용)
 TextureCube g_DiffuseTexCube : register(t0);
 
@@ -63,7 +65,36 @@ struct VS_OUT
     float2 vUV : TEXCOORD0; // UV
     float3 vBinormal : BINORMAL; 
     float3 vTangent : TANGENT;
+    
+    float4 ShadowPos : TEXCOORD2; // 그림자 맵용 좌표 (빛의 시점에서 변환된 위치)
 };
+
+// --------------------------------------------------------
+// shadow
+float CalcShadowFactor(float4 shadowPos)
+{
+    shadowPos.xyz /= shadowPos.w;
+    
+    if (shadowPos.x < 0.0f || shadowPos.x > 1.0f ||
+        shadowPos.y < 0.0f || shadowPos.y > 1.0f ||
+        shadowPos.z < 0.0f || shadowPos.z > 1.0f)
+    {
+        return 1.0f; // 그림자 맵 범위 밖, 그림자 없음
+    }
+    
+    float shadowMapDepth = g_ShadowMap.Sample(g_samClamp, shadowPos.xy).r;
+    
+    float currentDepth = shadowPos.z;
+    
+    float bias = 0.005f; // 그림자 경계선 깜빡임 방지용 바이어스
+    
+    if (currentDepth - bias > shadowMapDepth)
+    {
+        return 0.5f; // 그림자 있음 (0.5는 반투명 그림자 효과)
+    }
+    
+    return 1.0f; // 그림자 없음
+}
 
 // --------------------------------------------------------
 // Common Pixel Shader (Lit)
@@ -92,6 +123,10 @@ float4 PS_Main_Lit(VS_OUT In) : SV_TARGET
 
     float3 vDiffuse = diffuseColor.rgb * (g_vLightDiffuse.rgb * fDiffuseIdx);
     float3 vAmbient = diffuseColor.rgb * g_vLightAmbient.rgb;
+
+    //그림자
+    float shadowFactor = CalcShadowFactor(In.ShadowPos);
+    vDiffuse *= shadowFactor;
 
     return float4(vDiffuse + vAmbient, diffuseColor.a);
 }

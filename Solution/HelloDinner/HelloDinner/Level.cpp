@@ -23,6 +23,35 @@ void CLevel::Update(_float fTimeDelta)
 			continue;
 		pCamera->Update(fTimeDelta);
 	}
+	for (auto& pLight : m_pLights) {
+		if (pLight == nullptr)
+			continue;
+		if (m_pCurrentCamera == nullptr)
+			continue;
+		pLight->Update(fTimeDelta);
+	}
+}
+
+void CLevel::ShadowRender_Begin()
+{
+	for (auto& pLight : m_pLights) {
+		if (pLight == nullptr)
+			continue;
+		if (m_pCurrentCamera == nullptr)
+			continue;
+		pLight->Render_Begin(m_pCurrentCamera);
+	}
+}
+
+void CLevel::ShadowRender(ID3D12GraphicsCommandList* cmdList)
+{
+	for (auto& pLight : m_pLights) {
+		if (pLight == nullptr)
+			continue;
+		if (m_pCurrentCamera == nullptr)
+			continue;
+		pLight->Render(cmdList);
+	}
 }
 
 HRESULT CLevel::Render()
@@ -40,7 +69,7 @@ void CLevel::Bind_CameraBuffer(ID3D12GraphicsCommandList* pCmdList, RootParamete
 		return;
 	if (m_pCamera[_eType] == nullptr)
 		return;
-	m_pCamera[_eType]->Bind_CameraBuffer(pCmdList, _eIndex);
+	m_pCurrentCamera->Bind_CameraBuffer(pCmdList, _eIndex);
 
 	Get_CameraMatrix(_eType);
 }
@@ -60,6 +89,7 @@ void CLevel::Get_CameraMatrix(CAMERA_TYPE _eType)
 {
 	if (m_pCamera[_eType] != nullptr)
 	{
+		m_pCurrentCamera = m_pCamera[_eType];
 		m_xmf4x4CurrentView = m_pCamera[_eType]->Get_CameraView();
 		m_xmf4x4CurrentProjection = m_pCamera[_eType]->Get_CameraProjection();
 	}

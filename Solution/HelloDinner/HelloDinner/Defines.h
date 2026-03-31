@@ -56,12 +56,13 @@ enum CAMERA_TYPE
 // Root Signature의 Root Parameter 슬롯 설정용
 enum RootParameterIndex
 {
-	Camera ,
-	GameObject ,
-	TEXTURE_Diffuse ,
+	Camera,
+	GameObject,
+	TEXTURE_Diffuse,
 	TEXTURE_Normal,
-	BoneMatrix ,
-	Light ,
+	BoneMatrix,
+	Light,
+	ShadowMap,
 	// 후에 Material, BoneMatrix 등등 추가할 수 있음
 	End
 };
@@ -173,6 +174,8 @@ typedef struct
 	XMFLOAT4 vSpecular;
 	float    fRange;
 	XMFLOAT3 vPadding;
+
+	XMFLOAT4X4 matLightTransform;
 }CB_LIGHT;
 
 // InputLayout에서 사용할 정점 구조체

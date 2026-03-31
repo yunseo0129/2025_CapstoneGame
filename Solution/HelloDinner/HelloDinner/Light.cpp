@@ -1,4 +1,6 @@
 #include "Light.h"
+#include "Camera.h"
+#include "Shadow.h"
 #include "GameInstance.h"
 
 CLight::CLight(EngineContext* pContext)
@@ -15,6 +17,24 @@ HRESULT CLight::Initialize(const LIGHT_DESC& LightDesc)
 	return S_OK;
 }
 
+void CLight::Update(const _float fTimeDelta)
+{
+	//Light 업데이트 
+}
+
+void CLight::Render_Begin(CCamera* _camera)
+{
+	// Light에서 그림자 맵에 씬을 그리는 함수 호출
+	if (m_pShadow)
+		m_pShadow->Update(_camera, this);
+}
+
+void CLight::Render(ID3D12GraphicsCommandList* pCmdList)
+{
+	if (m_pShadow)
+		m_pShadow->DrawSceneToShadowMap(pCmdList);
+}
+
 void CLight::Bind_LightBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameterIndex _eIndex)
 {
 	_int iFrameIndex = m_pGameInstance->GetCurrentFrameIndex();
@@ -26,10 +46,19 @@ void CLight::Bind_LightBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameter
 	cbLight.vAmbient = m_LightDesc.vAmbient;
 	cbLight.vSpecular = m_LightDesc.vSpecular;
 	cbLight.fRange = m_LightDesc.fRange;
-
+	if (m_pShadow)
+	{
+		cbLight.matLightTransform = m_pShadow->Get_LightTransform();
+	}
+	else
+	{
+		cbLight.matLightTransform = XMFLOAT4X4();
+	}
 	memcpy(m_pCbMappedLight[iFrameIndex], &cbLight, sizeof(CB_LIGHT));
 
 	pCmdList->SetGraphicsRootConstantBufferView(_eIndex, m_pLightbuffer[iFrameIndex]->GetGPUVirtualAddress());
+
+	m_pShadow->Bind_ShadowMap(pCmdList, RootParameterIndex::ShadowMap);
 }
 
 HRESULT CLight::Create_LightBuffer()

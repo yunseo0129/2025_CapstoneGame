@@ -12,8 +12,6 @@ private:
 public:
 	HRESULT Initialize();
 
-	_uint Allocate_Descriptors(_uint _iCount);
-
 	CD3DX12_CPU_DESCRIPTOR_HANDLE Get_CPUHandle();
 	CD3DX12_GPU_DESCRIPTOR_HANDLE Get_GPUHandle(_uint _iIndex);
 

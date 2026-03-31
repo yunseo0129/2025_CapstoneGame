@@ -75,10 +75,10 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineCo
 void CGameInstance::Update_Engine(_float fTimeDelta)
 {
 	m_pInput_Device->Update_InputDev();
-	m_pLevel_Manager->Update(fTimeDelta);
 	m_pObject_Manager->Priority_Update(fTimeDelta);
 	m_pObject_Manager->Update(fTimeDelta);
 	m_pObject_Manager->Late_Update(fTimeDelta);
+	m_pLevel_Manager->Update(fTimeDelta);
 }
 
 HRESULT CGameInstance::Render_Begin(const _float4& vClearColor)
@@ -92,9 +92,18 @@ HRESULT CGameInstance::Render_Begin(const _float4& vClearColor)
 
 HRESULT CGameInstance::Draw()
 {
+	m_pLevel_Manager->Set_CurrentCamera(CAMERA_FPV);
+	m_pLevel_Manager->ShadowRender(m_pCommandList.Get());
+	m_pGraphic_Device->initRenderTargetAndDepthStencil(m_pCommandList.Get());
 	m_pLevel_Manager->Bind_CameraBuffer(m_pCommandList.Get(), RootParameterIndex::Camera, CAMERA_FPV);
 	m_pLevel_Manager->Bind_LightBuffer(m_pCommandList.Get(), RootParameterIndex::Light);
 	m_pRenderer->Draw_RenderObject ( m_pCommandList.Get () );
+	return S_OK;
+}
+
+HRESULT CGameInstance::ShadowDrow()
+{
+	m_pRenderer->ShadowDraw_RenderObject(m_pCommandList.Get());
 	return S_OK;
 }
 

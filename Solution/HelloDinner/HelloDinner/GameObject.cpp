@@ -54,6 +54,10 @@ void CGameObject::Render(ID3D12GraphicsCommandList* _commandList)
 {
 }
 
+void CGameObject::ShadowRender(ID3D12GraphicsCommandList* _commandList)
+{
+}
+
 void CGameObject::Free()
 {
 	for (auto& Pair : m_Components) {
