@@ -338,7 +338,7 @@
     <ClInclude Include="Common\WICTextureLoader12.h">
       <Filter>외부 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Pig_3rd.h">
+    <ClInclude Include="Player_Pig.h">
       <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd\02. Pig_3rd</Filter>
     </ClInclude>
     <ClInclude Include="Channel.h">
@@ -349,9 +349,6 @@
     </ClInclude>
     <ClInclude Include="Bone.h">
       <Filter>소스 파일\01. Engine\04. Components\02. Model\Bone</Filter>
-    </ClInclude>
-    <ClInclude Include="Player_3rd.h">
-      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd</Filter>
     </ClInclude>
     <ClInclude Include="Collider.h">
       <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
@@ -505,7 +502,7 @@
     <ClCompile Include="Common\WICTextureLoader12.cpp">
       <Filter>외부 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Pig_3rd.cpp">
+    <ClCompile Include="Player_Pig.cpp">
       <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd\02. Pig_3rd</Filter>
     </ClCompile>
     <ClCompile Include="Channel.cpp">
@@ -516,9 +513,6 @@
     </ClCompile>
     <ClCompile Include="Bone.cpp">
       <Filter>소스 파일\01. Engine\04. Components\02. Model\Bone</Filter>
-    </ClCompile>
-    <ClCompile Include="Player_3rd.cpp">
-      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd</Filter>
     </ClCompile>
     <ClCompile Include="Bounding.cpp">
       <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>

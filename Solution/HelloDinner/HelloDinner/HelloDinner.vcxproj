@@ -163,7 +163,6 @@
     <ClInclude Include="PartObj.h" />
     <ClInclude Include="Pig_1rd.h" />
     <ClInclude Include="Player_1rd.h" />
-    <ClInclude Include="Player_3rd.h" />
     <ClInclude Include="Common\WICTextureLoader12.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="Cube.h" />
@@ -189,7 +188,7 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Object_Manager.h" />
-    <ClInclude Include="Pig_3rd.h" />
+    <ClInclude Include="Player_Pig.h" />
     <ClInclude Include="Prototype_Manager.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Shader_Manager.h" />
@@ -239,7 +238,6 @@
     </ClCompile>
     <ClCompile Include="Pig_1rd.cpp" />
     <ClCompile Include="Player_1rd.cpp" />
-    <ClCompile Include="Player_3rd.cpp" />
     <ClCompile Include="Common\DDSTextureLoader12.cpp" />
     <ClCompile Include="Common\WICTextureLoader12.cpp" />
     <ClCompile Include="Component.cpp" />
@@ -268,7 +266,7 @@
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Object_Manager.cpp" />
-    <ClCompile Include="Pig_3rd.cpp" />
+    <ClCompile Include="Player_Pig.cpp" />
     <ClCompile Include="Prototype_Manager.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Shader_Manager.cpp" />

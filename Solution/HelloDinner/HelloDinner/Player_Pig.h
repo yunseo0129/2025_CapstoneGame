@@ -2,23 +2,22 @@
 #include "ContainerObj.h"
 #include "Model.h"
 
-class CPlayer_1rd final : public CContainerObj
+class CPlayer_Pig final : public CContainerObj
 {
 public:
-	struct Player_1RD_DESC : public CContainerObj::CONTAINEROBJ_DESC
+	struct PLAYER_PIG_DESC : public CContainerObj::CONTAINEROBJ_DESC
 	{
 		_float3 			vPos = _float3(1.f, 1.f, 1.f);
 		_uint				iModelLevelIndex = 0;
 		_float3				vRotation = {};
 		_wstring			strModelTag = L"";
-		class CCamera_FPV*	pCamera = nullptr;
 	};
-	enum PLAYER_1RD_COLLIDER_TYPE { COLLIDER_MAIN, COLLIDER_HEAD, COLLIDER_ARM_UP_L, COLLIDER_ARM_UP_R, COLLIDER_ARM_LOW_L, COLLIDER_ARM_LOW_R, COLLIDER_THIGH_L, COLLIDER_THIGH_R, COLLIDER_SHIN_L, COLLIDER_SHIN_R , COLLIDER_BODY, COLLIDER_END };
+	enum PLAYER_1RD_COLLIDER_TYPE { COLLIDER_MAIN, COLLIDER_HEAD, COLLIDER_ARM_UP_L, COLLIDER_ARM_UP_R, COLLIDER_ARM_LOW_L, COLLIDER_ARM_LOW_R, COLLIDER_THIGH_L, COLLIDER_THIGH_R, COLLIDER_SHIN_L, COLLIDER_SHIN_R, COLLIDER_BODY, COLLIDER_END };
 
 private:
-	CPlayer_1rd(EngineContext* pContext);
-	CPlayer_1rd(const CPlayer_1rd& Prototype);
-	virtual ~CPlayer_1rd() = default;
+	CPlayer_Pig(EngineContext* pContext);
+	CPlayer_Pig(const CPlayer_Pig& Prototype);
+	virtual ~CPlayer_Pig() = default;
 
 public:
 	virtual HRESULT		Initialize_Prototype() override;
@@ -36,9 +35,7 @@ private:
 	virtual HRESULT				Ready_Components();
 
 private:
-	class CModel*		m_pModelCom = { nullptr };
-	class CModel*		m_pFPSModelCom = { nullptr };
-	class CCamera_FPV*	m_pCamera = { nullptr };
+	class CModel* m_pModelCom = { nullptr };
 	vector<class CCollider*> m_vColliderComs;
 	vector<class CCollider*> m_vMapColliderComs;
 	_uint				m_iState = 0;
@@ -47,7 +44,7 @@ private:
 	_uint				m_iModelLevelIndex = 0;
 
 public:
-	static CPlayer_1rd* Create(EngineContext* pContext);
+	static CPlayer_Pig* Create(EngineContext* pContext);
 	virtual CGameObject* Clone(void* pArg);
 	virtual void Free() override;
 
