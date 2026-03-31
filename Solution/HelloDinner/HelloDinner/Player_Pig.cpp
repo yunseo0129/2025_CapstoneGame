@@ -1,4 +1,4 @@
-#include "Player_1rd.h"
+#include "Player_Pig.h"
 #include "GameInstance.h"
 #include "Transform.h"
 #include "Ketchup_Gun.h"
@@ -6,32 +6,31 @@
 #include "Bounding_Sphere.h"
 #include "Bounding_OBB.h"
 
-CPlayer_1rd::CPlayer_1rd(EngineContext* _pcontext)
+CPlayer_Pig::CPlayer_Pig(EngineContext* _pcontext)
 	: CContainerObj{ _pcontext }
 {
 
 }
 
-CPlayer_1rd::CPlayer_1rd(const CPlayer_1rd& Prototype)
+CPlayer_Pig::CPlayer_Pig(const CPlayer_Pig& Prototype)
 	: CContainerObj(Prototype.m_pContext)
 {
 
 }
 
-HRESULT CPlayer_1rd::Initialize_Prototype()
+HRESULT CPlayer_Pig::Initialize_Prototype()
 {
 	return S_OK;
 }
 
-HRESULT CPlayer_1rd::Initialize(void* pArg)
+HRESULT CPlayer_Pig::Initialize(void* pArg)
 {
 	if (nullptr == pArg)
 		return E_FAIL;
 
-	Player_1RD_DESC* pDesc = static_cast<Player_1RD_DESC*>(pArg);
+	PLAYER_PIG_DESC* pDesc = static_cast<PLAYER_PIG_DESC*>(pArg);
 	m_strModelTag = pDesc->strModelTag;
 	m_iModelLevelIndex = pDesc->iModelLevelIndex;
-	m_pCamera = pDesc->pCamera;
 	pDesc->iNumPartObj = 1;
 	pDesc->fSpeedPerSec = 1.f;
 	pDesc->fRotationPerSec = 1.f;
@@ -49,7 +48,6 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
 
 	m_iState = 0;
 	m_pModelCom->SetUp_Animation(0, true);
-	m_pFPSModelCom->SetUp_Animation(0, true);
 
 	if (FAILED(Ready_PartObjects()))
 		return E_FAIL;
@@ -57,110 +55,14 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CPlayer_1rd::Priority_Update(_float fTimeDelta)
+void CPlayer_Pig::Priority_Update(_float fTimeDelta)
 {
-	if (m_bOnOff == true)
-	{
-		// 마우스 이동량에 따른 카메라 회전
-		_long		MouseMove = {};
-		if (MouseMove = m_pGameInstance->Get_DIMouseMove(Engine::DIMS_X))
-		{
-			m_pTransformCom->Turn(XMVectorSet(0.f, 1.f, 0.f, 0.f), MouseMove * fTimeDelta * 2.2f);
-		}
-
-		/*if (MouseMove = m_pGameInstance->Get_DIMouseMove(Engine::DIMS_Y))
-		{
-			m_pTransformCom->Turn(m_pTransformCom->Get_State(CTransform::STATE_RIGHT), MouseMove * fTimeDelta * 2.2f);
-		}*/
-
-		// 키보드 입력에 따른 카메라 이동
-		if (m_pGameInstance->Key_Pressing(DIK_W) && m_pGameInstance->Key_Pressing(DIK_S))
-		{
-			if (m_pGameInstance->Key_Pressing(DIK_A) && m_pGameInstance->Key_Pressing(DIK_D))
-			{
-
-			}
-			else if (m_pGameInstance->Key_Pressing(DIK_A))
-			{
-				m_pTransformCom->Go_Left(fTimeDelta);
-			}
-			else if (m_pGameInstance->Key_Pressing(DIK_D))
-			{
-				m_pTransformCom->Go_Right(fTimeDelta);
-			}
-		}
-		else if (m_pGameInstance->Key_Pressing(DIK_W))
-		{
-			if (m_pGameInstance->Key_Pressing(DIK_A) && m_pGameInstance->Key_Pressing(DIK_D))
-			{
-				m_pTransformCom->Go_Straight(fTimeDelta);
-			}
-			else if (m_pGameInstance->Key_Pressing(DIK_A))
-			{
-				m_pTransformCom->Go_Straight(fTimeDelta * 0.7071f);
-				m_pTransformCom->Go_Left(fTimeDelta * 0.7071f);
-			}
-			else if (m_pGameInstance->Key_Pressing(DIK_D))
-			{
-				m_pTransformCom->Go_Straight(fTimeDelta * 0.7071f);
-				m_pTransformCom->Go_Right(fTimeDelta * 0.7071f);
-			}
-			else
-			{
-				m_pTransformCom->Go_Straight(fTimeDelta);
-			}
-		}
-		else if (m_pGameInstance->Key_Pressing(DIK_S))
-		{
-			if (m_pGameInstance->Key_Pressing(DIK_A) && m_pGameInstance->Key_Pressing(DIK_D))
-			{
-				m_pTransformCom->Go_Backward(fTimeDelta);
-			}
-			else if (m_pGameInstance->Key_Pressing(DIK_A))
-			{
-				m_pTransformCom->Go_Backward(fTimeDelta * 0.7071f);
-				m_pTransformCom->Go_Left(fTimeDelta * 0.7071f);
-			}
-			else if (m_pGameInstance->Key_Pressing(DIK_D))
-			{
-				m_pTransformCom->Go_Backward(fTimeDelta * 0.7071f);
-				m_pTransformCom->Go_Right(fTimeDelta * 0.7071f);
-			}
-			else
-			{
-				m_pTransformCom->Go_Backward(fTimeDelta);
-			}
-		}
-		else if (m_pGameInstance->Key_Pressing(DIK_A) && m_pGameInstance->Key_Pressing(DIK_D))
-		{
-
-		}
-		else if (m_pGameInstance->Key_Pressing(DIK_A))
-		{
-			m_pTransformCom->Go_Left(fTimeDelta);
-		}
-		else if (m_pGameInstance->Key_Pressing(DIK_D))
-		{
-			m_pTransformCom->Go_Right(fTimeDelta);
-		}
-
-		if (m_pGameInstance->Key_Pressing(DIK_SPACE))
-		{
-			m_pTransformCom->Go_Up(fTimeDelta);
-		}
-		else if (m_pGameInstance->Key_Pressing(DIK_LCONTROL))
-		{
-			m_pTransformCom->Go_Up(-fTimeDelta);
-		}
-	}
-
 	__super::Priority_Update(fTimeDelta);
 }
 
-void CPlayer_1rd::Update(_float fTimeDelta)
+void CPlayer_Pig::Update(_float fTimeDelta)
 {
 	m_pModelCom->Play_Animation(fTimeDelta);
-	m_pFPSModelCom->Play_Animation(fTimeDelta);
 
 	for (CCollider* pCollider : m_vColliderComs)
 	{
@@ -176,13 +78,13 @@ void CPlayer_1rd::Update(_float fTimeDelta)
 	__super::Update(fTimeDelta);
 }
 
-void CPlayer_1rd::Late_Update(_float fTimeDelta)
+void CPlayer_Pig::Late_Update(_float fTimeDelta)
 {
 	m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, this);
 	__super::Late_Update(fTimeDelta);
 }
 
-void CPlayer_1rd::Render(ID3D12GraphicsCommandList* _commandList)
+void CPlayer_Pig::Render(ID3D12GraphicsCommandList* _commandList)
 {
 	XMFLOAT4X4 WorldMatrix;
 	XMStoreFloat4x4(&WorldMatrix, m_pTransformCom->Get_WorldMatrix());
@@ -192,11 +94,11 @@ void CPlayer_1rd::Render(ID3D12GraphicsCommandList* _commandList)
 	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::ANIM);
 
 	// 3. 메쉬별 렌더링 (머티리얼 바인딩 + DrawIndexedInstanced)
-	_uint iNumMeshes = m_pFPSModelCom->Get_NumMeshes();
+	_uint iNumMeshes = m_pModelCom->Get_NumMeshes();
 	for (_uint i = 0; i < iNumMeshes; ++i)
 	{
-		m_pFPSModelCom->Bind_BoneMatrices(_commandList, i);
-		m_pFPSModelCom->Render(_commandList, i);
+		m_pModelCom->Bind_BoneMatrices(_commandList, i);
+		m_pModelCom->Render(_commandList, i);
 	}
 
 	// 콜라이더 디버깅
@@ -214,27 +116,7 @@ void CPlayer_1rd::Render(ID3D12GraphicsCommandList* _commandList)
 #endif
 }
 
-void CPlayer_1rd::ShadowRender(ID3D12GraphicsCommandList* _commandList)
-{
-	// Transform 컴포넌트의 월드 행렬을 RootConstantBuffer에 넘겨준다.
-	XMFLOAT4X4 WorldMatrix;
-	XMStoreFloat4x4(&WorldMatrix, m_pTransformCom->Get_WorldMatrix());
-	_commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &WorldMatrix, 0);
-
-	// 2. PSO 설정
-	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::SHADOW_ANIM);
-
-	// 3. 메쉬별 렌더링 (머티리얼 바인딩 + DrawIndexedInstanced)
-	_uint iNumMeshes = m_pModelCom->Get_NumMeshes();
-	for (_uint i = 0; i < iNumMeshes; ++i)
-	{
-		m_pModelCom->Bind_BoneMatrices(_commandList, i);
-		m_pModelCom->Render(_commandList, i, true);
-	}
-
-}
-
-HRESULT CPlayer_1rd::Ready_PartObjects()
+HRESULT CPlayer_Pig::Ready_PartObjects()
 {
 	// 케첩건
 	{
@@ -242,7 +124,7 @@ HRESULT CPlayer_1rd::Ready_PartObjects()
 		cdesc.strModelTag = L"Prototype_Component_ketchupGun";
 		cdesc.iModelLevelIndex = 1;
 		cdesc.pParentMatrix = m_pTransformCom->Get_WorldFloat4x4_Ptr();
-		cdesc.pSocketMatrix = m_pFPSModelCom->Get_BoneMatrix("weapon");
+		cdesc.pSocketMatrix = m_pModelCom->Get_BoneMatrix("weapon");
 		cdesc.vScale = _float3(1.f, 1.f, 1.f);
 		m_PartObjects[0] = static_cast<CPartObj*>(m_pGameInstance->Clone_Prototype(Engine::PROTOTYPE::PROTO_GAMEOBJ, 1, TEXT("Prototype_GameObject_Ketchup_Gun"), &cdesc));
 		if (nullptr == m_PartObjects[0])
@@ -251,7 +133,7 @@ HRESULT CPlayer_1rd::Ready_PartObjects()
 	return S_OK;
 }
 
-HRESULT CPlayer_1rd::Ready_Components()
+HRESULT CPlayer_Pig::Ready_Components()
 {
 	// Model 컴포넌트 생성
 	if (FAILED(Add_Component(m_iModelLevelIndex, m_strModelTag,
@@ -261,16 +143,8 @@ HRESULT CPlayer_1rd::Ready_Components()
 		return E_FAIL;
 	}
 
-	// FPS Model 컴포넌트 생성
-	if (FAILED(Add_Component(LEVEL_LOADING, TEXT("Prototype_Component_Player_Pig_fps"),
-		TEXT("Com_FPSModel"), reinterpret_cast<CComponent**>(&m_pFPSModelCom))))
-	{
-		MSG_BOX("Failed to Add Component : Model in CPlayer_1rd");
-		return E_FAIL;
-	}
-
 	// Collider 컴포넌트 생성
-	 {
+	{
 		m_vColliderComs.resize(COLLIDER_END, nullptr);
 		m_vMapColliderComs.resize(2, nullptr);
 
@@ -456,34 +330,34 @@ HRESULT CPlayer_1rd::Ready_Components()
 				return E_FAIL;
 			}
 		}
-	 }
+	}
 
 	return S_OK;
 }
 
-CPlayer_1rd* CPlayer_1rd::Create(EngineContext* _pcontext)
+CPlayer_Pig* CPlayer_Pig::Create(EngineContext* _pcontext)
 {
-	CPlayer_1rd* pInstance = new CPlayer_1rd(_pcontext);
+	CPlayer_Pig* pInstance = new CPlayer_Pig(_pcontext);
 	if (FAILED(pInstance->Initialize_Prototype()))
 	{
 		Safe_Release(pInstance);
-		MSG_BOX("Failed to Create : CPlayer_1rd");
+		MSG_BOX("Failed to Create : CPlayer_Pig");
 	}
 	return pInstance;
 }
 
-CGameObject* CPlayer_1rd::Clone(void* pArg)
+CGameObject* CPlayer_Pig::Clone(void* pArg)
 {
-	CPlayer_1rd* pInstance = new CPlayer_1rd(*this);
+	CPlayer_Pig* pInstance = new CPlayer_Pig(*this);
 	if (FAILED(pInstance->Initialize(pArg)))
 	{
 		Safe_Release(pInstance);
-		MSG_BOX("Failed to Clone : CPlayer_1rd");
+		MSG_BOX("Failed to Clone : CPlayer_Pig");
 	}
 	return pInstance;
 }
 
-void CPlayer_1rd::Free()
+void CPlayer_Pig::Free()
 {
 	__super::Free();
 

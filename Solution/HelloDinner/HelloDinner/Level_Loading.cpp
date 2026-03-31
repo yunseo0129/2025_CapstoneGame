@@ -12,7 +12,7 @@
 #include "Renderer.h"
 #include "Camera_FPV.h"
 #include "Model.h"
-#include "Pig_3rd.h"
+#include "Player_Pig.h"
 #include "NetworkClient.h"
 #include "Collider.h"
 #include "Player_1rd.h"
@@ -115,7 +115,7 @@ void CLevel_Loading::Add_Camera()
 	tDesc.fCamMouseSensor = 1.f;
 	tDesc.fCamSpeedPerSec = 1.f;
 	tDesc.fRotationPerSec = 1.f;
-	tDesc.fSpeedPerSec = 100.f;
+	tDesc.fSpeedPerSec = 1.f;
 
 	CCamera_FPV* pCamera = CCamera_FPV::Create(m_pContext);
 	pCamera->Initialize(&tDesc);
@@ -168,7 +168,7 @@ HRESULT CLevel_Loading::Ready_Component_Prototype()
 
 	// Prototype_Component_Pig_3rd
 	{
-		_matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XM_PI);
+		_matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(1.f, 1.f, 1.f) * XMMatrixRotationY(XM_PI);
 		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, TEXT("Prototype_Component_Pig_3rd"),
 			CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Pig/Prototype_Component_Pig.txt", PreTransformMatrix))))
 			return E_FAIL;
@@ -178,6 +178,14 @@ HRESULT CLevel_Loading::Ready_Component_Prototype()
 	{
 		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, TEXT("Prototype_Component_ketchupGun"),
 			CModel::Create(m_pContext, CModel::TYPE_NONANIM, L"Resources/NonAnim/Gun/Prototype_Component_ketchupGun.txt", XMMatrixIdentity()))))
+			return E_FAIL;
+	}
+
+	// Prototype_Component_pig_first_person
+	{
+		_matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(1.f, 1.f, 1.f) * XMMatrixRotationY(XM_PI);
+		if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, TEXT("Prototype_Component_Player_Pig_fps"),
+			CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/1st_Player/Prototype_Component_pig_first_person.txt", PreTransformMatrix))))
 			return E_FAIL;
 	}
 
@@ -219,8 +227,8 @@ HRESULT CLevel_Loading::Ready_GameObject_Prototype()
 		return E_FAIL;
 
 	// Prototype_GameObject_Pig_3rd
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, TEXT("Prototype_GameObject_Pig_3rd"),
-		CPig_3rd::Create(m_pContext))))
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, TEXT("Prototype_GameObject_Player_Pig"),
+		CPlayer_Pig::Create(m_pContext))))
 		return E_FAIL;
 
 	return S_OK;
@@ -305,23 +313,24 @@ HRESULT CLevel_Loading::Ready_Layer()
 	{
 		CPlayer_1rd::Player_1RD_DESC cdesc;
 		cdesc.strModelTag = L"Prototype_Component_Pig_3rd";
+		cdesc.fSpeedPerSec = 1.f;
 		cdesc.vRotation = _float3(0.f, 0.f, 0.f);
 		cdesc.iModelLevelIndex = LEVEL_LOADING;
-		cdesc.vPos = _float3(0.f, -180.f, -5.f);
+		cdesc.vPos = _float3(0.f, -1.f, -5.f);
 		cdesc.pCamera = static_cast<CCamera_FPV*>(m_pCamera[CAMERA_FPV]);
 		m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_GameObject_Player_1rd"),
-			LEVEL_LOADING, TEXT("Layer_Player_1rd"), &cdesc);
+			LEVEL_LOADING, TEXT("Layer_Player"), &cdesc);
 	}
 
 	// Pig_3rd
 	{
-		CPlayer_3rd::Player_3rd_DESC eState;
-		eState.fSpeedPerSec = 0.f;
+		CPlayer_Pig::PLAYER_PIG_DESC eState;
+		eState.fSpeedPerSec = 1.f;
 		eState.vRotation = _float3(0.f, XM_PI, 0.f);
 		eState.strModelTag = L"Prototype_Component_Pig_3rd";
 		eState.iModelLevelIndex = LEVEL_LOADING;
-		m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_GameObject_Pig_3rd"),
-			LEVEL_LOADING, TEXT("Layer_Pig_3rd"), &eState);
+		m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_GameObject_Player_Pig"),
+			LEVEL_LOADING, TEXT("Layer_Other_Player"), &eState);
 	}
 	return S_OK;
 }

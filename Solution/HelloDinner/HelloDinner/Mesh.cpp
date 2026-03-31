@@ -139,7 +139,6 @@ HRESULT CMesh::Ready_VertexBuffer_For_Anim(class CModel* pModel)
 
 	vector<VTXANIMMESH> vertices;
 	vertices.resize(m_iVertices);
-
 	for (_uint i = 0; i < m_iVertices; ++i)
 		m_pGameInstance->Read_File(vertices[i].vPosition);
 
