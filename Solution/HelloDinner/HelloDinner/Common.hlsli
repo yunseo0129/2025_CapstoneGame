@@ -86,7 +86,7 @@ float CalcShadowFactor(float4 shadowPos)
     
     float currentDepth = shadowPos.z;
     
-    float bias = 0.005f; // 그림자 경계선 깜빡임 방지용 바이어스
+    float bias = 0.00001f; // 그림자 경계선 깜빡임 방지용 바이어스
     
     if (currentDepth - bias > shadowMapDepth)
     {

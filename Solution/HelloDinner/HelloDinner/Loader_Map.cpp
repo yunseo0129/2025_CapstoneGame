@@ -173,9 +173,9 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 			desc.iModelLevelIndex = iLevelIndex;
 
 			// 이동
-			desc.vPosition.x = inst["position"]["x"].get<float>() * 100.f;
-			desc.vPosition.y = inst["position"]["y"].get<float>() * 100.f - 150.f;
-			desc.vPosition.z = inst["position"]["z"].get<float>() * 100.f;
+			desc.vPosition.x = inst["position"]["x"].get<float>();
+			desc.vPosition.y = inst["position"]["y"].get<float>() - 1.5f;
+			desc.vPosition.z = inst["position"]["z"].get<float>();
 
 			// 회전
 			desc.vRotation.x = XMConvertToRadians(inst["rotation"]["x"].get<float>());
@@ -183,9 +183,9 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 			desc.vRotation.z = XMConvertToRadians(inst["rotation"]["z"].get<float>());
 
 			// 스케일
-			desc.vScale.x = inst["scale"]["x"].get<float>() * 100;
-			desc.vScale.y = inst["scale"]["y"].get<float>() * 100;
-			desc.vScale.z = inst["scale"]["z"].get<float>() * 100;
+			desc.vScale.x = inst["scale"]["x"].get<float>();
+			desc.vScale.y = inst["scale"]["y"].get<float>();
+			desc.vScale.z = inst["scale"]["z"].get<float>();
 
 			// Collider 정보
 			auto& colliderNode = inst["collider"];
@@ -202,14 +202,14 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 				desc.eColliderType = CCollider::TYPE_END; // "NONE" 이거나 알 수 없는 타입
 
 			// 2. 중심 좌표 (position이랑 정확하게 맞춰야됨)
-			desc.vCenterCollider.x = colliderNode["center"]["x"].get<float>() * 100.f;
-			desc.vCenterCollider.y = colliderNode["center"]["y"].get<float>() * 100.f - 150.f;
-			desc.vCenterCollider.z = colliderNode["center"]["z"].get<float>() * 100.f;
+			desc.vCenterCollider.x = colliderNode["center"]["x"].get<float>();
+			desc.vCenterCollider.y = colliderNode["center"]["y"].get<float>() - 1.5f;
+			desc.vCenterCollider.z = colliderNode["center"]["z"].get<float>();
 
 			// 3. 사이즈
-			desc.vExtentsCollider.x = colliderNode["extents"]["x"].get<float>() * 100.f;
-			desc.vExtentsCollider.y = colliderNode["extents"]["y"].get<float>() * 100.f;
-			desc.vExtentsCollider.z = colliderNode["extents"]["z"].get<float>() * 100.f;
+			desc.vExtentsCollider.x = colliderNode["extents"]["x"].get<float>();
+			desc.vExtentsCollider.y = colliderNode["extents"]["y"].get<float>();
+			desc.vExtentsCollider.z = colliderNode["extents"]["z"].get<float>();
 
 			// 4. 회전 (메쉬랑 맞춰야됨)
 			desc.vRotationCollider.x = XMConvertToRadians(colliderNode["rotation"]["x"].get<float>());

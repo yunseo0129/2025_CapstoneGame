@@ -60,8 +60,8 @@ void CShadow::DrawSceneToShadowMap(ID3D12GraphicsCommandList* cmdList)
 
 	D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 		m_pShadowMap.Get(),
-		D3D12_RESOURCE_STATE_DEPTH_WRITE,
-		D3D12_RESOURCE_STATE_GENERIC_READ);
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		D3D12_RESOURCE_STATE_DEPTH_WRITE);
 
 	cmdList->ResourceBarrier(1, &barrier);
 
@@ -88,7 +88,7 @@ void CShadow::UpdateMatrix(CLight* _light)
 	// 태양만 구현 후에 다른 광원도 구현할 예정
 	XMVECTOR vLightDir = XMVector3Normalize(_light->Get_Direction());
 	XMVECTOR vtarget = XMLoadFloat3(&mSceneBounds.Center);
-	XMVECTOR vLightPos = vtarget - (vLightDir * (mSceneBounds.Radius * 2.0f));
+	XMVECTOR vLightPos = vtarget - (vLightDir * mSceneBounds.Radius);
 	XMVECTOR vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
 	// 빛 방향도 수직이면 up 벡터를 z축으로 변경
 	if (abs(XMVectorGetY(vLightDir)) > 0.99f)

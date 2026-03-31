@@ -35,7 +35,7 @@ HRESULT CKetchup_Gun::Initialize(void* pArg)
 	if (FAILED(Ready_Components()))
 		return E_FAIL;
 
-	// m_pTransformCom->RotationQuaternion(0.f, 90.f, 180.f);
+	m_pTransformCom->RotationQuaternion(0.f, 90.f, 180.f);
 
 	return S_OK;
 }

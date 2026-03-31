@@ -111,7 +111,7 @@ void CLevel_Loading::Add_Camera()
     tDesc.fFovy = XMConvertToRadians(60.f);
     tDesc.fAspect = 1280.f / 720.f;
     tDesc.fNear = 0.1f;
-    tDesc.fFar = 1000.f;
+    tDesc.fFar = 100.f;
     tDesc.fCamMouseSensor = 1.f;
     tDesc.fCamSpeedPerSec = 1.f;
     tDesc.fRotationPerSec = 1.f;
@@ -250,7 +250,7 @@ HRESULT CLevel_Loading::Ready_Light()
         return E_FAIL;
 
     // Shadow
-    CShadow* pShadow = CShadow::Create(m_pContext, 2048, 2048);
+    CShadow* pShadow = CShadow::Create(m_pContext, 8192, 8192);
     if (nullptr == pShadow)
         return E_FAIL;
 
