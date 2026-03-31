@@ -22,6 +22,7 @@ private:
 
 	HRESULT Ready_Component_Prototype();
 	HRESULT Ready_GameObject_Prototype();
+	HRESULT Ready_Light();
 	HRESULT Ready_Layer();
 
 public:

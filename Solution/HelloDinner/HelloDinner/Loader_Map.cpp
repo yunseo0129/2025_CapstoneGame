@@ -34,8 +34,7 @@ void CLoader_Map::ReleasePendingResources()
 	m_PendingReleases.clear();
 }
 
-
-HRESULT CLoader_Map::Load_MaterialData(const string& strJsonPath, _uint iLevelIndex)
+HRESULT CLoader_Map::Load_MaterialData(const string& strJsonPath)
 {
 	ifstream file(strJsonPath);
 	if (!file.is_open())
@@ -58,87 +57,33 @@ HRESULT CLoader_Map::Load_MaterialData(const string& strJsonPath, _uint iLevelIn
 		string normalFile = mat["normalTexture"].get<string>();
 
 		// ---- Albedo 텍스처 등록 ----
-		if (!albedoFile.empty())
+		if (!albedoFile.empty()) // 파일명이 비어있지 않으면
 		{
-			_wstring strAlbedoTag = Get_TextureTag(albedoFile);
-			m_mapMaterialToAlbedoTag[matName] = strAlbedoTag;
-
-			if (registeredTextures.find(albedoFile) == registeredTextures.end())
+			if (registeredTextures.find(albedoFile) == registeredTextures.end()) // 중복이 아니면
 			{
-				_wstring strPath = L"Resources/Map/dds/" + _wstring(albedoFile.begin(), albedoFile.end());
-
-				CTexture* pTexture = CTexture::Create(m_pContext, strPath.c_str());
-				if (pTexture != nullptr)
-				{
-					if (FAILED(m_pGameInstance->Add_Prototype(iLevelIndex, strAlbedoTag, pTexture)))
-					{
-						// 즉시 삭제하지 않고, 플러시 후까지 보류
-						m_PendingReleases.push_back(pTexture);
-						
-						// Safe_Release(pTexture);
-					}
-					else
-					{
-						registeredTextures.insert(albedoFile);
-					}
-				}
-				// 배치 플러시(수정 필요)
-				if (++m_iLoadCounter >= FLUSH_INTERVAL)
-					FlushCommandList();
+				_wstring strPath = L"Resources/NonAnim/Map/dds/" + _wstring(albedoFile.begin(), albedoFile.end());	//Ex) "albedo.dds" → L"Resources/Map/dds/albedo.dds"
+				registeredTextures.insert(albedoFile);
+				m_MaterialInfos[matName].strAlbedoFile = strPath; // 머티리얼 이름 → 알베도 파일명 저장
 			}
 		}
 
 		// ---- Normal 텍스처 등록 ----
-		if (!normalFile.empty())
+		if (!normalFile.empty()) // 파일명이 비어있지 않으면
 		{
-			_wstring strNormalTag = Get_TextureTag(normalFile);
-			m_mapMaterialToNormalTag[matName] = strNormalTag;
-
-			if (registeredTextures.find(normalFile) == registeredTextures.end())
+			if (registeredTextures.find(normalFile) == registeredTextures.end()) // 중복이 아니면
 			{
-				_wstring strPath = L"Resources/Map/dds/" + _wstring(normalFile.begin(), normalFile.end());
-
-				CTexture* pTexture = CTexture::Create(m_pContext, strPath.c_str());
-				if (pTexture != nullptr)
-				{
-					if (FAILED(m_pGameInstance->Add_Prototype(iLevelIndex, strNormalTag, pTexture)))
-					{
-						// 즉시 삭제하지 않고, 플러시 후까지 보류
-						m_PendingReleases.push_back(pTexture);
-
-						// Safe_Release(pTexture);
-					}
-					else
-					{
-						registeredTextures.insert(normalFile);
-					}
-				}
-				// 배치 플러시(수정 필요)
-				if (++m_iLoadCounter >= FLUSH_INTERVAL)
-					FlushCommandList();
+				_wstring strPath = L"Resources/NonAnim/Map/dds/" + _wstring(normalFile.begin(), normalFile.end());
+				registeredTextures.insert(normalFile);
+				m_MaterialInfos[matName].strNormalFile = strPath; // 머티리얼 이름 → 노말 파일명 저장
 			}
 		}
 	}
-	// 남은 커맨드 플러시(수정 필요)
-	if (m_iLoadCounter > 0)
-		FlushCommandList();
-	//
-
-	/*
-	char szLog[512];
-	sprintf_s(szLog, "[MaterialData] Registered %zu textures, %zu materials\n",
-		registeredTextures.size(), m_mapMaterialToAlbedoTag.size());
-	OutputDebugStringA(szLog);
-	*/
-
 	return S_OK;
 }
 
-
-
 HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 {
-	// 1. JSON 파일 열기
+	// JSON 파일 열기
 	ifstream file(strJsonPath);
 	if (!file.is_open())
 	{
@@ -150,14 +95,14 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 	file >> mapJson;
 	file.close();
 
-	// 2. CMap 게임오브젝트 프로토타입 등록 (한 번만)
+	// CMap 게임오브젝트 프로토타입 등록 (한 번만)
 	if (FAILED(m_pGameInstance->Add_Prototype(iLevelIndex,
 		L"Prototype_GameObject_Map", CMap::Create(m_pContext))))
 	{
 		// 이미 등록되어 있을 수 있으므로 실패해도 계속 진행
 	}
 
-	// 3. mapData 배열 순회
+	// mapData 배열 순회
 	for (auto& entry : mapJson["mapData"])
 	{
 		string fbxName = entry["fbxName"].get<string>();
@@ -173,7 +118,7 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 			}
 		}
 
-		// 3-1. 해당 fbxName의 CModel 프로토타입이 아직 없으면 등록
+		// 해당 fbxName의 CModel 프로토타입이 아직 없으면 등록
 		if (nullptr == m_pGameInstance->Clone_Prototype(
 			Engine::PROTOTYPE::PROTO_COMPONENT, iLevelIndex, strModelTag, nullptr))
 		{
@@ -181,7 +126,7 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 			_wstring strBinaryPath = Get_BinaryPath(fbxName);
 
 			CModel* pModel = CModel::Create(m_pContext,
-				CModel::TYPE_NONANIM, strBinaryPath.c_str(), XMMatrixIdentity(), CModel::MATLOAD_SKIP_TEXTURE);
+				CModel::TYPE_NONANIM, strBinaryPath.c_str(), XMMatrixIdentity(), CModel::MATLOAD_DDS_FILE);
 
 			if (nullptr == pModel)
 			{
@@ -190,70 +135,20 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 				continue;
 			}
 
-			// textureNames 배열을 이용하여 각 MatIdx에 텍스처 설정
-			
-			//	출력 위치 수정 필요
-			char szDebug[512];
-#ifndef _DEBUG
-			sprintf_s(szDebug, "[LoadMap] Model has %u materials, textureNames has %zu entries\n",
-				pModel->Get_NumMaterials(), materialNames.size());
-			OutputDebugStringA(szDebug);
-#endif
-
-			for (_uint matIdx = 0; matIdx < (_uint)materialNames.size(); matIdx++)
+			for (int i = 0; i < materialNames.size(); ++i)
 			{
-				const string& matName = materialNames[matIdx];
-
-				// ---- Albedo 텍스처 바인딩 ----
-				auto itAlbedo = m_mapMaterialToAlbedoTag.find(matName);
-				if (itAlbedo != m_mapMaterialToAlbedoTag.end())
+				const auto& matName = materialNames[i];
+				if (m_MaterialInfos.find(matName) != m_MaterialInfos.end())
 				{
-					const _wstring& strAlbedoTag = itAlbedo->second;
-
-					CTexture* pAlbedo = static_cast<CTexture*>(
-						m_pGameInstance->Clone_Prototype(
-							Engine::PROTOTYPE::PROTO_COMPONENT, iLevelIndex, strAlbedoTag, nullptr));
-
-#ifndef _DEBUG
-					sprintf_s(szDebug, "[LoadMap] matIdx=%u, matName=%s, albedoTag=%ls, pAlbedo=0x%p\n",
-						matIdx, matName.c_str(), strAlbedoTag.c_str(), pAlbedo);
-					OutputDebugStringA(szDebug);
-#endif // !_DEBUG
-
-					if (pAlbedo != nullptr)
+					const auto& matInfo = m_MaterialInfos[matName];
+					if (!matInfo.strAlbedoFile.empty())
 					{
-						HRESULT hr = pModel->Set_MaterialTexture(matIdx, (TextureType)TextureType_DIFFUSE, pAlbedo);
-#ifndef _DEBUG
-						sprintf_s(szDebug, "[LoadMap] Set_MaterialTexture(Albedo) result: 0x%08X\n", hr);
-						OutputDebugStringA(szDebug);
-#endif
+						// 다른 모델이 TextureType_DIFFUSE로 읽어왔을 경우 맵 모델도 수정 필요
+						pModel->Ready_MapMaterial(matInfo.strAlbedoFile.c_str(), i, TextureType_DIFFUSE);
 					}
-				}
-
-				// ---- Normal 텍스처 바인딩 ----
-				auto itNormal = m_mapMaterialToNormalTag.find(matName);
-				if (itNormal != m_mapMaterialToNormalTag.end())
-				{
-					const _wstring& strNormalTag = itNormal->second;
-
-					CTexture* pNormal = static_cast<CTexture*>(
-						m_pGameInstance->Clone_Prototype(
-							Engine::PROTOTYPE::PROTO_COMPONENT, iLevelIndex, strNormalTag, nullptr));
-
-#ifndef _DEBUG
-					sprintf_s(szDebug, "[LoadMap] matIdx=%u, matName=%s, normalTag=%ls, pNormal=0x%p\n",
-						matIdx, matName.c_str(), strNormalTag.c_str(), pNormal);
-					OutputDebugStringA(szDebug);
-#endif
-
-					if (pNormal != nullptr)
+					if (!matInfo.strNormalFile.empty())
 					{
-						// 출력 위치 수정 필요
-						HRESULT hr = pModel->Set_MaterialTexture(matIdx, (TextureType)TextureType_NORMALS, pNormal);
-#ifndef _DEBUG
-						sprintf_s(szDebug, "[LoadMap] Set_MaterialTexture(Normal) result: 0x%08X\n", hr);
-						OutputDebugStringA(szDebug);
-#endif
+						pModel->Ready_MapMaterial(matInfo.strNormalFile.c_str(),i, TextureType_NORMALS);
 					}
 				}
 			}
@@ -265,13 +160,12 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 				continue;
 			}
 
-
 			// 메쉬 버퍼 업로드 후 배치 플러시 (수정 필요)
 			if (++m_iLoadCounter >= FLUSH_INTERVAL)
 				FlushCommandList();
 		}
 
-		// 3-2. 각 인스턴스마다 CMap Clone 생성
+		// 각 인스턴스마다 CMap Clone 생성
 		for (auto& inst : entry["instances"])
 		{
 			CMap::MAP_DESC desc{};
@@ -279,25 +173,55 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 			desc.iModelLevelIndex = iLevelIndex;
 
 			// 이동
-			desc.vPosition.x = inst["position"]["x"].get<float>() * 100.f - 4500.f;
-			desc.vPosition.y = inst["position"]["y"].get<float>() * 100.f - 100.f;
-			desc.vPosition.z = inst["position"]["z"].get<float>() * 100.f - 6500.f;
+			desc.vPosition.x = inst["position"]["x"].get<float>() * 100.f;
+			desc.vPosition.y = inst["position"]["y"].get<float>() * 100.f - 150.f;
+			desc.vPosition.z = inst["position"]["z"].get<float>() * 100.f;
 
 			// 회전
 			desc.vRotation.x = XMConvertToRadians(inst["rotation"]["x"].get<float>());
 			desc.vRotation.y = XMConvertToRadians(inst["rotation"]["y"].get<float>() + 180);
 			desc.vRotation.z = XMConvertToRadians(inst["rotation"]["z"].get<float>());
 
-
-
 			// 스케일
 			desc.vScale.x = inst["scale"]["x"].get<float>() * 100;
 			desc.vScale.y = inst["scale"]["y"].get<float>() * 100;
 			desc.vScale.z = inst["scale"]["z"].get<float>() * 100;
 
+			// Collider 정보
+			auto& colliderNode = inst["collider"];
+			std::string strColliderType = colliderNode["colliderType"].get<std::string>();
+
+			// 1. 충돌체 타입
+			if (strColliderType == "AABB")
+				desc.eColliderType = CCollider::TYPE_AABB;
+			else if (strColliderType == "OBB")
+				desc.eColliderType = CCollider::TYPE_OBB;
+			else if (strColliderType == "SPHERE")
+				desc.eColliderType = CCollider::TYPE_SPHERE;
+			else
+				desc.eColliderType = CCollider::TYPE_END; // "NONE" 이거나 알 수 없는 타입
+
+			// 2. 중심 좌표 (position이랑 정확하게 맞춰야됨)
+			desc.vCenterCollider.x = colliderNode["center"]["x"].get<float>() * 100.f;
+			desc.vCenterCollider.y = colliderNode["center"]["y"].get<float>() * 100.f - 150.f;
+			desc.vCenterCollider.z = colliderNode["center"]["z"].get<float>() * 100.f;
+
+			// 3. 사이즈
+			desc.vExtentsCollider.x = colliderNode["extents"]["x"].get<float>() * 100.f;
+			desc.vExtentsCollider.y = colliderNode["extents"]["y"].get<float>() * 100.f;
+			desc.vExtentsCollider.z = colliderNode["extents"]["z"].get<float>() * 100.f;
+
+			// 4. 회전 (메쉬랑 맞춰야됨)
+			desc.vRotationCollider.x = XMConvertToRadians(colliderNode["rotation"]["x"].get<float>());
+			desc.vRotationCollider.y = XMConvertToRadians(colliderNode["rotation"]["y"].get<float>() + 180.f);
+			desc.vRotationCollider.z = XMConvertToRadians(colliderNode["rotation"]["z"].get<float>());
+
+			// 5. 반지름 (구형 충돌체용)
+			desc.fRadius = colliderNode["radius"].get<float>() * 100.f;
+
 			if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
 				iLevelIndex, L"Prototype_GameObject_Map",
-				iLevelIndex, L"Layer_Test", &desc)))
+				iLevelIndex, L"Layer_Map", &desc)))
 			{
 				MSG_BOX("Failed to add map instance to layer");
 			}
@@ -352,7 +276,7 @@ _wstring CLoader_Map::Get_BinaryPath(const string& strFbxName)
 {
 	// FBX 파일명에서 확장자 제거 후 바이너리 경로 생성
 	string name = strFbxName.substr(0, strFbxName.find_last_of('.'));
-	string path = "Resources/Map/fbx/Prototype_Component_" + name + ".txt";
+	string path = "Resources/NonAnim/Map/fbx/Prototype_Component_" + name + ".txt";
 
 	return _wstring(path.begin(), path.end());
 }
@@ -362,13 +286,6 @@ _wstring CLoader_Map::Get_ModelTag(const string& strFbxName)
 	string name = strFbxName.substr(0, strFbxName.find_last_of('.'));
 	string tag = "Prototype_Component_Model_" + name;
 
-	return _wstring(tag.begin(), tag.end());
-}
-
-_wstring CLoader_Map::Get_TextureTag(const string& strPngFileName)
-{
-	string name = strPngFileName.substr(0, strPngFileName.find_last_of('.'));
-	string tag = "Prototype_Component_Texture_" + name;
 	return _wstring(tag.begin(), tag.end());
 }
 

@@ -207,6 +207,12 @@
     <Filter Include="소스 파일\01. Engine\04. Components\03. Collider\render">
       <UniqueIdentifier>{4445247f-804d-435a-b1de-25229b6173d3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\01. Engine\07. Light">
+      <UniqueIdentifier>{1686d6c8-698c-47e8-a322-1befa4f9aaf2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\07. Light\Manager">
+      <UniqueIdentifier>{061c2507-670e-4418-8d96-766479a0c8ab}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -386,6 +392,12 @@
     <ClInclude Include="DebugDraw.h">
       <Filter>소스 파일\01. Engine\04. Components\03. Collider\render</Filter>
     </ClInclude>
+    <ClInclude Include="Texture_Manager.h">
+      <Filter>소스 파일\01. Engine\04. Components\05. Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="Light.h">
+      <Filter>소스 파일\01. Engine\07. Light</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -562,6 +574,12 @@
     <ClCompile Include="DebugDraw.cpp">
       <Filter>소스 파일\01. Engine\04. Components\03. Collider\render</Filter>
     </ClCompile>
+    <ClCompile Include="Texture_Manager.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\05. Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="Light.cpp">
+      <Filter>소스 파일\01. Engine\07. Light</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="HelloDinner.rc">
@@ -577,7 +595,16 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shader.hlsl">
+    <FxCompile Include="Shader_Default.hlsl">
+      <Filter>셰이더 파일</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader_Skybox.hlsl">
+      <Filter>셰이더 파일</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader_Anim.hlsl">
+      <Filter>셰이더 파일</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader_UI.hlsl">
       <Filter>셰이더 파일</Filter>
     </FxCompile>
   </ItemGroup>

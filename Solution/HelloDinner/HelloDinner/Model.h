@@ -12,7 +12,7 @@ public:
 	// 머티리얼 로드 모드
 	enum MATERIAL_LOAD_MODE {
 		MATLOAD_FROM_BINARY,     // 바이너리 경로에서 텍스처 로드 (캐릭터용)
-		MATLOAD_SKIP_TEXTURE     // 바이너리는 읽되 텍스처 생성 스킵 (맵용, 외부에서 Set)
+		MATLOAD_DDS_FILE		// 바이너리는 읽되 텍스처 파일을 dds로 읽음
 	};
 private:
 	CModel(EngineContext* pContext);
@@ -51,6 +51,7 @@ public:
 	// 랜더 때마다 호출 셰이더에 바인딩해줌
 	HRESULT Bind_BoneMatrices(ID3D12GraphicsCommandList* _cmdList, _uint iMeshIndex);
 
+	HRESULT Ready_MapMaterial(const wchar_t* pModelFilePath, int _nMaterial, TextureType _eType);
 public:
 // 인자값으로 넘어온 매쉬번호에 맞는 매쉬를 그려줌 (상위 클래스의 랜더에서 매쉬개수만큼 부를거임)
 	virtual HRESULT Render(ID3D12GraphicsCommandList* _commandList, _uint iMeshIndex);
@@ -105,7 +106,7 @@ private:
 
 private:
 	HRESULT Ready_Meshes();
-	HRESULT Ready_Materials(const wchar_t* pModelFilePath);
+	HRESULT Ready_Materials(const wchar_t* pModelFilePath, MATERIAL_LOAD_MODE eMatMode);
 	HRESULT Ready_Bones();
 	HRESULT Ready_Animations();
 

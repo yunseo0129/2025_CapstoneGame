@@ -58,8 +58,10 @@ enum RootParameterIndex
 {
 	Camera ,
 	GameObject ,
-	TEXTURE ,
+	TEXTURE_Diffuse ,
+	TEXTURE_Normal,
 	BoneMatrix ,
+	Light ,
 	// 후에 Material, BoneMatrix 등등 추가할 수 있음
 	End
 };
@@ -144,6 +146,8 @@ typedef struct tagKeyState
 }KEYSTATE, * PKEYSTATE;
 
 
+// CB
+
 // Camera에서 사용할 카메라 정보 구조체
 typedef struct
 {
@@ -158,6 +162,18 @@ typedef struct
 {
 	XMFLOAT4X4						m_BoneMatrices[512];
 }CB_BONE_MATRICES;
+
+// Light
+typedef struct
+{
+	XMFLOAT4 vDirection;
+	XMFLOAT4 vPosition;
+	XMFLOAT4 vDiffuse;
+	XMFLOAT4 vAmbient;
+	XMFLOAT4 vSpecular;
+	float    fRange;
+	XMFLOAT3 vPadding;
+}CB_LIGHT;
 
 // InputLayout에서 사용할 정점 구조체
 typedef struct
@@ -177,6 +193,7 @@ typedef struct
 	XMUINT4			vBlendIndices;	// 16bytes
 	XMFLOAT4		vBlendWeights;	// 16bytes
 }VTXANIMMESH;
+
 
 
 //-------------------------------------------------------------

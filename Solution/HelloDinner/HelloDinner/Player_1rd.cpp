@@ -305,5 +305,9 @@ void CPlayer_1rd::Free()
 {
 	__super::Free();
 
-	//Safe_Release(m_pColliderCom);
+	for (CCollider* pCollider : m_vColliderComs)
+	{
+		if (pCollider != nullptr)
+			Safe_Release(pCollider);
+	}
 }

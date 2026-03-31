@@ -58,26 +58,13 @@ HRESULT CModel::Initialize_Prototype(TYPE eModelType, const wchar_t* pModelFileP
 	if (FAILED(Ready_Meshes()))
 		return E_FAIL;
 
-	if (FAILED(Ready_Materials(pModelFilePath)))
+	if (FAILED(Ready_Materials(pModelFilePath, eMatMode)))
 		return E_FAIL;
 
 	if (FAILED(Ready_Animations()))
 		return E_FAIL;
 
 	m_pGameInstance->Close_File();
-
-	for (size_t i = 0; i < m_Bones.size(); ++i)
-	{
-		if (m_Bones[i] != nullptr)
-		{
-			// 1. 출력할 문자열을 예쁘게 조립합니다. (인덱스 번호와 이름을 같이 출력)
-			char szDebugMsg[256] = "";
-			sprintf_s(szDebugMsg, "[Bone Info] Index: %3zu | Name: %s\n", i, m_Bones[i]->Get_Name());
-
-			// 2. Visual Studio의 '출력(Output)' 창으로 쏴줍니다!
-			OutputDebugStringA(szDebugMsg);
-		}
-	}
 
 	return S_OK;
 }
@@ -92,12 +79,12 @@ HRESULT CModel::Render(ID3D12GraphicsCommandList* _commandList, _uint iMeshIndex
 	if (iMeshIndex >= m_iNumMeshes)
 		return E_FAIL;
 
-	// 1. 이 메쉬가 참조하는 머티리얼의 Diffuse 텍스처 바인딩
+	// 이 메쉬가 참조하는 머티리얼의 Diffuse 텍스처 바인딩
 	_uint iMaterialIndex = m_Meshes[iMeshIndex]->Get_MaterialIndex();
 
 	if (iMaterialIndex < m_iNumMaterials)
 	{
-		// ★ 텍스처가 실제로 있는지 확인
+		// 텍스처가 실제로 있는지 확인
 		CTexture* pTex = m_Materials[iMaterialIndex]->Get_Texture((TextureType)TextureType_DIFFUSE, 0);
 		if (pTex == nullptr)
 		{
@@ -106,8 +93,17 @@ HRESULT CModel::Render(ID3D12GraphicsCommandList* _commandList, _uint iMeshIndex
 				iMeshIndex, iMaterialIndex, this);
 			OutputDebugStringA(szLog);
 		}
+		else {
+			Bind_Material(iMaterialIndex, (TextureType)TextureType_DIFFUSE, 0, _commandList);
+		}
 
-		Bind_Material(iMaterialIndex, (TextureType)TextureType_DIFFUSE, 0, _commandList);
+		CTexture* pTexNormal = m_Materials[iMaterialIndex]->Get_Texture((TextureType)TextureType_NORMALS, 0);
+		if (pTexNormal == nullptr)
+		{
+		}
+		else {
+			Bind_Material(iMaterialIndex, (TextureType)TextureType_NORMALS, 0, _commandList);
+		}
 	}
 
 	// 2. 메쉬 렌더 (IASet + DrawIndexedInstanced)
@@ -178,10 +174,12 @@ HRESULT CModel::Ready_Bones()
 		m_pGameInstance->Read_File(BoneTransformMatrix);
 		m_pGameInstance->Read_File(CombindTransformationMatrix); // 추가함(활용안함) -> 애니메이션 재생 안할때 기본상태값 조정에 사용해야함
 		m_pGameInstance->Read_File(BoneParentIndex);
+
 		CBone* pBone = CBone::Create(BoneName, BoneTransformMatrix, BoneParentIndex, CombindTransformationMatrix);
 
 		if (nullptr == pBone)
 			return E_FAIL;
+
 
 		m_Bones.push_back(pBone);
 	}
@@ -226,7 +224,7 @@ HRESULT CModel::Ready_Meshes()
 	return S_OK;
 }
 
-HRESULT CModel::Ready_Materials(const wchar_t* pModelFilePath)
+HRESULT CModel::Ready_Materials(const wchar_t* pModelFilePath, MATERIAL_LOAD_MODE eMatMode)
 {
 	m_pGameInstance->Read_File(m_iNumMaterials);
 
@@ -246,9 +244,8 @@ HRESULT CModel::Ready_Materials(const wchar_t* pModelFilePath)
 			if (strcmp(szPath, "Not_Data") == 0)
 				continue;
 
-			//    맵 모드: 바이너리 경로 읽기만 하고 텍스처 생성은 스킵
-			//    (외부에서 Set_MaterialTexture로 설정)
-			if (m_eMatLoadMode == MATLOAD_SKIP_TEXTURE)
+			// 미리 dds 파일로 만들어 뒀다면 dds 파일로 읽어오기
+			if (eMatMode == MATLOAD_DDS_FILE)
 				continue;
 
 			// char → wchar_t 변환
@@ -271,7 +268,10 @@ HRESULT CModel::Bind_Material(_uint iMeshIndex, TextureType eType, _uint iTextur
 		return E_FAIL;
 
 	// RootParameterIndex 추가 후 변경
-	RootParameterIndex rootParameterIndex = RootParameterIndex::TEXTURE;
+	RootParameterIndex rootParameterIndex = RootParameterIndex::TEXTURE_Diffuse;
+
+	if (eType == TextureType_NORMALS)
+		rootParameterIndex = RootParameterIndex::TEXTURE_Normal;
 
 	m_Materials[iMeshIndex]->Bind_ShaderResource(_commandList, eType, rootParameterIndex, iTextureIndex);
 	return S_OK;
@@ -428,5 +428,18 @@ HRESULT CModel::Bind_BoneMatrices(ID3D12GraphicsCommandList* _cmdList, _uint iMe
 		RootParameterIndex::BoneMatrix,
 		m_pBoneBuffers[iFrameIndex]->GetGPUVirtualAddress());
 
+	return S_OK;
+}
+
+HRESULT CModel::Ready_MapMaterial(const wchar_t* pModelFilePath, int _nMaterial, TextureType _eType )
+{
+	CTexture* pTexture = CTexture::Create(m_pContext, pModelFilePath);
+	if (pTexture != nullptr)
+	{
+		m_Materials[_nMaterial]->Add_Texture(_eType, pTexture);
+	}
+	else {
+		return E_FAIL;
+	}
 	return S_OK;
 }

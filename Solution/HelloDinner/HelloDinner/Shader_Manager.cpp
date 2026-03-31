@@ -47,8 +47,13 @@ HRESULT CShader_Manager::Create_GlobalRootSignature ()
 	// NumDescriptors: 1
 	// BaseShaderRegister: 0 (t0 부터 시작)
 	// RegisterSpace: 0 (space0)
-	CD3DX12_DESCRIPTOR_RANGE ranges[1]; // 텍스처 테이블용 1개
-	ranges[0].Init ( D3D12_DESCRIPTOR_RANGE_TYPE_SRV , 1 , 0 , 0 );
+	CD3DX12_DESCRIPTOR_RANGE rangesDiffuse[1]; // 
+	rangesDiffuse[0].Init ( D3D12_DESCRIPTOR_RANGE_TYPE_SRV , 1 , 0 , 0 );	//t0
+
+	CD3DX12_DESCRIPTOR_RANGE rangesNormal[1]; // 
+	rangesNormal[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);	//t1
+
+
 
 	// Material용으로 추가
 
@@ -62,13 +67,18 @@ HRESULT CShader_Manager::Create_GlobalRootSignature ()
 	// Transform 정보
 	parameters[RootParameterIndex::GameObject].InitAsConstants ( 16 , 1 );
 
-	// [Parameter 2] : Texture Table
-	// -> g_Textures[] : register(t0, space1)
-	parameters[RootParameterIndex::TEXTURE].InitAsDescriptorTable ( 1 , &ranges[0] );
+	// [Parameter 2, 3] : Texture Table
+	// Diffuse Texture (t0)과 Normal Texture (t1)로 나눠서 관리
+	parameters[RootParameterIndex::TEXTURE_Diffuse].InitAsDescriptorTable ( 1 , &rangesDiffuse[0] );
+	parameters[RootParameterIndex::TEXTURE_Normal].InitAsDescriptorTable(1, &rangesNormal[0]);
 
 	// [Parameter 3] : CBV (BoneMatrix)
 	// -> cbBoneMatrices : register(b2)
 	parameters[RootParameterIndex::BoneMatrix].InitAsConstantBufferView(2, 0);
+
+	// [Parameter 4] : CBV (Light)
+	// -> cbLight : register(b3)
+	parameters[RootParameterIndex::Light].InitAsConstantBufferView(3, 0);
 
 	//----------------------------------------------------------------------
 	// Static Sampler s0 ~ s4
@@ -96,6 +106,7 @@ HRESULT CShader_Manager::Create_GlobalRootSignature ()
 		D3D12_TEXTURE_ADDRESS_MODE_CLAMP );
 
 	// s3: Anisotropic (지형, 바닥 - 멀리서도 선명함)
+	// 잘 안 쓸듯?
 	samplers[3].Init ( 3 ,
 		D3D12_FILTER_ANISOTROPIC ,
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP ,
@@ -166,15 +177,15 @@ HRESULT CShader_Manager::Create_PSO ()
 	// 1. 쉐이더 컴파일
 	// ----------------------------------------------------------------
 	// Vertex Shader (Input Layout별)
-	ComPtr<ID3DBlob> vsStatic = Compile_Shader ( L"Shader.hlsl" , "VS_Main_Static" , "vs_5_1" );
-	ComPtr<ID3DBlob> vsSkybox = Compile_Shader ( L"Shader.hlsl" , "VS_Main_Skybox" , "vs_5_1" );
-	ComPtr<ID3DBlob> vsAnim = Compile_Shader ( L"Shader.hlsl" , "VS_Main_Anim" , "vs_5_1" );
-	// ComPtr<ID3DBlob> vsUI = Compile_Shader ( L"UI.hlsl" , "VS_Main_UI" , "vs_5_1" );
+	ComPtr<ID3DBlob> vsStatic = Compile_Shader ( L"Shader_Default.hlsl" , "VS_Main_Static" , "vs_5_1" );
+	ComPtr<ID3DBlob> vsSkybox = Compile_Shader ( L"Shader_Skybox.hlsl" , "VS_Main_Skybox" , "vs_5_1" );
+	ComPtr<ID3DBlob> vsAnim = Compile_Shader ( L"Shader_Anim.hlsl" , "VS_Main_Anim" , "vs_5_1" );
+	// ComPtr<ID3DBlob> vsUI = Compile_Shader ( L"Shader_UI.hlsl" , "VS_Main_UI" , "vs_5_1" );
 
 	// Pixel Shader (재질별)
-	ComPtr<ID3DBlob> psLit = Compile_Shader ( L"Shader.hlsl" , "PS_Main_Lit" , "ps_5_1" ); // 조명 O
-	ComPtr<ID3DBlob> psSkybox = Compile_Shader ( L"Shader.hlsl" , "PS_Main_Skybox" , "ps_5_1" ); // Skybox
-	// ComPtr<ID3DBlob> psUI = Compile_Shader ( L"UI.hlsl" , "PS_Main_UI" , "ps_5_1" ); // 조명 X
+	ComPtr<ID3DBlob> psLit = Compile_Shader ( L"Shader_Default.hlsl" , "PS_Main_Lit" , "ps_5_1" ); // 조명 O
+	ComPtr<ID3DBlob> psSkybox = Compile_Shader ( L"Shader_Skybox.hlsl" , "PS_Main_Skybox" , "ps_5_1" ); // Skybox
+	// ComPtr<ID3DBlob> psUI = Compile_Shader ( L"Shader_UI.hlsl" , "PS_Main_UI" , "ps_5_1" ); // 조명 X
 
 	// ----------------------------------------------------------------
 	// 2. 기본 PSO Desc 작성 (공통 설정)

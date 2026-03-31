@@ -6,12 +6,18 @@
 class CLoader_Map final : public CBase
 {
 private:
+	struct MATERIAL_INFO
+	{
+		_wstring strAlbedoFile{};
+		_wstring strNormalFile{};
+	};
+private:
 	CLoader_Map(EngineContext* pContext);
 	virtual ~CLoader_Map() = default;
 
 public:
-	// MaterialData.json을 읽어 텍스처 Prototype 등록 + 룩업 테이블 구축
-	HRESULT Load_MaterialData(const string& strJsonPath, _uint iLevelIndex);
+	// MaterialData.json을 읽어 Material 정보 테이블 구축
+	HRESULT Load_MaterialData(const string& strJsonPath);
 
 	// MapData.json을 읽어 모델 + 맵 오브젝트 생성
 	HRESULT Load_MapData(const string& strJsonPath, _uint iLevelIndex);
@@ -41,12 +47,8 @@ private:
 	EngineContext* m_pContext = { nullptr };
 	class CGameInstance* m_pGameInstance = { nullptr };
 
-
-	
-	// materialName → albedo 텍스처 Prototype 태그
-	unordered_map<string, _wstring> m_mapMaterialToAlbedoTag;
-	// materialName → normal 텍스처 Prototype 태그
-	unordered_map<string, _wstring> m_mapMaterialToNormalTag;
+	// material file을 읽어 존재하는 texture 파일명을 저장
+	unordered_map<std::string, MATERIAL_INFO> m_MaterialInfos;
 
 public:
 	static CLoader_Map* Create(EngineContext* pContext);

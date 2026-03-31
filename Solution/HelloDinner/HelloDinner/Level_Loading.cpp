@@ -20,6 +20,8 @@
 
 #include "Obj_CollisionTest.h"
 
+#include "Light.h"
+
 CLevel_Loading::CLevel_Loading(EngineContext* pContext)
 	: CLevel{pContext }
 {
@@ -31,21 +33,10 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 	m_eNextLevelID = eNextLevelID;
 
 	Add_Camera();
-
-	// 1. MaterialData.json → 텍스처 Prototype 먼저 등록
-	CLoader_Map* pMapLoader = CLoader_Map::Create(m_pContext);
-	if (FAILED(pMapLoader->Load_MaterialData("Resources/Map/MaterialData.json", LEVEL_LOADING)))
-	{
-		MSG_BOX("Failed to load material data");
-	}
-
-	// 2. MapData.json → 모델 생성 + 텍스처 바인딩 + 맵 배치
-	if (FAILED(pMapLoader->Load_MapData("Resources/Map/MapData.json", LEVEL_LOADING)))
-	{
-		MSG_BOX("Failed to load map data");
-	}
-	Safe_Release(pMapLoader);
 	
+	if (FAILED(Ready_Light()))
+		return E_FAIL;
+
 	if (FAILED(Ready_Component_Prototype()))
 		return E_FAIL;
 	
@@ -54,6 +45,19 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 
 	if (FAILED(Ready_Layer()))
 		return E_FAIL;
+
+	// Collider prototype 때문에 Map 후순위로 변경
+	// MapData.json → 모델 생성 + 텍스처 바인딩 + 맵 배치
+	CLoader_Map* pMapLoader = CLoader_Map::Create(m_pContext);
+	if (FAILED(pMapLoader->Load_MaterialData("Resources/NonAnim/Map/MaterialData.json")))
+	{
+		MSG_BOX("Failed to load material data");
+	}
+	if (FAILED(pMapLoader->Load_MapData("Resources/NonAnim/Map/MapData.json", LEVEL_LOADING)))
+	{
+		MSG_BOX("Failed to load map data");
+	}
+	Safe_Release(pMapLoader);
 
 	return S_OK;
 }
@@ -221,6 +225,26 @@ HRESULT CLevel_Loading::Ready_GameObject_Prototype()
 	return S_OK;
 }
 
+HRESULT CLevel_Loading::Ready_Light()
+{
+	CLight::LIGHT_DESC			LightDesc{};
+	ZeroMemory(&LightDesc, sizeof LightDesc);
+	
+	LightDesc.eType = CLight::LIGHT_DESC::TYPE_DIRECTIONAL;
+	LightDesc.vDirection = _float4(1.f, -1.f, 1.f, 0.f);
+	LightDesc.vDiffuse = _float4(1.0f, 1.0f, 0.95f, 1.f);
+	LightDesc.vAmbient = _float4(0.15f, 0.15f, 0.2f, 1.f);
+	LightDesc.vSpecular = _float4(1.f, 1.f, 1.f, 1.f);
+
+	CLight* pLight = CLight::Create(m_pContext, LightDesc);
+	if (nullptr == pLight)
+		return E_FAIL;
+
+	m_pLights.push_back(pLight);
+
+	return S_OK;
+}
+
 HRESULT CLevel_Loading::Ready_Layer()
 {
 	// Collider Test
@@ -310,5 +334,9 @@ CLevel_Loading* CLevel_Loading::Create(EngineContext* pContext, LEVELID eNextLev
 void CLevel_Loading::Free()
 {
 	__super::Free();
+	for (auto& pLight : m_pLights)
+		Safe_Release(pLight);
+
+	m_pLights.clear();
 
 }
