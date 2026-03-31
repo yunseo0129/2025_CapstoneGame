@@ -107,7 +107,7 @@ void CLevel_Loading::Add_Camera()
 {
     CCamera_FPV::FPV_CAMERA_DESC tDesc;
     tDesc.vEye = _float3{ 0.f, 1.38f, -5.f };
-    tDesc.vAt = _float3{ 0.f, 0.f, -1.f };
+    tDesc.vAt = _float3{ 0.f, 1.38f, 0.f };
     tDesc.fFovy = XMConvertToRadians(60.f);
     tDesc.fAspect = 1280.f / 720.f;
     tDesc.fNear = 0.1f;
@@ -168,7 +168,7 @@ HRESULT CLevel_Loading::Ready_Component_Prototype()
 
     // Prototype_Component_Pig_3rd
     {
-        _matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(1.f, 1.f, 1.f) * XMMatrixRotationY(XM_PI);
+        _matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(1.f, 1.f, 1.f);
         if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, TEXT("Prototype_Component_Pig_3rd"),
             CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Pig/Prototype_Component_Pig.txt", PreTransformMatrix))))
             return E_FAIL;
@@ -176,14 +176,15 @@ HRESULT CLevel_Loading::Ready_Component_Prototype()
 
     // Prototype_Component_ketchupGun
     {
+        _matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(1.f, 1.f, 1.f);
         if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, TEXT("Prototype_Component_ketchupGun"),
-            CModel::Create(m_pContext, CModel::TYPE_NONANIM, L"Resources/NonAnim/Gun/Prototype_Component_ketchupGun.txt", XMMatrixIdentity()))))
+            CModel::Create(m_pContext, CModel::TYPE_NONANIM, L"Resources/NonAnim/Gun/Prototype_Component_ketchupGun.txt", PreTransformMatrix))))
             return E_FAIL;
     }
 
     // Prototype_Component_pig_first_person
     {
-        _matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(1.f, 1.f, 1.f) * XMMatrixRotationY(XM_PI) * XMMatrixTranslation(0.f, 1.38f, 0.f);
+        _matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(1.f, 1.f, 1.f)  * XMMatrixTranslation(0.1f, 1.39f, -0.2f);
         if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, TEXT("Prototype_Component_Player_Pig_fps"),
             CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/1st_Player/Prototype_Component_pig_first_person.txt", PreTransformMatrix))))
             return E_FAIL;

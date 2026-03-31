@@ -117,7 +117,7 @@ float4 PS_Main_Lit(VS_OUT In) : SV_TARGET
 
     // 3. ∂Û¿Ã∆√
     float3 vL = normalize(g_vLightDir.xyz * -1.0f);
-    float fDiffuseIdx = max(dot(vWorldNormal, vL), 0.0f);
+    float fDiffuseIdx = max(dot(In.vNormal, vL), 0.0f);
 
     float4 diffuseColor = g_DiffuseTextures.Sample(g_samWrap, In.vUV);
 
