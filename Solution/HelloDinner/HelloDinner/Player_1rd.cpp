@@ -202,7 +202,7 @@ void CPlayer_1rd::Render(ID3D12GraphicsCommandList* _commandList)
 
     // 콜라이더 디버깅
 #ifdef _DEBUG
-    for (CCollider* pCollider : m_vColliderComs)
+   /* for (CCollider* pCollider : m_vColliderComs)
     {
         if (pCollider != nullptr)
             m_pGameInstance->Add_RenderCollider(pCollider);
@@ -211,7 +211,7 @@ void CPlayer_1rd::Render(ID3D12GraphicsCommandList* _commandList)
     {
         if (pCollider != nullptr)
             m_pGameInstance->Add_RenderCollider(pCollider);
-    }
+    }*/
 #endif
 }
 

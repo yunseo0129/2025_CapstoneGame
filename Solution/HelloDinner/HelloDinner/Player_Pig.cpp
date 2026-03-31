@@ -22,7 +22,7 @@ HRESULT CPlayer_Pig::Initialize_Prototype()
 {
 	return S_OK;
 }
-
+static int a = 0;
 HRESULT CPlayer_Pig::Initialize(void* pArg)
 {
 	if (nullptr == pArg)
@@ -47,7 +47,7 @@ HRESULT CPlayer_Pig::Initialize(void* pArg)
 		return E_FAIL;
 
 	m_iState = 0;
-	m_pModelCom->SetUp_Animation(0, true);
+	m_pModelCom->SetUp_Animation(a++, true);
 
 	if (FAILED(Ready_PartObjects()))
 		return E_FAIL;
