@@ -61,6 +61,11 @@ void CContainerObj::Render(ID3D12GraphicsCommandList* _commandList)
 
 }
 
+void CContainerObj::ShadowRender(ID3D12GraphicsCommandList* _commandList)
+{
+
+}
+
 void CContainerObj::Free()
 {
 	__super::Free();
