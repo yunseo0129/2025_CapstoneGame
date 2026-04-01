@@ -7,13 +7,17 @@
 CCube::CCube(EngineContext* pContext)
 	: CGameObject(pContext)
 {
-	
+	Safe_AddRef(m_pTextureCom);
+	Safe_AddRef(m_pVIBufferCom);
 }
 
 CCube::CCube(const CCube& Prototype)
-	: CGameObject(Prototype)
+	: CGameObject(Prototype.m_pContext)
+	, m_pTextureCom(Prototype.m_pTextureCom)
+	, m_pVIBufferCom(Prototype.m_pVIBufferCom)
 {
-	
+	Safe_AddRef(m_pTextureCom);
+	Safe_AddRef(m_pVIBufferCom);
 }
 
 HRESULT CCube::Initialize_Prototype()
@@ -51,7 +55,7 @@ void CCube::Render(ID3D12GraphicsCommandList* _commandList)
 	// PSO ¹ÙÀÎµù
 	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::DEFAULT);
 
-	if (FAILED(m_pTextureCom->Bind_ShaderResource(_commandList, RootParameterIndex::TEXTURE))) {
+	if (FAILED(m_pTextureCom->Bind_ShaderResource(_commandList, RootParameterIndex::TEXTURE_Diffuse))) {
 		MSG_BOX("Failed to Bind Texture Resource in CCube");
 		return;
 	}
@@ -117,5 +121,7 @@ CGameObject* CCube::Clone(void* pArg)
 
 void CCube::Free()
 {
+	Safe_Release(m_pVIBufferCom);
+	Safe_Release(m_pTextureCom);
 	__super::Free();
 }

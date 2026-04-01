@@ -2,7 +2,6 @@
 #include "Prototype_Manager.h"
 #include "Renderer.h"
 
-
 class CGameInstance final : public CBase
 {
 	DECLARE_SINGLETON(CGameInstance)
@@ -15,6 +14,7 @@ public: /* For.GameInstance */
 	void Update_Engine(_float fTimeDelta);
 	HRESULT Render_Begin(const _float4& vClearColor = _float4(0.f, 1.f, 0.f, 0.f));
 	HRESULT Draw();
+	HRESULT ShadowDrow();
 	HRESULT Render_End();
 	void Clear(_int iLevelID);
 
@@ -64,7 +64,8 @@ public: /* For.Load_Manager */
 
 public: /* for.Level_Manager */
 	HRESULT Open_Level(_int iLevelIndex, class CLevel* pNewLevel);
-
+	XMFLOAT4X4 Get_CurrentCameraView ();
+	XMFLOAT4X4 Get_CurrentCameraProjection ();
 
 public: /* For.Prototype_Manager */
 	HRESULT Add_Prototype(_uint iLevelIndex, const _wstring& strPrototypeTag, class CBase* pPrototype);
@@ -78,14 +79,22 @@ public: /* For.Object_Manager */
 	list<class CGameObject*> Get_List(_uint iLevelIndex, const _wstring& strLayerTag);
 	class CGameObject* Get_GameObject_To_Layer(_uint iLevelIndex, const _wstring& strLayerTag, _uint Index);
 
-
 public: /* For.Shader_Manager */
 	void Set_PipelineState(ID3D12GraphicsCommandList* pCmdList, const PSO_TYPE& _eType);
 	void Set_RootSignature(ID3D12GraphicsCommandList* pCmdList);
 
+public: /* For.Texture_Manager */
+	class CTexture* Get_Texture(_uint _eType);
+	CD3DX12_GPU_DESCRIPTOR_HANDLE Get_GPUHandle(_uint _iIndex);
+	CD3DX12_CPU_DESCRIPTOR_HANDLE Get_CPUHandle();
+	_uint Get_CurrentIndex() const;
+	void Offset_DescriptorHandle(_uint _iOffset);
+
 public: /* For.Renderer */
 	HRESULT Add_RenderObject(CRenderer::RENDERGROUP eRenderGroup, class CGameObject* pRenderObject);
-
+#ifdef _DEBUG
+	HRESULT Add_RenderCollider(class CCollider* pColliderCom);
+#endif
 
 private:
 	class CGraphic_Device*		m_pGraphic_Device = { nullptr };
@@ -94,10 +103,12 @@ private:
 	class CLevel_Manager*		m_pLevel_Manager = { nullptr };
 	class CPrototype_Manager*	m_pPrototype_Manager = { nullptr };
 	class CObject_Manager*		m_pObject_Manager = { nullptr };
+	class CLight_Manager* m_pLight_Manager = { nullptr };
 	class CPipeLine*			m_pPipeLine = { nullptr };
 	class CShader_Manager*		m_pShader_Manager = { nullptr };
 	class CRenderer*			m_pRenderer = { nullptr };
 	class CLoad_Manager*		m_pLoad_Manager = { nullptr };
+	class CTexture_Manager*		m_pTexture_Manager = { nullptr };
 
 	ComPtr<ID3D12GraphicsCommandList> m_pCommandList = { nullptr };
 

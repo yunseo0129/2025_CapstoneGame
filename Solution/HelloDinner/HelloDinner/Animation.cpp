@@ -133,12 +133,12 @@ CAnimation* CAnimation::Clone()
 
 void CAnimation::Free()
 {
-	__super::Free();
-
 	for (auto& pChannel : m_Channels)
 		Safe_Release(pChannel);
 
 	m_Channels.clear();
 	Safe_Release(m_pGameInstance);
+
+	__super::Free();
 }
 

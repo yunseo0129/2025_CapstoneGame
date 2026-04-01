@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base.h"
+#include <GraphicsMemory.h>
 
 class CGraphic_Device : public CBase
 {
@@ -15,6 +16,8 @@ public:
 public:
 	void BeforeRender(const _float4& vClearColor);
 	void AfterRender();
+
+	void initRenderTargetAndDepthStencil(ID3D12GraphicsCommandList* cmdList);
 
 	void CloseCmdList ();
 	
@@ -97,6 +100,9 @@ private:
 	D3D_DRIVER_TYPE m_d3dDriverType = D3D_DRIVER_TYPE_HARDWARE;
 	DXGI_FORMAT m_BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	DXGI_FORMAT m_DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+	// 그래픽 메모리 관리 객체
+	std::unique_ptr<DirectX::GraphicsMemory> m_pGraphicsMemory = nullptr;
 
 public:
 	static CGraphic_Device* Create(HWND _hwnd, EngineContext* _pcontext);

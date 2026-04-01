@@ -1,21 +1,12 @@
 #include "Material.h"
 
-CMaterial::CMaterial(ID3D12Device* pDevice)
-	: m_pDevice(pDevice)
+CMaterial::CMaterial()
 {
 }
 
 CMaterial::CMaterial(const CMaterial& Prototype)
-	: m_pDevice(Prototype.m_pDevice)
-	, m_Textures(Prototype.m_Textures)
+	: m_Textures(Prototype.m_Textures)
 {
-	for (auto& TextureList : m_Textures)
-	{
-		for (auto& pTexture : TextureList)
-		{
-			Safe_AddRef(pTexture);
-		}
-	}
 }
 
 HRESULT CMaterial::Add_Texture(TextureType eType, CTexture* pTexture)
@@ -52,9 +43,9 @@ HRESULT CMaterial::Bind_ShaderResource(ID3D12GraphicsCommandList* pCmdList, Text
 	return pTexture->Bind_ShaderResource(pCmdList, iRootParameterIndex, iTextureIndex);
 }
 
-CMaterial* CMaterial::Create(ID3D12Device* pDevice)
+CMaterial* CMaterial::Create()
 {
-	CMaterial* pInstance = new CMaterial(pDevice);
+	CMaterial* pInstance = new CMaterial();
 
 	// 초기화 (벡터 사이즈 할당)
 	pInstance->m_Textures.resize(AI_TEXTURE_TYPE_MAX);
@@ -76,8 +67,6 @@ void CMaterial::Free()
 		{
 			Safe_Release(pTexture);
 		}
-		TextureList.clear();
 	}
-	m_Textures.clear();
-	CBase::Free();
+	__super::Free();
 }

@@ -3,12 +3,12 @@
 #include "Bone.h"
 
 
-CMesh::CMesh(ID3D12Device* pDevice)
-	: CVIBuffer{ pDevice }
+CMesh::CMesh(EngineContext* _pContext)
+	: CVIBuffer{ _pContext }
 {
 }
 
-HRESULT CMesh::Initialize_Prototype(CModel::TYPE eModelType, class CModel* pModel, _fmatrix PreTransformMatrix, ID3D12GraphicsCommandList* cmdList)
+HRESULT CMesh::Initialize_Prototype(CModel::TYPE eModelType, class CModel* pModel, _fmatrix PreTransformMatrix)
 {
 	// MaterialIndex 읽기
 	m_pGameInstance->Read_File(m_iMaterialIndex);
@@ -21,11 +21,13 @@ HRESULT CMesh::Initialize_Prototype(CModel::TYPE eModelType, class CModel* pMode
 	_uint iNumTriangles;
 	m_pGameInstance->Read_File(iNumTriangles);
 
+	/*
 	// 디버그 로그 출력
 	char szLog[512];
 	sprintf_s(szLog, "[Mesh] Name:%s | Vtx:%u | Tri:%u | Idx:%u | MatIdx:%u\n",
 		m_szName, m_iVertices, iNumTriangles, iNumTriangles * 3, m_iMaterialIndex);
 	OutputDebugStringA(szLog);
+	*/
 
 	m_iIndices = iNumTriangles * 3; // 인덱스 개수는 삼각형 개수 * 3
 
@@ -35,7 +37,7 @@ HRESULT CMesh::Initialize_Prototype(CModel::TYPE eModelType, class CModel* pMode
 
 #pragma region VERTEX_BUFFER	
 
-	HRESULT hr = CModel::TYPE_NONANIM == eModelType ? Ready_VertexBuffer_For_NonAnim(cmdList , PreTransformMatrix) : Ready_VertexBuffer_For_Anim(cmdList, pModel);
+	HRESULT hr = CModel::TYPE_NONANIM == eModelType ? Ready_VertexBuffer_For_NonAnim(PreTransformMatrix) : Ready_VertexBuffer_For_Anim(pModel);
 
 	if (FAILED(hr))
 		return E_FAIL;
@@ -56,7 +58,7 @@ HRESULT CMesh::Initialize_Prototype(CModel::TYPE eModelType, class CModel* pMode
 	_uint indexBufferSize = sizeof(_uint) * m_iIndices;
 
 	// 부모의 버퍼 생성 함수를 이용해 Index Buffer 생성
-	if (FAILED(Create_Buffer(cmdList, m_pIndexBuffer.GetAddressOf(), m_pIndexUploadBuffer.GetAddressOf(),
+	if (FAILED(Create_Buffer(m_pContext->cmdList, &m_pIndexBuffer, &m_pIndexUploadBuffer,
 		indexBufferSize, indices.data(), true)))
 		return E_FAIL;
 
@@ -74,7 +76,7 @@ HRESULT CMesh::Initialize(void* pArg)
 	return S_OK;
 }
 
-HRESULT CMesh::Ready_VertexBuffer_For_NonAnim(ID3D12GraphicsCommandList* cmdList, _fmatrix PreTransformMatrix)
+HRESULT CMesh::Ready_VertexBuffer_For_NonAnim(_fmatrix PreTransformMatrix)
 {
 	// 바이너리 저장 순서: Position[] → Normal[] → TexCoord[] → Tangent[]
 	vector<VTXMESH> vertices;
@@ -95,7 +97,7 @@ HRESULT CMesh::Ready_VertexBuffer_For_NonAnim(ID3D12GraphicsCommandList* cmdList
 	m_iVertexStride = sizeof(VTXMESH);
 	_uint vertexBufferSize = sizeof(VTXMESH) * m_iVertices;
 
-	if (FAILED(Create_Buffer(cmdList, m_pVertexBuffer.GetAddressOf(), m_pVertexUploadBuffer.GetAddressOf(),
+	if (FAILED(Create_Buffer(m_pContext->cmdList, &m_pVertexBuffer, &m_pVertexUploadBuffer,
 		vertexBufferSize, vertices.data(), false)))
 		return E_FAIL;
 
@@ -106,7 +108,7 @@ HRESULT CMesh::Ready_VertexBuffer_For_NonAnim(ID3D12GraphicsCommandList* cmdList
 	return S_OK;
 }
 
-HRESULT CMesh::Ready_VertexBuffer_For_Anim(ID3D12GraphicsCommandList* cmdList, class CModel* pModel)
+HRESULT CMesh::Ready_VertexBuffer_For_Anim(class CModel* pModel)
 {
 	m_pGameInstance->Read_File(m_iNumBones);
 
@@ -137,7 +139,6 @@ HRESULT CMesh::Ready_VertexBuffer_For_Anim(ID3D12GraphicsCommandList* cmdList, c
 
 	vector<VTXANIMMESH> vertices;
 	vertices.resize(m_iVertices);
-
 	for (_uint i = 0; i < m_iVertices; ++i)
 		m_pGameInstance->Read_File(vertices[i].vPosition);
 
@@ -157,18 +158,16 @@ HRESULT CMesh::Ready_VertexBuffer_For_Anim(ID3D12GraphicsCommandList* cmdList, c
 		m_pGameInstance->Read_File(vertices[i].vBlendWeights);
 
 
-	m_iVertexStride = sizeof(VTXMESH);
-	_uint vertexBufferSize = sizeof(VTXMESH) * m_iVertices;
+	m_iVertexStride = sizeof(VTXANIMMESH);
+	_uint vertexBufferSize = sizeof(VTXANIMMESH) * m_iVertices;
 
-	if (FAILED(Create_Buffer(cmdList, m_pVertexBuffer.GetAddressOf(), m_pVertexUploadBuffer.GetAddressOf(),
+	if (FAILED(Create_Buffer(m_pContext->cmdList, &m_pVertexBuffer, &m_pVertexUploadBuffer,
 		vertexBufferSize, vertices.data(), false)))
 		return E_FAIL;
 
 	m_vertexBufferView.BufferLocation = m_pVertexBuffer->GetGPUVirtualAddress();
 	m_vertexBufferView.StrideInBytes = m_iVertexStride;
 	m_vertexBufferView.SizeInBytes = vertexBufferSize;
-
-	return S_OK;
 
 	return S_OK;
 }
@@ -178,18 +177,21 @@ void CMesh::SetUp_BoneMatrices(const vector<CBone*>& Bones, _float4x4* pBoneMatr
 	for (_uint i = 0; i < m_iNumBones; ++i)
 	{
 		// OffsetMatrix * CombinedMatrix = 최종 본 매트릭스
+		
 		_matrix OffsetMatrix = XMLoadFloat4x4(&m_BoneOffsetMatrices[i]);
-		_matrix CombinedMatrix = Bones[m_BoneIndices[i]]->Get_CombinedTransformationMatrix();
 
-		XMStoreFloat4x4(&pBoneMatrices[i], XMMatrixTranspose(OffsetMatrix * CombinedMatrix));
+		_matrix CombinedMatrix = Bones[m_BoneIndices[i]]->Get_CombinedTransformationMatrix();
+		XMStoreFloat4x4(&pBoneMatrices[i], OffsetMatrix * CombinedMatrix);
+
+		//XMStoreFloat4x4(&pBoneMatrices[i], XMMatrixInverse(nullptr, OffsetMatrix));
 	}
 }
 
-CMesh* CMesh::Create(ID3D12Device* pDevice, EngineContext* pContext, CModel::TYPE eModelType, class CModel* pModel, _fmatrix PreTransformMatrix)
+CMesh* CMesh::Create(EngineContext* pContext, CModel::TYPE eModelType, class CModel* pModel, _fmatrix PreTransformMatrix)
 {
-	CMesh* pInstance = new CMesh(pDevice);
+	CMesh* pInstance = new CMesh(pContext);
 
-	if (FAILED(pInstance->Initialize_Prototype(eModelType, pModel, PreTransformMatrix, pContext->cmdList)))
+	if (FAILED(pInstance->Initialize_Prototype(eModelType, pModel, PreTransformMatrix)))
 	{
 		MSG_BOX("Failed to Created : CMesh");
 		Safe_Release(pInstance);

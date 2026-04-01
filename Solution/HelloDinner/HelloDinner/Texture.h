@@ -5,7 +5,7 @@
 class CTexture final : public CComponent
 {
 private:
-	CTexture(ID3D12Device* pDevice);
+	CTexture(EngineContext* _pContext);
 	CTexture(const CTexture& Prototype);
 	virtual ~CTexture() = default;
 
@@ -25,17 +25,13 @@ public:
 	TEXTURE_TYPE Get_TextureType() const { return m_eType; }
 
 protected:
-	ComPtr<ID3D12Device>					m_pDevice;
 
 	_uint									m_iNumTextures = { 0 };
+	_uint									m_iSRVIndex = { 0 }; // 글로벌 SRV힙에서의 시작 인덱스 (Manager에서 할당받은 위치)
 
 	// 여러 장의 텍스처(애니메이션 등)를 지원하기 위해 vector로 관리 
 	vector<ComPtr<ID3D12Resource>>			m_Textures;
 	vector<ComPtr<ID3D12Resource>>			m_UploadBuffers; // 업로드용 임시 버퍼
-
-	// SRV(Shader Resource View)를 담는 힙 
-	ComPtr<ID3D12DescriptorHeap>			m_pSrvDescriptorHeap;
-	_uint									m_iCbvSrvUavDescriptorSize = { 0 }; // 핸들 크기 저장
 
 	// [메타데이터 정보]
 	DXGI_FORMAT					m_FormatDesc = {};
@@ -51,7 +47,6 @@ private:
 	HRESULT Load_WICTexture(ID3D12GraphicsCommandList* pCommandList, const wstring& _pFilePath, _uint _iIndex);
 	HRESULT SetResourceDesc(ID3D12Resource* _pTexture, TEXTURE_TYPE _iTextureType );
 
-	virtual HRESULT Create_SrvDescriptorHeap();
 	virtual HRESULT CreateShaderResourceView(CD3DX12_CPU_DESCRIPTOR_HANDLE _descriptorHandle, _uint _iIndex, TEXTURE_TYPE _iTextureType  );
 
 	virtual void SetHeapProperties(D3D12_HEAP_PROPERTIES& _heapProps, D3D12_HEAP_TYPE _type);
@@ -59,11 +54,11 @@ private:
 
 
 public:
-	virtual HRESULT Initialize_Prototype(ID3D12GraphicsCommandList* pCommandList, const _tchar* pTextureFilePath, _uint iNumTexture, TEXTURE_TYPE  _iTextureType );
+	virtual HRESULT Initialize_Prototype(ID3D12GraphicsCommandList* _cmdList, const _tchar* pTextureFilePath, _uint iNumTexture, TEXTURE_TYPE  _iTextureType );
 	virtual HRESULT Initialize(void* pArg) override;
 
 
-	static CTexture* Create(ID3D12Device* pDevice, ID3D12GraphicsCommandList* pCommandList, const _tchar*  eFilePath, _uint iNumTextures = 1, TEXTURE_TYPE _iTextureType = TEXTURE_TYPE::TEX_2D);
+	static CTexture* Create(EngineContext* _pContext, const _tchar*  eFilePath, _uint iNumTextures = 1, TEXTURE_TYPE _iTextureType = TEXTURE_TYPE::TEX_2D);
 	virtual CComponent* Clone(void* pArg);
 	virtual void Free() override;
 };

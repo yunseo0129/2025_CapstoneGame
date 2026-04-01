@@ -91,7 +91,7 @@ HRESULT CMainApp::Render()
 HRESULT CMainApp::SetUp_StartLevel(LEVELID eLevelID)
 {
 	if (FAILED(m_pGameInstance->Open_Level(LEVEL_LOADING,
-		CLevel_Loading::Create(EngineContext.device, &EngineContext, eLevelID))))
+		CLevel_Loading::Create(&EngineContext, eLevelID))))
 		return E_FAIL;
 
 	return S_OK;
@@ -112,11 +112,11 @@ CMainApp* CMainApp::Create()
 
 void CMainApp::Free()
 {
-	/* 부모 멤버를 정리한다. */
-	__super::Free();
-	Safe_Release(m_pGameInstance);
 
 	CGameInstance::Release_Engine();
+	Safe_Release(m_pGameInstance);
+	/* 부모 멤버를 정리한다. */
+	__super::Free();
 
 }
 

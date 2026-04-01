@@ -22,12 +22,14 @@ public:
 	virtual void		Update(_float fTimeDelta);
 	virtual void		Late_Update(_float fTimeDelta);
 	virtual void		Render(ID3D12GraphicsCommandList* _commandList);
+	virtual void		ShadowRender(ID3D12GraphicsCommandList* _commandList);
 
 public:
 	class CComponent*	Find_Component(const _wstring& strComponentTag);
 	const _float4x4* Get_WorldMatrix4x4Ptr();		//RootConstantBuffer에 WorldMatrix를 넘겨줄 때 사용
 	bool			IsDead() { return m_bDead; }
 	void			SetDead() { m_bDead = true; }
+
 protected:
 	HRESULT				Add_Component(_uint iPrototypeLevelIndex, const _wstring& strPrototypeTag, const _wstring& strComponentTag, CComponent** ppOut, void* pArg = nullptr);
 

@@ -36,9 +36,6 @@
     <Filter Include="소스 파일\02. Game\GameObject">
       <UniqueIdentifier>{b687e6ca-6630-46e7-b051-ee30ee69ac62}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\02. Game\GameObject\Player">
-      <UniqueIdentifier>{fbc2e468-eeaa-42d5-a414-4973c5d609f1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\01. Engine\01. Level">
       <UniqueIdentifier>{446fbe64-2145-4f1e-8678-ef60221a47da}</UniqueIdentifier>
     </Filter>
@@ -175,13 +172,49 @@
       <UniqueIdentifier>{f2529a22-d40c-4172-a809-89cfcdf43b52}</UniqueIdentifier>
     </Filter>
     <Filter Include="소스 파일\02. Game\GameObject\02. Player\Player_1rd">
-      <UniqueIdentifier>{cc34aa3f-eb7b-4b70-bfdc-e9f31891defd}</UniqueIdentifier>
+      <UniqueIdentifier>{1840bf97-e4f8-41d9-b8c5-8dd26a3ea352}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\02. Game\GameObject\03. Gun">
-      <UniqueIdentifier>{322aa1aa-075d-498b-bd7c-d5f0bc7c086c}</UniqueIdentifier>
+    <Filter Include="소스 파일\02. Game\GameObject\02. Player\Player_1rd\Gun">
+      <UniqueIdentifier>{e7ce0c4c-d90f-420e-8413-d3cfb7457fde}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\02. Game\GameObject\03. Gun\ketchup">
-      <UniqueIdentifier>{f8dc519f-b03f-4650-b2d8-ab1146fea3ae}</UniqueIdentifier>
+    <Filter Include="소스 파일\02. Game\GameObject\02. Player\Player_1rd\Gun\Ketchup">
+      <UniqueIdentifier>{61f68484-2fa9-4e23-b224-5d17dc8f5c1c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\GameObject\02. Player\Player_1rd\Character">
+      <UniqueIdentifier>{ebb3ddcd-a88c-404f-b447-07f1fe6421ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\GameObject\02. Player\Player_1rd\Character\Pig_1rd">
+      <UniqueIdentifier>{364c7b64-8a24-46a7-93a4-d9f9703fc69f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\03. Network">
+      <UniqueIdentifier>{7d0008e1-e34c-4b50-bd28-09cb01b271d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\04. Components\03. Collider\Bounding">
+      <UniqueIdentifier>{b608a499-aebc-4974-9c7f-0a824f7ac66a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\04. Components\03. Collider\Bounding\Bounding_AABB">
+      <UniqueIdentifier>{a703a1a5-84f5-4c31-a6e7-311ea5d44885}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\04. Components\03. Collider\Bounding\Bounding_OBB">
+      <UniqueIdentifier>{25e95a94-0298-4c52-8321-5023d07f21c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\04. Components\03. Collider\Bounding\Bounding_Sphere">
+      <UniqueIdentifier>{cf76bb72-4e62-4a77-92bf-7307bee10ab0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\04. Components\03. Collider\test">
+      <UniqueIdentifier>{e9a64c2e-715e-4248-afa3-1934340e5bbc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\04. Components\03. Collider\render">
+      <UniqueIdentifier>{4445247f-804d-435a-b1de-25229b6173d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\07. Light">
+      <UniqueIdentifier>{1686d6c8-698c-47e8-a322-1befa4f9aaf2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\07. Light\Manager">
+      <UniqueIdentifier>{061c2507-670e-4418-8d96-766479a0c8ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\08. Shadow">
+      <UniqueIdentifier>{6e761fcd-17b0-4292-af41-e8731b9566c9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -308,7 +341,7 @@
     <ClInclude Include="Common\WICTextureLoader12.h">
       <Filter>외부 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Pig_3rd.h">
+    <ClInclude Include="Player_Pig.h">
       <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd\02. Pig_3rd</Filter>
     </ClInclude>
     <ClInclude Include="Channel.h">
@@ -320,11 +353,53 @@
     <ClInclude Include="Bone.h">
       <Filter>소스 파일\01. Engine\04. Components\02. Model\Bone</Filter>
     </ClInclude>
-    <ClInclude Include="Player_3rd.h">
-      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd</Filter>
+    <ClInclude Include="Collider.h">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
     </ClInclude>
-    <ClInclude Include="ketchup_Gun.h">
-      <Filter>소스 파일\02. Game\GameObject\03. Gun\ketchup</Filter>
+    <ClInclude Include="NetworkClient.h">
+      <Filter>소스 파일\03. Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Bounding.h">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\Bounding</Filter>
+    </ClInclude>
+    <ClInclude Include="Bounding_AABB.h">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\Bounding\Bounding_AABB</Filter>
+    </ClInclude>
+    <ClInclude Include="Bounding_OBB.h">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\Bounding\Bounding_OBB</Filter>
+    </ClInclude>
+    <ClInclude Include="Bounding_Sphere.h">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\Bounding\Bounding_Sphere</Filter>
+    </ClInclude>
+    <ClInclude Include="PartObj.h">
+      <Filter>소스 파일\01. Engine\03. Objects\PartObject</Filter>
+    </ClInclude>
+    <ClInclude Include="ContainerObj.h">
+      <Filter>소스 파일\01. Engine\03. Objects\ContainerObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Pig_1rd.h">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_1rd\Character\Pig_1rd</Filter>
+    </ClInclude>
+    <ClInclude Include="Ketchup_Gun.h">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_1rd\Gun\Ketchup</Filter>
+    </ClInclude>
+    <ClInclude Include="Player_1rd.h">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_1rd</Filter>
+    </ClInclude>
+    <ClInclude Include="Obj_CollisionTest.h">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\test</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugDraw.h">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\render</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture_Manager.h">
+      <Filter>소스 파일\01. Engine\04. Components\05. Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="Light.h">
+      <Filter>소스 파일\01. Engine\07. Light</Filter>
+    </ClInclude>
+    <ClInclude Include="Shadow.h">
+      <Filter>소스 파일\01. Engine\08. Shadow</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -433,7 +508,7 @@
     <ClCompile Include="Common\WICTextureLoader12.cpp">
       <Filter>외부 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Pig_3rd.cpp">
+    <ClCompile Include="Player_Pig.cpp">
       <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd\02. Pig_3rd</Filter>
     </ClCompile>
     <ClCompile Include="Channel.cpp">
@@ -445,11 +520,68 @@
     <ClCompile Include="Bone.cpp">
       <Filter>소스 파일\01. Engine\04. Components\02. Model\Bone</Filter>
     </ClCompile>
+    <ClCompile Include="Bounding.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="Bounding_AABB.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="Bounding_OBB.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="Bounding_Sphere.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="Collider.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkClient.cpp">
+      <Filter>소스 파일\03. Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Bounding.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\Bounding</Filter>
+    </ClCompile>
+    <ClCompile Include="Bounding_AABB.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\Bounding\Bounding_AABB</Filter>
+    </ClCompile>
+    <ClCompile Include="Bounding_OBB.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\Bounding\Bounding_OBB</Filter>
+    </ClCompile>
+    <ClCompile Include="Bounding_Sphere.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\Bounding\Bounding_Sphere</Filter>
+    </ClCompile>
+    <ClCompile Include="PartObj.cpp">
+      <Filter>소스 파일\01. Engine\03. Objects\PartObject</Filter>
+    </ClCompile>
+    <ClCompile Include="ContainerObj.cpp">
+      <Filter>소스 파일\01. Engine\03. Objects\ContainerObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Pig_1rd.cpp">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_1rd\Character\Pig_1rd</Filter>
+    </ClCompile>
+    <ClCompile Include="Ketchup_Gun.cpp">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_1rd\Gun\Ketchup</Filter>
+    </ClCompile>
+    <ClCompile Include="Player_1rd.cpp">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_1rd</Filter>
+    </ClCompile>
     <ClCompile Include="Player_3rd.cpp">
       <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd</Filter>
     </ClCompile>
-    <ClCompile Include="ketchup_Gun.cpp">
-      <Filter>소스 파일\02. Game\GameObject\03. Gun\ketchup</Filter>
+    <ClCompile Include="Obj_CollisionTest.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\test</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugDraw.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\03. Collider\render</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture_Manager.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\05. Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="Light.cpp">
+      <Filter>소스 파일\01. Engine\07. Light</Filter>
+    </ClCompile>
+    <ClCompile Include="Shadow.cpp">
+      <Filter>소스 파일\01. Engine\08. Shadow</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -466,7 +598,16 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shader.hlsl">
+    <FxCompile Include="Shader_Static.hlsl">
+      <Filter>셰이더 파일</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader_Skybox.hlsl">
+      <Filter>셰이더 파일</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader_Anim.hlsl">
+      <Filter>셰이더 파일</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader_UI.hlsl">
       <Filter>셰이더 파일</Filter>
     </FxCompile>
   </ItemGroup>

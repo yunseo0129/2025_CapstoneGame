@@ -306,7 +306,7 @@ HRESULT CBinary_Converter::Save_Data_Anim(const _tchar* pComponentTag)
 	{
 		FileStream.write((char*)&node.mName, MAX_PATH);
 		FileStream.write((char*)&node.mTransformation, sizeof(_float4x4));
-		FileStream.write((char*)&node.mCombindTransformationMatrix, sizeof(_float4x4)); // 읽는쪽에 없음
+		FileStream.write((char*)&node.mCombindTransformationMatrix, sizeof(_float4x4));
 		FileStream.write((char*)&node.miParentBoneIndex, sizeof(_int));
 	}
 
@@ -356,12 +356,12 @@ HRESULT CBinary_Converter::Save_Data_Anim(const _tchar* pComponentTag)
 			FileStream.write((char*)&Tan, sizeof(_float3));
 		}
 
-		for (XMUINT4 BlendIdx : Mesh.mvBlendIndices) //읽는쪽에 없음
+		for (XMUINT4 BlendIdx : Mesh.mvBlendIndices)
 		{
 			FileStream.write((char*)&BlendIdx, sizeof(XMUINT4));
 		}
 
-		for (_float4 Weights : Mesh.mvBlendWeights) //읽는쪽에 없음
+		for (_float4 Weights : Mesh.mvBlendWeights)
 		{
 			FileStream.write((char*)&Weights, sizeof(_float4));
 		}
@@ -509,6 +509,35 @@ HRESULT CBinary_Converter::Save_Mesh_Info_Anim(const aiMesh* pAIMesh)
 		tMesh.mOffsetMatrix.push_back(OffsetMatrix);
 
 		tMesh.mBoneIndices.push_back(Get_BoneIndex(pAIBone->mName.data));
+
+		int globalIndex = Get_BoneIndex(pAIBone->mName.data);
+
+		/*for (size_t j = 0; j < pAIBone->mNumWeights; j++)
+		{
+			_uint vid = pAIBone->mWeights[j].mVertexId;
+			float w = pAIBone->mWeights[j].mWeight;
+
+			if (tMesh.mvBlendWeights[vid].x == 0)
+			{
+				tMesh.mvBlendIndices[vid].x = globalIndex;
+				tMesh.mvBlendWeights[vid].x = w;
+			}
+			else if (tMesh.mvBlendWeights[vid].y == 0)
+			{
+				tMesh.mvBlendIndices[vid].y = globalIndex;
+				tMesh.mvBlendWeights[vid].y = w;
+			}
+			else if (tMesh.mvBlendWeights[vid].z == 0)
+			{
+				tMesh.mvBlendIndices[vid].z = globalIndex;
+				tMesh.mvBlendWeights[vid].z = w;
+			}
+			else
+			{
+				tMesh.mvBlendIndices[vid].w = globalIndex;
+				tMesh.mvBlendWeights[vid].w = w;
+			}
+		}*/
 
 		for (size_t j = 0; j < pAIBone->mNumWeights; j++)
 		{

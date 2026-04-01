@@ -35,7 +35,7 @@ struct KEYFRAME
 };
 
 // 수정 필요
-enum LEVELID { LEVEL_STATIC, LEVEL_LOADING, LEVEL_LOGO, LEVEL_GAMEPLAY, LEVEL_END };
+enum LEVELID { LEVEL_STATIC, LEVEL_LOADING, LEVEL_LOGO, LEVEL_GAMEPLAY, LEVEL_MAPLOADING ,LEVEL_END };
 
 // Texture data 저장하는 srv 만들 때 VIEW_DIMENSION 설정용
 enum TEXTURE_TYPE {
@@ -56,10 +56,13 @@ enum CAMERA_TYPE
 // Root Signature의 Root Parameter 슬롯 설정용
 enum RootParameterIndex
 {
-	Camera ,
-	GameObject ,
-	TEXTURE ,
-	BoneMatrix ,
+	Camera,
+	GameObject,
+	TEXTURE_Diffuse,
+	TEXTURE_Normal,
+	BoneMatrix,
+	Light,
+	ShadowMap,
 	// 후에 Material, BoneMatrix 등등 추가할 수 있음
 	End
 };
@@ -144,6 +147,8 @@ typedef struct tagKeyState
 }KEYSTATE, * PKEYSTATE;
 
 
+// CB
+
 // Camera에서 사용할 카메라 정보 구조체
 typedef struct
 {
@@ -158,6 +163,20 @@ typedef struct
 {
 	XMFLOAT4X4						m_BoneMatrices[512];
 }CB_BONE_MATRICES;
+
+// Light
+typedef struct
+{
+	XMFLOAT4 vDirection;
+	XMFLOAT4 vPosition;
+	XMFLOAT4 vDiffuse;
+	XMFLOAT4 vAmbient;
+	XMFLOAT4 vSpecular;
+	float    fRange;
+	XMFLOAT3 vPadding;
+
+	XMFLOAT4X4 matLightTransform;
+}CB_LIGHT;
 
 // InputLayout에서 사용할 정점 구조체
 typedef struct
@@ -177,6 +196,7 @@ typedef struct
 	XMUINT4			vBlendIndices;	// 16bytes
 	XMFLOAT4		vBlendWeights;	// 16bytes
 }VTXANIMMESH;
+
 
 
 //-------------------------------------------------------------

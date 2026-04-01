@@ -8,7 +8,7 @@
 class CLevel_Loading final : public CLevel
 {
 private:
-	CLevel_Loading(ID3D12Device* pDevice, EngineContext* pContext);
+	CLevel_Loading(EngineContext* pContext);
 	virtual ~CLevel_Loading() = default;
 
 public:
@@ -20,13 +20,12 @@ public:
 private:
 	LEVELID			m_eNextLevelID = { LEVEL_END };
 
-	ID3D12Device* m_pDevice = { nullptr };
-	EngineContext* m_pContext = { nullptr };
-	class CGameInstance* m_pGameInstance = { nullptr };
-
-	HRESULT Ready_TestLoader();
+	HRESULT Ready_Component_Prototype();
+	HRESULT Ready_GameObject_Prototype();
+	HRESULT Ready_Light();
+	HRESULT Ready_Layer();
 
 public:
-	static CLevel_Loading* Create(ID3D12Device* pDevice, EngineContext* pContext, LEVELID eNextLevelID);
+	static CLevel_Loading* Create(EngineContext* pContext, LEVELID eNextLevelID);
 	virtual void Free() override;
 };

@@ -11,7 +11,7 @@ HRESULT CLayer::Add_GameObject(CGameObject* pGameObject)
 		return E_FAIL;
 
 	m_GameObjects.push_back(pGameObject);
-
+	//Safe_AddRef(pGameObject);
 	return S_OK;
 }
 
@@ -65,10 +65,10 @@ CLayer* CLayer::Create()
 
 void CLayer::Free()
 {
-	__super::Free();
-
 	for (auto& pGameObject : m_GameObjects)
 		Safe_Release(pGameObject);
 
 	m_GameObjects.clear();
+
+	__super::Free();
 }

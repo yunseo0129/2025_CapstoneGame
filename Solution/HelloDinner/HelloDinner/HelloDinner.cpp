@@ -6,6 +6,7 @@
 
 #include "MainApp.h"
 #include "GameInstance.h"
+#include "NetworkClient.h"
 
 #define MAX_LOADSTRING 100
 
@@ -32,6 +33,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     HRESULT hrCo = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
     if (FAILED(hrCo))
         return FALSE;
+
+    // 서버 접속 (콘솔 창)
+    NetworkClient* pNetwork = NetworkClient::GetInstance();
+    if (!pNetwork->ConnectWithConsole()) {
+        MessageBox(nullptr, L"서버 접속에 실패했습니다.", L"Error", MB_OK);
+        NetworkClient::DestroyInstance();
+        return FALSE;
+    }
 
     MSG msg;
     HACCEL hAccelTable;
@@ -87,6 +96,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             pMainApp->Render ();
         }
     }
+
+    // 네트워크 해제
+    NetworkClient::DestroyInstance();
 
     Safe_Release(pGameInstance);
 
@@ -164,7 +176,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //  WM_PAINT    - 주 창을 그립니다.
 //  WM_DESTROY  - 종료 메시지를 게시하고 반환합니다.
 //
-//
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)

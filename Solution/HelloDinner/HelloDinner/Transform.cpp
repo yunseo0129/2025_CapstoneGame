@@ -6,7 +6,7 @@ CTransform::CTransform(EngineContext* _pcontext)
 }
 
 CTransform::CTransform(const CTransform& Prototype)
-	: CComponent{ Prototype }
+	: CComponent{ Prototype.m_pContext }
 {
 }
 

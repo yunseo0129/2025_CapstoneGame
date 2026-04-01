@@ -129,8 +129,21 @@ void CGraphic_Device::AfterRender()
 	}
 #endif
 #endif
+	if ( m_pGraphicsMemory )
+	{
+		m_pGraphicsMemory->Commit(m_pCommandQueue.Get());
+	}
 
 	MoveToNextFrame();
+}
+
+void CGraphic_Device::initRenderTargetAndDepthStencil(ID3D12GraphicsCommandList* cmdList)
+{
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = CurrentBackBufferView();
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = DepthStencilView();
+	cmdList->OMSetRenderTargets(1, &rtvHandle, TRUE, &dsvHandle);
+	cmdList->RSSetViewports(1, &m_ScreenViewport);
+	cmdList->RSSetScissorRects(1, &m_ScissorRect);
 }
 
 void CGraphic_Device::CloseCmdList ()
@@ -167,6 +180,11 @@ bool CGraphic_Device::InitDirect3D(HWND& _hwnd, EngineContext* _pcontext)
 	_pcontext->rtvHeap = m_pRtvHeap.Get();
 	_pcontext->dsvHeap = m_pDsvHeap.Get();
 	// srvHeap는 다른 곳에서 처리
+
+#ifdef _DEBUG
+	// collider 렌더링을 위한 그래픽 메모리 관리 객체 생성 (디버그 모드에서만)
+	m_pGraphicsMemory = std::make_unique<DirectX::GraphicsMemory>(m_pD3dDevice.Get());
+#endif
 
 	return true;
 }
@@ -551,6 +569,9 @@ void CGraphic_Device::Free()
 	m_pDsvHeap.Reset();
 	m_pRtvHeap.Reset();
 	m_pSwapChain.Reset();
+
+	m_pGraphicsMemory.reset();
+
 	// Device Reset 전에 남은 객체 확인
 #ifdef _DEBUG
 	{

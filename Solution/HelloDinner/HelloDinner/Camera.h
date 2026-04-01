@@ -36,6 +36,12 @@ public:
 
 	// CBV 바인딩 함수
 	HRESULT Bind_CameraBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameterIndex _eIndex);
+	XMFLOAT4X4 Get_CameraView() {
+		return m_xmf4x4View;
+	}
+	XMFLOAT4X4 Get_CameraProjection() {
+		return m_xmf4x4Projection;
+	}
 
 	static void DebugPrintMatrix ( const char* name , const XMFLOAT4X4& m );
 
@@ -55,8 +61,6 @@ private:
 
 
 private:
-	ComPtr<ID3D12Device> m_pDevice;
-
 	static const _int FRAME_COUNT = CGraphic_Device::SWAP_CHAIN_BUFFER_COUNT;
 	ComPtr<ID3D12Resource> m_pCameraBuffers[FRAME_COUNT];
 	CB_VS_CAMERA* m_pCbMappedCameras[FRAME_COUNT] = {};

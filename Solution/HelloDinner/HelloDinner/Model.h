@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Component.h"
+#include "Graphic_Device.h"
 
 //		컴포넌트 상속
 class CModel final : public CComponent
@@ -11,10 +12,10 @@ public:
 	// 머티리얼 로드 모드
 	enum MATERIAL_LOAD_MODE {
 		MATLOAD_FROM_BINARY,     // 바이너리 경로에서 텍스처 로드 (캐릭터용)
-		MATLOAD_SKIP_TEXTURE     // 바이너리는 읽되 텍스처 생성 스킵 (맵용, 외부에서 Set)
+		MATLOAD_DDS_FILE		// 바이너리는 읽되 텍스처 파일을 dds로 읽음
 	};
 private:
-	CModel(ID3D12Device* pDevice, EngineContext* pContext);
+	CModel(EngineContext* pContext);
 	CModel(const CModel& Prototype);
 	virtual ~CModel() = default;
 
@@ -48,11 +49,12 @@ public:
 	const _float4x4* Get_BoneMatrix(const _char* pBoneName) const;
 
 	// 랜더 때마다 호출 셰이더에 바인딩해줌
-	HRESULT Bind_BoneMatrices(class CShader* pShader, const _char* pConstantName, _uint iMeshIndex);
+	HRESULT Bind_BoneMatrices(ID3D12GraphicsCommandList* _cmdList, _uint iMeshIndex);
 
+	HRESULT Ready_MapMaterial(const wchar_t* pModelFilePath, int _nMaterial, TextureType _eType);
 public:
 // 인자값으로 넘어온 매쉬번호에 맞는 매쉬를 그려줌 (상위 클래스의 랜더에서 매쉬개수만큼 부를거임)
-	virtual HRESULT Render(ID3D12GraphicsCommandList* _commandList, _uint iMeshIndex);
+	virtual HRESULT Render(ID3D12GraphicsCommandList* _commandList, _uint iMeshIndex, bool IsShadow = false);
 
 private:
 	// 애님과 논애님을 구별하기 위함
@@ -94,23 +96,29 @@ private:
 	_float4x4					m_PreTransformMatrix = {};
 
 private:
+
+	// 본 매트릭스 Constant Buffer (프레임별)
+	static const _int FRAME_COUNT = CGraphic_Device::SWAP_CHAIN_BUFFER_COUNT;
+	ComPtr<ID3D12Resource>	m_pBoneBuffers[FRAME_COUNT];
+	CB_BONE_MATRICES* m_pCbMappedBones[FRAME_COUNT] = {};
+
+	HRESULT Create_BoneBuffer();
+
+private:
 	HRESULT Ready_Meshes();
-	HRESULT Ready_Materials(const wchar_t* pModelFilePath);
+	HRESULT Ready_Materials(const wchar_t* pModelFilePath, MATERIAL_LOAD_MODE eMatMode);
 	HRESULT Ready_Bones();
 	HRESULT Ready_Animations();
 
 private:
 	HRESULT Bind_Material(_uint iMeshIndex, TextureType eType, _uint iTextureIndex, ID3D12GraphicsCommandList* _commandList);
 
-private:
-	ID3D12Device* m_pDevice = { nullptr };
 
 public:
 	virtual HRESULT Initialize_Prototype(TYPE eModelType, const wchar_t* pModelFilePath, _fmatrix PreTransformMatrix, MATERIAL_LOAD_MODE eMatMode);
 	virtual HRESULT Initialize(void* pArg) override;
 
-	static CModel* Create(ID3D12Device* pDevice, EngineContext* pContext, TYPE eModelType, const wchar_t* pModelFilePath, _fmatrix PreTransformMatrix, MATERIAL_LOAD_MODE eMatMode = MATLOAD_FROM_BINARY);
+	static CModel* Create(EngineContext* pContext, TYPE eModelType, const wchar_t* pModelFilePath, _fmatrix PreTransformMatrix, MATERIAL_LOAD_MODE eMatMode = MATLOAD_FROM_BINARY);
 	virtual CComponent* Clone(void* pArg) override;
 	virtual void Free() override;
-	
 };

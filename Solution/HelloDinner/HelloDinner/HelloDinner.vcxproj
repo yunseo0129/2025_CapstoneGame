@@ -103,12 +103,22 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>../HelloDinner</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../HelloDinner;../HelloDinner/ThirdParty/Inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>../HelloDinner/ThirdParty/Lib/Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>DirectXTK12.lib</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -119,24 +129,41 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>../HelloDinner</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../HelloDinner;../HelloDinner/ThirdParty/Inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>../HelloDinner/ThirdParty/Lib/Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>DirectXTK12.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="Base.h" />
     <ClInclude Include="Bone.h" />
+    <ClInclude Include="Bounding.h" />
+    <ClInclude Include="Bounding_AABB.h" />
+    <ClInclude Include="Bounding_OBB.h" />
+    <ClInclude Include="Bounding_Sphere.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Camera_FPV.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="Channel.h" />
-    <ClInclude Include="ketchup_Gun.h" />
-    <ClInclude Include="Player_3rd.h" />
+    <ClInclude Include="Collider.h" />
+    <ClInclude Include="Light.h" />
+    <ClInclude Include="Shadow.h" />
+    <ClInclude Include="Texture_Manager.h" />
+    <ClInclude Include="Obj_CollisionTest.h" />
+    <ClInclude Include="ContainerObj.h" />
+    <ClInclude Include="DebugDraw.h" />
+    <ClInclude Include="Ketchup_Gun.h" />
+    <ClInclude Include="NetworkClient.h" />
+    <ClInclude Include="PartObj.h" />
+    <ClInclude Include="Pig_1rd.h" />
+    <ClInclude Include="Player_1rd.h" />
     <ClInclude Include="Common\WICTextureLoader12.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="Cube.h" />
@@ -151,7 +178,9 @@
     </ClInclude>
     <ClInclude Include="Layer.h" />
     <ClInclude Include="Level.h" />
-    <ClInclude Include="Level_Loading.h" />
+    <ClInclude Include="Level_Loading.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Level_Manager.h" />
     <ClInclude Include="Load_Manager.h" />
     <ClInclude Include="Loader_Map.h" />
@@ -160,7 +189,7 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Object_Manager.h" />
-    <ClInclude Include="Pig_3rd.h" />
+    <ClInclude Include="Player_Pig.h" />
     <ClInclude Include="Prototype_Manager.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Shader_Manager.h" />
@@ -187,12 +216,30 @@
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Base.cpp" />
     <ClCompile Include="Bone.cpp" />
+    <ClCompile Include="Bounding.cpp" />
+    <ClCompile Include="Bounding_AABB.cpp" />
+    <ClCompile Include="Bounding_OBB.cpp" />
+    <ClCompile Include="Bounding_Sphere.cpp" />
     <ClCompile Include="Camera.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Channel.cpp" />
-    <ClCompile Include="ketchup_Gun.cpp" />
-    <ClCompile Include="Player_3rd.cpp" />
+    <ClCompile Include="Collider.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Light.cpp" />
+    <ClCompile Include="Shadow.cpp" />
+    <ClCompile Include="Texture_Manager.cpp" />
+    <ClCompile Include="Obj_CollisionTest.cpp" />
+    <ClCompile Include="ContainerObj.cpp" />
+    <ClCompile Include="DebugDraw.cpp" />
+    <ClCompile Include="Ketchup_Gun.cpp" />
+    <ClCompile Include="NetworkClient.cpp" />
+    <ClCompile Include="PartObj.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Pig_1rd.cpp" />
+    <ClCompile Include="Player_1rd.cpp" />
     <ClCompile Include="Common\DDSTextureLoader12.cpp" />
     <ClCompile Include="Common\WICTextureLoader12.cpp" />
     <ClCompile Include="Component.cpp" />
@@ -221,7 +268,7 @@
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Object_Manager.cpp" />
-    <ClCompile Include="Pig_3rd.cpp" />
+    <ClCompile Include="Player_Pig.cpp" />
     <ClCompile Include="Prototype_Manager.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Shader_Manager.cpp" />
@@ -242,7 +289,51 @@
     <Image Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shader.hlsl">
+    <FxCompile Include="Shader_UI.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shader_Anim.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shader_Static.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shader_Skybox.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
@@ -254,6 +345,5 @@
     </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

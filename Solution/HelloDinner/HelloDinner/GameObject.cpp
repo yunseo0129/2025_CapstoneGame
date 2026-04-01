@@ -54,10 +54,12 @@ void CGameObject::Render(ID3D12GraphicsCommandList* _commandList)
 {
 }
 
+void CGameObject::ShadowRender(ID3D12GraphicsCommandList* _commandList)
+{
+}
+
 void CGameObject::Free()
 {
-	__super::Free();
-
 	for (auto& Pair : m_Components) {
 		Safe_Release(Pair.second);
 	}
@@ -65,6 +67,8 @@ void CGameObject::Free()
 
 	Safe_Release(m_pTransformCom);
 	Safe_Release(m_pGameInstance);
+
+	__super::Free();
 }
 
 CComponent* CGameObject::Find_Component(const _wstring& strComponentTag)

@@ -2,6 +2,8 @@
 #include "GameObject.h"
 #include "GameInstance.h"
 
+#include "Collider.h"
+
 CRenderer::CRenderer(ID3D12Device* pDevice, ID3D12GraphicsCommandList* _pCommandlist)
 	: m_pDevice{ pDevice }
 	, m_pCommandlist{ _pCommandlist }
@@ -39,53 +41,106 @@ HRESULT CRenderer::Draw_RenderObject(ID3D12GraphicsCommandList* _CmdList)
 	//if (FAILED(Render_UI()))
 		//return E_FAIL;
 
+#ifdef _DEBUG
+	if ( FAILED ( Render_Collider ( _CmdList ) ) )
+		return E_FAIL;
+#endif // DEBUG
 
 	return S_OK;
 }
 
-HRESULT CRenderer::Render_Priority( ID3D12GraphicsCommandList* _CmdList )
+HRESULT CRenderer::ShadowDraw_RenderObject(ID3D12GraphicsCommandList* _CmdList)
 {
-	for (auto& pRenderObject : m_RenderObjects[RG_PRIORITY])
-	{
-		if (nullptr != pRenderObject)
-			pRenderObject->Render( _CmdList );
-
-		Safe_Release(pRenderObject);
-	}
-	m_RenderObjects[RG_PRIORITY].clear();
-
+	if (FAILED(Render_Priority(_CmdList, true)))
+		return E_FAIL;
+	if (FAILED(Render_NonBlend(_CmdList, true)))
+		return E_FAIL;
 	return S_OK;
 }
 
-HRESULT CRenderer::Render_NonBlend( ID3D12GraphicsCommandList* _CmdList )
+HRESULT CRenderer::Render_Priority( ID3D12GraphicsCommandList* _CmdList , bool _IsShadow)
 {
-	//m_pGameInstance->Render_BlockList();
-
-	for (auto& pRenderObject : m_RenderObjects[RG_NONBLEND])
-	{
-		if (nullptr != pRenderObject)
-			pRenderObject->Render( _CmdList );
-
-		Safe_Release(pRenderObject);
+	if (_IsShadow) {
+		for (auto& pRenderObject : m_RenderObjects[RG_PRIORITY])
+		{
+			if (nullptr != pRenderObject) {
+				pRenderObject->ShadowRender(_CmdList);
+			}
+		}
 	}
-	m_RenderObjects[RG_NONBLEND].clear();
+	else {
+		for (auto& pRenderObject : m_RenderObjects[RG_PRIORITY])
+		{
+			if (nullptr != pRenderObject) {
+				pRenderObject->Render(_CmdList);
+			}
+			Safe_Release(pRenderObject);
+		}
+		m_RenderObjects[RG_PRIORITY].clear();
+	}
 
 	return S_OK;
 }
 
-HRESULT CRenderer::Render_Blend( ID3D12GraphicsCommandList* _CmdList )
+HRESULT CRenderer::Render_NonBlend( ID3D12GraphicsCommandList* _CmdList, bool _IsShadow)
+{
+	if (_IsShadow) {
+		for (auto& pRenderObject : m_RenderObjects[RG_NONBLEND])
+		{
+			if (nullptr != pRenderObject) {
+				pRenderObject->ShadowRender(_CmdList);
+			}
+		}
+	}
+	else {
+		for (auto& pRenderObject : m_RenderObjects[RG_NONBLEND])
+		{
+			if (nullptr != pRenderObject) {
+				pRenderObject->Render(_CmdList);
+			}
+			Safe_Release(pRenderObject);
+		}
+		m_RenderObjects[RG_NONBLEND].clear();
+	}
+
+	return S_OK;
+}
+
+HRESULT CRenderer::Render_Blend( ID3D12GraphicsCommandList* _CmdList, bool _IsShadow)
 {
 	for (auto& pRenderObject : m_RenderObjects[RG_BLEND])
 	{
-		if (nullptr != pRenderObject)
-			pRenderObject->Render( _CmdList );
-
+		if ( nullptr != pRenderObject ) {
+			pRenderObject->Render(_CmdList);
+		}
 		Safe_Release(pRenderObject);
 	}
 	m_RenderObjects[RG_BLEND].clear();
 
 	return S_OK;
 }
+
+#ifdef _DEBUG
+HRESULT CRenderer::Add_RenderCollider(CCollider* pColliderCom )
+{
+	m_RenderColliders.push_back(pColliderCom);
+	Safe_AddRef ( m_RenderColliders.back () );
+	return S_OK;
+}
+
+
+HRESULT CRenderer::Render_Collider ( ID3D12GraphicsCommandList* _CmdList )
+{
+	for ( auto& pRenderCollider : m_RenderColliders )
+	{
+		if ( nullptr != pRenderCollider )
+			pRenderCollider->Render ( _CmdList );
+		Safe_Release(pRenderCollider);
+	}
+	m_RenderColliders.clear ();
+	return S_OK;
+}
+#endif
 
 //HRESULT CRenderer::Render_UI()
 //{
@@ -119,8 +174,6 @@ CRenderer* CRenderer::Create(ID3D12Device* pDevice, ID3D12GraphicsCommandList* _
 
 void CRenderer::Free()
 {
-	__super::Free();
-
 	for (size_t i = 0; i < RG_END; i++)
 	{
 		for (auto& pRenderObject : m_RenderObjects[i])
@@ -132,5 +185,8 @@ void CRenderer::Free()
 	m_pDevice.Reset();
 	m_pCommandlist.Reset();
 	Safe_Release(m_pGameInstance);
+
+	__super::Free();
+
 }
 

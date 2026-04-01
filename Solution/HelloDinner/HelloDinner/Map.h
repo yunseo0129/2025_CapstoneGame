@@ -1,5 +1,6 @@
 #pragma once
 #include "GameObject.h"
+#include "Collider.h"
 
 class CMap : public CGameObject
 {
@@ -11,6 +12,13 @@ public:
 		_float3		vScale = { 1.f, 1.f, 1.f };
 		_wstring	strModelTag = L"";
 		_uint		iModelLevelIndex = 0;
+
+		// collider 정보까지 넣어서 관리하자
+		CCollider::COLLIDERTYPE eColliderType = CCollider::TYPE_END;
+		_float3    vCenterCollider = {};
+		_float3    vExtentsCollider = {};
+		_float3    vRotationCollider = {};
+		_float	   fRadius = 0.f;
 	};
 
 private:
@@ -25,15 +33,23 @@ public:
 	virtual void Update(_float fTimeDelta) override;
 	virtual void Late_Update(_float fTimeDelta) override;
 	virtual void Render(ID3D12GraphicsCommandList* _commandList) override;
+	virtual void ShadowRender(ID3D12GraphicsCommandList* _commandList) override;
 
 private:
 	HRESULT Ready_Components();
 
 private:
 	class CModel* m_pModelCom = { nullptr };
+	class CCollider* m_pColliderCom = { nullptr };
 
 	_wstring	m_strModelTag = L"";
 	_uint		m_iModelLevelIndex = 0;
+
+	CCollider::COLLIDERTYPE m_eColliderType = CCollider::TYPE_END;
+	_float3    m_vCenterCollider = {};
+	_float3    m_vExtentsCollider = {};
+	_float3    m_vRotationCollider = {};
+	_float	   m_fRadius = 0.f;
 
 public:
 	static CMap* Create(EngineContext* _pcontext);

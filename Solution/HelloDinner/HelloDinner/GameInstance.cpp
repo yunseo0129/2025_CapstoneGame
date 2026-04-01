@@ -9,7 +9,7 @@
 #include "Prototype_Manager.h"
 #include "Load_Manager.h"
 #include "Shader_Manager.h"
-
+#include "Texture_Manager.h"
 #include "Camera.h"
 
 IMPLEMENT_SINGLETON(CGameInstance)
@@ -30,6 +30,10 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineCo
 
 	m_pInput_Device = CInput_Device::Create(EngineDesc.hInstance, EngineDesc.hWnd);
 	if (nullptr == m_pInput_Device)
+		return E_FAIL;
+
+	m_pTexture_Manager = CTexture_Manager::Create(_pcontext);
+	if (nullptr == m_pTexture_Manager)
 		return E_FAIL;
 
 	m_pTimer_Manager = CTimer_Manager::Create();
@@ -59,14 +63,11 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineCo
 	if (nullptr == m_pLoad_Manager)
 		return E_FAIL;
 
-
 	// 테스트용
 	// Camera.h 변경해야할 것들
 	// 1. abstract 설정
 	// 2. Clone = 0;
 	// 3. 생성자, 소멸자 protected로 변경
-
-	// 카메라는 게임인스턴스에 있으면 안됨. 레이어에 있어야함 테스트할거면 메인에 있어야함
 
 	return S_OK;
 }
@@ -74,28 +75,35 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineCo
 void CGameInstance::Update_Engine(_float fTimeDelta)
 {
 	m_pInput_Device->Update_InputDev();
-	m_pLevel_Manager->Update(fTimeDelta);
 	m_pObject_Manager->Priority_Update(fTimeDelta);
 	m_pObject_Manager->Update(fTimeDelta);
 	m_pObject_Manager->Late_Update(fTimeDelta);
+	m_pLevel_Manager->Update(fTimeDelta);
 }
 
 HRESULT CGameInstance::Render_Begin(const _float4& vClearColor)
 {
 	m_pGraphic_Device->BeforeRender(vClearColor);
 	m_pCommandList = m_pGraphic_Device->GetCommandList ();
-
-	
 	Set_RootSignature(m_pCommandList.Get());
-
-	
+	m_pTexture_Manager->Bind_GlobalHeap(m_pCommandList.Get());
 	return S_OK;
 }
 
 HRESULT CGameInstance::Draw()
 {
+	m_pLevel_Manager->Set_CurrentCamera(CAMERA_FPV);
+	m_pLevel_Manager->ShadowRender(m_pCommandList.Get());
+	m_pGraphic_Device->initRenderTargetAndDepthStencil(m_pCommandList.Get());
 	m_pLevel_Manager->Bind_CameraBuffer(m_pCommandList.Get(), RootParameterIndex::Camera, CAMERA_FPV);
+	m_pLevel_Manager->Bind_LightBuffer(m_pCommandList.Get(), RootParameterIndex::Light);
 	m_pRenderer->Draw_RenderObject ( m_pCommandList.Get () );
+	return S_OK;
+}
+
+HRESULT CGameInstance::ShadowDrow()
+{
+	m_pRenderer->ShadowDraw_RenderObject(m_pCommandList.Get());
 	return S_OK;
 }
 
@@ -321,6 +329,20 @@ HRESULT CGameInstance::Open_Level(_int iLevelIndex, CLevel* pNewLevel)
 	return m_pLevel_Manager->Open_Level(iLevelIndex, pNewLevel);
 }
 
+XMFLOAT4X4 CGameInstance::Get_CurrentCameraView()
+{
+	if (nullptr == m_pLevel_Manager)
+		return XMFLOAT4X4();
+	return m_pLevel_Manager->Get_CurrentCameraView();
+}
+
+XMFLOAT4X4 CGameInstance::Get_CurrentCameraProjection()
+{
+	if (nullptr == m_pLevel_Manager)
+		return XMFLOAT4X4();
+	return m_pLevel_Manager->Get_CurrentCameraProjection();
+}
+
 // ------------------------------------------------------------------------
 // Prototype_Manager
 // ------------------------------------------------------------------------
@@ -401,6 +423,55 @@ void CGameInstance::Set_RootSignature(ID3D12GraphicsCommandList* pCmdList)
 }
 
 // ------------------------------------------------------------------------
+// Texture_Manager
+// ------------------------------------------------------------------------
+
+CTexture* CGameInstance::Get_Texture(_uint _eType)
+{
+	if (nullptr == m_pTexture_Manager) {
+		MSG_BOX("CGameInstance::Get_Texture() : DefaultTexture_Manager is nullptr");
+		return nullptr;
+	}
+	return	m_pTexture_Manager->Get_DefaultNormalTexture();
+}
+
+CD3DX12_GPU_DESCRIPTOR_HANDLE CGameInstance::Get_GPUHandle(_uint _iIndex)
+{
+	if (nullptr == m_pTexture_Manager) {
+		MSG_BOX("CGameInstance::Get_GPUHandle() : DefaultTexture_Manager is nullptr");
+		return CD3DX12_GPU_DESCRIPTOR_HANDLE();
+	}
+	return m_pTexture_Manager->Get_GPUHandle(_iIndex);
+}
+
+CD3DX12_CPU_DESCRIPTOR_HANDLE CGameInstance::Get_CPUHandle()
+{
+	if (nullptr == m_pTexture_Manager) {
+		MSG_BOX("CGameInstance::Get_CPUHandle() : DefaultTexture_Manager is nullptr");
+		return CD3DX12_CPU_DESCRIPTOR_HANDLE();
+	}
+	return m_pTexture_Manager->Get_CPUHandle();
+}
+
+_uint CGameInstance::Get_CurrentIndex() const
+{
+	if (nullptr == m_pTexture_Manager) {
+		MSG_BOX("CGameInstance::Get_CurrentIndex() : DefaultTexture_Manager is nullptr");
+		return 0;
+	}
+	return m_pTexture_Manager->Get_CurrentIndex();
+}
+
+void CGameInstance::Offset_DescriptorHandle(_uint _iOffset)
+{
+	if (nullptr == m_pTexture_Manager) {
+		MSG_BOX("CGameInstance::Offset_DescriptorHandle() : DefaultTexture_Manager is nullptr");
+		return;
+	}
+	m_pTexture_Manager->Offset_DescriptorHandle(_iOffset);
+}
+
+// ------------------------------------------------------------------------
 // Renderer
 // ------------------------------------------------------------------------
 HRESULT CGameInstance::Add_RenderObject(CRenderer::RENDERGROUP eRenderGroup, CGameObject* pRenderObject)
@@ -411,6 +482,15 @@ HRESULT CGameInstance::Add_RenderObject(CRenderer::RENDERGROUP eRenderGroup, CGa
 	return m_pRenderer->Add_RenderObject(eRenderGroup, pRenderObject);
 }
 
+#ifdef _DEBUG
+HRESULT CGameInstance::Add_RenderCollider(CCollider* pColliderCom)
+{
+	if (nullptr == m_pRenderer)
+		return E_FAIL;
+	return m_pRenderer->Add_RenderCollider(pColliderCom);
+}
+#endif
+
 void CGameInstance::Release_Engine()
 {
 	CGameInstance::GetInstance()->Free();
@@ -420,7 +500,6 @@ void CGameInstance::Release_Engine()
 
 void CGameInstance::Free()
 {
-	__super::Free();
 
 	if ( m_pGraphic_Device )
 		m_pGraphic_Device->WaitForGpuComplete ();
@@ -442,6 +521,7 @@ void CGameInstance::Free()
 
 	// 8. 셰이더 매니저 해제 (PSO, RootSignature 해제)
 	Safe_Release ( m_pShader_Manager );
+	Safe_Release(m_pTexture_Manager);
 
 	// 9. 나머지 매니저 해제
 	Safe_Release ( m_pLoad_Manager );
@@ -450,4 +530,6 @@ void CGameInstance::Free()
 
 	// 10. Device를 가장 마지막에 해제
 	Safe_Release ( m_pGraphic_Device );
+
+	__super::Free();
 }

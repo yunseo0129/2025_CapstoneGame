@@ -47,28 +47,43 @@ HRESULT CShader_Manager::Create_GlobalRootSignature ()
 	// NumDescriptors: 1
 	// BaseShaderRegister: 0 (t0 부터 시작)
 	// RegisterSpace: 0 (space0)
-	CD3DX12_DESCRIPTOR_RANGE ranges[1]; // 텍스처 테이블용 1개
-	ranges[0].Init ( D3D12_DESCRIPTOR_RANGE_TYPE_SRV , 1 , 0 , 0 );
+	CD3DX12_DESCRIPTOR_RANGE rangesDiffuse[1]; // 
+	rangesDiffuse[0].Init ( D3D12_DESCRIPTOR_RANGE_TYPE_SRV , 1 , 0 , 0 );	//t0
+
+	CD3DX12_DESCRIPTOR_RANGE rangesNormal[1]; // 
+	rangesNormal[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);	//t1
+
+	CD3DX12_DESCRIPTOR_RANGE rangesShadow[1]; // 
+	rangesShadow[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0);	//t2
+
+
 
 	// Material용으로 추가
 
 	// [Parameter 0] : CBV (Camera)
-	// -> cbTransform : register(b0)
+	//  cbTransform : register(b0)
 	// 카메라 정보 (뷰, 프로젝션 행렬)
 	parameters[RootParameterIndex::Camera].InitAsConstantBufferView ( 0 , 0 );
 
 	// [Parameter 1] : Constant32 (Object)
-	// -> cbObject : register(b1)
+	//  cbObject : register(b1)
 	// Transform 정보
 	parameters[RootParameterIndex::GameObject].InitAsConstants ( 16 , 1 );
 
-	// [Parameter 2] : Texture Table
-	// -> g_Textures[] : register(t0, space1)
-	parameters[RootParameterIndex::TEXTURE].InitAsDescriptorTable ( 1 , &ranges[0] );
+	// [Parameter 2, 3] : Texture Table
+	// Diffuse Texture (t0)과 Normal Texture (t1)로 나눠서 관리
+	parameters[RootParameterIndex::TEXTURE_Diffuse].InitAsDescriptorTable ( 1 , &rangesDiffuse[0] );
+	parameters[RootParameterIndex::TEXTURE_Normal].InitAsDescriptorTable(1, &rangesNormal[0]);
+	// t3 그림자 맵
+	parameters[RootParameterIndex::ShadowMap].InitAsDescriptorTable(1, &rangesShadow[0]);
 
 	// [Parameter 3] : CBV (BoneMatrix)
-	// -> cbBoneMatrices : register(b2)
+	//  cbBoneMatrices : register(b2)
 	parameters[RootParameterIndex::BoneMatrix].InitAsConstantBufferView(2, 0);
+
+	// [Parameter 4] : CBV (Light)
+	//  cbLight : register(b3)
+	parameters[RootParameterIndex::Light].InitAsConstantBufferView(3, 0);
 
 	//----------------------------------------------------------------------
 	// Static Sampler s0 ~ s4
@@ -96,6 +111,7 @@ HRESULT CShader_Manager::Create_GlobalRootSignature ()
 		D3D12_TEXTURE_ADDRESS_MODE_CLAMP );
 
 	// s3: Anisotropic (지형, 바닥 - 멀리서도 선명함)
+	// 잘 안 쓸듯?
 	samplers[3].Init ( 3 ,
 		D3D12_FILTER_ANISOTROPIC ,
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP ,
@@ -166,15 +182,18 @@ HRESULT CShader_Manager::Create_PSO ()
 	// 1. 쉐이더 컴파일
 	// ----------------------------------------------------------------
 	// Vertex Shader (Input Layout별)
-	ComPtr<ID3DBlob> vsStatic = Compile_Shader ( L"Shader.hlsl" , "VS_Main_Static" , "vs_5_1" );
-	ComPtr<ID3DBlob> vsSkybox = Compile_Shader ( L"Shader.hlsl" , "VS_Main_Skybox" , "vs_5_1" );
-	ComPtr<ID3DBlob> vsAnim = Compile_Shader ( L"Shader.hlsl" , "VS_Main_Anim" , "vs_5_1" );
-	// ComPtr<ID3DBlob> vsUI = Compile_Shader ( L"UI.hlsl" , "VS_Main_UI" , "vs_5_1" );
+	ComPtr<ID3DBlob> vsStatic = Compile_Shader ( L"Shader_Static.hlsl" , "VS_Main_Static" , "vs_5_1" );
+	ComPtr<ID3DBlob> vsSkybox = Compile_Shader ( L"Shader_Skybox.hlsl" , "VS_Main_Skybox" , "vs_5_1" );
+	ComPtr<ID3DBlob> vsAnim = Compile_Shader ( L"Shader_Anim.hlsl" , "VS_Main_Anim" , "vs_5_1" );
+	// ComPtr<ID3DBlob> vsUI = Compile_Shader ( L"Shader_UI.hlsl" , "VS_Main_UI" , "vs_5_1" );
+
+	ComPtr<ID3DBlob> vsShadowStatic = Compile_Shader(L"Shader_Static.hlsl", "VS_Main_Shadow", "vs_5_1");
+	ComPtr<ID3DBlob> vsShadowAnim = Compile_Shader(L"Shader_Anim.hlsl", "VS_Main_Shadow", "vs_5_1");
 
 	// Pixel Shader (재질별)
-	ComPtr<ID3DBlob> psLit = Compile_Shader ( L"Shader.hlsl" , "PS_Main_Lit" , "ps_5_1" ); // 조명 O
-	ComPtr<ID3DBlob> psSkybox = Compile_Shader ( L"Shader.hlsl" , "PS_Main_Skybox" , "ps_5_1" ); // Skybox
-	// ComPtr<ID3DBlob> psUI = Compile_Shader ( L"UI.hlsl" , "PS_Main_UI" , "ps_5_1" ); // 조명 X
+	ComPtr<ID3DBlob> psLit = Compile_Shader ( L"Shader_Static.hlsl" , "PS_Main_Lit" , "ps_5_1" ); // 조명 O
+	ComPtr<ID3DBlob> psSkybox = Compile_Shader ( L"Shader_Skybox.hlsl" , "PS_Main_Skybox" , "ps_5_1" ); // Skybox
+	// ComPtr<ID3DBlob> psUI = Compile_Shader ( L"Shader_UI.hlsl" , "PS_Main_UI" , "ps_5_1" ); // 조명 X
 
 	// ----------------------------------------------------------------
 	// 2. 기본 PSO Desc 작성 (공통 설정)
@@ -272,17 +291,14 @@ HRESULT CShader_Manager::Create_PSO ()
 
 	m_pDevice->CreateGraphicsPipelineState ( &psoDesc , IID_PPV_ARGS ( &m_pPSOs[( UINT )PSO_TYPE::UI] ) );
 
-
+	*/
 	// ================================================================
 	// SHADOW (Static Mesh / No Color / Depth Only)
 	// ================================================================
 	psoDesc = baseDesc; // 리셋
 	psoDesc.InputLayout = { m_LayoutStatic.data (), ( UINT )m_LayoutStatic.size () };
-	// 그림자용 가벼운 VS 사용 (위치만 계산)
-	ComPtr<ID3DBlob> vsShadow = Compile_Shader ( L"Shadow.hlsl" , "VS_Shadow" , "vs_5_1" );
-	psoDesc.VS = { vsShadow->GetBufferPointer (), vsShadow->GetBufferSize () };
-
-	// 픽셀 쉐이더 없음 (Null)
+	// 그림자용
+	psoDesc.VS = { vsShadowStatic->GetBufferPointer (), vsShadowStatic->GetBufferSize () };
 	psoDesc.PS = { nullptr, 0 };
 
 	// 렌더 타겟 없음 (오직 Depth Buffer에만 기록)
@@ -290,11 +306,28 @@ HRESULT CShader_Manager::Create_PSO ()
 	psoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
 
 	// 그림자 아티팩트(Shadow Acne) 방지 바이어스
-	psoDesc.RasterizerState.DepthBias = 1000;
+	psoDesc.RasterizerState.DepthBias = 100000;
+	psoDesc.RasterizerState.DepthBiasClamp = 0.0f;
 	psoDesc.RasterizerState.SlopeScaledDepthBias = 1.0f;
 
 	m_pDevice->CreateGraphicsPipelineState ( &psoDesc , IID_PPV_ARGS ( &m_pPSOs[( UINT )PSO_TYPE::SHADOW_STATIC] ) );
-	*/
+	
+	// ================================================================
+	// SHADOW_ANIM (Anim Mesh / No Color / Depth Only)
+	// ================================================================
+	psoDesc = baseDesc; // 리셋
+	psoDesc.InputLayout = { m_LayoutAnim.data(), (UINT)m_LayoutAnim.size() }; // ?? 애니메이션용 레이아웃 사용
+	psoDesc.VS = { vsShadowAnim->GetBufferPointer(), vsShadowAnim->GetBufferSize() };
+	psoDesc.PS = { nullptr, 0 };
+
+	psoDesc.NumRenderTargets = 0;
+	psoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
+
+	psoDesc.RasterizerState.DepthBias = 100000;
+	psoDesc.RasterizerState.DepthBiasClamp = 0.0f;
+	psoDesc.RasterizerState.SlopeScaledDepthBias = 1.0f;
+
+	m_pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pPSOs[(UINT)PSO_TYPE::SHADOW_ANIM]));
 
 	return S_OK;
 }

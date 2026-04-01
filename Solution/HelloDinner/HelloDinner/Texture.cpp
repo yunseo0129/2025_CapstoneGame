@@ -1,37 +1,34 @@
 #include "Texture.h"
+#include "GameInstance.h"
 #include "../HelloDinner/Common/DDSTextureLoader12.h"
 #include "../HelloDinner/Common/WICTextureLoader12.h"
 
-CTexture::CTexture(ID3D12Device* _pDevice)
-    : CComponent(nullptr)
-    , m_pDevice(_pDevice)
+CTexture::CTexture(EngineContext* _pDevice)
+    : CComponent(_pDevice)
 {
 }
 
 CTexture::CTexture(const CTexture& Prototype)
-    : CComponent(Prototype)
+    : CComponent(Prototype.m_pContext)
     , m_iNumTextures(Prototype.m_iNumTextures)
     , m_Textures(Prototype.m_Textures)                // 리소스 공유 (ComPtr로 레퍼런스 카운트 증가)
-    , m_pSrvDescriptorHeap(Prototype.m_pSrvDescriptorHeap) // 힙 공유
-    , m_iCbvSrvUavDescriptorSize(Prototype.m_iCbvSrvUavDescriptorSize)
+	, m_iSRVIndex(Prototype.m_iSRVIndex)
 {
+    for (auto& pTexture : m_Textures)
+		Safe_AddRef(pTexture); // 텍스처 리소스 참조 카운트 증가
     // Clone된 객체는 UploadBuffer를 가질 필요가 없으므로 복사하지 않음
 }
 
-HRESULT CTexture::Initialize_Prototype(ID3D12GraphicsCommandList* pCommandList, const _tchar* pTextureFilePath, _uint iNumTexture, TEXTURE_TYPE _iTextureType )
+HRESULT CTexture::Initialize_Prototype(ID3D12GraphicsCommandList* _cmdList, const _tchar* pTextureFilePath, _uint iNumTexture, TEXTURE_TYPE _iTextureType )
 {
+	// 1. 텍스처 수 저장
     m_iNumTextures = iNumTexture;
-
-    // 1. Descriptor Heap 생성 (SRV용)
-    if (FAILED(Create_SrvDescriptorHeap()))
-        return E_FAIL;
-
-    // 2. 텍스처 로딩 및 SRV 생성 루프
+	// 2. 텍스처 로딩 및 SRV 생성 루프
     m_Textures.resize(m_iNumTextures);
     m_UploadBuffers.resize(m_iNumTextures); // 업로드 버퍼 보관
 
     // 힙의 시작 핸들 가져오기
-    CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor(m_pSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+    CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor = m_pGameInstance->Get_CPUHandle();
 
     _tchar			szTextureFilePath[MAX_PATH] = TEXT("");
 
@@ -57,15 +54,11 @@ HRESULT CTexture::Initialize_Prototype(ID3D12GraphicsCommandList* pCommandList, 
         char szLog[1024];
         char szPathA[MAX_PATH];
         char szExtA[MAX_PATH];
-        WideCharToMultiByte(CP_ACP, 0, szTextureFilePath, -1, szPathA, MAX_PATH, nullptr, nullptr);
-        WideCharToMultiByte(CP_ACP, 0, szEXT, -1, szExtA, MAX_PATH, nullptr, nullptr);
-        sprintf_s(szLog, "[Texture] Path: %s | Ext: '%s'\n", szPathA, szExtA);
-        OutputDebugStringA(szLog);
 
         // 3. 텍스처 파일 로드
         if (false == lstrcmpW(szEXT, TEXT(".dds")))
         {
-            if (FAILED(Load_DDSTexture(pCommandList, szTextureFilePath, i)))
+            if (FAILED(Load_DDSTexture(_cmdList, szTextureFilePath, i)))
                 return E_FAIL;
         }
         else if (false == lstrcmpW(szEXT, TEXT(".png")) ||
@@ -73,7 +66,7 @@ HRESULT CTexture::Initialize_Prototype(ID3D12GraphicsCommandList* pCommandList, 
             false == lstrcmpW(szEXT, TEXT(".bmp")) ||
             false == lstrcmpW(szEXT, TEXT(".tiff")))
         {
-            if (FAILED(Load_WICTexture(pCommandList, szTextureFilePath, i)))
+            if (FAILED(Load_WICTexture(_cmdList, szTextureFilePath, i)))
                 return E_FAIL;
         }
         else if (false == lstrcmpW(szEXT, TEXT(".psd")) ||
@@ -90,15 +83,17 @@ HRESULT CTexture::Initialize_Prototype(ID3D12GraphicsCommandList* pCommandList, 
   
 
 		// 4. 텍스처의 리소스 설명자 정보 저장
-        if (FAILED(SetResourceDesc(m_Textures[i].Get(), _iTextureType )))
+        if (FAILED(SetResourceDesc(m_Textures[i].Get(), _iTextureType)))
 			return E_FAIL;
 
         // 5. Shader Resource View (SRV) 생성
         if (FAILED(CreateShaderResourceView(hDescriptor, i, _iTextureType )))
             return E_FAIL;
 
+		m_iSRVIndex = m_pGameInstance->Get_CurrentIndex(); // 글로벌 SRV 힙에서의 시작 인덱스 저장 (Manager에서 할당받은 위치)
+
         // 다음 텍스처를 위해 핸들 오프셋 이동
-        hDescriptor.Offset(1, m_iCbvSrvUavDescriptorSize);
+		m_pGameInstance->Offset_DescriptorHandle(1);
     }
 
     return S_OK;
@@ -116,13 +111,8 @@ HRESULT CTexture::Bind_ShaderResource(ID3D12GraphicsCommandList* pCommandList, R
     if (iTextureIndex >= m_iNumTextures)
         return E_FAIL;
 
-    // 1. Descriptor Heap 설정 (커맨드 리스트에 힙을 알림)
-    ID3D12DescriptorHeap* ppHeaps[] = { m_pSrvDescriptorHeap.Get() };
-    pCommandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-
-    // 2. GPU 핸들 계산
-    CD3DX12_GPU_DESCRIPTOR_HANDLE hGpuHandle(m_pSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-    hGpuHandle.Offset(iTextureIndex, m_iCbvSrvUavDescriptorSize);
+    // 1. GPU 핸들 계산
+	CD3DX12_GPU_DESCRIPTOR_HANDLE hGpuHandle = m_pGameInstance->Get_GPUHandle(m_iSRVIndex); // 글로벌 SRV 힙에서의 시작 핸들 가져오기
 
     // 3. 루트 테이블에 바인딩
     pCommandList->SetGraphicsRootDescriptorTable( (_uint)_eRootParameterIndex , hGpuHandle);
@@ -148,12 +138,12 @@ HRESULT CTexture::Load_DDSTexture(ID3D12GraphicsCommandList* pCommandList, const
     unique_ptr<uint8_t[]> ddsData;  // LoadDDSTextureFromFileEx 함수 내부에서 unique_ptr<uint8_t[]>을 인수로 받음
     vector<D3D12_SUBRESOURCE_DATA> subresources;
     DDS_ALPHA_MODE ddsAlphaMode{ DDS_ALPHA_MODE_UNKNOWN };
-    if (FAILED(DirectX::LoadDDSTextureFromFileEx(m_pDevice.Get(), _pFilePath.c_str(), 0,
-        D3D12_RESOURCE_FLAG_NONE, DDS_LOADER_DEFAULT, m_Textures[_iIndex].GetAddressOf(), ddsData, subresources, &ddsAlphaMode)))
+    if (FAILED(DirectX::LoadDDSTextureFromFileEx(m_pContext->device, _pFilePath.c_str(), 0,
+        D3D12_RESOURCE_FLAG_NONE, DDS_LOADER_DEFAULT, &m_Textures[_iIndex], ddsData, subresources, &ddsAlphaMode)))
         return E_FAIL;
 
     UINT nSubresources{ (UINT)subresources.size() };
-    const UINT64 TextureSize{ GetRequiredIntermediateSize(m_Textures[_iIndex].Get(), 0, nSubresources) };
+    const UINT64 TextureSize{ GetRequiredIntermediateSize(m_Textures[_iIndex].Get(), 0, nSubresources)};
 
     // UploadBuffer 생성
     D3D12_HEAP_PROPERTIES heapUploadProps;
@@ -162,7 +152,7 @@ HRESULT CTexture::Load_DDSTexture(ID3D12GraphicsCommandList* pCommandList, const
     D3D12_RESOURCE_DESC resourceDesc;
     SetResourceDesc(resourceDesc, TextureSize);
 
-    if (FAILED(m_pDevice->CreateCommittedResource(
+    if (FAILED(m_pContext->device->CreateCommittedResource(
         &heapUploadProps,
         D3D12_HEAP_FLAG_NONE,
         &resourceDesc,
@@ -187,8 +177,8 @@ HRESULT CTexture::Load_WICTexture(ID3D12GraphicsCommandList* pCommandList, const
     D3D12_SUBRESOURCE_DATA subresource{};
     unique_ptr<uint8_t[]> wicData;
 
-    if (FAILED(DirectX::LoadWICTextureFromFile(m_pDevice.Get(), _pFilePath.c_str(),
-        m_Textures[_iIndex].GetAddressOf(), wicData, subresource)))
+    if (FAILED(DirectX::LoadWICTextureFromFile(m_pContext->device, _pFilePath.c_str(),
+        &m_Textures[_iIndex], wicData, subresource)))
         return E_FAIL;
 
     const UINT64 TextureSize = GetRequiredIntermediateSize(m_Textures[_iIndex].Get(), 0, 1);
@@ -200,7 +190,7 @@ HRESULT CTexture::Load_WICTexture(ID3D12GraphicsCommandList* pCommandList, const
     D3D12_RESOURCE_DESC resourceDesc;
     SetResourceDesc(resourceDesc, TextureSize);
 
-    if (FAILED(m_pDevice->CreateCommittedResource(
+    if (FAILED(m_pContext->device->CreateCommittedResource(
         &heapUploadProps,
         D3D12_HEAP_FLAG_NONE,
         &resourceDesc,
@@ -235,21 +225,6 @@ HRESULT CTexture::SetResourceDesc(ID3D12Resource* _pTexture, TEXTURE_TYPE _iText
 	return S_OK;
 }
 
-HRESULT CTexture::Create_SrvDescriptorHeap()
-{
-    D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-    srvHeapDesc.NumDescriptors = m_iNumTextures; // 텍스처 개수만큼 할당
-    srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE; // 셰이더에서 접근 가능
-
-    if (FAILED(m_pDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&m_pSrvDescriptorHeap))))
-        return E_FAIL;
-
-    // 핸들 크기 저장 (오프셋 계산용)
-    m_iCbvSrvUavDescriptorSize = m_pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-    return S_OK;
-}
 
 HRESULT CTexture::CreateShaderResourceView(CD3DX12_CPU_DESCRIPTOR_HANDLE _descriptorHandle, _uint _iIndex, TEXTURE_TYPE _iTextureType )
 {
@@ -280,7 +255,7 @@ HRESULT CTexture::CreateShaderResourceView(CD3DX12_CPU_DESCRIPTOR_HANDLE _descri
     default:
         break;
     }
-    m_pDevice->CreateShaderResourceView(m_Textures[_iIndex].Get(), &srvDesc, _descriptorHandle);
+    m_pContext->device->CreateShaderResourceView(m_Textures[_iIndex].Get(), &srvDesc, _descriptorHandle);
 
     return S_OK;
 }
@@ -311,11 +286,11 @@ void CTexture::SetResourceDesc(D3D12_RESOURCE_DESC& _resourceDesc, UINT64 _size)
 
 
 
-CTexture* CTexture::Create ( ID3D12Device* pDevice , ID3D12GraphicsCommandList* pCommandList , const _tchar* cFilePath , _uint iNumTextures , TEXTURE_TYPE _iTextureType )
+CTexture* CTexture::Create(EngineContext* _pContext , const _tchar* cFilePath , _uint iNumTextures , TEXTURE_TYPE _iTextureType)
 {
-    CTexture* pInstance = new CTexture( pDevice );
+    CTexture* pInstance = new CTexture(_pContext);
 
-    if (FAILED(pInstance->Initialize_Prototype( pCommandList , cFilePath , iNumTextures , _iTextureType )))
+    if (FAILED(pInstance->Initialize_Prototype(_pContext->cmdList, cFilePath , iNumTextures , _iTextureType )))
     {
         Safe_Release(pInstance); // 혹은 delete pInstance;
     }
@@ -338,9 +313,10 @@ CComponent* CTexture::Clone(void* pArg)
 
 void CTexture::Free()
 {
-    m_Textures.clear();
-    m_UploadBuffers.clear();
-    m_pSrvDescriptorHeap.Reset();
-    m_pDevice.Reset();
-    CComponent::Free(); // 부모 클래스 해제
+    for (auto& texture : m_Textures)
+    {
+		texture.Reset(); // ComPtr 해제
+	}
+
+	__super::Free();
 }

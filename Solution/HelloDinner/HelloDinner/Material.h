@@ -5,7 +5,7 @@
 class CMaterial : public CBase
 {
 private:
-	CMaterial(ID3D12Device* pDevice);
+	CMaterial();
 	CMaterial(const CMaterial& Prototype);
 	virtual ~CMaterial() = default;
 
@@ -19,10 +19,8 @@ public:
 private:
 	vector<vector<class CTexture*>> m_Textures;
 
-	ID3D12Device* m_pDevice = { nullptr };
-
 public:
-	static CMaterial* Create(ID3D12Device* pDevice);
+	static CMaterial* Create();
 	virtual CMaterial* Clone();
 	virtual void Free() override;
 };

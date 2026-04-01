@@ -5,12 +5,12 @@ CBone::CBone()
 
 }
 
-HRESULT CBone::Initialize(_char* Name, _float4x4 TransformMatrix, _int ParentIndex)
+HRESULT CBone::Initialize(_char* Name, _float4x4 TransformMatrix, _int ParentIndex, _float4x4 CombindTransformationMatrix)
 {
 	strcpy_s(m_szName, Name);
 	m_TransformationMatrix = TransformMatrix;
-	XMStoreFloat4x4(&m_CombindTransformationMatrix, XMMatrixIdentity());
-
+	//XMStoreFloat4x4(&m_CombindTransformationMatrix, CombindTransformationMatrix);
+	m_CombindTransformationMatrix = CombindTransformationMatrix;
 	m_iParentBoneIndex = ParentIndex;
 
 	return S_OK;
@@ -29,11 +29,11 @@ void CBone::Update_CombinedTransformationMatrix(const vector<CBone*>& Bones, _fm
 		XMLoadFloat4x4(&Bones[m_iParentBoneIndex]->m_CombindTransformationMatrix));
 }
 
-CBone* CBone::Create(_char* Name, _float4x4 TransformMatrix, _int ParentIndex)
+CBone* CBone::Create(_char* Name, _float4x4 TransformMatrix, _int ParentIndex, _float4x4 CombindTransformationMatrix)
 {
 	CBone* pInstance = new CBone();
 
-	if (FAILED(pInstance->Initialize(Name, TransformMatrix, ParentIndex)))
+	if (FAILED(pInstance->Initialize(Name, TransformMatrix, ParentIndex, CombindTransformationMatrix)))
 	{
 		MSG_BOX("Failed to Created : CBone");
 		Safe_Release(pInstance);

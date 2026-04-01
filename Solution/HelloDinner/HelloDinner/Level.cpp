@@ -1,15 +1,14 @@
 #include "Level.h"
 #include "Camera.h"
+#include "Light.h"
 #include "GameInstance.h"
 
-CLevel::CLevel(ID3D12Device* pDevice, EngineContext* pContext)
-	: m_pDevice{ pDevice }
-	, m_pContext{ pContext }
+CLevel::CLevel( EngineContext* pContext)
+	: m_pContext{ pContext }
 	, m_pGameInstance{ CGameInstance::GetInstance() }
 {
 	m_pCamera.resize(CAMERA_END, nullptr);
 	Safe_AddRef(m_pGameInstance);
-	Safe_AddRef(m_pDevice);
 }
 
 HRESULT CLevel::Initialize()
@@ -23,6 +22,35 @@ void CLevel::Update(_float fTimeDelta)
 		if (pCamera == nullptr)
 			continue;
 		pCamera->Update(fTimeDelta);
+	}
+	for (auto& pLight : m_pLights) {
+		if (pLight == nullptr)
+			continue;
+		if (m_pCurrentCamera == nullptr)
+			continue;
+		pLight->Update(fTimeDelta);
+	}
+}
+
+void CLevel::ShadowRender_Begin()
+{
+	for (auto& pLight : m_pLights) {
+		if (pLight == nullptr)
+			continue;
+		if (m_pCurrentCamera == nullptr)
+			continue;
+		pLight->Render_Begin(m_pCurrentCamera);
+	}
+}
+
+void CLevel::ShadowRender(ID3D12GraphicsCommandList* cmdList)
+{
+	for (auto& pLight : m_pLights) {
+		if (pLight == nullptr)
+			continue;
+		if (m_pCurrentCamera == nullptr)
+			continue;
+		pLight->Render(cmdList);
 	}
 }
 
@@ -41,18 +69,39 @@ void CLevel::Bind_CameraBuffer(ID3D12GraphicsCommandList* pCmdList, RootParamete
 		return;
 	if (m_pCamera[_eType] == nullptr)
 		return;
-	m_pCamera[_eType]->Bind_CameraBuffer(pCmdList, _eIndex);
+	m_pCurrentCamera->Bind_CameraBuffer(pCmdList, _eIndex);
+
+	Get_CameraMatrix(_eType);
+}
+
+void CLevel::Bind_LightBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameterIndex _eIndex)
+{
+	if (_eIndex >= RootParameterIndex::End)
+		return;
+	for (auto& pLight : m_pLights) {
+		if (pLight == nullptr)
+			continue;
+		pLight->Bind_LightBuffer(pCmdList, _eIndex);
+	}
+}
+
+void CLevel::Get_CameraMatrix(CAMERA_TYPE _eType)
+{
+	if (m_pCamera[_eType] != nullptr)
+	{
+		m_pCurrentCamera = m_pCamera[_eType];
+		m_xmf4x4CurrentView = m_pCamera[_eType]->Get_CameraView();
+		m_xmf4x4CurrentProjection = m_pCamera[_eType]->Get_CameraProjection();
+	}
 }
 
 void CLevel::Free()
 {
-	__super::Free();
-
 	for (auto& pCamera : m_pCamera)
 		Safe_Release(pCamera);
 	m_pCamera.clear();
 
 	Safe_Release(m_pGameInstance);
-	Safe_Release(m_pDevice);
-	
+
+	__super::Free();
 }
