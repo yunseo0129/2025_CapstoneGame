@@ -33,13 +33,12 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
     m_iModelLevelIndex = pDesc->iModelLevelIndex;
     m_pCamera = pDesc->pCamera;
     pDesc->iNumPartObj = 1;
-    pDesc->fSpeedPerSec = 1.f;
+    pDesc->fSpeedPerSec = 1000.f;
     pDesc->fRotationPerSec = 1.f;
-    pDesc->fSpeedPerSec = 1.f;
     if (FAILED(__super::Initialize(pArg)))
         return E_FAIL;
 
-    m_pTransformCom->Scaling(1.f, 1.f, 1.f);
+    m_pTransformCom->Scaling(100.f, 100.f, 100.f);
     m_pTransformCom->RotationQuaternion(pDesc->vRotation.x, pDesc->vRotation.y, pDesc->vRotation.z);
     m_pTransformCom->Set_State(CTransform::STATE_POSITION,
         XMVectorSet(pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z, 1.f));

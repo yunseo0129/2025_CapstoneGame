@@ -38,7 +38,7 @@ HRESULT CPlayer_Pig::Initialize(void* pArg)
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
 
-	m_pTransformCom->Scaling(1.f, 1.f, 1.f);
+	m_pTransformCom->Scaling(100.f, 100.f, 100.f);
 	m_pTransformCom->RotationQuaternion(pDesc->vRotation.x, pDesc->vRotation.y, pDesc->vRotation.z);
 	m_pTransformCom->Set_State(CTransform::STATE_POSITION,
 		XMVectorSet(pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z, 1.f));

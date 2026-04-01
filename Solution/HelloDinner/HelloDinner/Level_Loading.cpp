@@ -107,16 +107,16 @@ void CLevel_Loading::Add_Camera()
 {
     ShowCursor(false);
     CCamera_FPV::FPV_CAMERA_DESC tDesc;
-    tDesc.vEye = _float3{ 0.f, 1.38f, -5.f };
+    tDesc.vEye = _float3{ 0.f, 138.f, -5.f };
     tDesc.vAt = _float3{ 0.f, 1.38f, 0.f };
     tDesc.fFovy = XMConvertToRadians(60.f);
     tDesc.fAspect = 1280.f / 720.f;
     tDesc.fNear = 0.1f;
-    tDesc.fFar = 100.f;
+    tDesc.fFar = 10000.f;
     tDesc.fCamMouseSensor = 1.f;
     tDesc.fCamSpeedPerSec = 1.f;
     tDesc.fRotationPerSec = 1.f;
-    tDesc.fSpeedPerSec = 1.f;
+    tDesc.fSpeedPerSec = 1000.f;
 
     CCamera_FPV* pCamera = CCamera_FPV::Create(m_pContext);
     pCamera->Initialize(&tDesc);
@@ -324,39 +324,41 @@ HRESULT CLevel_Loading::Ready_Layer()
             LEVEL_LOADING, TEXT("Layer_Player"), &cdesc);
     }
 
+
+
     // Pig_3rd
-    {
-        CPlayer_Pig::PLAYER_PIG_DESC eState;
-        eState.fSpeedPerSec = 1.f;
-        eState.vRotation = _float3(0.f, XM_PI, 0.f);
-        eState.vPos = _float3(0.f, 0.f, 0.f);
-        eState.strModelTag = L"Prototype_Component_Pig_3rd";
-        eState.iModelLevelIndex = LEVEL_LOADING;
-        m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_GameObject_Player_Pig"),
-            LEVEL_LOADING, TEXT("Layer_Other_Player"), &eState);
-    }
-    // Pig_3rd
-    {
-        CPlayer_Pig::PLAYER_PIG_DESC eState;
-        eState.fSpeedPerSec = 1.f;
-        eState.vRotation = _float3(0.f, XM_PI, 0.f);
-        eState.vPos = _float3(1.f, 0.f, 0.f);
-        eState.strModelTag = L"Prototype_Component_Pig_3rd";
-        eState.iModelLevelIndex = LEVEL_LOADING;
-        m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_GameObject_Player_Pig"),
-            LEVEL_LOADING, TEXT("Layer_Other_Player"), &eState);
-    }
-    // Pig_3rd
-    {
-        CPlayer_Pig::PLAYER_PIG_DESC eState;
-        eState.fSpeedPerSec = 1.f;
-        eState.vRotation = _float3(0.f, XM_PI, 0.f);
-        eState.vPos = _float3(2.f, 0.f, 0.f);
-        eState.strModelTag = L"Prototype_Component_Pig_3rd";
-        eState.iModelLevelIndex = LEVEL_LOADING;
-        m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_GameObject_Player_Pig"),
-            LEVEL_LOADING, TEXT("Layer_Other_Player"), &eState);
-    }
+    //{
+    //    CPlayer_Pig::PLAYER_PIG_DESC eState;
+    //    eState.fSpeedPerSec = 1.f;
+    //    eState.vRotation = _float3(0.f, XM_PI, 0.f);
+    //    eState.vPos = _float3(0.f, 0.f, 0.f);
+    //    eState.strModelTag = L"Prototype_Component_Pig_3rd";
+    //    eState.iModelLevelIndex = LEVEL_LOADING;
+    //    m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_GameObject_Player_Pig"),
+    //        LEVEL_LOADING, TEXT("Layer_Other_Player"), &eState);
+    //}
+    //// Pig_3rd
+    //{
+    //    CPlayer_Pig::PLAYER_PIG_DESC eState;
+    //    eState.fSpeedPerSec = 1.f;
+    //    eState.vRotation = _float3(0.f, XM_PI, 0.f);
+    //    eState.vPos = _float3(1.f, 0.f, 0.f);
+    //    eState.strModelTag = L"Prototype_Component_Pig_3rd";
+    //    eState.iModelLevelIndex = LEVEL_LOADING;
+    //    m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_GameObject_Player_Pig"),
+    //        LEVEL_LOADING, TEXT("Layer_Other_Player"), &eState);
+    //}
+    //// Pig_3rd
+    //{
+    //    CPlayer_Pig::PLAYER_PIG_DESC eState;
+    //    eState.fSpeedPerSec = 1.f;
+    //    eState.vRotation = _float3(0.f, XM_PI, 0.f);
+    //    eState.vPos = _float3(2.f, 0.f, 0.f);
+    //    eState.strModelTag = L"Prototype_Component_Pig_3rd";
+    //    eState.iModelLevelIndex = LEVEL_LOADING;
+    //    m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_GameObject_Player_Pig"),
+    //        LEVEL_LOADING, TEXT("Layer_Other_Player"), &eState);
+    //}
     return S_OK;
 }
 
