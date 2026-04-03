@@ -40,12 +40,35 @@ void SessionManager::ProcessPacket(int c_id, char* packet)
     case CS_MOVE: {
         CS_MOVE_PACKET* p = reinterpret_cast<CS_MOVE_PACKET*>(packet);
 
-        // 클라이언트가 보낸 데이터를 세션에 저장
-        m_clients[c_id].m_player.keyInput = p->keyInput;
+        auto& session = m_clients[c_id];
+        session.m_player.keyInput = p->keyInput;
 
-		// Todo: 움직임 로직 수정 필요 (현재는 단순히 키 입력에 따라 위치 변경)
+        // 타임스탬프로 서버측 timeDelta 계산
+        unsigned int serverNow = Session::GetServerTimestamp();
+        float fTimeDelta = 0.f;
+        if (session.m_lastServerTimestamp != 0) {
+            fTimeDelta = (serverNow - session.m_lastServerTimestamp) / 1000.f;
+            if (fTimeDelta > 0.1f) fTimeDelta = 0.1f;
+        }
+        session.UpdateTimestamp(p->timestamp);
 
-        int room_id = m_clients[c_id].m_room_id;
+        // 서버에서 동일한 이동 로직 시뮬레이션
+        session.m_worldMatrix.CalculateMovement(
+            p->keyInput,
+            p->mouseYaw,
+            session.m_player.speedPerSec,
+            session.m_player.rotationPerSec,
+            fTimeDelta
+        );
+
+        // 서버 계산 결과와 클라이언트 예측 결과 비교
+        // → 불일치(치트/비정상) 시 로그만 남기고, 항상 서버 값을 권위적으로 사용
+        if (!session.m_worldMatrix.IsPositionClose(p->worldMatrix)) {
+            cout << "Client [" << c_id << "] position mismatch detected." << endl;
+        }
+
+        // 같은 방 플레이어에게 서버 권위적 결과 브로드캐스트
+        int room_id = session.m_room_id;
         if (room_id == -1) break;
 
         auto* room = MatchManager::GetInstance()->GetRoom(room_id);

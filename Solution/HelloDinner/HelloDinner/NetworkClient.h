@@ -1,5 +1,6 @@
 #pragma once
 
+#include <unordered_set>
 #include "stdafx.h"
 #include "NetPlayer.h"
 
@@ -85,5 +86,27 @@ private:
     std::vector<NetEvent>   m_pendingMatchEvents;
     std::mutex              m_matchEventLock;
 
+    // 활성 플레이어 ID만 추적하여 PopAllPlayerEvents 최적화
+    void PopAllPlayerEvents(std::vector<NetPlayer::Event>& outEvents);
+
+    // 활성 플레이어 ID 목록 (RecvThread에서 갱신)
+    std::unordered_set<int>  m_activePlayerIds;
+    std::mutex               m_activePlayerLock;
+
     std::thread m_recvThread;
+
+    // 전송 주기 제한 (초 단위)
+    float   m_fSendInterval = 1.f / 20.f;   // 초당 20회
+    float   m_fSendTimer = 0.f;
+
+public:
+    // 전송 가능 여부 확인 + 타이머 갱신
+    bool CanSendMove(float fTimeDelta) {
+        m_fSendTimer += fTimeDelta;
+        if (m_fSendTimer >= m_fSendInterval) {
+            m_fSendTimer = 0.f;
+            return true;
+        }
+        return false;
+    }
 };

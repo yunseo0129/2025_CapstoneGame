@@ -160,20 +160,30 @@ void NetworkClient::ProcessPacket(char* packet)
         SC_LOGIN_INFO_PACKET* p = reinterpret_cast<SC_LOGIN_INFO_PACKET*>(packet);
         m_iMyId = p->id;
         memcpy(m_worldMatrix, p->worldMatrix, sizeof(float) * 16);
-
-        // NetPlayer가 자체적으로 상태 갱신 + ADDED 이벤트 push
         m_players[m_iMyId].OnAdded(m_iMyId, p->worldMatrix, m_szName);
+        {
+            std::lock_guard<std::mutex> lk(m_activePlayerLock);
+            m_activePlayerIds.insert(m_iMyId);
+        }
         m_bLoggedIn = true;
         break;
     }
     case SC_ADD_PLAYER: {
         SC_ADD_PLAYER_PACKET* p = reinterpret_cast<SC_ADD_PLAYER_PACKET*>(packet);
         m_players[p->id].OnAdded(p->id, p->worldMatrix, p->name);
+        {
+            std::lock_guard<std::mutex> lk(m_activePlayerLock);
+            m_activePlayerIds.insert(p->id);
+        }
         break;
     }
     case SC_REMOVE_PLAYER: {
         SC_REMOVE_PLAYER_PACKET* p = reinterpret_cast<SC_REMOVE_PLAYER_PACKET*>(packet);
         m_players[p->id].OnRemoved();
+        {
+            std::lock_guard<std::mutex> lk(m_activePlayerLock);
+            m_activePlayerIds.erase(p->id);
+        }
         break;
     }
     case SC_MOVE_PLAYER: {
@@ -212,9 +222,13 @@ void NetworkClient::ProcessPacket(char* packet)
 
 void NetworkClient::PopAllPlayerEvents(std::vector<NetPlayer::Event>& outEvents)
 {
-    // 모든 활성 플레이어에서 이벤트를 수집
-    for (int i = 0; i < MAX_USER; ++i) {
-        m_players[i].PopEvents(outEvents);
+    std::vector<int> ids;
+    {
+        std::lock_guard<std::mutex> lk(m_activePlayerLock);
+        ids.assign(m_activePlayerIds.begin(), m_activePlayerIds.end());
+    }
+    for (int id : ids) {
+        m_players[id].PopEvents(outEvents);
     }
 }
 

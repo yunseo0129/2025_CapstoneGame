@@ -14,9 +14,11 @@
 #include "Model.h"
 #include "Player_Pig.h"
 #include "NetworkClient.h"
+#include "NetPlayer.h"
 #include "Collider.h"
 #include "Player_1rd.h"
 #include "Ketchup_Gun.h"
+#include "Transform.h"
 
 #include "Obj_CollisionTest.h"
 
@@ -67,28 +69,125 @@ void CLevel_Loading::Update(_float fTimeDelta)
 {
     __super::Update(fTimeDelta);
 
-    // 네트워크 이벤트 처리: 플레이어 추가/제거/이동
+    ProcessNetworkEvents();
+}
+
+void CLevel_Loading::ProcessNetworkEvents()
+{
     NetworkClient* pNetwork = NetworkClient::GetInstance();
     if (!pNetwork->IsConnected())
         return;
 
-    std::vector<NetworkClient::NetEvent> events;
-    pNetwork->PopAllEvents(events);
+    int iMyId = pNetwork->GetMyId();
 
-    for (auto& evt : events) {
+    // 1) 플레이어 이벤트 처리
+    std::vector<NetPlayer::Event> playerEvents;
+    pNetwork->PopAllPlayerEvents(playerEvents);
+
+    for (auto& evt : playerEvents) {
         switch (evt.type) {
-        case NetworkClient::NetEventType::PLAYER_ADD: {
-            // TODO: evt.id 플레이어 생성 + evt.cameraPos 위치에 배치 + evt.name 이름 설정
+        case NetPlayer::EventType::ADDED: {
+            // 내 플레이어는 이미 Ready_Layer에서 생성됨 → 위치만 갱신
+            if (evt.id == iMyId) {
+                if (m_pMyPlayer) {
+                    CTransform* pTransform = static_cast<CTransform*>(
+                        m_pMyPlayer->Find_Component(TEXT("Com_Transform")));
+                    if (pTransform) {
+                        // 서버가 보낸 월드행렬을 그대로 적용
+                        XMMATRIX matWorld = XMMATRIX(evt.worldMatrix);
+                        XMFLOAT4 vRow;
+                        XMStoreFloat4(&vRow, matWorld.r[0]);
+                        pTransform->Set_State(CTransform::STATE_RIGHT, XMLoadFloat4(&vRow));
+                        XMStoreFloat4(&vRow, matWorld.r[1]);
+                        pTransform->Set_State(CTransform::STATE_UP, XMLoadFloat4(&vRow));
+                        XMStoreFloat4(&vRow, matWorld.r[2]);
+                        pTransform->Set_State(CTransform::STATE_LOOK, XMLoadFloat4(&vRow));
+                        XMStoreFloat4(&vRow, matWorld.r[3]);
+                        pTransform->Set_State(CTransform::STATE_POSITION, XMLoadFloat4(&vRow));
+                    }
+                }
+                break;
+            }
+
+            // 다른 플레이어 → CPlayer_Pig 생성
+            if (m_mapNetPlayers.find(evt.id) != m_mapNetPlayers.end())
+                break;  // 이미 존재하면 무시
+
+            CPlayer_Pig::PLAYER_PIG_DESC desc;
+            desc.fSpeedPerSec = 1.f;
+            desc.fRotationPerSec = 1.f;
+            desc.vRotation = _float3(0.f, XM_PI, 0.f);
+            desc.vPos = _float3(evt.worldMatrix[12], evt.worldMatrix[13], evt.worldMatrix[14]);
+            desc.strModelTag = L"Prototype_Component_Pig_3rd";
+            desc.iModelLevelIndex = LEVEL_LOADING;
+
+            CGameObject* pNewPlayer = m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
+                LEVEL_LOADING, TEXT("Prototype_GameObject_Player_Pig"),
+                LEVEL_LOADING, TEXT("Layer_Other_Player"), &desc);
+
+            if (pNewPlayer) {
+                m_mapNetPlayers[evt.id] = pNewPlayer;
+            }
             break;
         }
-        case NetworkClient::NetEventType::PLAYER_REMOVE: {
-            // TODO: evt.id 플레이어 제거
+        case NetPlayer::EventType::REMOVED: {
+            // 내 플레이어 제거는 무시
+            if (evt.id == iMyId)
+                break;
+
+            auto it = m_mapNetPlayers.find(evt.id);
+            if (it != m_mapNetPlayers.end()) {
+                // 오브젝트 비활성화 (엔진의 오브젝트 관리 정책에 따라 처리)
+                it->second->SetDead();
+                m_mapNetPlayers.erase(it);
+            }
             break;
         }
-        case NetworkClient::NetEventType::PLAYER_MOVE: {
-            // TODO: 해당 id 플레이어의 Transform 갱신
+        case NetPlayer::EventType::MOVED: {
+            // 내 플레이어는 로컬 예측으로 이미 움직이고 있으므로 서버 보정만 적용
+            if (evt.id == iMyId) {
+                // TODO: 서버 보정(reconciliation) 필요 시 여기에 구현
+                break;
+            }
+
+            auto it = m_mapNetPlayers.find(evt.id);
+            if (it == m_mapNetPlayers.end())
+                break;
+
+            CGameObject* pPlayer = it->second;
+            CTransform* pTransform = static_cast<CTransform*>(
+                pPlayer->Find_Component(TEXT("Com_Transform")));
+            if (!pTransform)
+                break;
+
+            // 서버가 보낸 권위적 월드행렬을 그대로 적용
+            XMMATRIX matWorld = XMMATRIX(evt.worldMatrix);
+            XMFLOAT4 vRow;
+            XMStoreFloat4(&vRow, matWorld.r[0]);
+            pTransform->Set_State(CTransform::STATE_RIGHT, XMLoadFloat4(&vRow));
+            XMStoreFloat4(&vRow, matWorld.r[1]);
+            pTransform->Set_State(CTransform::STATE_UP, XMLoadFloat4(&vRow));
+            XMStoreFloat4(&vRow, matWorld.r[2]);
+            pTransform->Set_State(CTransform::STATE_LOOK, XMLoadFloat4(&vRow));
+            XMStoreFloat4(&vRow, matWorld.r[3]);
+            pTransform->Set_State(CTransform::STATE_POSITION, XMLoadFloat4(&vRow));
             break;
         }
+        }
+    }
+
+    // 2) 매칭 이벤트 처리
+    std::vector<NetworkClient::NetEvent> matchEvents;
+    pNetwork->PopAllMatchEvents(matchEvents);
+
+    for (auto& evt : matchEvents) {
+        switch (evt.type) {
+        case NetworkClient::NetEventType::MATCH_WAIT:
+            // TODO: 대기열 UI 갱신 (evt.queueSize)
+            break;
+        case NetworkClient::NetEventType::MATCH_SUCCESS:
+            // TODO: 방 입장 처리 (evt.roomId, evt.playerIds)
+            break;
         }
     }
 }
@@ -322,6 +421,13 @@ HRESULT CLevel_Loading::Ready_Layer()
         cdesc.pCamera = static_cast<CCamera_FPV*>(m_pCamera[CAMERA_FPV]);
         m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_GameObject_Player_1rd"),
             LEVEL_LOADING, TEXT("Layer_Player"), &cdesc);
+
+        // 플레이어를 참조하기 위한 포인터 저장
+        CGameObject* pObj = m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
+            LEVEL_LOADING, TEXT("Prototype_GameObject_Player_1rd"),
+            LEVEL_LOADING, TEXT("Layer_Player"), &cdesc);
+
+        m_pMyPlayer = static_cast<CPlayer_1rd*>(pObj);
     }
 
     // Pig_3rd
@@ -375,6 +481,8 @@ CLevel_Loading* CLevel_Loading::Create(EngineContext* pContext, LEVELID eNextLev
 
 void CLevel_Loading::Free()
 {
+    m_mapNetPlayers.clear();
+
     __super::Free();
     for (auto& pLight : m_pLights)
         Safe_Release(pLight);
