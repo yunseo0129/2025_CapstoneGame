@@ -8,6 +8,7 @@
 #include <mutex>
 #include <random>
 #include <unordered_set>
+#include <chrono>
 #include "PlayerInfo.h"
 #include "protocol.h"
 
@@ -16,3 +17,4 @@
 #pragma comment(lib, "MSWSock.lib")
 
 using namespace std;
+using namespace std::chrono;

@@ -4,13 +4,27 @@
 Session::Session()
 {
 	m_player = {};
-	m_camera = {};
+	m_worldMatrix = WorldMatrixInfo{};
 	m_socket = 0;
 	m_state = ST_FREE;
 	m_prev_remain = 0;
 	m_room_id = -1;
+	m_lastClientTimestamp = 0;
+	m_lastServerTimestamp = 0;
 }
 
+unsigned int Session::GetServerTimestamp()
+{
+	auto now = steady_clock::now();
+	return static_cast<unsigned int>(
+		duration_cast<milliseconds>(now.time_since_epoch()).count());
+}
+
+void Session::UpdateTimestamp(unsigned int clientTimestamp)
+{
+	m_lastClientTimestamp = clientTimestamp;
+	m_lastServerTimestamp = GetServerTimestamp();
+}
 
 void Session::Recv()
 {
@@ -36,11 +50,7 @@ void Session::Send_Login_Info_Packet()
 	p.size = sizeof(SC_LOGIN_INFO_PACKET);
 	p.type = SC_LOGIN_INFO;
 	p.id = m_player.id;
-	p.cameraPosX = m_camera.positionX;
-	p.cameraPosY = m_camera.positionY;
-	p.cameraPosZ = m_camera.positionZ;
-	p.cameraYaw = m_camera.yaw;
-	p.cameraPitch = m_camera.pitch;
+	memcpy(p.worldMatrix, m_worldMatrix.m, sizeof(float) * 16);
 
 	Send(&p);
 }
@@ -53,14 +63,8 @@ void Session::Send_Move_Packet(int c_id)
 	p.type = SC_MOVE_PLAYER;
 	p.id = c_id;
 	p.keyInput = target.m_player.keyInput;
-	p.cameraPosX = target.m_camera.positionX;
-	p.cameraPosY = target.m_camera.positionY;
-	p.cameraPosZ = target.m_camera.positionZ;
-	p.cameraYaw = target.m_camera.yaw;
-	p.cameraPitch = target.m_camera.pitch;
-	p.cameraLookX = target.m_camera.lookX;
-	p.cameraLookY = target.m_camera.lookY;
-	p.cameraLookZ = target.m_camera.lookZ;
+	p.timestamp = target.m_lastServerTimestamp;
+	memcpy(p.worldMatrix, target.m_worldMatrix.m, sizeof(float) * 16);
 
 	Send(&p);
 }
@@ -72,11 +76,7 @@ void Session::Send_Add_Player_Packet(int c_id)
 	p.size = sizeof(SC_ADD_PLAYER_PACKET);
 	p.type = SC_ADD_PLAYER;
 	p.id = c_id;
-	p.cameraPosX = target.m_camera.positionX;
-	p.cameraPosY = target.m_camera.positionY;
-	p.cameraPosZ = target.m_camera.positionZ;
-	p.cameraYaw = target.m_camera.yaw;
-	p.cameraPitch = target.m_camera.pitch;
+	memcpy(p.worldMatrix, target.m_worldMatrix.m, sizeof(float) * 16);
 	strcpy_s(p.name, target.m_player.name);
 
 	Send(&p);

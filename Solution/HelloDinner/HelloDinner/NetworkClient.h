@@ -1,46 +1,36 @@
 #pragma once
 
 #include "stdafx.h"
+#include "NetPlayer.h"
 
 class NetworkClient
 {
 public:
-    // 네트워크 이벤트 종류
+    // 비-플레이어 이벤트 (매칭 관련)
     enum class NetEventType {
-        PLAYER_ADD,
-        PLAYER_REMOVE,
-        PLAYER_MOVE,
         MATCH_WAIT,
         MATCH_SUCCESS,
     };
 
-    // 메인 스레드에서 처리할 이벤트 구조체
     struct NetEvent {
-        NetEventType	type;
-        int				id = -1;
-        _float3			cameraPos = {};		// 카메라(=플레이어) 위치
-        float			cameraYaw = 0.f;		// Y축 회전
-        float			cameraPitch = 0.f;		// X축 회전
-        _float3			cameraLook = {};		// look 벡터
-        unsigned char	keyInput = 0;
-        char			name[NAME_SIZE] = {};
-        int				roomId = -1;
-        int				queueSize = 0;
-        int				playerIds[ROOM_MAX_PLAYER] = {};
+        NetEventType    type;
+        int             roomId = -1;
+        int             queueSize = 0;
+        int             playerIds[ROOM_MAX_PLAYER] = {};
     };
 
 public:
     static NetworkClient* GetInstance();
     static void DestroyInstance();
 
-    // 콘솔 창을 띄우고 IP, 이름을 입력받아 접속
+    // 콘솔 창을 열어 IP, 이름을 입력받아 접속
     bool ConnectWithConsole();
 
-    // 패킷 수신 처리 루프 (별도 스레드)
+    // 패킷 수신 처리 루프 (수신 스레드)
     void RecvThread();
 
-    // 이동 패킷 전송 (카메라 정보 + 키인풋)
-    void Send_Move(unsigned char keyInput, const _float3& camPos, float camYaw, float camPitch, const _float3& camLook);
+    // 이동 패킷 전송 (키인풋 + 마우스 회전 + 예측 월드행렬)
+    void Send_Move(unsigned char keyInput, float mouseYaw, const float* worldMatrix);
 
     // 접속 해제
     void Disconnect();
@@ -53,22 +43,15 @@ public:
     int GetRoomId() const { return m_iRoomId; }
     int GetQueueSize() const { return m_iQueueSize; }
 
-    // 다른 플레이어 정보
-    struct PlayerInfo {
-        int		    id = -1;
-        _float3	    camPos = {};		// 카메라(=플레이어) 위치
-        float       camYaw = 0.f;		// Y축 회전
-        float       camPitch = 0.f;		// X축 회전
-        _float3     camLook = {};		// look 벡터
-        unsigned char keyInput = 0;
-        char	    name[NAME_SIZE] = {};
-        bool	    active = false;
-    };
+    // 플레이어 객체 직접 접근
+    NetPlayer& GetPlayer(int id) { return m_players[id]; }
+    const NetPlayer& GetPlayer(int id) const { return m_players[id]; }
 
-    const PlayerInfo& GetPlayer(int id) const { return m_players[id]; }
+    // 메인 스레드에서 호출: 모든 플레이어 이벤트를 한 번에 수집
+    void PopAllPlayerEvents(std::vector<NetPlayer::Event>& outEvents);
 
-    // 메인 스레드에서 호출: 대기 중인 이벤트를 꺼내감
-    void PopAllEvents(std::vector<NetEvent>& outEvents);
+    // 메인 스레드에서 호출: 매칭 관련 이벤트만 수집
+    void PopAllMatchEvents(std::vector<NetEvent>& outEvents);
 
 private:
     NetworkClient() = default;
@@ -83,29 +66,24 @@ private:
 private:
     static NetworkClient* s_pInstance;
 
-    SOCKET		m_socket = INVALID_SOCKET;
-    bool		m_bConnected = false;
-    // 내 정보
-    bool		m_bLoggedIn = false;
-    bool		m_bMatched = false;
+    SOCKET      m_socket = INVALID_SOCKET;
+    bool        m_bConnected = false;
+    bool        m_bLoggedIn = false;
+    bool        m_bMatched = false;
 
-    int			m_iMyId = -1;
-    int			m_iRoomId = -1;
-    int			m_iQueueSize = 0;
+    int         m_iMyId = -1;
+    int         m_iRoomId = -1;
+    int         m_iQueueSize = 0;
 
-    _float3	    m_vCamPos = {};
-    float       m_fCamYaw = 0.f;
-    float       m_fCamPitch = 0.f;
-    _float3     m_vCamLook = {};
+    float       m_worldMatrix[16] = {};
 
-    char		m_szName[NAME_SIZE] = {};
+    char        m_szName[NAME_SIZE] = {};
 
-    PlayerInfo	m_players[MAX_USER] = {};
+    NetPlayer   m_players[MAX_USER];
 
-    // 이벤트 큐 (RecvThread에서 push, 메인 스레드에서 pop)
-    std::vector<NetEvent>	m_pendingEvents;
-    std::mutex				m_eventLock;
+    // 매칭 이벤트 큐
+    std::vector<NetEvent>   m_pendingMatchEvents;
+    std::mutex              m_matchEventLock;
 
-    std::thread	m_recvThread;
-    std::mutex	m_lock;
+    std::thread m_recvThread;
 };

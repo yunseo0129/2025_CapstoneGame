@@ -13,13 +13,24 @@ class Session
 
 		// Player 정보
 		PlayerInfo	m_player;
-		CameraInfo	m_camera;
-		
+		WorldMatrixInfo m_worldMatrix;
+
 		int			m_prev_remain;
 		int			m_room_id;
+
+		// 타임스탬프 관련
+		unsigned int	m_lastClientTimestamp;	// 마지막으로 받은 클라이언트 타임스탬프 (ms)
+		unsigned int	m_lastServerTimestamp;	// 해당 패킷을 서버가 수신한 시점의 서버 타임스탬프 (ms)
+
 	public:
 		Session();
 		~Session() = default;
+
+		// 서버 기준 현재 타임스탬프(ms) 반환
+		static unsigned int GetServerTimestamp();
+
+		// 클라이언트 타임스탬프를 수신하여 저장 + 지연시간 추정
+		void UpdateTimestamp(unsigned int clientTimestamp);
 
 		void Recv();
 

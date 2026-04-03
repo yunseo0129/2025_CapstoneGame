@@ -8,11 +8,13 @@ constexpr int MAX_USER = 4000;
 constexpr int ROOM_MAX_PLAYER = 6;		// 6인 매칭	
 constexpr int MAX_ROOM = MAX_USER / ROOM_MAX_PLAYER;			
 
-// 키인풋 
-constexpr char KEY_W = 1;
-constexpr char KEY_A = 2;
-constexpr char KEY_S = 3;
-constexpr char KEY_D = 4;
+// 키인풋 (비트 플래그)
+constexpr unsigned char KEY_W     = 0x01;
+constexpr unsigned char KEY_S     = 0x02;
+constexpr unsigned char KEY_A     = 0x04;
+constexpr unsigned char KEY_D     = 0x08;
+constexpr unsigned char KEY_SPACE = 0x10;
+constexpr unsigned char KEY_CTRL  = 0x20;
 
 // 패킷 ID
 constexpr char CS_LOGIN = 0;
@@ -26,7 +28,7 @@ constexpr char SC_MOVE_PLAYER = 3;
 constexpr char SC_MATCH_WAIT = 4;		
 constexpr char SC_MATCH_SUCCESS = 5;	
 
-// 패킷 처리 완료 유형을 나타내는 enum
+// 패킷 처리 완료 상태를 나타내는 enum
 enum COMP_TYPE { OP_ACCEPT, OP_RECV, OP_SEND };
 
 // 세션 상태를 나타내는 enum
@@ -43,15 +45,10 @@ struct CS_LOGIN_PACKET {
 struct CS_MOVE_PACKET {
 	unsigned char size;
 	char	type;
-	unsigned char	keyInput;			// 키인풋
-	float	cameraPosX;					// 카메라 위치 (= 플레이어 위치)
-	float	cameraPosY;
-	float	cameraPosZ;
-	float	cameraYaw;					// 좌우 회전 (= 플레이어 Y축 회전)
-	float	cameraPitch;				// 상하 회전
-	float	cameraLookX;				// 카메라 look 벡터
-	float	cameraLookY;
-	float	cameraLookZ;
+	unsigned char	keyInput;			// 비트 플래그 (W|S|A|D|SPACE|CTRL)
+	unsigned int	timestamp;			// 클라이언트 타임스탬프 (ms)
+	float	mouseYaw;					// 마우스 좌우 회전량 (이번 프레임, raw값)
+	float	worldMatrix[16];			// 클라이언트 예측 월드 매트릭스
 };
 
 struct CS_LOGOUT_PACKET {
@@ -64,22 +61,14 @@ struct SC_LOGIN_INFO_PACKET {
 	unsigned char size;
 	char	type;
 	int		id;
-	float	cameraPosX;					// 초기 위치
-	float	cameraPosY;
-	float	cameraPosZ;
-	float	cameraYaw;					// 초기 Y축 회전
-	float	cameraPitch;				// 초기 X축 회전
+	float	worldMatrix[16];
 };
 
 struct SC_ADD_PLAYER_PACKET {
 	unsigned char size;
 	char	type;
 	int		id;
-	float	cameraPosX;					// 해당 플레이어 위치
-	float	cameraPosY;
-	float	cameraPosZ;
-	float	cameraYaw;					// 해당 플레이어 Y축 회전
-	float	cameraPitch;				// 해당 플레이어 X축 회전
+	float	worldMatrix[16];
 	char	name[NAME_SIZE];
 };
 
@@ -93,27 +82,20 @@ struct SC_MOVE_PLAYER_PACKET {
 	unsigned char size;
 	char	type;
 	int		id;
-	unsigned char	keyInput;			// 키인풋 (클라에서 애니메이션 판단용)
-	float	cameraPosX;					// 카메라 위치 (= 플레이어 위치)
-	float	cameraPosY;
-	float	cameraPosZ;
-	float	cameraYaw;					// 좌우 회전 (= 플레이어 Y축 회전)
-	float	cameraPitch;				// 상하 회전
-	float	cameraLookX;				// 카메라 look 벡터
-	float	cameraLookY;
-	float	cameraLookZ;
+	unsigned char	keyInput;
+	unsigned int	timestamp;			// 서버 타임스탬프 (ms)
+	float	worldMatrix[16];
 };
 
 struct SC_MATCH_WAIT_PACKET {
 	unsigned char size;
 	char	type;
-	int		queue_size;					// 현재 대기큐 인원
+	int		queue_size;
 };
 
 struct SC_MATCH_SUCCESS_PACKET {
 	unsigned char size;
 	char	type;
-	// Todo: 수정 필요
 	int		room_id;
 	int		player_count;
 	int		player_ids[ROOM_MAX_PLAYER];
