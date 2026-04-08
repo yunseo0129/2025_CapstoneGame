@@ -1,5 +1,5 @@
 #pragma once
-#include "Room.h"
+#include "pch.h"
 
 class MatchManager
 {
@@ -13,8 +13,6 @@ public:
 	void EnqueuePlayer(int c_id);
 	void DequeuePlayer(int c_id);
 
-	Room* GetRoom(int room_id);
-
 private:
 	MatchManager() = default;
 	~MatchManager() = default;
@@ -22,12 +20,11 @@ private:
 	MatchManager& operator=(const MatchManager&) = delete;
 
 	void TryMatch();
-	int  GetNewRoomId();
 
 	mutex			m_queue_lock;
 	vector<int>		m_wait_queue;
 
-	mutex			m_room_lock;
-	array<Room, MAX_ROOM> m_rooms;
+	// room_id 카운터 (인스턴스에 전달할 고유 번호)
+	mutex			m_room_id_lock;
 	int				m_next_room_id = 0;
 };

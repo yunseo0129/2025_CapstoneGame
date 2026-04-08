@@ -55,61 +55,12 @@ void Session::Send_Login_Info_Packet()
 	Send(&p);
 }
 
-void Session::Send_Move_Packet(int c_id)
-{
-	auto& target = SessionManager::GetInstance()->GetClient(c_id);
-	SC_MOVE_PLAYER_PACKET p;
-	p.size = sizeof(SC_MOVE_PLAYER_PACKET);
-	p.type = SC_MOVE_PLAYER;
-	p.id = c_id;
-	p.keyInput = target.m_player.keyInput;
-	p.timestamp = target.m_lastServerTimestamp;
-	memcpy(p.worldMatrix, target.m_worldMatrix.m, sizeof(float) * 16);
-
-	Send(&p);
-}
-
-void Session::Send_Add_Player_Packet(int c_id)
-{
-	auto& target = SessionManager::GetInstance()->GetClient(c_id);
-	SC_ADD_PLAYER_PACKET p;
-	p.size = sizeof(SC_ADD_PLAYER_PACKET);
-	p.type = SC_ADD_PLAYER;
-	p.id = c_id;
-	memcpy(p.worldMatrix, target.m_worldMatrix.m, sizeof(float) * 16);
-	strcpy_s(p.name, target.m_player.name);
-
-	Send(&p);
-}
-
-void Session::Send_Remove_Player_Packet(int c_id)
-{
-	SC_REMOVE_PLAYER_PACKET p;
-	p.size = sizeof(SC_REMOVE_PLAYER_PACKET);
-	p.type = SC_REMOVE_PLAYER;
-	p.id = c_id;
-
-	Send(&p);
-}
-
 void Session::Send_Match_Wait_Packet(int queue_size)
 {
 	SC_MATCH_WAIT_PACKET p;
 	p.size = sizeof(SC_MATCH_WAIT_PACKET);
 	p.type = SC_MATCH_WAIT;
 	p.queue_size = queue_size;
-
-	Send(&p);
-}
-
-void Session::Send_Match_Success_Packet(int room_id, int player_count, const int* player_ids)
-{
-	SC_MATCH_SUCCESS_PACKET p;
-	p.size = sizeof(SC_MATCH_SUCCESS_PACKET);
-	p.type = SC_MATCH_SUCCESS;
-	p.room_id = room_id;
-	p.player_count = player_count;
-	memcpy(p.player_ids, player_ids, sizeof(int) * player_count);
 
 	Send(&p);
 }

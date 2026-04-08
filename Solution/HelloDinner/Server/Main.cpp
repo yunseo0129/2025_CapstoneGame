@@ -1,11 +1,18 @@
-#include "IOCPServer.h"
+#include "LobbyServer.h"
+#include <iostream>
+
+using namespace std;
 
 int main()
 {
-	IOCPServer server;
+    cout << "========================================" << endl;
+    cout << "       LOBBY SERVER (Load Balancer)     " << endl;
+    cout << "========================================" << endl;
 
-	if (!server.Initialize())
-		return 1;
+    LobbyServer server;
 
-	server.Run();
+    if (!server.Initialize())
+        return 1;
+
+    server.Run();
 }

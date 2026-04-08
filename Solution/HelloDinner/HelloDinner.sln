@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FBXConverter", "FBXConverte
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SERVER", "Server\SERVER.vcxproj", "{CDBA50EB-0773-44FD-9612-87F4787888E6}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InstanceServer", "InstanceServer\InstanceServer.vcxproj", "{AA89E4E1-F5AD-4CDE-95FC-B5F71703F744}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -41,6 +43,14 @@ Global
 		{CDBA50EB-0773-44FD-9612-87F4787888E6}.Release|x64.Build.0 = Release|x64
 		{CDBA50EB-0773-44FD-9612-87F4787888E6}.Release|x86.ActiveCfg = Release|Win32
 		{CDBA50EB-0773-44FD-9612-87F4787888E6}.Release|x86.Build.0 = Release|Win32
+		{AA89E4E1-F5AD-4CDE-95FC-B5F71703F744}.Debug|x64.ActiveCfg = Debug|x64
+		{AA89E4E1-F5AD-4CDE-95FC-B5F71703F744}.Debug|x64.Build.0 = Debug|x64
+		{AA89E4E1-F5AD-4CDE-95FC-B5F71703F744}.Debug|x86.ActiveCfg = Debug|Win32
+		{AA89E4E1-F5AD-4CDE-95FC-B5F71703F744}.Debug|x86.Build.0 = Debug|Win32
+		{AA89E4E1-F5AD-4CDE-95FC-B5F71703F744}.Release|x64.ActiveCfg = Release|x64
+		{AA89E4E1-F5AD-4CDE-95FC-B5F71703F744}.Release|x64.Build.0 = Release|x64
+		{AA89E4E1-F5AD-4CDE-95FC-B5F71703F744}.Release|x86.ActiveCfg = Release|Win32
+		{AA89E4E1-F5AD-4CDE-95FC-B5F71703F744}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

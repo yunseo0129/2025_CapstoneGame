@@ -18,17 +18,20 @@
     <Filter Include="소스 파일\Session\SessionManager">
       <UniqueIdentifier>{875d49e2-ce19-4692-84ef-3bf827bb1f93}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\IOCPServer">
-      <UniqueIdentifier>{a6499801-2110-405f-b453-0789741e438e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\Room">
-      <UniqueIdentifier>{39f4e390-70ed-4aa1-b4c3-0d6043837393}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="소스 파일\Room\MatchManager">
-      <UniqueIdentifier>{124f6481-73bf-4014-8942-a5a2cdd3b8b2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\Defines">
       <UniqueIdentifier>{ffa8f014-92e3-45c4-b1f4-42aab59a3fd2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Server">
+      <UniqueIdentifier>{deafc99d-d8fe-47ac-8626-8d0cd4602de5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Server\LobbyServer">
+      <UniqueIdentifier>{256100e5-21ba-416e-8246-9945e3395bbd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Server\InstanceManager">
+      <UniqueIdentifier>{f3080221-87f3-4431-b3fa-5c713d3aca58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\MatchManager">
+      <UniqueIdentifier>{124f6481-73bf-4014-8942-a5a2cdd3b8b2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -44,14 +47,14 @@
     <ClCompile Include="SessionManager.cpp">
       <Filter>소스 파일\Session\SessionManager</Filter>
     </ClCompile>
-    <ClCompile Include="IOCPServer.cpp">
-      <Filter>소스 파일\IOCPServer</Filter>
-    </ClCompile>
     <ClCompile Include="MatchManager.cpp">
-      <Filter>소스 파일\Room\MatchManager</Filter>
+      <Filter>소스 파일\MatchManager</Filter>
     </ClCompile>
-    <ClCompile Include="Room.cpp">
-      <Filter>소스 파일\Room</Filter>
+    <ClCompile Include="LobbyServer.cpp">
+      <Filter>소스 파일\Server\LobbyServer</Filter>
+    </ClCompile>
+    <ClCompile Include="InstanceManager.cpp">
+      <Filter>소스 파일\Server\InstanceManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -64,9 +67,6 @@
     <ClInclude Include="SessionManager.h">
       <Filter>소스 파일\Session\SessionManager</Filter>
     </ClInclude>
-    <ClInclude Include="IOCPServer.h">
-      <Filter>소스 파일\IOCPServer</Filter>
-    </ClInclude>
     <ClInclude Include="protocol.h">
       <Filter>소스 파일\Defines</Filter>
     </ClInclude>
@@ -74,16 +74,23 @@
       <Filter>소스 파일\Defines</Filter>
     </ClInclude>
     <ClInclude Include="MatchManager.h">
-      <Filter>소스 파일\Room\MatchManager</Filter>
-    </ClInclude>
-    <ClInclude Include="Room.h">
-      <Filter>소스 파일\Room</Filter>
+      <Filter>소스 파일\MatchManager</Filter>
     </ClInclude>
     <ClInclude Include="PlayerInfo.h">
+      <Filter>소스 파일\Defines</Filter>
+    </ClInclude>
+    <ClInclude Include="LobbyServer.h">
+      <Filter>소스 파일\Server\LobbyServer</Filter>
+    </ClInclude>
+    <ClInclude Include="InstanceManager.h">
+      <Filter>소스 파일\Server\InstanceManager</Filter>
+    </ClInclude>
+    <ClInclude Include="InstanceInfo.h">
       <Filter>소스 파일\Defines</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="NetworkClient_Architecture.md" />
+    <None Include="Server_Architecture.md" />
   </ItemGroup>
 </Project>

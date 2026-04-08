@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="소스 파일\GameSession">
+      <UniqueIdentifier>{22f17a23-9df0-4432-9e3f-b2722e3bd354}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Defines">
+      <UniqueIdentifier>{e877fb86-7127-4876-afc2-7829d6f272f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\GameSession\GameSessionManager">
+      <UniqueIdentifier>{6c13d984-68dd-4f8c-a444-738ddb240412}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\InstanceServer">
+      <UniqueIdentifier>{48aa74e3-d654-45e9-8b33-20929d630643}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Room">
+      <UniqueIdentifier>{0e4c68b7-4510-4927-9700-4417758544bc}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSession.cpp">
+      <Filter>소스 파일\GameSession</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSessionManager.cpp">
+      <Filter>소스 파일\GameSession\GameSessionManager</Filter>
+    </ClCompile>
+    <ClCompile Include="InstanceServer.cpp">
+      <Filter>소스 파일\InstanceServer</Filter>
+    </ClCompile>
+    <ClCompile Include="Room.cpp">
+      <Filter>소스 파일\Room</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GameSession.h">
+      <Filter>소스 파일\GameSession</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>소스 파일\Defines</Filter>
+    </ClInclude>
+    <ClInclude Include="OverllapedEXP.h">
+      <Filter>소스 파일\Defines</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSessionManager.h">
+      <Filter>소스 파일\GameSession\GameSessionManager</Filter>
+    </ClInclude>
+    <ClInclude Include="InstanceServer.h">
+      <Filter>소스 파일\InstanceServer</Filter>
+    </ClInclude>
+    <ClInclude Include="Room.h">
+      <Filter>소스 파일\Room</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

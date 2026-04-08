@@ -71,10 +71,10 @@ bool NetworkClient::ConnectWithConsole()
     // 서버 연결
     SOCKADDR_IN serverAddr{};
     serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(PORT_NUM);
+    serverAddr.sin_port = htons(LOBBY_PORT);
     inet_pton(AF_INET, serverIP, &serverAddr.sin_addr);
 
-    std::cout << "Connecting to " << serverIP << ":" << PORT_NUM << "...\n";
+    std::cout << "Connecting to " << serverIP << ":" << LOBBY_PORT << "...\n";
 
     if (connect(m_socket, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr)) == SOCKET_ERROR) {
         std::cout << "Connection failed. Error: " << WSAGetLastError() << "\n";

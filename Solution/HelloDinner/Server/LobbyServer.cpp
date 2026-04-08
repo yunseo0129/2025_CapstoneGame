@@ -1,72 +1,78 @@
-#include "IOCPServer.h"
+#include "LobbyServer.h"
 
-IOCPServer::~IOCPServer()
+LobbyServer::~LobbyServer()
 {
     if (m_listen_socket != INVALID_SOCKET)
         closesocket(m_listen_socket);
     WSACleanup();
 }
 
-bool IOCPServer::Initialize()
+bool LobbyServer::Initialize()
 {
-    // 윈속 초기화
     WSADATA WSAData;
     WSAStartup(MAKEWORD(2, 2), &WSAData);
     m_listen_socket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
 
     if (m_listen_socket == INVALID_SOCKET) {
-        cout << "Socket creation failed.\n";
+        cout << "[Lobby] Socket creation failed.\n";
         return false;
     }
 
-    // 서버 소켓 주소 정보 설정
     SOCKADDR_IN server_addr;
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(INTERNAL_PORT);
+    server_addr.sin_port = htons(LOBBY_PORT);
     server_addr.sin_addr.S_un.S_addr = INADDR_ANY;
 
-    // 바인딩 및 리슨
     if (bind(m_listen_socket, reinterpret_cast<sockaddr*>(&server_addr), sizeof(server_addr)) == SOCKET_ERROR) {
-        cout << "Bind failed.\n";
+        cout << "[Lobby] Bind failed.\n";
         return false;
     }
 
     if (listen(m_listen_socket, SOMAXCONN) == SOCKET_ERROR) {
-        cout << "Listen failed.\n";
+        cout << "[Lobby] Listen failed.\n";
         return false;
     }
 
-    // IOCP 생성 및 리슨 소켓 연결
     m_h_iocp = CreateIoCompletionPort(INVALID_HANDLE_VALUE, 0, 0, 0);
     CreateIoCompletionPort(reinterpret_cast<HANDLE>(m_listen_socket), m_h_iocp, 9999, 0);
 
     if (!m_h_iocp) {
-        cout << "IOCP creation failed.\n";
+        cout << "[Lobby] IOCP creation failed.\n";
         return false;
     }
 
-    cout << "Server is running on port " << INTERNAL_PORT << endl;
+    // 인스턴스 서버 내부 통신 리스너 시작
+    if (!InstanceManager::GetInstance()->StartInternalListener()) {
+        cout << "[Lobby] Internal listener failed.\n";
+        return false;
+    }
+
+    cout << "[Lobby] Server is running on port " << LOBBY_PORT << endl;
     PrintServerIP();
 
     return true;
 }
 
-void IOCPServer::Run()
+void LobbyServer::Run()
 {
-    // 첫 AcceptEx 호출
+    // 인스턴스 서버 접속 수락 스레드 시작
+    thread internal_th(&InstanceManager::InternalAcceptThread, InstanceManager::GetInstance());
+    internal_th.detach();
+
+    // 클라이언트 AcceptEx 시작
     AcceptClient();
 
-    // 워커 스레드 생성
+    // IOCP 워커 스레드
     vector<thread> worker_threads;
     int num_threads = std::thread::hardware_concurrency();
     for (int i = 0; i < num_threads; ++i)
-        worker_threads.emplace_back(&IOCPServer::WorkerThread, this);
+        worker_threads.emplace_back(&LobbyServer::WorkerThread, this);
     for (auto& th : worker_threads)
         th.join();
 }
 
-void IOCPServer::AcceptClient()
+void LobbyServer::AcceptClient()
 {
     m_client_socket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
     m_accept_over.m_comp_type = OP_ACCEPT;
@@ -76,7 +82,7 @@ void IOCPServer::AcceptClient()
         0, addr_size + 16, addr_size + 16, 0, &m_accept_over.m_over);
 }
 
-void IOCPServer::WorkerThread()
+void LobbyServer::WorkerThread()
 {
     auto* sm = SessionManager::GetInstance();
 
@@ -103,7 +109,6 @@ void IOCPServer::WorkerThread()
             continue;
         }
 
-        // 작업 완료된 IOCP 패킷의 종류에 따라 처리
         switch (ex_over->m_comp_type) {
         case OP_ACCEPT: {
             int client_id = sm->GetNewClientId();
@@ -132,6 +137,7 @@ void IOCPServer::WorkerThread()
             break;
         }
         case OP_RECV: {
+            // 로비에서는 CS_LOGIN, CS_LOGOUT만 처리 (CS_MOVE는 인스턴스에서 처리)
             auto& client = sm->GetClient(static_cast<int>(key));
             int remain_data = num_bytes + client.m_prev_remain;
             char* p = ex_over->m_send_buf;
@@ -158,7 +164,7 @@ void IOCPServer::WorkerThread()
     }
 }
 
-void IOCPServer::PrintServerIP()
+void LobbyServer::PrintServerIP()
 {
     char hostname[256];
     if (gethostname(hostname, sizeof(hostname)) == SOCKET_ERROR) {
@@ -179,7 +185,7 @@ void IOCPServer::PrintServerIP()
         char ip[INET_ADDRSTRLEN];
         sockaddr_in* addr = reinterpret_cast<sockaddr_in*>(p->ai_addr);
         inet_ntop(AF_INET, &addr->sin_addr, ip, sizeof(ip));
-        cout << "Server IP: " << ip << endl;
+        cout << "[Lobby] Server IP: " << ip << endl;
     }
 
     freeaddrinfo(info);

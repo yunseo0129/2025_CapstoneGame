@@ -1,5 +1,6 @@
 #include "MatchManager.h"
 #include "SessionManager.h"
+#include "InstanceManager.h"
 
 void MatchManager::EnqueuePlayer(int c_id)
 {
@@ -31,35 +32,60 @@ void MatchManager::DequeuePlayer(int c_id)
 
 void MatchManager::TryMatch()
 {
-	// m_queue_lock은 호출자가 이미 잡고 있는 상태
 	if (static_cast<int>(m_wait_queue.size()) < ROOM_MAX_PLAYER)
 		return;
 
-	// 대기큐에서 ROOM_MAX_PLAYER명 추출
-	vector<int> matched_players(m_wait_queue.begin(), m_wait_queue.begin() + ROOM_MAX_PLAYER);
-	m_wait_queue.erase(m_wait_queue.begin(), m_wait_queue.begin() + ROOM_MAX_PLAYER);
-
-	// 방 생성
-	int room_id = GetNewRoomId();
-	if (room_id == -1) {
-		cout << "[Match] No available room slot!\n";
-		// 다시 큐에 넣기
-		m_wait_queue.insert(m_wait_queue.begin(), matched_players.begin(), matched_players.end());
+	// 인스턴스 서버 선택
+	auto* bestInst = InstanceManager::GetInstance()->SelectBestInstance();
+	if (!bestInst) {
+		cout << "[Match] No available instance server! Waiting...\n";
 		return;
 	}
 
-	m_rooms[room_id].Initialize(room_id, matched_players);
+	// 대기QUEUE에서 ROOM_MAX_PLAYER명 추출
+	vector<int> matched_players(m_wait_queue.begin(), m_wait_queue.begin() + ROOM_MAX_PLAYER);
+	m_wait_queue.erase(m_wait_queue.begin(), m_wait_queue.begin() + ROOM_MAX_PLAYER);
+
+	// room_id 발급
+	int room_id;
+	{
+		lock_guard<mutex> ll(m_room_id_lock);
+		room_id = m_next_room_id++;
+	}
 
 	auto* sm = SessionManager::GetInstance();
-	int player_ids_arr[ROOM_MAX_PLAYER]{};
-	for (int i = 0; i < ROOM_MAX_PLAYER; ++i)
-		player_ids_arr[i] = matched_players[i];
 
 	cout << "========================================" << endl;
-	cout << "  [MATCH SUCCESS] Room " << room_id << endl;
+	cout << "  [MATCH SUCCESS] Room " << room_id
+		<< " -> Instance #" << bestInst->id
+		<< " (" << bestInst->ip << ":" << bestInst->port << ")" << endl;
 	cout << "  Players:";
 
-	// 매칭된 플레이어 상태 전환 및 알림
+	// 인증 토큰 생성
+	char auth_token[32] = {};
+	snprintf(auth_token, sizeof(auth_token), "TK_%d_%d", room_id,
+		static_cast<int>(steady_clock::now().time_since_epoch().count() % 100000));
+
+	// 인스턴스 서버에 방 정보 전달
+	IS_ROOM_NOTIFY_PACKET notify;
+	notify.size = sizeof(IS_ROOM_NOTIFY_PACKET);
+	notify.type = IS_ROOM_NOTIFY;
+	notify.room_id = room_id;
+	notify.player_count = ROOM_MAX_PLAYER;
+	strcpy_s(notify.auth_token, sizeof(notify.auth_token), auth_token);
+	memset(notify.player_ids, -1, sizeof(notify.player_ids));
+	memset(notify.player_names, 0, sizeof(notify.player_names));
+
+	for (int i = 0; i < ROOM_MAX_PLAYER; ++i) {
+		int pid = matched_players[i];
+		notify.player_ids[i] = pid;
+		strcpy_s(notify.player_names[i], sizeof(notify.player_names[i]),
+			sm->GetClient(pid).m_player.name);
+	}
+
+	InstanceManager::GetInstance()->NotifyRoomToInstance(bestInst, notify);
+
+	// 매칭된 플레이어 상태 전환 및 리다이렉트
 	for (int i = 0; i < ROOM_MAX_PLAYER; ++i) {
 		int pid = matched_players[i];
 		auto& client = sm->GetClient(pid);
@@ -69,35 +95,16 @@ void MatchManager::TryMatch()
 			client.m_room_id = room_id;
 		}
 		cout << " " << pid << "(" << client.m_player.name << ")";
-		client.Send_Match_Success_Packet(room_id, ROOM_MAX_PLAYER, player_ids_arr);
+
+		SC_REDIRECT_PACKET rp;
+		rp.size = sizeof(SC_REDIRECT_PACKET);
+		rp.type = SC_REDIRECT;
+		strcpy_s(rp.ip, sizeof(rp.ip), bestInst->ip);
+		rp.port = bestInst->port;
+		rp.room_id = room_id;
+		strcpy_s(rp.auth_token, sizeof(rp.auth_token), auth_token);
+		client.Send(&rp);
 	}
 	cout << endl;
 	cout << "========================================" << endl;
-
-	// 같은 방 플레이어끼리 서로 ADD_PLAYER
-	for (int i = 0; i < ROOM_MAX_PLAYER; ++i) {
-		for (int j = 0; j < ROOM_MAX_PLAYER; ++j) {
-			if (i == j) continue;
-			sm->GetClient(matched_players[i]).Send_Add_Player_Packet(matched_players[j]);
-		}
-	}
-}
-
-int MatchManager::GetNewRoomId()
-{
-	lock_guard<mutex> ll(m_room_lock);
-	for (int i = 0; i < MAX_ROOM; ++i) {
-		int id = (m_next_room_id + i) % MAX_ROOM;
-		if (!m_rooms[id].IsActive()) {
-			m_next_room_id = (id + 1) % MAX_ROOM;
-			return id;
-		}
-	}
-	return -1;
-}
-
-Room* MatchManager::GetRoom(int room_id)
-{
-	if (room_id < 0 || room_id >= MAX_ROOM) return nullptr;
-	return &m_rooms[room_id];
 }

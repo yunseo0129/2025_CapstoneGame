@@ -7,7 +7,7 @@
         "Action": "Start"
       },
       {
-        "Path": "HelloDinner\\HelloDinner.vcxproj",
+        "Path": "InstanceServer\\InstanceServer.vcxproj",
         "Action": "Start"
       }
     ]

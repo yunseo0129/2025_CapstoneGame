@@ -48,7 +48,7 @@ public:
     NetPlayer& GetPlayer(int id) { return m_players[id]; }
     const NetPlayer& GetPlayer(int id) const { return m_players[id]; }
 
-    // 메인 스레드에서 호출: 모든 플레이어 이벤트를 한 번에 수집
+    // 활성 플레이어 ID만 추적하여 PopAllPlayerEvents 최적화
     void PopAllPlayerEvents(std::vector<NetPlayer::Event>& outEvents);
 
     // 메인 스레드에서 호출: 매칭 관련 이벤트만 수집
@@ -85,9 +85,6 @@ private:
     // 매칭 이벤트 큐
     std::vector<NetEvent>   m_pendingMatchEvents;
     std::mutex              m_matchEventLock;
-
-    // 활성 플레이어 ID만 추적하여 PopAllPlayerEvents 최적화
-    void PopAllPlayerEvents(std::vector<NetPlayer::Event>& outEvents);
 
     // 활성 플레이어 ID 목록 (RecvThread에서 갱신)
     std::unordered_set<int>  m_activePlayerIds;
