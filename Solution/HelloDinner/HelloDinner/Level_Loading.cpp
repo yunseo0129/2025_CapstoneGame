@@ -3,6 +3,7 @@
 #include "Loader_Map.h"
 
 #include "GameInstance.h"
+#include "Controller.h"
 
 #include "VIBuffer_Cube.h"
 #include "VIBuffer_Skybox.h"
@@ -320,8 +321,10 @@ HRESULT CLevel_Loading::Ready_Layer()
         cdesc.iModelLevelIndex = LEVEL_LOADING;
         cdesc.vPos = _float3(0.f, 0.f, -5.f);
         cdesc.pCamera = static_cast<CCamera_FPV*>(m_pCamera[CAMERA_FPV]);
-        m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_GameObject_Player_1rd"),
+        CGameObject* pPlayer = m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(LEVEL_LOADING, TEXT("Prototype_GameObject_Player_1rd"),
             LEVEL_LOADING, TEXT("Layer_Player"), &cdesc);
+
+        m_pGameInstance->Get_Controller()->Set_Player(static_cast<CPlayer_1rd*>(pPlayer));
     }
 
     // Pig_3rd

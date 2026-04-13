@@ -63,86 +63,11 @@ void CPlayer_1rd::Priority_Update(_float fTimeDelta)
     {
         // 마우스 이동량에 따른 카메라 회전
         _long      MouseMove = {};
-        if (MouseMove = m_pGameInstance->Get_DIMouseMove(Engine::DIMS_X))
-        {
-            m_pTransformCom->Turn(XMVectorSet(0.f, 1.f, 0.f, 0.f), MouseMove * fTimeDelta * 2.2f);
-        }
 
         if (MouseMove = m_pGameInstance->Get_DIMouseMove(Engine::DIMS_Y))
         {
 
             //m_pTransformCom->Turn(m_pTransformCom->Get_State(CTransform::STATE_RIGHT), MouseMove * fTimeDelta * 2.2f);
-        }
-
-        // 키보드 입력에 따른 카메라 이동
-        if (m_pGameInstance->Key_Pressing(DIK_W) && m_pGameInstance->Key_Pressing(DIK_S))
-        {
-            if (m_pGameInstance->Key_Pressing(DIK_A) && m_pGameInstance->Key_Pressing(DIK_D))
-            {
-
-            }
-            else if (m_pGameInstance->Key_Pressing(DIK_A))
-            {
-                m_pTransformCom->Go_Left(fTimeDelta);
-            }
-            else if (m_pGameInstance->Key_Pressing(DIK_D))
-            {
-                m_pTransformCom->Go_Right(fTimeDelta);
-            }
-        }
-        else if (m_pGameInstance->Key_Pressing(DIK_W))
-        {
-            if (m_pGameInstance->Key_Pressing(DIK_A) && m_pGameInstance->Key_Pressing(DIK_D))
-            {
-                m_pTransformCom->Go_Straight(fTimeDelta);
-            }
-            else if (m_pGameInstance->Key_Pressing(DIK_A))
-            {
-                m_pTransformCom->Go_Straight(fTimeDelta * 0.7071f);
-                m_pTransformCom->Go_Left(fTimeDelta * 0.7071f);
-            }
-            else if (m_pGameInstance->Key_Pressing(DIK_D))
-            {
-                m_pTransformCom->Go_Straight(fTimeDelta * 0.7071f);
-                m_pTransformCom->Go_Right(fTimeDelta * 0.7071f);
-            }
-            else
-            {
-                m_pTransformCom->Go_Straight(fTimeDelta);
-            }
-        }
-        else if (m_pGameInstance->Key_Pressing(DIK_S))
-        {
-            if (m_pGameInstance->Key_Pressing(DIK_A) && m_pGameInstance->Key_Pressing(DIK_D))
-            {
-                m_pTransformCom->Go_Backward(fTimeDelta);
-            }
-            else if (m_pGameInstance->Key_Pressing(DIK_A))
-            {
-                m_pTransformCom->Go_Backward(fTimeDelta * 0.7071f);
-                m_pTransformCom->Go_Left(fTimeDelta * 0.7071f);
-            }
-            else if (m_pGameInstance->Key_Pressing(DIK_D))
-            {
-                m_pTransformCom->Go_Backward(fTimeDelta * 0.7071f);
-                m_pTransformCom->Go_Right(fTimeDelta * 0.7071f);
-            }
-            else
-            {
-                m_pTransformCom->Go_Backward(fTimeDelta);
-            }
-        }
-        else if (m_pGameInstance->Key_Pressing(DIK_A) && m_pGameInstance->Key_Pressing(DIK_D))
-        {
-
-        }
-        else if (m_pGameInstance->Key_Pressing(DIK_A))
-        {
-            m_pTransformCom->Go_Left(fTimeDelta);
-        }
-        else if (m_pGameInstance->Key_Pressing(DIK_D))
-        {
-            m_pTransformCom->Go_Right(fTimeDelta);
         }
 
         if (m_pGameInstance->Key_Pressing(DIK_SPACE))
@@ -233,6 +158,35 @@ void CPlayer_1rd::ShadowRender(ID3D12GraphicsCommandList* _commandList)
         m_pModelCom->Render(_commandList, i, true);
     }
 
+}
+
+void CPlayer_1rd::Move(MOVE_DIR _dir, _float _val)
+{
+    switch (_dir)
+    {
+    case DIR_LEFT:
+        m_pTransformCom->Go_Left(_val);
+        break;
+    case DIR_RIGHT:
+        m_pTransformCom->Go_Right(_val);
+        break;
+    case DIR_FOWARD:
+        m_pTransformCom->Go_Straight(_val);
+        break;
+    case DIR_BACK:
+        m_pTransformCom->Go_Backward(_val);
+        break;
+    }
+}
+
+void CPlayer_1rd::Turn(_float _val)
+{
+    m_pTransformCom->Turn(XMVectorSet(0.f, 1.f, 0.f, 0.f), _val);
+}
+
+void CPlayer_1rd::Jump(_float _val)
+{
+    // _val은 점프의 힘 강도 배수입니다.
 }
 
 HRESULT CPlayer_1rd::Ready_PartObjects()

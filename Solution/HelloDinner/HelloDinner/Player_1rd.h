@@ -32,6 +32,12 @@ public:
 	//CCollider* Get_CollisionCom() const { return m_pColliderCom; }
 	//virtual void TakeDamage(int iDamage) PURE;
 
+public:					// 플레이어 조종에 관련한 함수 구현
+	void Move(MOVE_DIR _dir, _float _val);
+	void Turn(_float _val);
+	void Jump(_float _val);
+
+
 private:
 	virtual HRESULT				Ready_PartObjects();
 	virtual HRESULT				Ready_Components();
