@@ -174,7 +174,7 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 
 			// 이동
 			desc.vPosition.x = inst["position"]["x"].get<float>();
-			desc.vPosition.y = inst["position"]["y"].get<float>() - 1.5f;
+			desc.vPosition.y = inst["position"]["y"].get<float>();
 			desc.vPosition.z = inst["position"]["z"].get<float>();
 
 			// 회전

@@ -1,35 +1,35 @@
 {
     "materials": [
         {
-            "materialName": "Wall_Brickwall_Red",
-            "albedoTexture": "Wall_Brickwall_Red_BaseColor.dds",
-            "normalTexture": "Wall_Brickwall_Red_Normal.dds",
+            "materialName": "Floor_StreetPlatesConcrete",
+            "albedoTexture": "Floor_StreetPlatesConcrete_BaseColor.dds",
+            "normalTexture": "Floor_StreetPlatesConcrete_Normal.dds",
             "baseColor": {
-                "r": 0.8308823704719544,
-                "g": 0.8308823704719544,
-                "b": 0.8308823704719544,
+                "r": 0.7352941632270813,
+                "g": 0.7352941632270813,
+                "b": 0.7352941632270813,
                 "a": 1.0
             }
         },
         {
-            "materialName": "Midwall_ConcreteDirty",
-            "albedoTexture": "Midwall_ConcreteDirty_BaseColor.dds",
-            "normalTexture": "Midwall_ConcreteDirty_Normal.dds",
+            "materialName": "StonePavement",
+            "albedoTexture": "StonePavement_BaseColor.dds",
+            "normalTexture": "StonePavement_Normal.dds",
             "baseColor": {
-                "r": 0.8235294222831726,
-                "g": 0.8235294222831726,
-                "b": 0.8235294222831726,
+                "r": 0.779411792755127,
+                "g": 0.779411792755127,
+                "b": 0.779411792755127,
                 "a": 1.0
             }
         },
         {
-            "materialName": "Floor_Concrete",
-            "albedoTexture": "Floor_Concrete_BaseColor.dds",
-            "normalTexture": "Floor_Concrete_Normal.dds",
+            "materialName": "Floor_Concrete2",
+            "albedoTexture": "Floor_Concrete2_BaseColor.dds",
+            "normalTexture": "Floor_Concrete2_Normal.dds",
             "baseColor": {
-                "r": 0.9117646813392639,
-                "g": 0.9117646813392639,
-                "b": 0.9117646813392639,
+                "r": 0.8088235259056091,
+                "g": 0.8088235259056091,
+                "b": 0.8088235259056091,
                 "a": 1.0
             }
         }
