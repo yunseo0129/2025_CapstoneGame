@@ -39,6 +39,7 @@ public: /* for.Input_Device */
 
 public: /* for.Controller */
 	class CController* Get_Controller();
+	void Set_MouseSensitive(_float _val);
 
 public: /* For.timer_Manager */
 	_float Get_TimeDelta(const _wstring& strTimerTag);

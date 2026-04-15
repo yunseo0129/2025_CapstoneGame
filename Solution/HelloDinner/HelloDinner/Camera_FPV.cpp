@@ -33,108 +33,17 @@ void CCamera_FPV::Priority_Update(_float fTimeDelta)
 
 void CCamera_FPV::Update(_float fTimeDelta)
 {
-    if (m_bOnOff == true)
-    {
-		// 마우스 이동량에 따른 카메라 회전
-        _long		MouseMove = {};
-        if (MouseMove = m_pGameInstance->Get_DIMouseMove(Engine::DIMS_X))
-        {
-            m_pTransformCom->Turn(XMVectorSet(0.f, 1.f, 0.f, 0.f), MouseMove * fTimeDelta * m_fCamMouseSensor * 2.2f);
-        }
-
-        if (MouseMove = m_pGameInstance->Get_DIMouseMove(Engine::DIMS_Y))
-        {
-            m_pTransformCom->Turn(m_pTransformCom->Get_State(CTransform::STATE_RIGHT), MouseMove * fTimeDelta * m_fCamMouseSensor * 2.2f);
-        }
-
-		// 키보드 입력에 따른 카메라 이동
-        if (m_pGameInstance->Key_Pressing(DIK_W) && m_pGameInstance->Key_Pressing(DIK_S))
-        {
-            if (m_pGameInstance->Key_Pressing(DIK_A) && m_pGameInstance->Key_Pressing(DIK_D))
-            {
-
-            }
-            else if (m_pGameInstance->Key_Pressing(DIK_A))
-            {
-                m_pTransformCom->Go_Left(fTimeDelta * m_fCamSpeedPerSec);
-            }
-            else if (m_pGameInstance->Key_Pressing(DIK_D))
-            {
-                m_pTransformCom->Go_Right(fTimeDelta * m_fCamSpeedPerSec);
-			}
-        }
-        else if (m_pGameInstance->Key_Pressing(DIK_W))
-        {
-            if (m_pGameInstance->Key_Pressing(DIK_A) && m_pGameInstance->Key_Pressing(DIK_D))
-            {
-                m_pTransformCom->Go_Straight(fTimeDelta * m_fCamSpeedPerSec);
-            }
-            else if (m_pGameInstance->Key_Pressing(DIK_A))
-            {
-				m_pTransformCom->Go_Straight(fTimeDelta * m_fCamSpeedPerSec * 0.7071f);
-                m_pTransformCom->Go_Left(fTimeDelta * m_fCamSpeedPerSec * 0.7071f);
-            }
-            else if (m_pGameInstance->Key_Pressing(DIK_D))
-            {
-                m_pTransformCom->Go_Straight(fTimeDelta * m_fCamSpeedPerSec * 0.7071f);
-                m_pTransformCom->Go_Right(fTimeDelta * m_fCamSpeedPerSec * 0.7071f);
-            }
-            else
-            {
-                m_pTransformCom->Go_Straight(fTimeDelta * m_fCamSpeedPerSec);
-            }
-        }
-        else if (m_pGameInstance->Key_Pressing(DIK_S))
-        {
-            if (m_pGameInstance->Key_Pressing(DIK_A) && m_pGameInstance->Key_Pressing(DIK_D))
-            {
-                m_pTransformCom->Go_Backward(fTimeDelta * m_fCamSpeedPerSec);
-            }
-            else if (m_pGameInstance->Key_Pressing(DIK_A))
-            {
-                m_pTransformCom->Go_Backward(fTimeDelta * m_fCamSpeedPerSec * 0.7071f);
-                m_pTransformCom->Go_Left(fTimeDelta * m_fCamSpeedPerSec * 0.7071f);
-            }
-            else if (m_pGameInstance->Key_Pressing(DIK_D))
-            {
-                m_pTransformCom->Go_Backward(fTimeDelta * m_fCamSpeedPerSec * 0.7071f);
-                m_pTransformCom->Go_Right(fTimeDelta * m_fCamSpeedPerSec * 0.7071f);
-            }
-            else
-            {
-                m_pTransformCom->Go_Backward(fTimeDelta * m_fCamSpeedPerSec);
-            }
-		}
-        else if (m_pGameInstance->Key_Pressing(DIK_A) && m_pGameInstance->Key_Pressing(DIK_D))
-        {
-            
-        }
-        else if (m_pGameInstance->Key_Pressing(DIK_A))
-        {
-            m_pTransformCom->Go_Left(fTimeDelta * m_fCamSpeedPerSec);
-		}
-        else if (m_pGameInstance->Key_Pressing(DIK_D))
-        {
-            m_pTransformCom->Go_Right(fTimeDelta * m_fCamSpeedPerSec);
-		}
-
-        if (m_pGameInstance->Key_Pressing(DIK_SPACE))
-        {
-            m_pTransformCom->Go_Up(fTimeDelta * m_fCamSpeedPerSec);
-        }
-        else if (m_pGameInstance->Key_Pressing(DIK_LCONTROL))
-        {
-            m_pTransformCom->Go_Up(-fTimeDelta * m_fCamSpeedPerSec);
-        }
-    }
-
-    // 파이프라인 복구 후 아래 코드 주석 해제
-    // __super::Compute_PipeLineMatrices();
+   
 }
 
 void CCamera_FPV::Late_Update(_float fTimeDelta)
 {
 
+}
+
+void CCamera_FPV::Set_WorldMatrix(_float4x4 _mat)
+{
+    m_pTransformCom->Set_WorldMatrix(_mat);
 }
 
 CCamera_FPV* CCamera_FPV::Create(EngineContext* pContext)

@@ -187,6 +187,11 @@ CController* CGameInstance::Get_Controller()
 	return m_pController;
 }
 
+void CGameInstance::Set_MouseSensitive(_float _val)
+{
+	m_pController->Set_MouseSensitive(_val);
+}
+
 // ------------------------------------------------------------------------
 // Graphic_Device_Manager
 // ------------------------------------------------------------------------

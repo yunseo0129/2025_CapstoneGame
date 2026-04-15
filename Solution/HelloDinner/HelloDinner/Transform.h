@@ -34,6 +34,11 @@ public:
 		return &m_WorldMatrix;
 	}
 
+	// 1인칭 카메라 전용 함수임. 다른 곳 사용 절대 금지!
+	void Set_WorldMatrix(_float4x4 _Matrix) {
+		m_WorldMatrix = _Matrix;
+	}
+
 	_matrix Get_WorldMatrix_Inverse() const {
 		return XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_WorldMatrix));
 	}

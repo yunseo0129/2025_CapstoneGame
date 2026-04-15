@@ -186,7 +186,7 @@ HRESULT CLevel_Loading::Ready_Component_Prototype()
 
     // Prototype_Component_pig_first_person
     {
-        _matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(1.f, 1.f, 1.f)  * XMMatrixTranslation(0.1f, 1.39f, -0.2f);
+        _matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(1.f, 1.f, 1.f);
         if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, TEXT("Prototype_Component_Player_Pig_fps"),
             CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/1st_Player/Prototype_Component_pig_first_person.txt", PreTransformMatrix))))
             return E_FAIL;
@@ -266,40 +266,6 @@ HRESULT CLevel_Loading::Ready_Light()
 
 HRESULT CLevel_Loading::Ready_Layer()
 {
-    // Collider Test
-    //{
-    //   // AABB
-    //   {
-    //      CObj_CollisionTest::Obj_CollisionTest_DESC cdesc;
-    //      cdesc.vPosition = _float3(0.f, 0.f, 0.f);
-    //      cdesc.vRotation = _float3(0.f, 0.f, 0.f);
-    //      cdesc.vScale = _float3(1.f, 1.f, 1.f);
-    //      cdesc.eColliderType = CCollider::TYPE_AABB;
-    //      m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_TestObject_AABB"),
-    //         LEVEL_LOADING, TEXT("Layer_CollisionTest"), &cdesc);
-    //   }
-    //   // Sphere
-    //   {
-    //      CObj_CollisionTest::Obj_CollisionTest_DESC cdesc;
-    //      cdesc.vPosition = _float3(200.f, 0.f, 0.f);
-    //      cdesc.vRotation = _float3(0.f, 0.f, 0.f);
-    //      cdesc.vScale = _float3(1.f, 1.f, 1.f);
-    //      cdesc.eColliderType = CCollider::TYPE_SPHERE;
-    //      m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_TestObject_Sphere"),
-    //         LEVEL_LOADING, TEXT("Layer_CollisionTest"), &cdesc);
-    //   }
-    //   // OBB
-    //   {
-    //      CObj_CollisionTest::Obj_CollisionTest_DESC cdesc;
-    //      cdesc.vPosition = _float3(400.f, 0.f, 0.f);
-    //      cdesc.vRotation = _float3(0.f, 45.f, 45.f);
-    //      cdesc.vScale = _float3(1.f, 1.f, 1.f);
-    //      cdesc.eColliderType = CCollider::TYPE_OBB;
-    //      m_pGameInstance->Add_GameObject_ToLayer(LEVEL_LOADING, TEXT("Prototype_TestObject_OBB"),
-    //         LEVEL_LOADING, TEXT("Layer_CollisionTest"), &cdesc);
-    //   }
-    //}
-
     // Skybox
     CSkybox::Skybox_DESC SkyboxDesc;
     SkyboxDesc.strTextureTag = L"Prototype_Component_Texture_Skybox";
