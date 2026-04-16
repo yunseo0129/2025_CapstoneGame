@@ -33,7 +33,7 @@ public:
 	//virtual void TakeDamage(int iDamage) PURE;
 
 public:					// 플레이어 조종에 관련한 함수 구현
-	void Move(MOVE_DIR _dir, _float _val);
+	void Move(_float _fLook, _float _fRight, _float _val);
 	void TurnYaw(_float _val);
 	void TurnPitch(_float _val);
 	void Jump(_float _val);

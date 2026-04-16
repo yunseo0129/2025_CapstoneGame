@@ -166,23 +166,22 @@ void CPlayer_1rd::ShadowRender(ID3D12GraphicsCommandList* _commandList)
 
 }
 
-void CPlayer_1rd::Move(MOVE_DIR _dir, _float _val)
+void CPlayer_1rd::Move(_float _fLook, _float _fRight, _float _val)
 {
-    switch (_dir)
-    {
-    case DIR_LEFT:
-        m_pTransformCom->Go_Left(_val);
-        break;
-    case DIR_RIGHT:
-        m_pTransformCom->Go_Right(_val);
-        break;
-    case DIR_FOWARD:
-        m_pTransformCom->Go_Straight(_val);
-        break;
-    case DIR_BACK:
-        m_pTransformCom->Go_Backward(_val);
-        break;
-    }
+    _vector vLook = m_pTransformCom->Get_State(CTransform::STATE_LOOK);
+    vLook.m128_f32[1] = 0.f;
+    vLook = XMVector3Normalize(vLook) * _fLook;
+    _vector vRight = m_pTransformCom->Get_State(CTransform::STATE_RIGHT);
+    vRight.m128_f32[1] = 0.f;
+    vRight = XMVector3Normalize(vRight) * _fRight;
+
+    // 최종 이동 할 방향벡터(크기가 거리)
+    _vector vDir = vLook + vRight;
+
+    // 여기서 충돌체크를 해주는게 좋을 것 같소
+
+    // 충돌하지 않는다면
+    m_pTransformCom->Move(vDir, _val);
 }
 
 void CPlayer_1rd::TurnYaw(_float _val)
