@@ -37,6 +37,10 @@ public: /* for.Input_Device */
 	bool Mouse_Down(int _iKey);
 	bool Mouse_Up(int _iKey);
 
+public: /* for.Controller */
+	class CController* Get_Controller();
+	void Set_MouseSensitive(_float _val);
+
 public: /* For.timer_Manager */
 	_float Get_TimeDelta(const _wstring& strTimerTag);
 	HRESULT	Add_Timer(const _wstring& strTimerTag);
@@ -103,12 +107,13 @@ private:
 	class CLevel_Manager*		m_pLevel_Manager = { nullptr };
 	class CPrototype_Manager*	m_pPrototype_Manager = { nullptr };
 	class CObject_Manager*		m_pObject_Manager = { nullptr };
-	class CLight_Manager* m_pLight_Manager = { nullptr };
+	class CLight_Manager*		m_pLight_Manager = { nullptr };
 	class CPipeLine*			m_pPipeLine = { nullptr };
 	class CShader_Manager*		m_pShader_Manager = { nullptr };
 	class CRenderer*			m_pRenderer = { nullptr };
 	class CLoad_Manager*		m_pLoad_Manager = { nullptr };
 	class CTexture_Manager*		m_pTexture_Manager = { nullptr };
+	class CController*			m_pController = { nullptr };
 
 	ComPtr<ID3D12GraphicsCommandList> m_pCommandList = { nullptr };
 

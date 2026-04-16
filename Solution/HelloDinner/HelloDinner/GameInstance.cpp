@@ -11,6 +11,8 @@
 #include "Shader_Manager.h"
 #include "Texture_Manager.h"
 #include "Camera.h"
+#include "Controller.h"
+//#include "Player_1rd.h"
 
 IMPLEMENT_SINGLETON(CGameInstance)
 
@@ -30,6 +32,10 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineCo
 
 	m_pInput_Device = CInput_Device::Create(EngineDesc.hInstance, EngineDesc.hWnd);
 	if (nullptr == m_pInput_Device)
+		return E_FAIL;
+
+	m_pController = CController::Create();
+	if (nullptr == m_pController)
 		return E_FAIL;
 
 	m_pTexture_Manager = CTexture_Manager::Create(_pcontext);
@@ -75,6 +81,7 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineCo
 void CGameInstance::Update_Engine(_float fTimeDelta)
 {
 	m_pInput_Device->Update_InputDev();
+	m_pController->Update_Controller(fTimeDelta);
 	m_pObject_Manager->Priority_Update(fTimeDelta);
 	m_pObject_Manager->Update(fTimeDelta);
 	m_pObject_Manager->Late_Update(fTimeDelta);
@@ -169,6 +176,20 @@ bool CGameInstance::Mouse_Down(int _iKey)
 bool CGameInstance::Mouse_Up(int _iKey)
 {
 	return m_pInput_Device->Mouse_Up(_iKey);
+}
+
+// ------------------------------------------------------------------------
+// CController
+// ------------------------------------------------------------------------
+
+CController* CGameInstance::Get_Controller()
+{
+	return m_pController;
+}
+
+void CGameInstance::Set_MouseSensitive(_float _val)
+{
+	m_pController->Set_MouseSensitive(_val);
 }
 
 // ------------------------------------------------------------------------
@@ -512,6 +533,7 @@ void CGameInstance::Free()
 
 	// 4. 게임 오브젝트 해제 (컴포넌트 → 텍스처/버퍼의 ComPtr 해제)
 	Safe_Release ( m_pObject_Manager );
+	Safe_Release( m_pController );
 
 	// 5. 레벨 해제
 	Safe_Release ( m_pLevel_Manager );

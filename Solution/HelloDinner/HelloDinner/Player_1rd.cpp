@@ -5,6 +5,7 @@
 #include "Bounding_AABB.h"
 #include "Bounding_Sphere.h"
 #include "Bounding_OBB.h"
+#include "Camera_FPV.h"
 
 CPlayer_1rd::CPlayer_1rd(EngineContext* _pcontext)
     : CContainerObj{ _pcontext }
@@ -31,11 +32,11 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
     Player_1RD_DESC* pDesc = static_cast<Player_1RD_DESC*>(pArg);
     m_strModelTag = pDesc->strModelTag;
     m_iModelLevelIndex = pDesc->iModelLevelIndex;
-    m_pCamera = pDesc->pCamera;
     pDesc->iNumPartObj = 1;
     pDesc->fSpeedPerSec = 1.f;
     pDesc->fRotationPerSec = 1.f;
     pDesc->fSpeedPerSec = 1.f;
+    m_pCamera = pDesc->pCamera;
     if (FAILED(__super::Initialize(pArg)))
         return E_FAIL;
 
@@ -43,6 +44,10 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
     m_pTransformCom->RotationQuaternion(pDesc->vRotation.x, pDesc->vRotation.y, pDesc->vRotation.z);
     m_pTransformCom->Set_State(CTransform::STATE_POSITION,
         XMVectorSet(pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z, 1.f));
+
+    XMStoreFloat4x4(&m_matFPSModel, m_pTransformCom->Get_WorldMatrix());
+
+    m_pCamera->Set_WorldMatrix(m_matFPSModel);
 
     if (FAILED(Ready_Components()))
         return E_FAIL;
@@ -59,101 +64,29 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
 
 void CPlayer_1rd::Priority_Update(_float fTimeDelta)
 {
-    if (m_bOnOff == true)
+    //  프리 카메라 전용 키인풋입니다. 충돌처리 후 사라질 코드입니다.
+    if (m_pGameInstance->Key_Pressing(DIK_SPACE))
     {
-        // 마우스 이동량에 따른 카메라 회전
-        _long      MouseMove = {};
-        if (MouseMove = m_pGameInstance->Get_DIMouseMove(Engine::DIMS_X))
-        {
-            m_pTransformCom->Turn(XMVectorSet(0.f, 1.f, 0.f, 0.f), MouseMove * fTimeDelta * 2.2f);
-        }
-
-        if (MouseMove = m_pGameInstance->Get_DIMouseMove(Engine::DIMS_Y))
-        {
-
-            //m_pTransformCom->Turn(m_pTransformCom->Get_State(CTransform::STATE_RIGHT), MouseMove * fTimeDelta * 2.2f);
-        }
-
-        // 키보드 입력에 따른 카메라 이동
-        if (m_pGameInstance->Key_Pressing(DIK_W) && m_pGameInstance->Key_Pressing(DIK_S))
-        {
-            if (m_pGameInstance->Key_Pressing(DIK_A) && m_pGameInstance->Key_Pressing(DIK_D))
-            {
-
-            }
-            else if (m_pGameInstance->Key_Pressing(DIK_A))
-            {
-                m_pTransformCom->Go_Left(fTimeDelta);
-            }
-            else if (m_pGameInstance->Key_Pressing(DIK_D))
-            {
-                m_pTransformCom->Go_Right(fTimeDelta);
-            }
-        }
-        else if (m_pGameInstance->Key_Pressing(DIK_W))
-        {
-            if (m_pGameInstance->Key_Pressing(DIK_A) && m_pGameInstance->Key_Pressing(DIK_D))
-            {
-                m_pTransformCom->Go_Straight(fTimeDelta);
-            }
-            else if (m_pGameInstance->Key_Pressing(DIK_A))
-            {
-                m_pTransformCom->Go_Straight(fTimeDelta * 0.7071f);
-                m_pTransformCom->Go_Left(fTimeDelta * 0.7071f);
-            }
-            else if (m_pGameInstance->Key_Pressing(DIK_D))
-            {
-                m_pTransformCom->Go_Straight(fTimeDelta * 0.7071f);
-                m_pTransformCom->Go_Right(fTimeDelta * 0.7071f);
-            }
-            else
-            {
-                m_pTransformCom->Go_Straight(fTimeDelta);
-            }
-        }
-        else if (m_pGameInstance->Key_Pressing(DIK_S))
-        {
-            if (m_pGameInstance->Key_Pressing(DIK_A) && m_pGameInstance->Key_Pressing(DIK_D))
-            {
-                m_pTransformCom->Go_Backward(fTimeDelta);
-            }
-            else if (m_pGameInstance->Key_Pressing(DIK_A))
-            {
-                m_pTransformCom->Go_Backward(fTimeDelta * 0.7071f);
-                m_pTransformCom->Go_Left(fTimeDelta * 0.7071f);
-            }
-            else if (m_pGameInstance->Key_Pressing(DIK_D))
-            {
-                m_pTransformCom->Go_Backward(fTimeDelta * 0.7071f);
-                m_pTransformCom->Go_Right(fTimeDelta * 0.7071f);
-            }
-            else
-            {
-                m_pTransformCom->Go_Backward(fTimeDelta);
-            }
-        }
-        else if (m_pGameInstance->Key_Pressing(DIK_A) && m_pGameInstance->Key_Pressing(DIK_D))
-        {
-
-        }
-        else if (m_pGameInstance->Key_Pressing(DIK_A))
-        {
-            m_pTransformCom->Go_Left(fTimeDelta);
-        }
-        else if (m_pGameInstance->Key_Pressing(DIK_D))
-        {
-            m_pTransformCom->Go_Right(fTimeDelta);
-        }
-
-        if (m_pGameInstance->Key_Pressing(DIK_SPACE))
-        {
-            m_pTransformCom->Go_Up(fTimeDelta);
-        }
-        else if (m_pGameInstance->Key_Pressing(DIK_LCONTROL))
-        {
-            m_pTransformCom->Go_Up(-fTimeDelta);
-        }
+        m_pTransformCom->Go_Up(fTimeDelta);
     }
+    else if (m_pGameInstance->Key_Pressing(DIK_LCONTROL))
+    {
+        m_pTransformCom->Go_Up(-fTimeDelta);
+    }
+
+    // 1인칭 모델 동기화
+    XMMATRIX matFps = m_pTransformCom->Get_WorldMatrix();
+    _vector		vRight = matFps.r[0];
+    _vector		vUp = matFps.r[1];
+    _vector		vLook = matFps.r[2];
+    _matrix		RotationMatrix = XMMatrixRotationAxis(vRight, m_fPitchRot);
+    matFps.r[0] = XMVector3TransformNormal(vRight, RotationMatrix);
+    matFps.r[1] = XMVector3TransformNormal(vUp, RotationMatrix);
+    matFps.r[2] = XMVector3TransformNormal(vLook, RotationMatrix);
+    matFps *= XMMatrixTranslation(0.f, 1.39f, 0.f);
+    XMStoreFloat4x4(&m_matFPSModel, matFps);
+    // 카메라 동기화
+    m_pCamera->Set_WorldMatrix(m_matFPSModel);
 
     __super::Priority_Update(fTimeDelta);
 }
@@ -185,9 +118,7 @@ void CPlayer_1rd::Late_Update(_float fTimeDelta)
 
 void CPlayer_1rd::Render(ID3D12GraphicsCommandList* _commandList)
 {
-    XMFLOAT4X4 WorldMatrix;
-    XMStoreFloat4x4(&WorldMatrix, m_pTransformCom->Get_WorldMatrix());
-    _commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &WorldMatrix, 0);
+    _commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &m_matFPSModel, 0);
 
     // 2. PSO 설정
     m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::ANIM);
@@ -235,6 +166,45 @@ void CPlayer_1rd::ShadowRender(ID3D12GraphicsCommandList* _commandList)
 
 }
 
+void CPlayer_1rd::Move(MOVE_DIR _dir, _float _val)
+{
+    switch (_dir)
+    {
+    case DIR_LEFT:
+        m_pTransformCom->Go_Left(_val);
+        break;
+    case DIR_RIGHT:
+        m_pTransformCom->Go_Right(_val);
+        break;
+    case DIR_FOWARD:
+        m_pTransformCom->Go_Straight(_val);
+        break;
+    case DIR_BACK:
+        m_pTransformCom->Go_Backward(_val);
+        break;
+    }
+}
+
+void CPlayer_1rd::TurnYaw(_float _val)
+{
+    m_pTransformCom->Turn(XMVectorSet(0.f, 1.f, 0.f, 0.f), _val);
+}
+
+void CPlayer_1rd::TurnPitch(_float _val)
+{
+    m_fPitchRot += _val;
+}
+
+void CPlayer_1rd::Jump(_float _val)
+{
+    // _val은 점프의 힘 강도 배수입니다.
+}
+
+void CPlayer_1rd::Crouch(_float _val)
+{
+    // 웅크리기
+}
+
 HRESULT CPlayer_1rd::Ready_PartObjects()
 {
     // 케첩건
@@ -242,7 +212,7 @@ HRESULT CPlayer_1rd::Ready_PartObjects()
         CKetchup_Gun::KETCHUP_GUN_DESC cdesc;
         cdesc.strModelTag = L"Prototype_Component_ketchupGun";
         cdesc.iModelLevelIndex = 1;
-        cdesc.pParentMatrix = m_pTransformCom->Get_WorldFloat4x4_Ptr();
+        cdesc.pParentMatrix = &m_matFPSModel;
         cdesc.pSocketMatrix = m_pFPSModelCom->Get_BoneMatrix("weapon");
         cdesc.vScale = _float3(1.f, 1.f, 1.f);
         m_PartObjects[0] = static_cast<CPartObj*>(m_pGameInstance->Clone_Prototype(Engine::PROTOTYPE::PROTO_GAMEOBJ, 1, TEXT("Prototype_GameObject_Ketchup_Gun"), &cdesc));

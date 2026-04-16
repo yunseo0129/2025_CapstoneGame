@@ -216,6 +216,9 @@
     <Filter Include="소스 파일\01. Engine\08. Shadow">
       <UniqueIdentifier>{6e761fcd-17b0-4292-af41-e8731b9566c9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\01. Engine\09. Controller">
+      <UniqueIdentifier>{0e3d7949-d9da-445f-836b-3678987c0aab}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -401,6 +404,9 @@
     <ClInclude Include="Shadow.h">
       <Filter>소스 파일\01. Engine\08. Shadow</Filter>
     </ClInclude>
+    <ClInclude Include="Controller.h">
+      <Filter>소스 파일\01. Engine\09. Controller</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -565,9 +571,6 @@
     <ClCompile Include="Player_1rd.cpp">
       <Filter>소스 파일\02. Game\GameObject\02. Player\Player_1rd</Filter>
     </ClCompile>
-    <ClCompile Include="Player_3rd.cpp">
-      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd</Filter>
-    </ClCompile>
     <ClCompile Include="Obj_CollisionTest.cpp">
       <Filter>소스 파일\01. Engine\04. Components\03. Collider\test</Filter>
     </ClCompile>
@@ -582,6 +585,9 @@
     </ClCompile>
     <ClCompile Include="Shadow.cpp">
       <Filter>소스 파일\01. Engine\08. Shadow</Filter>
+    </ClCompile>
+    <ClCompile Include="Controller.cpp">
+      <Filter>소스 파일\01. Engine\09. Controller</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

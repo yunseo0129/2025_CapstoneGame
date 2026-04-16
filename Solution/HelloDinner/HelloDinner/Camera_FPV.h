@@ -20,6 +20,7 @@ public:
 	virtual void Priority_Update(_float fTimeDelta) override;
 	virtual void Update(_float fTimeDelta) override;
 	virtual void Late_Update(_float fTimeDelta) override;
+	void Set_WorldMatrix(_float4x4 _mat);
 
 private:
 	_float			m_fCamMouseSensor = {};
