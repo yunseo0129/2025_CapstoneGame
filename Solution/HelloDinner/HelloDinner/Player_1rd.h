@@ -32,20 +32,30 @@ public:
 	//CCollider* Get_CollisionCom() const { return m_pColliderCom; }
 	//virtual void TakeDamage(int iDamage) PURE;
 
+public:					// 플레이어 조종에 관련한 함수 구현
+	void Move(_float _fLook, _float _fRight, _float _val);
+	void TurnYaw(_float _val);
+	void TurnPitch(_float _val);
+	void Jump(_float _val);
+	void Crouch(_float _val);
+
+
 private:
 	virtual HRESULT				Ready_PartObjects();
 	virtual HRESULT				Ready_Components();
 
 private:
 	class CModel*		m_pModelCom = { nullptr };
-	class CModel*		m_pFPSModelCom = { nullptr };
 	class CCamera_FPV*	m_pCamera = { nullptr };
+	class CModel*		m_pFPSModelCom = { nullptr };
+	_float4x4			m_matFPSModel;
 	vector<class CCollider*> m_vColliderComs;
 	vector<class CCollider*> m_vMapColliderComs;
 	_uint				m_iState = 0;
 	_int				m_iHealth = 0;
 	_wstring			m_strModelTag = L"";
 	_uint				m_iModelLevelIndex = 0;
+	_float				m_fPitchRot = 0;
 
 public:
 	static CPlayer_1rd* Create(EngineContext* pContext);
