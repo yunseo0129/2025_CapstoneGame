@@ -47,7 +47,7 @@ HRESULT CPlayer_Pig::Initialize(void* pArg)
 		return E_FAIL;
 
 	m_iState = 0;
-	m_pModelCom->SetUp_Animation(a++, true);
+	m_pModelCom->SetUp_Animation(5, true);
 
 	if (FAILED(Ready_PartObjects()))
 		return E_FAIL;
@@ -62,7 +62,19 @@ void CPlayer_Pig::Priority_Update(_float fTimeDelta)
 
 void CPlayer_Pig::Update(_float fTimeDelta)
 {
-	m_pModelCom->Play_Animation(fTimeDelta);
+	static bool d = false;
+	if (!d)
+		m_pModelCom->Play_Animation(fTimeDelta);
+	else
+	{
+		if (m_pModelCom->Blend_Animation(fTimeDelta))
+			d = false;
+	}
+	if (m_pGameInstance->Key_Pressing(DIK_1))
+	{
+		m_pModelCom->Change_Animation(4, 10.f, true);
+		d = true;
+	}
 
 	for (CCollider* pCollider : m_vColliderComs)
 	{
