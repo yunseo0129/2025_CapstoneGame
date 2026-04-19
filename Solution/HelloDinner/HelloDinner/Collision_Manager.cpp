@@ -54,6 +54,58 @@ void CCollision_Manager::Delete_CollisionGroup(COLLISION_GROUP _eGroup, CCollide
     }
 }
 
+vector<class CCollider*> CCollision_Manager::CollisionCheck_with_Group(CCollider* _pCollider, COLLISION_GROUP _eGroup)
+{
+    vector<class CCollider*> re;
+    for (CCollider* collider : m_Colliders[_eGroup])
+    {
+        // 충돌 처리 걸린것들 pushback
+    }
+
+    return re;
+}
+
+bool CCollision_Manager::CollisionCheck_with_Collider(CCollider* _pMyCollider, CCollider* _pOtherCollider)
+{
+    return false;
+}
+
+bool CCollision_Manager::CheckMove(CCollider* me, const XMFLOAT3& pos, const XMFLOAT3& move, XMFLOAT3& outSlide)
+{
+    bool bHit = false;
+    XMFLOAT3 finalMove = move;
+
+    for (CCollider* other : m_Colliders[GROUP_MAP])
+    {
+        if (!other->Get_Enable()) continue;
+
+        // 함수 구현 후 주석 해제
+       /* if (IsCollidingAfterMove(me, other, pos, move))
+        {
+            bHit = true;
+
+            XMFLOAT3 normal = GetCollisionNormal(...);
+            finalMove = Slide(move, normal);
+        }*/
+    }
+
+    outSlide = finalMove;
+    return bHit;
+}
+
+XMFLOAT3 CCollision_Manager::Slide(const XMFLOAT3& move, const XMFLOAT3& normal)
+{
+    XMVECTOR vM = XMLoadFloat3(&move);
+    XMVECTOR vN = XMLoadFloat3(&normal);
+
+    XMVECTOR dot = XMVector3Dot(vM, vN);
+    XMVECTOR slide = vM - dot * vN;
+
+    XMFLOAT3 result;
+    XMStoreFloat3(&result, slide);
+    return result;
+}
+
 CCollision_Manager* CCollision_Manager::Create()
 {
 	return new CCollision_Manager();

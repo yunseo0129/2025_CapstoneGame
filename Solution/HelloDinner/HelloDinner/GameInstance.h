@@ -94,6 +94,16 @@ public: /* For.Texture_Manager */
 	_uint Get_CurrentIndex() const;
 	void Offset_DescriptorHandle(_uint _iOffset);
 
+public: /* For.Collision_Manager */
+	void Update_Collision();
+	void Clear_CollisionGroup();
+	void Set_CollisionMatrix(int _lgroup, int _rgroup, _bool _is);
+	void Add_CollisionGroup(int _eGroup, class CCollider* _pCollider);
+	void Delete_CollisionGroup(int _eGroup, class CCollider* _pCollider);
+	vector<class CCollider*> CollisionCheck_with_Group(class CCollider* _pCollider, int _eGroup);
+	bool CollisionCheck_with_Collider(class CCollider* _pMyCollider, class CCollider* _pOtherCollider);
+	bool CheckMove(CCollider* me, const XMFLOAT3& pos, const XMFLOAT3& move, XMFLOAT3& outSlide);
+
 public: /* For.Renderer */
 	HRESULT Add_RenderObject(CRenderer::RENDERGROUP eRenderGroup, class CGameObject* pRenderObject);
 #ifdef _DEBUG
@@ -114,6 +124,7 @@ private:
 	class CLoad_Manager*		m_pLoad_Manager = { nullptr };
 	class CTexture_Manager*		m_pTexture_Manager = { nullptr };
 	class CController*			m_pController = { nullptr };
+	class CCollision_Manager* m_pCollision_Manager = { nullptr };
 
 	ComPtr<ID3D12GraphicsCommandList> m_pCommandList = { nullptr };
 

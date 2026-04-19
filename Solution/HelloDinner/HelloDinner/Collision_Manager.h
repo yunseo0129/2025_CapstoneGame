@@ -1,7 +1,7 @@
 #pragma once
 #include "Base.h"
 
-class CCollision_Manager final : CBase
+class CCollision_Manager final : public CBase
 {
 	DECLARE_SINGLETON(CCollision_Manager)
 
@@ -24,6 +24,12 @@ public:
 	void Set_CollisionMatrix(COLLISION_GROUP _lgroup, COLLISION_GROUP _rgroup, _bool _is);
 	void Add_CollisionGroup(COLLISION_GROUP _eGroup, class CCollider* _pCollider);
 	void Delete_CollisionGroup(COLLISION_GROUP _eGroup, class CCollider* _pCollider);
+	vector<class CCollider*> CollisionCheck_with_Group(class CCollider* _pCollider, COLLISION_GROUP _eGroup);
+	bool CollisionCheck_with_Collider(class CCollider* _pMyCollider, class CCollider* _pOtherCollider);
+	bool CheckMove(CCollider* me, const XMFLOAT3& pos, const XMFLOAT3& move, XMFLOAT3& outSlide);
+
+private:
+	XMFLOAT3 Slide(const XMFLOAT3& move, const XMFLOAT3& normal);
 
 private:
 	class CGameInstance*		m_pGameInstance = nullptr;

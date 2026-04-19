@@ -12,6 +12,7 @@
 #include "Texture_Manager.h"
 #include "Camera.h"
 #include "Controller.h"
+#include "Collision_Manager.h"
 //#include "Player_1rd.h"
 
 IMPLEMENT_SINGLETON(CGameInstance)
@@ -58,6 +59,9 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineCo
 	if (nullptr == m_pObject_Manager)
 		return E_FAIL;
 
+	m_pCollision_Manager = CCollision_Manager::Create();
+	if (nullptr == m_pCollision_Manager)
+		return E_FAIL;
 
 	m_pShader_Manager = CShader_Manager::Create(_pcontext->device);
 
@@ -83,6 +87,7 @@ void CGameInstance::Update_Engine(_float fTimeDelta)
 	m_pInput_Device->Update_InputDev();
 	m_pController->Update_Controller(fTimeDelta);
 	m_pObject_Manager->Priority_Update(fTimeDelta);
+	m_pCollision_Manager->Update_Collision();
 	m_pObject_Manager->Update(fTimeDelta);
 	m_pObject_Manager->Late_Update(fTimeDelta);
 	m_pLevel_Manager->Update(fTimeDelta);
@@ -493,6 +498,41 @@ void CGameInstance::Offset_DescriptorHandle(_uint _iOffset)
 }
 
 // ------------------------------------------------------------------------
+// Collision_Manager
+// ------------------------------------------------------------------------
+void CGameInstance::Update_Collision() {
+	m_pCollision_Manager->Update_Collision();
+}
+
+void CGameInstance::Clear_CollisionGroup() {
+	m_pCollision_Manager->Clear_CollisionGroup();
+}
+
+void CGameInstance::Set_CollisionMatrix(int _lgroup, int _rgroup, _bool _is) {
+	m_pCollision_Manager->Set_CollisionMatrix(CCollision_Manager::COLLISION_GROUP(_lgroup), CCollision_Manager::COLLISION_GROUP(_rgroup), _is);
+}
+
+void CGameInstance::Add_CollisionGroup(int _eGroup, class CCollider* _pCollider) {
+	m_pCollision_Manager->Add_CollisionGroup(CCollision_Manager::COLLISION_GROUP(_eGroup), _pCollider);
+}
+
+void CGameInstance::Delete_CollisionGroup(int _eGroup, class CCollider* _pCollider) {
+	m_pCollision_Manager->Delete_CollisionGroup(CCollision_Manager::COLLISION_GROUP(_eGroup), _pCollider);
+}
+
+vector<class CCollider*> CGameInstance::CollisionCheck_with_Group(class CCollider* _pCollider, int _eGroup) {
+	return m_pCollision_Manager->CollisionCheck_with_Group(_pCollider, CCollision_Manager::COLLISION_GROUP(_eGroup));
+}
+
+bool CGameInstance::CollisionCheck_with_Collider(class CCollider* _pMyCollider, class CCollider* _pOtherCollider) {
+	return m_pCollision_Manager->CollisionCheck_with_Collider(_pMyCollider, _pOtherCollider);
+}
+
+bool CGameInstance::CheckMove(CCollider* me, const XMFLOAT3& pos, const XMFLOAT3& move, XMFLOAT3& outSlide) {
+	return m_pCollision_Manager->CheckMove(me, pos, move, outSlide);
+}
+
+// ------------------------------------------------------------------------
 // Renderer
 // ------------------------------------------------------------------------
 HRESULT CGameInstance::Add_RenderObject(CRenderer::RENDERGROUP eRenderGroup, CGameObject* pRenderObject)
@@ -532,6 +572,7 @@ void CGameInstance::Free()
 	Safe_Release ( m_pRenderer );
 
 	// 4. 게임 오브젝트 해제 (컴포넌트 → 텍스처/버퍼의 ComPtr 해제)
+	Safe_Release( m_pCollision_Manager );
 	Safe_Release ( m_pObject_Manager );
 	Safe_Release( m_pController );
 
