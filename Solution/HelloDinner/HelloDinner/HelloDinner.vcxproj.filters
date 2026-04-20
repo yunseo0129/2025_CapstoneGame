@@ -219,6 +219,9 @@
     <Filter Include="소스 파일\01. Engine\09. Controller">
       <UniqueIdentifier>{0e3d7949-d9da-445f-836b-3678987c0aab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\01. Engine\10. Collision_Manager">
+      <UniqueIdentifier>{a9606f90-9cf8-4a88-a3eb-13da18fab78a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -407,6 +410,9 @@
     <ClInclude Include="Controller.h">
       <Filter>소스 파일\01. Engine\09. Controller</Filter>
     </ClInclude>
+    <ClInclude Include="Collision_Manager.h">
+      <Filter>소스 파일\01. Engine\10. Collision_Manager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -588,6 +594,9 @@
     </ClCompile>
     <ClCompile Include="Controller.cpp">
       <Filter>소스 파일\01. Engine\09. Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="Collision_Manager.cpp">
+      <Filter>소스 파일\01. Engine\10. Collision_Manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

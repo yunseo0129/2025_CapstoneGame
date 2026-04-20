@@ -25,15 +25,15 @@ public:
 
 public:
 	_bool Intersect(const CCollider* pTargetCollider);
-	_bool Get_OnOff() { return m_isOnOff; }
-	void Set_OnOff(_bool isWhat) { m_isOnOff = isWhat; }
+	_bool Get_Enable() const { return m_isEnable; }
+	void Set_Enable(_bool isWhat) { m_isEnable = isWhat; }
 	_float3 Get_Center();
 	class CBounding* Get_Bounding() { return m_pBounding; }
 
 private:
 	COLLIDERTYPE						m_eType = { TYPE_END };
 	class CBounding* m_pBounding = { nullptr };
-	_bool	m_isOnOff = { true };
+	_bool	m_isEnable = { true };
 	const _float4x4* m_pSocketMatrix = { nullptr };		// 소켓 매트릭스 (애니메이션이 있는 모델의 경우, 본에 따라 충돌체가 움직여야하므로)
 	const _float4x4* m_pParentMatrix = { nullptr };
 

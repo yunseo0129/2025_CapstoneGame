@@ -34,25 +34,16 @@ void CController::Input_Player(_float fTimeDelta)
         if (MouseMove = m_pGameInstance->Get_DIMouseMove(Engine::DIMS_Y))
             m_pPlayer->TurnPitch(MouseMove * fTimeDelta * m_fMouseSensitive);
 
-        XMFLOAT2 input = { 0.f, 0.f };
+        _float fLook = 0;
+        _float fRight = 0;
 
-        if (m_isKeyboardInput[KEYS_W]) input.y += 1.f;
-        if (m_isKeyboardInput[KEYS_S]) input.y -= 1.f;
-        if (m_isKeyboardInput[KEYS_A]) input.x -= 1.f;
-        if (m_isKeyboardInput[KEYS_D]) input.x += 1.f;
+        if (m_isKeyboardInput[KEYS_W]) fLook = 1.f;
+        if (m_isKeyboardInput[KEYS_S]) fLook = -1.f;
+        if (m_isKeyboardInput[KEYS_A]) fRight = -1.f;
+        if (m_isKeyboardInput[KEYS_D]) fRight = 1.f;
 
-        float len = sqrtf(input.x * input.x + input.y * input.y);
 
-        if (len > 0.0f)
-        {
-            input.x /= len;
-            input.y /= len;
-
-            if (input.y > 0)     m_pPlayer->Move(DIR_FOWARD, fTimeDelta * input.y);
-            if (input.y < 0)     m_pPlayer->Move(DIR_BACK, fTimeDelta * -input.y);
-            if (input.x < 0)     m_pPlayer->Move(DIR_LEFT, fTimeDelta * -input.x);
-            if (input.x > 0)     m_pPlayer->Move(DIR_RIGHT, fTimeDelta * input.x);
-        }
+        m_pPlayer->Move(fLook, fRight, fTimeDelta);
 
         if (m_isKeyboardInput[KEYS_SPACE])
         {
