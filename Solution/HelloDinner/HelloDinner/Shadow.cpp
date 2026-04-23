@@ -33,6 +33,7 @@ HRESULT CShadow::Initialize()
 void CShadow::Update(CCamera* _camera, CLight* _light)
 {
 	UpdateBoundingSphere(_camera);
+
 	UpdateMatrix(_light);
 }
 

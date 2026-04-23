@@ -304,11 +304,13 @@ HRESULT CShader_Manager::Create_PSO ()
 	// 렌더 타겟 없음 (오직 Depth Buffer에만 기록)
 	psoDesc.NumRenderTargets = 0;
 	psoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
+	
+	psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
 
 	// 그림자 아티팩트(Shadow Acne) 방지 바이어스
-	psoDesc.RasterizerState.DepthBias = 100000;
+	psoDesc.RasterizerState.DepthBias = 0;
 	psoDesc.RasterizerState.DepthBiasClamp = 0.0f;
-	psoDesc.RasterizerState.SlopeScaledDepthBias = 1.0f;
+	psoDesc.RasterizerState.SlopeScaledDepthBias = 0.0f;
 
 	m_pDevice->CreateGraphicsPipelineState ( &psoDesc , IID_PPV_ARGS ( &m_pPSOs[( UINT )PSO_TYPE::SHADOW_STATIC] ) );
 	
