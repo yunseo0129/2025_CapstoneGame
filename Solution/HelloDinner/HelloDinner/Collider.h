@@ -25,6 +25,8 @@ public:
 
 public:
 	_bool Intersect(const CCollider* pTargetCollider);
+	_bool Intersect_Offset(const CCollider* pTargetCollider, const _float3& vOffset);
+	_float3 Get_CollisionNormal(const CCollider* pTargetCollider);
 	_bool Get_Enable() const { return m_isEnable; }
 	void Set_Enable(_bool isWhat) { m_isEnable = isWhat; }
 	_float3 Get_Center();

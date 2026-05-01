@@ -107,6 +107,7 @@ HRESULT CCollider::Render(ID3D12GraphicsCommandList* _pcmdList)
 	m_pEffect->SetProjection(XMLoadFloat4x4(&projMatrix));
 
 	m_pEffect->Apply(_pcmdList);
+	// Begin End 최적화 필요 (프레임당 한번으로 수정)
 	m_pBatch->Begin(_pcmdList);
 	m_pBounding->Render(m_pBatch);
 	m_pBatch->End ();
@@ -117,8 +118,19 @@ HRESULT CCollider::Render(ID3D12GraphicsCommandList* _pcmdList)
 
 _bool CCollider::Intersect(const CCollider* pTargetCollider)
 {
-
 	return m_pBounding->Intersect(pTargetCollider->m_eType, pTargetCollider->m_pBounding);
+}
+
+_bool CCollider::Intersect_Offset(const CCollider* pTargetCollider, const _float3& vOffset)
+{
+	// CBounding 객체에게 상대방의 타입, 상대방의 바운딩 볼륨, 그리고 이동할 가짜 벡터(vOffset)를 전달합니다.
+	return m_pBounding->Intersect_Offset(pTargetCollider->m_eType, pTargetCollider->m_pBounding, vOffset);
+}
+
+_float3 CCollider::Get_CollisionNormal(const CCollider* pTargetCollider)
+{
+	// 내 Bounding 객체에게 상대방의 타입과 Bounding 객체를 넘겨서 법선을 계산하라고 지시합니다.
+	return m_pBounding->Get_CollisionNormal(pTargetCollider->m_eType, pTargetCollider->m_pBounding);
 }
 
 _float3 CCollider::Get_Center()

@@ -51,6 +51,47 @@ _bool CBounding_OBB::Intersect(CCollider::COLLIDERTYPE eType, CBounding* pTarget
 	return m_isColl;
 }
 
+_bool CBounding_OBB::Intersect_Offset(CCollider::COLLIDERTYPE eType, CBounding* pTargetBounding, const _float3& vOffset)
+{
+	m_isColl = false;
+	XMVECTOR vOff = XMLoadFloat3(&vOffset);
+
+	switch (eType)
+	{
+	case CCollider::TYPE_AABB:
+	{
+		DirectX::BoundingBox tempDesc = *static_cast<CBounding_AABB*>(pTargetBounding)->Get_Desc();
+		XMVECTOR vCenter = XMLoadFloat3(&tempDesc.Center);
+		XMStoreFloat3(&tempDesc.Center, XMVectorAdd(vCenter, vOff));
+		m_isColl = m_pBoundDesc->Intersects(tempDesc);
+		break;
+	}
+	case CCollider::TYPE_OBB:
+	{
+		DirectX::BoundingOrientedBox tempDesc = *static_cast<CBounding_OBB*>(pTargetBounding)->Get_Desc();
+		XMVECTOR vCenter = XMLoadFloat3(&tempDesc.Center);
+		XMStoreFloat3(&tempDesc.Center, XMVectorAdd(vCenter, vOff));
+		m_isColl = m_pBoundDesc->Intersects(tempDesc);
+		break;
+	}
+	case CCollider::TYPE_SPHERE:
+	{
+		DirectX::BoundingSphere tempDesc = *static_cast<CBounding_Sphere*>(pTargetBounding)->Get_Desc();
+		XMVECTOR vCenter = XMLoadFloat3(&tempDesc.Center);
+		XMStoreFloat3(&tempDesc.Center, XMVectorAdd(vCenter, vOff));
+		m_isColl = m_pBoundDesc->Intersects(tempDesc);
+		break;
+	}
+	}
+
+	return m_isColl;
+}
+
+_float3 CBounding_OBB::Get_CollisionNormal(CCollider::COLLIDERTYPE eTargetType, CBounding* pTargetBounding)
+{
+	return _float3();
+}
+
 _float3 CBounding_OBB::Get_Center()
 {
 	return m_pBoundDesc->Center;

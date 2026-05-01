@@ -528,8 +528,8 @@ bool CGameInstance::CollisionCheck_with_Collider(class CCollider* _pMyCollider, 
 	return m_pCollision_Manager->CollisionCheck_with_Collider(_pMyCollider, _pOtherCollider);
 }
 
-bool CGameInstance::CheckMove(CCollider* me, const XMFLOAT3& pos, const XMFLOAT3& move, XMFLOAT3& outSlide) {
-	return m_pCollision_Manager->CheckMove(me, pos, move, outSlide);
+bool CGameInstance::CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide) {
+	return m_pCollision_Manager->CheckMove(me, move, outSlide);
 }
 
 // ------------------------------------------------------------------------

@@ -199,7 +199,7 @@ HRESULT CLevel_Loading::Ready_GameObject_Prototype()
 {
     // 객체 원형 로드
     // CCollider
-    {
+    { 
         // AABB
         if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_LOADING, TEXT("Prototype_TestObject_AABB"),
             CObj_CollisionTest::Create(m_pContext))))

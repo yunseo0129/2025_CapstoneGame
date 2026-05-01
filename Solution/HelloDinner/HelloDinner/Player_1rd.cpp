@@ -179,6 +179,20 @@ void CPlayer_1rd::Move(_float _fLook, _float _fRight, _float _val)
     _vector vDir = vLook + vRight;
 
     // 여기서 충돌체크를 해주는게 좋을 것 같소
+    
+    for (CCollider* pCollider : m_vMapColliderComs)
+    {
+        if (pCollider != nullptr)
+        {
+            _float3 vOffset;
+            XMStoreFloat3(&vOffset, vDir);
+            _float3 vSlide;
+            if (m_pGameInstance->CheckMove(pCollider, vOffset, vSlide))
+            {
+                vDir = XMLoadFloat3(&vSlide);
+            }
+        }
+	}
 
     // 충돌하지 않는다면
     m_pTransformCom->Move(vDir, _val);

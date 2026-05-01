@@ -72,6 +72,7 @@ void CMap::Update(_float fTimeDelta)
 void CMap::Late_Update(_float fTimeDelta)
 {
 	m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, this);
+	m_pGameInstance->Add_CollisionGroup(0, m_pColliderCom);	// enum으로 수정
 }
 
 void CMap::Render(ID3D12GraphicsCommandList* _commandList)

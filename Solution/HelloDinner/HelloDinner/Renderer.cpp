@@ -130,14 +130,16 @@ HRESULT CRenderer::Add_RenderCollider(CCollider* pColliderCom )
 
 
 HRESULT CRenderer::Render_Collider ( ID3D12GraphicsCommandList* _CmdList )
-{
+{	
 	for ( auto& pRenderCollider : m_RenderColliders )
 	{
+
 		if ( nullptr != pRenderCollider )
 			pRenderCollider->Render ( _CmdList );
 		Safe_Release(pRenderCollider);
 	}
 	m_RenderColliders.clear ();
+
 	return S_OK;
 }
 #endif

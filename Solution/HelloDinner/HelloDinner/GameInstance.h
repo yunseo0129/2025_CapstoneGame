@@ -102,7 +102,7 @@ public: /* For.Collision_Manager */
 	void Delete_CollisionGroup(int _eGroup, class CCollider* _pCollider);
 	vector<class CCollider*> CollisionCheck_with_Group(class CCollider* _pCollider, int _eGroup);
 	bool CollisionCheck_with_Collider(class CCollider* _pMyCollider, class CCollider* _pOtherCollider);
-	bool CheckMove(CCollider* me, const XMFLOAT3& pos, const XMFLOAT3& move, XMFLOAT3& outSlide);
+	bool CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide);
 
 public: /* For.Renderer */
 	HRESULT Add_RenderObject(CRenderer::RENDERGROUP eRenderGroup, class CGameObject* pRenderObject);

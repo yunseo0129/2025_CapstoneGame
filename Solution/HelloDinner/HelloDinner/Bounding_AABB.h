@@ -23,6 +23,8 @@ public:
 	virtual void Update(_fmatrix WorldMatrix) override;
 	virtual void Render(PrimitiveBatch<VertexPositionColor>* pBatch) override;
 	virtual _bool Intersect(CCollider::COLLIDERTYPE eType, CBounding* pTargetBounding) override;
+	virtual _bool Intersect_Offset(CCollider::COLLIDERTYPE eType, CBounding* pTargetBounding, const _float3& vOffset) override;
+	virtual _float3 Get_CollisionNormal(CCollider::COLLIDERTYPE eTargetType, CBounding* pTargetBounding) override;
 	virtual _float3 Get_Center() override;
 
 private:
