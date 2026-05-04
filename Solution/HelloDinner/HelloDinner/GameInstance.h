@@ -68,6 +68,7 @@ public: /* For.Load_Manager */
 
 public: /* for.Level_Manager */
 	HRESULT Open_Level(_int iLevelIndex, class CLevel* pNewLevel);
+	_int    Get_CurrentLevelID();
 	XMFLOAT4X4 Get_CurrentCameraView ();
 	XMFLOAT4X4 Get_CurrentCameraProjection ();
 

@@ -18,7 +18,7 @@ HRESULT CMainApp::Initialize()
 	EngineDesc.hInstance = g_hInst;
 	EngineDesc.hWnd = g_hWnd;
 	EngineDesc.isWindowed = true;
-	EngineDesc.iNumLevels = 3;
+	EngineDesc.iNumLevels = LEVEL_END;
 	EngineDesc.iViewportWidth = Client::g_iWinSizeX;
 	EngineDesc.iViewportHeight = Client::g_iWinSizeY;
 
@@ -34,12 +34,12 @@ HRESULT CMainApp::Initialize()
 
 	m_pGameInstance->ResetCmdList ();
 
-	if (FAILED(SetUp_StartLevel(LEVEL_LOGO)))
+	if (FAILED(SetUp_StartLevel(LEVEL_GAMEPLAY)))
 		return E_FAIL;
 
 	m_pGameInstance->CloseCmdList ();
 
-	m_pGameInstance->ReleaseUploadBuffers ( LEVEL_LOADING );
+	m_pGameInstance->ReleaseUploadBuffers (LEVEL_GAMEPLAY);
 
 	return S_OK;
 }
@@ -47,9 +47,12 @@ HRESULT CMainApp::Initialize()
 
 void CMainApp::Update(_float fTimeDelta)
 {
+	m_isLoading = m_pGameInstance->Get_CurrentLevelID() == LEVEL_LOADING;
 
-	if ( FAILED ( m_pGameInstance->Render_Begin ( _float4 { 0.0f,1.0f, 0.0f ,0.0f } ) ) )
-		return;
+	if (!m_isLoading) {	// Loading 중이면 Render 작업 하지 않음
+		if (FAILED(m_pGameInstance->Render_Begin(_float4 {0.0f, 1.0f, 0.0f, 0.0f})))
+			return;
+	}
 
 	if (nullptr != m_pGameInstance)
 		m_pGameInstance->Update_Engine(fTimeDelta);
@@ -75,7 +78,9 @@ void CMainApp::Update(_float fTimeDelta)
 
 HRESULT CMainApp::Render()
 {
-
+	// Loading 중이면 스킵
+	if (m_isLoading)
+		return S_OK;
 
 	if (nullptr == m_pGameInstance)
 		return E_FAIL;

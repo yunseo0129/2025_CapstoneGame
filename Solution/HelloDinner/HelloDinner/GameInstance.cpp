@@ -355,6 +355,11 @@ HRESULT CGameInstance::Open_Level(_int iLevelIndex, CLevel* pNewLevel)
 	return m_pLevel_Manager->Open_Level(iLevelIndex, pNewLevel);
 }
 
+_int CGameInstance::Get_CurrentLevelID()
+{
+	return m_pLevel_Manager->Get_CurrentLevelID();
+}
+
 XMFLOAT4X4 CGameInstance::Get_CurrentCameraView()
 {
 	if (nullptr == m_pLevel_Manager)

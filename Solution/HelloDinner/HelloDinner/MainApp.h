@@ -22,6 +22,8 @@ private:
 	ENGINE_DESC EngineDesc = {};
 	EngineContext EngineContext = {};
 
+	bool m_isLoading = {false};
+
 private:
 	HRESULT SetUp_StartLevel(LEVELID eLevelID);
 

@@ -2,9 +2,9 @@
 
 #include "Base.h"
 
-/* assimp¿¡¼­´Â »ÀÀÇ Á¤º¸¸¦ ¼¼°¡Áö Å¸ÀÔÀ¸·Î Á¦°øÇÑ´Ù. */
+/* assimpì—ì„œëŠ” ë¼ˆì˜ ì •ë³´ë¥¼ ì„¸ê°€ì§€ íƒ€ì…ìœ¼ë¡œ ì œê³µí•œë‹¤. */
 /* aiNode, aiBone, aiNodeAnim */
-//			CBase »ó¼Ó
+//			CBase ìƒì†
 class CBone final : public CBase
 {
 private:
@@ -12,11 +12,11 @@ private:
 	virtual ~CBone() = default;
 
 public:
-	// ÀÌ »ÀÀÇ ÀÌ¸§À» ¹İÈ¯ÇÔ
+	// ì´ ë¼ˆì˜ ì´ë¦„ì„ ë°˜í™˜í•¨
 	const _char* Get_Name() const {
 		return m_szName;
 	}
-	// ÀÌ »ÀÀÇ ÄÄ¹ÙÀÎµåµÈ Æ®·£½ºÆû Çà·ÄÀ» ¹İÈ¯ÇÔ
+	// ì´ ë¼ˆì˜ ì»´ë°”ì¸ë“œëœ íŠ¸ëœìŠ¤í¼ í–‰ë ¬ì„ ë°˜í™˜í•¨
 	_matrix Get_CombinedTransformationMatrix() const {
 		return XMLoadFloat4x4(&m_CombindTransformationMatrix);
 	}
@@ -26,28 +26,28 @@ public:
 	_matrix Get_TransformationMatrix() const {
 		return XMLoadFloat4x4(&m_TransformationMatrix);
 	}
-	// Æ®·£½ºÆû Çà·Ä¿¡ ÀÎÀÚÇà·ÄÀ» ³Ö¾îÁÜ
+	// íŠ¸ëœìŠ¤í¼ í–‰ë ¬ì— ì¸ìí–‰ë ¬ì„ ë„£ì–´ì¤Œ
 	void Set_TransformationMatrix(_fmatrix TransformationMatrix) {
 		XMStoreFloat4x4(&m_TransformationMatrix, TransformationMatrix);
 	}
 
 public:
 	HRESULT Initialize(_char* Name, _float4x4 TransformMatrix, _int ParentIndex, _float4x4 CombindTransformationMatrix);
-	// ¸Å ÇÁ·¹ÀÓ ºÒ¸²
-	// ·çÆ®º»Àº ÇÁ¸®Æ®·£½ºÆû, ³ª¸ÓÁö´Â ÀÚ½ÅÀÇ ºÎ¸ğ ÄÄ¹ÙÀÎµå Çà·ÄÀ» ¹Ş¾Æ¿Í ÄÄ¹ÙÀÎµå Çà·ÄÀ» ¸¸µç´Ù
+	// ë§¤ í”„ë ˆì„ ë¶ˆë¦¼
+	// ë£¨íŠ¸ë³¸ì€ í”„ë¦¬íŠ¸ëœìŠ¤í¼, ë‚˜ë¨¸ì§€ëŠ” ìì‹ ì˜ ë¶€ëª¨ ì»´ë°”ì¸ë“œ í–‰ë ¬ì„ ë°›ì•„ì™€ ì»´ë°”ì¸ë“œ í–‰ë ¬ì„ ë§Œë“ ë‹¤
 	void Update_CombinedTransformationMatrix(const vector<CBone*>& Bones, _fmatrix PreTransformMatrix);
 
 private:
-	// ÀÌ »ÀÀÇ ÀÌ¸§
+	// ì´ ë¼ˆì˜ ì´ë¦„
 	_char				m_szName[MAX_PATH] = {};
 
-	/* ºÎ¸ğ¸¦ ±âÁØÀ¸·Î Ç¥ÇöÇÑ ³ª¸¸ÀÇ »óÅÂ Çà·Ä.  */
+	/* ë¶€ëª¨ë¥¼ ê¸°ì¤€ìœ¼ë¡œ í‘œí˜„í•œ ë‚˜ë§Œì˜ ìƒíƒœ í–‰ë ¬.  */
 	_float4x4			m_TransformationMatrix = {};
 
 	/* m_TransformationMatrix * Parent`s m_CombindTransformationMatrix  */
 	_float4x4			m_CombindTransformationMatrix = {};
 
-	// ³» ºÎ¸ğ »À ÀÎµ¦½º ¹øÈ£
+	// ë‚´ ë¶€ëª¨ ë¼ˆ ì¸ë±ìŠ¤ ë²ˆí˜¸
 	_int				m_iParentBoneIndex = { -1 };
 
 public:

@@ -66,15 +66,15 @@ _bool CBounding_AABB::Intersect_Offset(CCollider::COLLIDERTYPE eType, CBounding*
 	{
 	case CCollider::TYPE_AABB:
 	{
-		// ÀÓ½Ã ¹Ù¿îµù ¹Ú½º »ı¼º
+		// ì„ì‹œ ë°”ìš´ë”© ë°•ìŠ¤ ìƒì„±
 		DirectX::BoundingBox tempDesc = *static_cast<CBounding_AABB*>(pTargetBounding)->Get_Desc();
 
-		// ÀÓ½Ã ¹Ù¿îµù ¹Ú½º¿¡ Offset Àû¿ë
+		// ì„ì‹œ ë°”ìš´ë”© ë°•ìŠ¤ì— Offset ì ìš©
 		XMVECTOR vCenter = XMLoadFloat3(&tempDesc.Center);
 		vCenter = XMVectorAdd(vCenter, vOff); 
 		XMStoreFloat3(&tempDesc.Center, vCenter);
 
-		// ³ª¿Í ÀÓ½Ã ¹Ù¿îµù ¹Ú½ºÀÇ Ãæµ¹ ¿©ºÎ Ã¼Å©
+		// ë‚˜ì™€ ì„ì‹œ ë°”ìš´ë”© ë°•ìŠ¤ì˜ ì¶©ëŒ ì—¬ë¶€ ì²´í¬
 		m_isColl = m_pBoundDesc->Intersects(tempDesc);
 		break;
 	}

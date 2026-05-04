@@ -109,7 +109,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>../HelloDinner/ThirdParty/Lib/Debug</AdditionalLibraryDirectories>
-      <AdditionalDependencies>DirectXTK12.lib</AdditionalDependencies>
+      <AdditionalDependencies>DirectXTK12.lib;gdi32.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -135,7 +135,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>../HelloDinner/ThirdParty/Lib/Release</AdditionalLibraryDirectories>
-      <AdditionalDependencies>DirectXTK12.lib</AdditionalDependencies>
+      <AdditionalDependencies>DirectXTK12.lib;gdi32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -155,7 +155,10 @@
     <ClInclude Include="Collider.h" />
     <ClInclude Include="Collision_Manager.h" />
     <ClInclude Include="Controller.h" />
+    <ClInclude Include="Level_Gameplay.h" />
     <ClInclude Include="Light.h" />
+    <ClInclude Include="Loader.h" />
+    <ClInclude Include="LoadingWindow.h" />
     <ClInclude Include="Shadow.h" />
     <ClInclude Include="Texture_Manager.h" />
     <ClInclude Include="Obj_CollisionTest.h" />
@@ -231,7 +234,10 @@
     </ClCompile>
     <ClCompile Include="Collision_Manager.cpp" />
     <ClCompile Include="Controller.cpp" />
+    <ClCompile Include="Level_Gameplay.cpp" />
     <ClCompile Include="Light.cpp" />
+    <ClCompile Include="Loader.cpp" />
+    <ClCompile Include="LoadingWindow.cpp" />
     <ClCompile Include="Shadow.cpp" />
     <ClCompile Include="Texture_Manager.cpp" />
     <ClCompile Include="Obj_CollisionTest.cpp" />

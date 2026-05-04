@@ -224,11 +224,11 @@ HRESULT CPlayer_1rd::Ready_PartObjects()
     {
         CKetchup_Gun::KETCHUP_GUN_DESC cdesc;
         cdesc.strModelTag = L"Prototype_Component_ketchupGun";
-        cdesc.iModelLevelIndex = 1;
+        cdesc.iModelLevelIndex = m_iModelLevelIndex;
         cdesc.pParentMatrix = &m_matFPSModel;
         cdesc.pSocketMatrix = m_pFPSModelCom->Get_BoneMatrix("weapon");
         cdesc.vScale = _float3(1.f, 1.f, 1.f);
-        m_PartObjects[0] = static_cast<CPartObj*>(m_pGameInstance->Clone_Prototype(Engine::PROTOTYPE::PROTO_GAMEOBJ, 1, TEXT("Prototype_GameObject_Ketchup_Gun"), &cdesc));
+        m_PartObjects[0] = static_cast<CPartObj*>(m_pGameInstance->Clone_Prototype(Engine::PROTOTYPE::PROTO_GAMEOBJ, m_iModelLevelIndex, TEXT("Prototype_GameObject_Ketchup_Gun"), &cdesc));
         if (nullptr == m_PartObjects[0])
             return E_FAIL;
     }
@@ -246,7 +246,7 @@ HRESULT CPlayer_1rd::Ready_Components()
     }
 
     // FPS Model 컴포넌트 생성
-    if (FAILED(Add_Component(LEVEL_LOADING, TEXT("Prototype_Component_Player_Pig_fps"),
+    if (FAILED(Add_Component(m_iModelLevelIndex, TEXT("Prototype_Component_Player_Pig_fps"),
         TEXT("Com_FPSModel"), reinterpret_cast<CComponent**>(&m_pFPSModelCom))))
     {
         MSG_BOX("Failed to Add Component : Model in CPlayer_1rd");

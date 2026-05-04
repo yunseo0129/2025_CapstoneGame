@@ -91,7 +91,7 @@ _bool CBounding_Sphere::Intersect_Offset(CCollider::COLLIDERTYPE eType, CBoundin
 _float3 CBounding_Sphere::Get_CollisionNormal(CCollider::COLLIDERTYPE eTargetType, CBounding* pTargetBounding)
 {
 	XMVECTOR vMe = XMLoadFloat3(&m_pBoundDesc->Center);
-	XMVECTOR vNormal = XMVectorSet(0.f, 1.f, 0.f, 0.f); // ±âº»°ª (À§ÂÊ)
+	XMVECTOR vNormal = XMVectorSet(0.f, 1.f, 0.f, 0.f); // ï¿½âº»ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½)
 
 	switch (eTargetType)
 	{
@@ -120,30 +120,30 @@ _float3 CBounding_Sphere::Get_CollisionNormal(CCollider::COLLIDERTYPE eTargetTyp
 
 		XMVECTOR vOBBCenter = XMLoadFloat3(&pOBB->Center);
 		XMVECTOR vExtents = XMLoadFloat3(&pOBB->Extents);
-		XMVECTOR vOrientation = XMLoadFloat4(&pOBB->Orientation); // OBBÀÇ È¸Àü°ª (ÄõÅÍ´Ï¾ð)
+		XMVECTOR vOrientation = XMLoadFloat4(&pOBB->Orientation); // OBBï¿½ï¿½ È¸ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½Í´Ï¾ï¿½)
 
-		// 1. OBBÀÇ Áß½ÉÀ» ¿øÁ¡À¸·Î µ×À» ¶§, ³»(±¸Ã¼) Áß½ÉÀÇ À§Ä¡ º¤ÅÍ
+		// 1. OBBï¿½ï¿½ ï¿½ß½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½, ï¿½ï¿½(ï¿½ï¿½Ã¼) ï¿½ß½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
 		XMVECTOR vLocalSphereCenter = XMVectorSubtract(vMe, vOBBCenter);
 
-		// 2. ÀÌ À§Ä¡¸¦ OBBÀÇ ¿ªÈ¸Àü(Conjugate)À¸·Î µ¹·Á¼­ ·ÎÄÃ °ø°£(È¸Àü ¾È µÈ AABB »óÅÂ)À¸·Î ¸¸µê
+		// 2. ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ OBBï¿½ï¿½ ï¿½ï¿½È¸ï¿½ï¿½(Conjugate)ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(È¸ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ AABB ï¿½ï¿½ï¿½ï¿½)ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		XMVECTOR vInverseOrientation = XMQuaternionConjugate(vOrientation);
 		vLocalSphereCenter = XMVector3Rotate(vLocalSphereCenter, vInverseOrientation);
 
-		// 3. ·ÎÄÃ °ø°£(AABB)¿¡¼­ Extents¸¦ ÀÌ¿ëÇØ °¡Àå °¡±î¿î Á¡ Ã£±â (Clamp)
+		// 3. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(AABB)ï¿½ï¿½ï¿½ï¿½ Extentsï¿½ï¿½ ï¿½Ì¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ Ã£ï¿½ï¿½ (Clamp)
 		XMVECTOR vMin = XMVectorNegate(vExtents); // -Extents
 		XMVECTOR vMax = vExtents;                 // +Extents
 		XMVECTOR vLocalClosestPoint = XMVectorClamp(vLocalSphereCenter, vMin, vMax);
 
-		// 4. Ã£Àº ·ÎÄÃ ÁÂÇ¥ÀÇ Á¡À» ¿ø·¡ OBBÀÇ È¸Àü°ªÀ¸·Î ´Ù½Ã µ¹·Á³õ±â
+		// 4. Ã£ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ç¥ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ OBBï¿½ï¿½ È¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		XMVECTOR vWorldClosestPoint = XMVector3Rotate(vLocalClosestPoint, vOrientation);
 
-		// 5. OBBÀÇ Áß½ÉÁ¡À» ´Ù½Ã ´õÇØ¼­ ¿Ïº®ÇÑ ¿ùµå ÁÂÇ¥ Ç¥¸éÀÇ Á¡À¸·Î º¹±¸
+		// 5. OBBï¿½ï¿½ ï¿½ß½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½Ïºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ç¥ Ç¥ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		vWorldClosestPoint = XMVectorAdd(vWorldClosestPoint, vOBBCenter);
 
-		// 6. °¡Àå °¡±î¿î Á¡(Ç¥¸é)¿¡¼­ ³» ±¸Ã¼¸¦ ÇâÇÏ´Â ÃÖÁ¾ ¹ý¼± ÃßÃâ
+		// 6. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½(Ç¥ï¿½ï¿½)ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		XMVECTOR vDir = XMVectorSubtract(vMe, vWorldClosestPoint);
 
-		// ¿¹¿Ü Ã³¸® (ÆÄ¹¯ÇûÀ» °æ¿ì)
+		// ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ (ï¿½Ä¹ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½)
 		if (XMVector3Equal(vDir, XMVectorZero()))
 			vDir = XMVectorSubtract(vMe, vOBBCenter);
 

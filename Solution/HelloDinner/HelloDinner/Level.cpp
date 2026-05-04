@@ -62,7 +62,7 @@ HRESULT CLevel::Render()
 void CLevel::Add_Camera()
 {
 }
-
+ 
 void CLevel::Bind_CameraBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameterIndex _eIndex, CAMERA_TYPE _eType)
 {
 	if (_eIndex >= RootParameterIndex::End)
