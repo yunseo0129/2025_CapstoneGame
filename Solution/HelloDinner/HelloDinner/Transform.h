@@ -30,6 +30,8 @@ public:
 		return XMLoadFloat4x4(&m_WorldMatrix);
 	}
 
+	_float Get_SpeedPerSec() const { return m_fSpeedPerSec; }
+
 	const _float4x4* Get_WorldFloat4x4_Ptr() {
 		return &m_WorldMatrix;
 	}

@@ -178,24 +178,35 @@ void CPlayer_1rd::Move(_float _fLook, _float _fRight, _float _val)
     // 최종 이동 할 방향벡터(크기가 거리)
     _vector vDir = vLook + vRight;
 
+    if (XMVectorGetX(XMVector3LengthSq(vDir)) < 1e-6f)
+        return;
+
+    vDir = XMVector3Normalize(vDir);
+
+    _float fFrameDist = m_pTransformCom->Get_SpeedPerSec() * _val;
+    if (fFrameDist < 1e-6f) return;
+    _vector vMove = vDir * fFrameDist;
+
     // 여기서 충돌체크를 해주는게 좋을 것 같소
     
     for (CCollider* pCollider : m_vMapColliderComs)
     {
-        if (pCollider != nullptr)
+        if (pCollider == nullptr) continue;
+
+        _float3 vOffset;
+        XMStoreFloat3(&vOffset, vMove);
+
+        _float3 vSlide;
+        if (m_pGameInstance->CheckMove(pCollider, vOffset, vSlide))
         {
-            _float3 vOffset;
-            XMStoreFloat3(&vOffset, vDir);
-            _float3 vSlide;
-            if (m_pGameInstance->CheckMove(pCollider, vOffset, vSlide))
-            {
-                vDir = XMLoadFloat3(&vSlide);
-            }
+            vMove = XMLoadFloat3(&vSlide);
         }
 	}
 
     // 충돌하지 않는다면
-    m_pTransformCom->Move(vDir, _val);
+    _vector vPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+    vPos = XMVectorAdd(vPos, vMove);
+    m_pTransformCom->Set_State(CTransform::STATE_POSITION, vPos);
 }
 
 void CPlayer_1rd::TurnYaw(_float _val)

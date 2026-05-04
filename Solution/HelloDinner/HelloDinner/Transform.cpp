@@ -124,7 +124,7 @@ void CTransform::Go_Up(_float fTimeDelta)
 void CTransform::Move(_vector vDir, _float fTimeDelta)
 {
 	_vector		vPosition = Get_State(STATE_POSITION);
-	vPosition += XMVector3Normalize(vDir) * m_fSpeedPerSec * fTimeDelta;
+	vPosition += vDir * m_fSpeedPerSec * fTimeDelta;
 
 	Set_State(STATE_POSITION, vPosition);
 }

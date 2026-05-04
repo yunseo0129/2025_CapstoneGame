@@ -78,23 +78,40 @@ bool CCollision_Manager::CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3
 	bool bHit = false;
 	XMFLOAT3 finalMove = move;
 
-	for (CCollider* other : m_Colliders[GROUP_MAP])
+	// 최대 반복 횟수 설정 (충돌 해결이 완전히 될 때까지 여러 번 시도)
+	const int MAX_ITER = 4;
+	for (int iter = 0; iter < MAX_ITER; ++iter)
 	{
-		// MAP 오브젝트의 Collider가 활성화되어있는지 확인
-		if (!other->Get_Enable()) continue;
+		bool bAnyHitThisIter = false;
 
-		// 이동 후 충돌 해?
-		if (IsCollidingAfterMove(me, other, finalMove))
+		for (CCollider* other : m_Colliders[GROUP_MAP])
 		{
-			bHit = true;
+			// MAP 오브젝트의 Collider가 활성화되어있는지 확인
+			if (!other->Get_Enable()) continue;
 
-			// 충돌한 면의 법선 벡터 구하기
-			// XMFLOAT3 normal = GetCollisionNormal(me, other);
-			XMFLOAT3 normal = me->Get_CollisionNormal(other);
-			finalMove = Slide(move, normal);
+			// 이동 후 충돌 해?
+			if (IsCollidingAfterMove(me, other, finalMove))
+			{
+				bHit = true;
+
+				// 충돌한 면의 법선 벡터 구하기
+				// XMFLOAT3 normal = GetCollisionNormal(me, other);
+				XMFLOAT3 normal = me->Get_CollisionNormal(other);
+				finalMove = Slide(finalMove, normal);
+			}
+		}
+
+		// 더 이상 충돌 없으면 조기 종료
+		if (!bAnyHitThisIter) break;
+
+		// 슬라이드 결과가 거의 0이면 정지로 간주
+		XMVECTOR vLenSq = XMVector3LengthSq(XMLoadFloat3(&finalMove));
+		if (XMVectorGetX(vLenSq) < 1e-8f)
+		{
+			finalMove = {0.f, 0.f, 0.f};
+			break;
 		}
 	}
-
 	outSlide = finalMove;
 	return bHit;
 }
