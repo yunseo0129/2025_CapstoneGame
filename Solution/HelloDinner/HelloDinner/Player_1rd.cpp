@@ -71,7 +71,35 @@ void CPlayer_1rd::Priority_Update(_float fTimeDelta)
     }
     else if (m_pGameInstance->Key_Pressing(DIK_LCONTROL))
     {
-        m_pTransformCom->Go_Up(-fTimeDelta);
+        // 바닥 충돌 테스트
+        // m_pTransformCom->Go_Up(-fTimeDelta);
+        _vector vDir = XMVectorSet(0.f, -1.f, 0.f, 0.f);
+
+        _float fFrameDist = m_pTransformCom->Get_SpeedPerSec() * fTimeDelta;
+        if (fFrameDist >= 1e-6f)
+        {
+            _vector vMove = vDir * fFrameDist;
+
+            // Move()와 동일 패턴: 각 collider마다 슬라이드 누적
+            for (CCollider* pCollider : m_vMapColliderComs)
+            {
+                if (pCollider == nullptr) continue;
+
+                _float3 vOffset;
+                XMStoreFloat3(&vOffset, vMove);
+
+                _float3 vSlide;
+                if (m_pGameInstance->CheckMove(pCollider, vOffset, vSlide))
+                {
+                    vMove = XMLoadFloat3(&vSlide);   // 슬라이드된 값으로 다음 검사
+                }
+            }
+
+            // 최종 결정된 vMove로 한 번만 이동
+            _vector vPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+            vPos = XMVectorAdd(vPos, vMove);
+            m_pTransformCom->Set_State(CTransform::STATE_POSITION, vPos);
+        }
     }
 
     // 1인칭 모델 동기화
@@ -107,6 +135,20 @@ void CPlayer_1rd::Update(_float fTimeDelta)
             pCollider->Update();
     }
 
+#ifdef _DEBUG
+    {
+        XMFLOAT3 vP; XMStoreFloat3(&vP, m_pTransformCom->Get_State(CTransform::STATE_POSITION));
+        auto* pS0 = m_vMapColliderComs[0] ? static_cast<const CBounding_Sphere*>(m_vMapColliderComs[0]->Get_Bounding())->Get_Desc() : nullptr;
+        auto* pS1 = m_vMapColliderComs[1] ? static_cast<const CBounding_Sphere*>(m_vMapColliderComs[1]->Get_Bounding())->Get_Desc() : nullptr;
+        char buf[256];
+        sprintf_s(buf, "Player y=%.2f | Foot center=(%.2f, %.2f, %.2f) | Body center=(%.2f, %.2f, %.2f)\n",
+            vP.y,
+            pS0 ? pS0->Center.x : 0, pS0 ? pS0->Center.y : 0, pS0 ? pS0->Center.z : 0,
+            pS1 ? pS1->Center.x : 0, pS1 ? pS1->Center.y : 0, pS1 ? pS1->Center.z : 0);
+        OutputDebugStringA(buf);
+    }
+#endif
+
     __super::Update(fTimeDelta);
 }
 
@@ -133,7 +175,7 @@ void CPlayer_1rd::Render(ID3D12GraphicsCommandList* _commandList)
 
     // 콜라이더 디버깅
 #ifdef _DEBUG
-   /* for (CCollider* pCollider : m_vColliderComs)
+    for (CCollider* pCollider : m_vColliderComs)
     {
         if (pCollider != nullptr)
             m_pGameInstance->Add_RenderCollider(pCollider);
@@ -142,7 +184,7 @@ void CPlayer_1rd::Render(ID3D12GraphicsCommandList* _commandList)
     {
         if (pCollider != nullptr)
             m_pGameInstance->Add_RenderCollider(pCollider);
-    }*/
+    }
 #endif
 }
 

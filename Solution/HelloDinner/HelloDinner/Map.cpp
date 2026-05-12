@@ -6,6 +6,7 @@
 #include "Bounding_OBB.h"
 #include "Bounding_Sphere.h"
 
+
 CMap::CMap(EngineContext* pContext)
 	: CGameObject(pContext)
 {
@@ -71,6 +72,15 @@ void CMap::Update(_float fTimeDelta)
 
 void CMap::Late_Update(_float fTimeDelta)
 {
+	_float3 c; _float r;
+	if (Get_WorldBoundingSphere(c, r))
+	{
+		char buf[256];
+		sprintf_s(buf, "Map sphere: center(%.2f, %.2f, %.2f), radius=%.2f\n",
+			c.x, c.y, c.z, r);
+		OutputDebugStringA(buf);
+	}
+
 	m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, this);
 	m_pGameInstance->Add_CollisionGroup(0, m_pColliderCom);	// enum으로 수정
 }
@@ -114,6 +124,29 @@ void CMap::ShadowRender(ID3D12GraphicsCommandList* _commandList)
 		m_pModelCom->Render(_commandList, i, true);
 	}
 
+}
+
+bool CMap::Get_WorldBoundingSphere(_float3& outCenter, _float& outRadius) const
+{
+	// collider 정보가 세팅 안 된 맵은 컬링 패스 (false positive 안전)
+	if (m_eColliderType == CCollider::TYPE_END)
+		return false;
+
+	// 1. center: 이미 world 좌표 → 그대로 반환
+	outCenter = m_vCenterCollider;
+
+	// 2. radius: extents도 이미 world 크기 → 회전과 무관하게 외접구 반지름은 대각선 절반
+	if (m_eColliderType == CCollider::TYPE_SPHERE)
+	{
+		outRadius = m_fRadius;
+	}
+	else // AABB / OBB
+	{
+		XMVECTOR vExtents = XMLoadFloat3(&m_vExtentsCollider);
+		XMStoreFloat(&outRadius, XMVector3Length(vExtents));
+	}
+
+	return true;
 }
 
 HRESULT CMap::Ready_Components()

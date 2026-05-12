@@ -76,7 +76,7 @@ void CLevel_GamePlay::Add_Camera()
     ShowCursor(false);
 
     CCamera_FPV::FPV_CAMERA_DESC tDesc;
-    tDesc.vEye = _float3 {0.f, 1.38f, -5.f};
+    tDesc.vEye = _float3 {0.f, 1.38f, -100.f};
     tDesc.vAt = _float3 {0.f, 1.38f, 0.f};
     tDesc.fFovy = XMConvertToRadians(60.f);
     tDesc.fAspect = 1280.f / 720.f;
@@ -181,7 +181,7 @@ HRESULT CLevel_GamePlay::Ready_Layer()
             LEVEL_GAMEPLAY, TEXT("Layer_Other_Player"), &eState);
     }
     return S_OK;
-}
+} 
 
 void CLevel_GamePlay::Process_NetworkEvents()
 {

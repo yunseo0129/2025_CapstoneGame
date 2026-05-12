@@ -50,7 +50,7 @@ private:
 	class CModel*		m_pFPSModelCom = { nullptr };
 	_float4x4			m_matFPSModel;
 	vector<class CCollider*> m_vColliderComs;
-	vector<class CCollider*> m_vMapColliderComs;
+	vector<class CCollider*> m_vMapColliderComs  ;
 	_uint				m_iState = 0;
 	_int				m_iHealth = 0;
 	_wstring			m_strModelTag = L"";

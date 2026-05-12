@@ -34,6 +34,10 @@ public:
 	virtual void Late_Update(_float fTimeDelta) override;
 	virtual void Render(ID3D12GraphicsCommandList* _commandList) override;
 	virtual void ShadowRender(ID3D12GraphicsCommandList* _commandList) override;
+	 
+public:
+	// Frustum Culling
+	virtual bool Get_WorldBoundingSphere(_float3& pOutCenter, _float& pOutRadius) const override;
 
 private:
 	HRESULT Ready_Components();

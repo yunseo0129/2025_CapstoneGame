@@ -27,7 +27,7 @@ void CCollision_Manager::Update_Collision()
 
 void CCollision_Manager::Clear_CollisionGroup()
 {
-	for (vector<CCollider*> vec : m_Colliders)
+	for (auto& vec : m_Colliders)
 		vec.clear();
 }
 
