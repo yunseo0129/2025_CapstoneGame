@@ -106,7 +106,7 @@ _float3 CBounding_OBB::Get_CollisionNormal(CCollider::COLLIDERTYPE eTargetType, 
 		break;
 	}
 
-	// ³» ·ÎÄÃ ÁÂÇ¥°è ±âÁØÀ¸·Î »ó´ë Áß½É À§Ä¡ °è»ê
+	// ë‚´ ë¡œì»¬ ì¢Œí‘œê³„ ê¸°ì¤€ìœ¼ë¡œ ìƒëŒ€ ì¤‘ì‹¬ ìœ„ì¹˜ ê³„ì‚°
 	XMVECTOR vDelta = XMVectorSubtract(vTargetCenter, vMeCenter);
 	XMVECTOR vInvOrient = XMQuaternionConjugate(vOrientation);
 	XMVECTOR vLocalDelta = XMVector3Rotate(vDelta, vInvOrient);
@@ -114,20 +114,20 @@ _float3 CBounding_OBB::Get_CollisionNormal(CCollider::COLLIDERTYPE eTargetType, 
 	_float3 fLocal;
 	XMStoreFloat3(&fLocal, vLocalDelta);
 
-	// ·ÎÄÃ ÁÂÇ¥¿¡¼­ °¡Àå Å« Ãà °áÁ¤
+	// ë¡œì»¬ ì¢Œí‘œì—ì„œ ê°€ìž¥ í° ì¶• ê²°ì •
 	_float fAbsX = fabsf(fLocal.x);
 	_float fAbsY = fabsf(fLocal.y);
 	_float fAbsZ = fabsf(fLocal.z);
 
 	_float3 vLocalNormal {0.f, 0.f, 0.f};
 	if (fAbsX >= fAbsY && fAbsX >= fAbsZ)
-		vLocalNormal.x = (fLocal.x >= 0.f) ? -1.f : 1.f;   // »ó´ë ¹Ý´ë¹æÇâ
+		vLocalNormal.x = (fLocal.x >= 0.f) ? -1.f : 1.f;   // ìƒëŒ€ ë°˜ëŒ€ë°©í–¥
 	else if (fAbsY >= fAbsX && fAbsY >= fAbsZ)
 		vLocalNormal.y = (fLocal.y >= 0.f) ? -1.f : 1.f;
 	else
 		vLocalNormal.z = (fLocal.z >= 0.f) ? -1.f : 1.f;
 
-	// ´Ù½Ã ¿ùµå ÁÂÇ¥°è·Î È¸Àü
+	// ë‹¤ì‹œ ì›”ë“œ ì¢Œí‘œê³„ë¡œ íšŒì „
 	XMVECTOR vWorldNormal = XMVector3Rotate(XMLoadFloat3(&vLocalNormal), vOrientation);
 
 	_float3 result;

@@ -8,7 +8,7 @@ CTexture_Manager::CTexture_Manager(EngineContext* _context)
 
 HRESULT CTexture_Manager::Initialize()
 {
-	// 1. SRV Èü »ı¼º
+	// 1. SRV í™ ìƒì„±
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
 	srvHeapDesc.NumDescriptors = m_iMaxDescriptors;
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -24,10 +24,10 @@ HRESULT CTexture_Manager::Initialize()
 }
 
 
-// CPU ÇÚµé °è»ê
+// CPU í•¸ë“¤ ê³„ì‚°
 CD3DX12_CPU_DESCRIPTOR_HANDLE CTexture_Manager::Get_CPUHandle()
 {
-	// ÇöÀç ÀÎµ¦½º¿¡ ÇØ´çÇÏ´Â CPU ÇÚµé °è»ê
+	// í˜„ì¬ ì¸ë±ìŠ¤ì— í•´ë‹¹í•˜ëŠ” CPU í•¸ë“¤ ê³„ì‚°
 	CD3DX12_CPU_DESCRIPTOR_HANDLE hHandle(m_pSrvHeap->GetCPUDescriptorHandleForHeapStart());
 
 	hHandle.Offset(m_iCurrentIndex, m_iDescriptorSize);
@@ -57,8 +57,8 @@ void CTexture_Manager::Bind_GlobalHeap(ID3D12GraphicsCommandList* _pCmdList)
 
 void CTexture_Manager::initialize_DefaultTexture(ID3D12GraphicsCommandList* _pCmdList)
 {
-	// ±âº» ³ë¸» ÅØ½ºÃÄ »ı¼º
-	// 1x1 ÇÏ´Ã»ö? ÅØ½ºÃÄ
+	// ê¸°ë³¸ ë…¸ë§ í…ìŠ¤ì³ ìƒì„±
+	// 1x1 í•˜ëŠ˜ìƒ‰? í…ìŠ¤ì³
 	m_pDefaultNormalTexture = CTexture::Create(m_pContext, L"Resources/Textures/DefaultNormal.png", 1);
 
 }

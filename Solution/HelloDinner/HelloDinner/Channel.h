@@ -2,10 +2,10 @@
 
 #include "Base.h"
 
-/* 0. ÀÌ »À°¡ ¼Ò¼ÓµÈ ¾Ö´Ï¸ŞÀÌ¼ÇÀ» Ç¥ÇöÇÏ±âÀ§ÇØ¼­ »À´Â ¾î¶² »óÅÂ(KeyFrame)(Çà·Ä)µéÀ» °¡Áö´Â°¡?! ¿¡ ´ëÇÑ Á¤º¸¸¦ °¡Áø´Ù. */
-/* 1. ÇöÀç Àç»ı½Ã°£¿¡ ¸Â´Â »ÀÀÇ »óÅÂÇà·ÄÀ» ¸¸µé¾î³½´Ù.  */
-/* 2. °°Àº ÀÌ¸§À» °¡Áø Ã¤³ÎÀÌ ´Ù¼ö Á¸ÀçÇÒ ¼ö ÀÖ´Ù?! */
-//		CBase »ó¼Ó
+/* 0. ì´ ë¼ˆê°€ ì†Œì†ëœ ì• ë‹ˆë©”ì´ì…˜ì„ í‘œí˜„í•˜ê¸°ìœ„í•´ì„œ ë¼ˆëŠ” ì–´ë–¤ ìƒíƒœ(KeyFrame)(í–‰ë ¬)ë“¤ì„ ê°€ì§€ëŠ”ê°€?! ì— ëŒ€í•œ ì •ë³´ë¥¼ ê°€ì§„ë‹¤. */
+/* 1. í˜„ì¬ ì¬ìƒì‹œê°„ì— ë§ëŠ” ë¼ˆì˜ ìƒíƒœí–‰ë ¬ì„ ë§Œë“¤ì–´ë‚¸ë‹¤.  */
+/* 2. ê°™ì€ ì´ë¦„ì„ ê°€ì§„ ì±„ë„ì´ ë‹¤ìˆ˜ ì¡´ì¬í•  ìˆ˜ ìˆë‹¤?! */
+//		CBase ìƒì†
 class CChannel final : public CBase
 {
 private:
@@ -14,8 +14,8 @@ private:
 
 public:
 	HRESULT Initialize(const class CModel* pModel);
-	// ¸Å ÇÁ·¹ÀÓ ºÒ¸²
-	// Ã¤³ÎÀÇ ÀÎµ¦½º¹øÈ£¿Í °°Àº »À¸¦ Çö Àç»ı ÁßÀÎ ¾Ö´ÔÀÇ ÇØ´ç »ÀÀÇ ¸ÅÆ®¸¯½º¸¦ Å°ÇÁ·¹ÀÓÀ¸·Î º¸°£ÇØÁÜ
+	// ë§¤ í”„ë ˆì„ ë¶ˆë¦¼
+	// ì±„ë„ì˜ ì¸ë±ìŠ¤ë²ˆí˜¸ì™€ ê°™ì€ ë¼ˆë¥¼ í˜„ ì¬ìƒ ì¤‘ì¸ ì• ë‹˜ì˜ í•´ë‹¹ ë¼ˆì˜ ë§¤íŠ¸ë¦­ìŠ¤ë¥¼ í‚¤í”„ë ˆì„ìœ¼ë¡œ ë³´ê°„í•´ì¤Œ
 	void Update_TransformationMatrix(_float fCurrentTrackPosition, _uint* pKeyFrameIndex, const vector<class CBone*>& Bones);
 	void Update_TransformationMatrix(_float fCurrentTrackPosition, _float fBlendTime, const vector<class CBone*>& Bones);
 	void Channel_Init() { m_BeforeKeyFrame = {}; }
@@ -23,17 +23,17 @@ public:
 	void Capture_KeyFrame(const vector<class CBone*>& Bones);
 
 private:
-	// ÀÌ »À(Ã¤³Î)ÀÇ ÀÌ¸§
+	// ì´ ë¼ˆ(ì±„ë„)ì˜ ì´ë¦„
 	_char						m_szName[MAX_PATH] = {};
-	// Å°ÇÁ·¹ÀÓ ¼ö
+	// í‚¤í”„ë ˆì„ ìˆ˜
 	_uint						m_iNumKeyFrames = {};
-	// Å°ÇÁ·¹ÀÓÀ» µé°íÀÖ´Â º¤ÅÍ
+	// í‚¤í”„ë ˆì„ì„ ë“¤ê³ ìˆëŠ” ë²¡í„°
 	vector<KEYFRAME>			m_KeyFrames;
-	// ÀÌ »ÀÀÇ ÀÎµ¦½º ¹øÈ£ Á¤º¸
+	// ì´ ë¼ˆì˜ ì¸ë±ìŠ¤ ë²ˆí˜¸ ì •ë³´
 	_uint						m_iBoneIndex = {};
-	// º¸°£ÇÒ ÀÌÀü ÇÁ·¹ÀÓ
+	// ë³´ê°„í•  ì´ì „ í”„ë ˆì„
 	KEYFRAME					m_BeforeKeyFrame = {};
-	// ¾ÆÁ÷ ¹Ì»ç¿ëÁß
+	// ì•„ì§ ë¯¸ì‚¬ìš©ì¤‘
 	_uint						m_iNumScaleFrameKeys = {};
 	_uint						m_iNumRotationFrameKeys = {};
 	_uint						m_iNumPositionFrameKeys = {};

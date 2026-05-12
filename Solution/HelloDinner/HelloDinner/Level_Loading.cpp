@@ -19,12 +19,12 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 {
     m_eNextLevelID = eNextLevelID;
 
-    // ¸ÞÀÎ À§¿¡ À©µµ¿ì 
+    // ë©”ì¸ ìœ„ì— ìœˆë„ìš° 
     m_pLoadingWindow = CLoadingWindow::Create(g_hInst, g_hWnd);
     if (nullptr == m_pLoadingWindow)
         return E_FAIL;
 
-   // ·Îµù
+   // ë¡œë”©
     m_pLoader = CLoader::Create(m_pContext, eNextLevelID);
     if (nullptr == m_pLoader)
         return E_FAIL;
@@ -39,21 +39,21 @@ void CLevel_Loading::Update(_float fTimeDelta)
     if (nullptr == m_pLoader)
         return;
 
-    // CLoaderÀÇ ÇöÀç ÅØ½ºÆ®¸¦ LoadingWindow¿¡ Àü´Þ
+    // CLoaderì˜ í˜„ìž¬ í…ìŠ¤íŠ¸ë¥¼ LoadingWindowì— ì „ë‹¬
     if (m_pLoadingWindow)
     {
         _tchar szText[MAX_PATH] = {};
         m_pLoader->Get_LoadingText(szText, MAX_PATH);
         m_pLoadingWindow->Update(szText, -1.f);
-        // ÃßÈÄ ÁøÇà·üÀ» µÎ¹øÂ° ÀÎÀÚ·Î Àü´Þ (0.0 ~ 1.0)
+        // ì¶”í›„ ì§„í–‰ë¥ ì„ ë‘ë²ˆì§¸ ì¸ìžë¡œ ì „ë‹¬ (0.0 ~ 1.0)
     }
 
-    // ·Îµù ¿Ï·á
+    // ë¡œë”© ì™„ë£Œ
     if (m_pLoader->isFinished())
     {
         m_pGameInstance->ResetCmdList();
 
-        // ´ÙÀ½ ·¹º§ °´Ã¼ »ý¼º
+        // ë‹¤ìŒ ë ˆë²¨ ê°ì²´ ìƒì„±
         CLevel* pNextLevel = Create_NextLevel();
         if (nullptr == pNextLevel) {
             m_pGameInstance->CloseCmdList();
@@ -62,7 +62,7 @@ void CLevel_Loading::Update(_float fTimeDelta)
 
         m_pGameInstance->CloseCmdList();
 
-        // ·Îµù À©µµ¿ì ´Ý±â
+        // ë¡œë”© ìœˆë„ìš° ë‹«ê¸°
         if (m_pLoadingWindow)
             m_pLoadingWindow->Close();
 

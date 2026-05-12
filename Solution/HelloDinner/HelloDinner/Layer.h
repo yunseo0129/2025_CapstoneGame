@@ -2,7 +2,7 @@
 
 #include "Base.h"
 
-/* °´Ã¼µéÀ» ·¹ÀÌ¾î º°·Î ¹­¾î¼­ ´Ù¼ö º¸°üÇÑ´Ù. */
+/* ê°ì²´ë“¤ì„ ë ˆì´ì–´ ë³„ë¡œ ë¬¶ì–´ì„œ ë‹¤ìˆ˜ ë³´ê´€í•œë‹¤. */
 
 class CLayer final : public CBase
 {
@@ -19,9 +19,9 @@ public:
 	list<class CGameObject*> Get_List() { return m_GameObjects; }
 
 private:
-	// ÃßÈÄ std::mapÀ¸·Î ·¹ÀÌ¾î ³»ºÎ¿¡¼­ PSOº°·Î ³ª´©±â
-	// why? PSO°¡ ´Ù¸£¸é Render()¿¡¼­ SetPipelineState()·Î PSO¸¦ ¹Ù²ãÁà¾ß ÇÏ´Âµ¥,
-	// ÀÌ°Ô ºñ¿ëÀÌ Å©´Ù.
+	// ì¶”í›„ std::mapìœ¼ë¡œ ë ˆì´ì–´ ë‚´ë¶€ì—ì„œ PSOë³„ë¡œ ë‚˜ëˆ„ê¸°
+	// why? PSOê°€ ë‹¤ë¥´ë©´ Render()ì—ì„œ SetPipelineState()ë¡œ PSOë¥¼ ë°”ê¿”ì¤˜ì•¼ í•˜ëŠ”ë°,
+	// ì´ê²Œ ë¹„ìš©ì´ í¬ë‹¤.
 	list<class CGameObject*>			m_GameObjects;
 
 public:

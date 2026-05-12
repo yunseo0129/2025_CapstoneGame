@@ -30,7 +30,7 @@ public:
 
 public:
 	class CComponent*	Find_Component(const _wstring& strComponentTag);
-	const _float4x4* Get_WorldMatrix4x4Ptr();		//RootConstantBuffer¿¡ WorldMatrix¸¦ ³Ñ°ÜÁÙ ¶§ »ç¿ë
+	const _float4x4* Get_WorldMatrix4x4Ptr();		//RootConstantBufferì— WorldMatrixë¥¼ ë„˜ê²¨ì¤„ ë•Œ ì‚¬ìš©
 	bool			IsDead() { return m_bDead; }
 	void			SetDead() { m_bDead = true; }
 
@@ -41,7 +41,7 @@ protected:
 	class CGameInstance*						m_pGameInstance = { nullptr };
 	EngineContext*								m_pContext = { nullptr };
 	
-	// º¸À¯ÇÑ ÄÄÆ÷³ÍÆ® Á¤º¸
+	// ë³´ìœ í•œ ì»´í¬ë„ŒíŠ¸ ì •ë³´
 	map<const _wstring, class CComponent*>		m_Components;
 	class CTransform* m_pTransformCom = { nullptr };
 

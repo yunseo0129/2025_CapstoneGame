@@ -14,11 +14,11 @@ CGraphic_Device::~CGraphic_Device()
 
 void CGraphic_Device::ResetCmdList ()
 {
-	// ¸í·É ·¹ÄÚµå¿Í ¿¬°áµÈ ¸Ş¸ğ¸® Àç»ç¿ë
-	// ¿¬°áµÈ ¸í·É ¸ñ·ÏÀÌ GPU¿¡ ¿Ï·áµÇ¾úÀ» ¶§¸¸ Àç¼³Á¤ °¡´É.
+	// ëª…ë ¹ ë ˆì½”ë“œì™€ ì—°ê²°ëœ ë©”ëª¨ë¦¬ ì¬ì‚¬ìš©
+	// ì—°ê²°ëœ ëª…ë ¹ ëª©ë¡ì´ GPUì— ì™„ë£Œë˜ì—ˆì„ ë•Œë§Œ ì¬ì„¤ì • ê°€ëŠ¥.
 	ThrowIfFailed(m_pCmdListAlloc[m_iCurrBackBuffer]->Reset());
-	// ¸í·É ¸ñ·ÏÀº ExecuteCommandList¸¦ ÅëÇØ ¸í·É ´ë±â¿­¿¡ Ãß°¡µÈ ÈÄ¿¡ Àç¼³Á¤ °¡´É
-	// ¸í·É ¸ñ·ÏÀ» Àç»ç¿ëÇÏ¸é ¸Ş¸ğ¸®°¡ Àç»ç¿ë µÊ
+	// ëª…ë ¹ ëª©ë¡ì€ ExecuteCommandListë¥¼ í†µí•´ ëª…ë ¹ ëŒ€ê¸°ì—´ì— ì¶”ê°€ëœ í›„ì— ì¬ì„¤ì • ê°€ëŠ¥
+	// ëª…ë ¹ ëª©ë¡ì„ ì¬ì‚¬ìš©í•˜ë©´ ë©”ëª¨ë¦¬ê°€ ì¬ì‚¬ìš© ë¨
 	ThrowIfFailed ( m_pCommandList->Reset ( m_pCmdListAlloc[m_iCurrBackBuffer].Get () , nullptr ) );
 	//MSG_BOX ( "CmdList Reset" );
 }
@@ -28,7 +28,7 @@ void CGraphic_Device::BeforeRender(const _float4& vClearColor)
 
 	ResetCmdList ();
 	
-	// ÀÚ¿ø »ç¿ë¿¡ ´ëÇÑ »óÅÂ ÀüÈ¯ (Present -> RenderTarget)
+	// ìì› ì‚¬ìš©ì— ëŒ€í•œ ìƒíƒœ ì „í™˜ (Present -> RenderTarget)
 	D3D12_RESOURCE_BARRIER barrier;
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
@@ -39,15 +39,15 @@ void CGraphic_Device::BeforeRender(const _float4& vClearColor)
 
 	m_pCommandList->ResourceBarrier(1, &barrier);
 
-	// ºäÆ÷Æ®¿Í ScissorRects Àç¼³Á¤
+	// ë·°í¬íŠ¸ì™€ ScissorRects ì¬ì„¤ì •
 	m_pCommandList->RSSetViewports(1, &m_ScreenViewport);
 	m_pCommandList->RSSetScissorRects(1, &m_ScissorRect);
 
-	// ¹é ¹öÆÛ¿Í ±íÀÌ ¹öÆÛ ÃÊ±âÈ­.
+	// ë°± ë²„í¼ì™€ ê¹Šì´ ë²„í¼ ì´ˆê¸°í™”.
 	m_pCommandList->ClearRenderTargetView(CurrentBackBufferView(), (_float*)&vClearColor, 0, nullptr);
 	m_pCommandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
-	// ·»´õ¸µ ¹öÆÛ ÁöÁ¤
+	// ë Œë”ë§ ë²„í¼ ì§€ì •
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = CurrentBackBufferView();
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = DepthStencilView();
 	m_pCommandList->OMSetRenderTargets(1, &rtvHandle, true, &dsvHandle);
@@ -57,7 +57,7 @@ void CGraphic_Device::BeforeRender(const _float4& vClearColor)
 
 void CGraphic_Device::AfterRender()
 {
-	// ÀÚ¿ø »ç¿ë¿¡ ´ëÇÑ »óÅÂ ÀüÈ¯ (RenderTarget -> Present)
+	// ìì› ì‚¬ìš©ì— ëŒ€í•œ ìƒíƒœ ì „í™˜ (RenderTarget -> Present)
 	D3D12_RESOURCE_BARRIER barrier;
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
@@ -98,7 +98,7 @@ void CGraphic_Device::AfterRender()
 			swprintf_s ( buf , L"Device Removed! Reason: 0x%08X\n" , ( unsigned int )removedReason );
 			OutputDebugString ( buf );
 
-			// DRED µ¥ÀÌÅÍ Á¶È¸
+			// DRED ë°ì´í„° ì¡°íšŒ
 			ComPtr<ID3D12DeviceRemovedExtendedData> pDred;
 			if ( SUCCEEDED ( m_pD3dDevice->QueryInterface ( IID_PPV_ARGS ( &pDred ) ) ) )
 			{
@@ -148,10 +148,10 @@ void CGraphic_Device::initRenderTargetAndDepthStencil(ID3D12GraphicsCommandList*
 
 void CGraphic_Device::CloseCmdList ()
 {
-	// command list¿¡ ±â·Ï ¿Ï·á
+	// command listì— ê¸°ë¡ ì™„ë£Œ
 	ThrowIfFailed(m_pCommandList->Close ());
 
-	// ¸í·É ´ë±â¿­¿¡ ¸í·É ¸ñ·Ï Ãß°¡
+	// ëª…ë ¹ ëŒ€ê¸°ì—´ì— ëª…ë ¹ ëª©ë¡ ì¶”ê°€
 	ID3D12CommandList* cmdsLists[] = { m_pCommandList.Get () };
 	m_pCommandQueue->ExecuteCommandLists ( _countof ( cmdsLists ) , cmdsLists );
 
@@ -179,10 +179,10 @@ bool CGraphic_Device::InitDirect3D(HWND& _hwnd, EngineContext* _pcontext)
 	_pcontext->cmdQueue = m_pCommandQueue.Get();
 	_pcontext->rtvHeap = m_pRtvHeap.Get();
 	_pcontext->dsvHeap = m_pDsvHeap.Get();
-	// srvHeap´Â ´Ù¸¥ °÷¿¡¼­ Ã³¸®
+	// srvHeapëŠ” ë‹¤ë¥¸ ê³³ì—ì„œ ì²˜ë¦¬
 
 #ifdef _DEBUG
-	// collider ·»´õ¸µÀ» À§ÇÑ ±×·¡ÇÈ ¸Ş¸ğ¸® °ü¸® °´Ã¼ »ı¼º (µğ¹ö±× ¸ğµå¿¡¼­¸¸)
+	// collider ë Œë”ë§ì„ ìœ„í•œ ê·¸ë˜í”½ ë©”ëª¨ë¦¬ ê´€ë¦¬ ê°ì²´ ìƒì„± (ë””ë²„ê·¸ ëª¨ë“œì—ì„œë§Œ)
 	m_pGraphicsMemory = std::make_unique<DirectX::GraphicsMemory>(m_pD3dDevice.Get());
 #endif
 
@@ -193,7 +193,7 @@ void CGraphic_Device::CreateDevice()
 {
 	UINT nDXGIFactoryFlags = 0;
 #if defined(DEBUG) || defined(_DEBUG) 
-	// µğ¹ö±× ·¹ÀÌ¾î È°¼ºÈ­
+	// ë””ë²„ê·¸ ë ˆì´ì–´ í™œì„±í™”
 	{
 		ComPtr<ID3D12Debug> debugController;
 		ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
@@ -211,13 +211,13 @@ nDXGIFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
 
 ThrowIfFailed(CreateDXGIFactory2( nDXGIFactoryFlags, IID_PPV_ARGS(&m_pDxgiFactory)));
 
-// ÇÏµå¿ş¾î µğ¹ÙÀÌ½º »ı¼º
+// í•˜ë“œì›¨ì–´ ë””ë°”ì´ìŠ¤ ìƒì„±
 HRESULT hardwareResult = D3D12CreateDevice(
 	nullptr,             // default adapter
 	D3D_FEATURE_LEVEL_11_0,
 	IID_PPV_ARGS(&m_pD3dDevice));
 
-// ÇÏµå¿ş¾î µğ¹ÙÀÌ½º »ı¼º ½ÇÆĞ ½Ã WARP µğ¹ÙÀÌ½º »ı¼º
+// í•˜ë“œì›¨ì–´ ë””ë°”ì´ìŠ¤ ìƒì„± ì‹¤íŒ¨ ì‹œ WARP ë””ë°”ì´ìŠ¤ ìƒì„±
 if (FAILED(hardwareResult))
 {
 	ComPtr<IDXGIAdapter> pWarpAdapter;
@@ -236,9 +236,9 @@ m_iRtvDescriptorSize = m_pD3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESC
 m_iDsvDescriptorSize = m_pD3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 m_iCbvSrvUavDescriptorSize = m_pD3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-// ´ÙÁß»ùÇÃ¸µ ¾ØÆ¼¾Ù¸®¾î½Ì(MSAA) Ç°Áú ¼öÁØ È®ÀÎ
-// »ùÇÃ Ä«¿îÆ®´Â 1,2,4,8,16 Áß ÇÏ³ª¿©¾ß ÇÔ
-// Ç°Áú ¼öÁØÀº 0¿¡¼­ ½ÃÀÛÇÏ¿© ÃÖ´ë°ªÀº CheckFeatureSupport·Î Á¶È¸ÇÑ °ª -1
+// ë‹¤ì¤‘ìƒ˜í”Œë§ ì•¤í‹°ì•¨ë¦¬ì–´ì‹±(MSAA) í’ˆì§ˆ ìˆ˜ì¤€ í™•ì¸
+// ìƒ˜í”Œ ì¹´ìš´íŠ¸ëŠ” 1,2,4,8,16 ì¤‘ í•˜ë‚˜ì—¬ì•¼ í•¨
+// í’ˆì§ˆ ìˆ˜ì¤€ì€ 0ì—ì„œ ì‹œì‘í•˜ì—¬ ìµœëŒ€ê°’ì€ CheckFeatureSupportë¡œ ì¡°íšŒí•œ ê°’ -1
 
 D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS msQualityLevels;
 msQualityLevels.Format = m_BackBufferFormat;
@@ -259,7 +259,7 @@ m_hFenceEvent = ::CreateEvent ( NULL , FALSE , FALSE , NULL );
 
 void CGraphic_Device::CreateSwapChain()
 {
-	// ½º¿ÒÃ¼ÀÎ »ı¼º Àü¿¡ ±âÁ¸ ½º¿ÒÃ¼ÀÎ ÇØÁ¦
+	// ìŠ¤ì™‘ì²´ì¸ ìƒì„± ì „ì— ê¸°ì¡´ ìŠ¤ì™‘ì²´ì¸ í•´ì œ
 	m_pSwapChain.Reset();
 
 	DXGI_SWAP_CHAIN_DESC sd = {};
@@ -279,7 +279,7 @@ void CGraphic_Device::CreateSwapChain()
 	sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
-	// ½º¿ÒÃ¼ÀÎ »ı¼º
+	// ìŠ¤ì™‘ì²´ì¸ ìƒì„±
 	ComPtr<IDXGISwapChain> swapChain;
 	ThrowIfFailed ( m_pDxgiFactory->CreateSwapChain (
 		m_pCommandQueue.Get () ,
@@ -294,7 +294,7 @@ void CGraphic_Device::CreateSwapChain()
 
 void CGraphic_Device::CreateRtvAndDsvDescriptorHeaps()
 {
-	// RTV¿Í DSV µğ½ºÅ©¸³ÅÍ Èü »ı¼º
+	// RTVì™€ DSV ë””ìŠ¤í¬ë¦½í„° í™ ìƒì„±
 
 	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc;
 	rtvHeapDesc.NumDescriptors = m_iSwapChainBufferCount;
@@ -319,7 +319,7 @@ void CGraphic_Device::CreateRtvAndDsvDescriptorHeaps()
 
 void CGraphic_Device::CreateCommandObjects()
 {
-	// Ä¿¸Çµå Å¥, Ä¿¸Çµå ¾ó·ÎÄÉÀÌÅÍ, Ä¿¸Çµå ¸®½ºÆ® »ı¼º
+	// ì»¤ë§¨ë“œ í, ì»¤ë§¨ë“œ ì–¼ë¡œì¼€ì´í„°, ì»¤ë§¨ë“œ ë¦¬ìŠ¤íŠ¸ ìƒì„±
 	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
 	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
@@ -337,7 +337,7 @@ void CGraphic_Device::CreateCommandObjects()
 		m_pCmdListAlloc[0].Get () , nullptr ,
 		IID_PPV_ARGS ( m_pCommandList.GetAddressOf () ) ) );
 
-	// Ä¿¸Çµå ¸®½ºÆ®´Â »ı¼º°ú µ¿½Ã¿¡ ±â·Ï »óÅÂÀÌ¹Ç·Î, GPU¿¡¼­ ½ÇÇàÇÏ±â Àü¿¡ ¹İµå½Ã ´İ¾ÆÁÖ¾î¾ß ÇÑ´Ù.
+	// ì»¤ë§¨ë“œ ë¦¬ìŠ¤íŠ¸ëŠ” ìƒì„±ê³¼ ë™ì‹œì— ê¸°ë¡ ìƒíƒœì´ë¯€ë¡œ, GPUì—ì„œ ì‹¤í–‰í•˜ê¸° ì „ì— ë°˜ë“œì‹œ ë‹«ì•„ì£¼ì–´ì•¼ í•œë‹¤.
 	m_pCommandList->Close();
 }
 
@@ -363,7 +363,7 @@ void CGraphic_Device::MoveToNextFrame()
 		ThrowIfFailed ( m_pFence->SetEventOnCompletion ( m_nFenceValues[m_iCurrBackBuffer] , m_hFenceEvent ) );
 		::WaitForSingleObject ( m_hFenceEvent , INFINITE );
 	}
-	// ´ÙÀ½ ÇÁ·¹ÀÓÀÇ Fence °ª °»½Å
+	// ë‹¤ìŒ í”„ë ˆì„ì˜ Fence ê°’ ê°±ì‹ 
 	m_nFenceValues[m_iCurrBackBuffer] = nCurrentFenceValue + 1;
 }
 
@@ -378,7 +378,7 @@ void CGraphic_Device::Set4xMsaaState(bool _value)
 	{
 		m_is4xMsaaState = _value;
 
-		// ´ÙÁß»ùÇÃ¸µ ¾ØÆ¼¾Ù¸®¾î½Ì ¼³Á¤ÀÌ ¹Ù²î¸é ½º¿ÒÃ¼ÀÎ°ú °ü·ÃµÈ ÀÚ¿øÀ» ¸ğµÎ ´Ù½Ã ¸¸µé¾î¾ß ÇÑ´Ù.
+		// ë‹¤ì¤‘ìƒ˜í”Œë§ ì•¤í‹°ì•¨ë¦¬ì–´ì‹± ì„¤ì •ì´ ë°”ë€Œë©´ ìŠ¤ì™‘ì²´ì¸ê³¼ ê´€ë ¨ëœ ìì›ì„ ëª¨ë‘ ë‹¤ì‹œ ë§Œë“¤ì–´ì•¼ í•œë‹¤.
 		CreateSwapChain();
 		CreateRenderTargetViews ();
 		CreateDepthStencilView ();
@@ -438,13 +438,13 @@ void CGraphic_Device::CreateDepthStencilView ()
 
 ID3D12Resource* CGraphic_Device::CurrentBackBuffer()const
 {
-	// ÇöÀç ¹é ¹öÆÛ ¸®¼Ò½º ¹İÈ¯
+	// í˜„ì¬ ë°± ë²„í¼ ë¦¬ì†ŒìŠ¤ ë°˜í™˜
 	return m_pSwapChainBuffer[m_iCurrBackBuffer].Get();
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE CGraphic_Device::CurrentBackBufferView()const
 {
-	// ÇöÀç ¹é ¹öÆÛ ºä ¹İÈ¯
+	// í˜„ì¬ ë°± ë²„í¼ ë·° ë°˜í™˜
 	D3D12_CPU_DESCRIPTOR_HANDLE handle = m_pRtvHeap->GetCPUDescriptorHandleForHeapStart();
 	handle.ptr += m_iCurrBackBuffer * m_iRtvDescriptorSize;
 	return handle;
@@ -452,13 +452,13 @@ D3D12_CPU_DESCRIPTOR_HANDLE CGraphic_Device::CurrentBackBufferView()const
 
 D3D12_CPU_DESCRIPTOR_HANDLE CGraphic_Device::DepthStencilView()const
 {
-	// ±íÀÌ/½ºÅÙ½Ç ºä ¹İÈ¯
+	// ê¹Šì´/ìŠ¤í…ì‹¤ ë·° ë°˜í™˜
 	return m_pDsvHeap->GetCPUDescriptorHandleForHeapStart();
 }
 
 void CGraphic_Device::LogAdapters()
 {
-	// ¾î´ğÅÍ ¿­°Å
+	// ì–´ëŒ‘í„° ì—´ê±°
 	UINT i = 0;
 	IDXGIAdapter* adapter = nullptr;
 	std::vector<IDXGIAdapter*> adapterList;
@@ -487,7 +487,7 @@ void CGraphic_Device::LogAdapters()
 
 void CGraphic_Device::LogAdapterOutputs(IDXGIAdapter* adapter)
 {
-	// ¾î´ğÅÍÀÇ Ãâ·Â ¿­°Å
+	// ì–´ëŒ‘í„°ì˜ ì¶œë ¥ ì—´ê±°
 	UINT i = 0;
 	IDXGIOutput* output = nullptr;
 	while (adapter->EnumOutputs(i, &output) != DXGI_ERROR_NOT_FOUND)
@@ -510,7 +510,7 @@ void CGraphic_Device::LogAdapterOutputs(IDXGIAdapter* adapter)
 
 void CGraphic_Device::LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format)
 {
-	// Ãâ·ÂÀÇ µğ½ºÇÃ·¹ÀÌ ¸ğµå ¿­°Å
+	// ì¶œë ¥ì˜ ë””ìŠ¤í”Œë ˆì´ ëª¨ë“œ ì—´ê±°
 	UINT count = 0;
 	UINT flags = 0;
 
@@ -546,15 +546,15 @@ CGraphic_Device* CGraphic_Device::Create(HWND _hwnd, EngineContext* _pcontext)
 
 void CGraphic_Device::Free()
 {
-	// µğ¹ÙÀÌ½º°¡ Á¾·áµÇ±â Àü¿¡ GPU°¡ ¸ğµç ¸í·ÉÀ» ¿Ï·áÇÏµµ·Ï ´ë±â
+	// ë””ë°”ì´ìŠ¤ê°€ ì¢…ë£Œë˜ê¸° ì „ì— GPUê°€ ëª¨ë“  ëª…ë ¹ì„ ì™„ë£Œí•˜ë„ë¡ ëŒ€ê¸°
 	WaitForGpuComplete();
 	if (m_hFenceEvent)
 	{
 		::CloseHandle(m_hFenceEvent);
 		m_hFenceEvent = nullptr;
 	}
-	// ComPtrÀº Reset() ¶Ç´Â ¼Ò¸êÀÚ¿¡¼­ ÀÚµ¿ ReleaseµÇÁö¸¸,
-	// ¸í½ÃÀûÀ¸·Î ÇØÁ¦ ¼ø¼­¸¦ ÁöÁ¤ÇÏ´Â °ÍÀÌ ¾ÈÀüÇÕ´Ï´Ù.
+	// ComPtrì€ Reset() ë˜ëŠ” ì†Œë©¸ìì—ì„œ ìë™ Releaseë˜ì§€ë§Œ,
+	// ëª…ì‹œì ìœ¼ë¡œ í•´ì œ ìˆœì„œë¥¼ ì§€ì •í•˜ëŠ” ê²ƒì´ ì•ˆì „í•©ë‹ˆë‹¤.
 	m_pDepthStencilBuffer.Reset();
 	for (int i = 0; i < m_iSwapChainBufferCount; ++i)
 		m_pSwapChainBuffer[i].Reset();
@@ -572,16 +572,16 @@ void CGraphic_Device::Free()
 
 	m_pGraphicsMemory.reset();
 
-	// Device Reset Àü¿¡ ³²Àº °´Ã¼ È®ÀÎ
+	// Device Reset ì „ì— ë‚¨ì€ ê°ì²´ í™•ì¸
 #ifdef _DEBUG
 	{
 		ComPtr<ID3D12DebugDevice> debugDevice;
 		if (SUCCEEDED(m_pD3dDevice->QueryInterface(IID_PPV_ARGS(&debugDevice))))
 		{
-			m_pD3dDevice.Reset(); // Device ¸ÕÀú ÇØÁ¦
+			m_pD3dDevice.Reset(); // Device ë¨¼ì € í•´ì œ
 			debugDevice->ReportLiveDeviceObjects(
 				D3D12_RLDO_DETAIL | D3D12_RLDO_IGNORE_INTERNAL);
-			// debugDevice°¡ ½ºÄÚÇÁ Á¾·á ½Ã ÀÚµ¿ ÇØÁ¦
+			// debugDeviceê°€ ìŠ¤ì½”í”„ ì¢…ë£Œ ì‹œ ìë™ í•´ì œ
 		}
 	}
 #else

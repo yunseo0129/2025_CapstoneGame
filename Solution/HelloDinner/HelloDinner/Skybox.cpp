@@ -34,7 +34,7 @@ HRESULT CSkybox::Initialize(void* pArg)
 	m_strTextureTag = pDesc->strTextureTag;
 	m_iModelLevelIndex = pDesc->iModelLevelIndex;
 
-	// CGameObject::Initialize°¡ Transform »ý¼º ¹× ¼Óµµ ¼³Á¤
+	// CGameObject::Initializeê°€ Transform ìƒì„± ë° ì†ë„ ì„¤ì •
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
 
@@ -61,12 +61,12 @@ void CSkybox::Late_Update(_float fTimeDelta)
 
 void CSkybox::Render(ID3D12GraphicsCommandList* _commandList)
 {
-	// Transform ÄÄÆ÷³ÍÆ®ÀÇ ¿ùµå Çà·ÄÀ» RootConstantBuffer¿¡ ³Ñ°ÜÁØ´Ù.
+	// Transform ì»´í¬ë„ŒíŠ¸ì˜ ì›”ë“œ í–‰ë ¬ì„ RootConstantBufferì— ë„˜ê²¨ì¤€ë‹¤.
 	XMFLOAT4X4 WorldMatrix;
 	XMStoreFloat4x4(&WorldMatrix, m_pTransformCom->Get_WorldMatrix());
 	_commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &WorldMatrix, 0);
 
-	// PSO ¹ÙÀÎµù
+	// PSO ë°”ì¸ë”©
 	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::SKYBOX);
 
 	if (FAILED(m_pTextureCom->Bind_ShaderResource(_commandList, RootParameterIndex::TEXTURE_Diffuse))) {
@@ -74,7 +74,7 @@ void CSkybox::Render(ID3D12GraphicsCommandList* _commandList)
 		return;
 	}
 
-	// Á¤Á¡ ¹öÆÛ ¹ÙÀÎµù ¹× ·»´õ¸µ
+	// ì •ì  ë²„í¼ ë°”ì¸ë”© ë° ë Œë”ë§
 	m_pVIBufferCom->Render(_commandList);
 }
 

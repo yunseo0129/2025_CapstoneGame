@@ -17,10 +17,10 @@ void CCollision_Manager::Update_Collision()
 	{
 		for (int j = i; j < GROUP_END; ++j)
 		{
-			// ÃÊ±â ¼³Á¤ È®ÀÎ
+			// ì´ˆê¸° ì„¤ì • í™•ì¸
 			if (!m_CollisionMatrix[i][j]) continue;
 
-			// Ãæµ¹ Ã³¸®
+			// ì¶©ëŒ ì²˜ë¦¬
 		}
 	}
 }
@@ -33,8 +33,8 @@ void CCollision_Manager::Clear_CollisionGroup()
 
 void CCollision_Manager::Set_CollisionMatrix(COLLISION_GROUP _lgroup, COLLISION_GROUP _rgroup, _bool _is)
 {
-	// Ãæµ¹ ±ÔÄ¢ ¼³Á¤ (¿ŞÂÊ ±×·ìÀÌ ¿À¸¥ÂÊ ±×·ì°ú Ãæµ¹Ã³¸® ¿©ºÎ)
-	// Ex) Set_CollisionMatrix(GROUP_PLAYER, GROUP_MAP, true); // ÇÃ·¹ÀÌ¾î´Â ¸Ê°ú Ãæµ¹Ã³¸®ÇÑ´Ù.
+	// ì¶©ëŒ ê·œì¹™ ì„¤ì • (ì™¼ìª½ ê·¸ë£¹ì´ ì˜¤ë¥¸ìª½ ê·¸ë£¹ê³¼ ì¶©ëŒì²˜ë¦¬ ì—¬ë¶€)
+	// Ex) Set_CollisionMatrix(GROUP_PLAYER, GROUP_MAP, true); // í”Œë ˆì´ì–´ëŠ” ë§µê³¼ ì¶©ëŒì²˜ë¦¬í•œë‹¤.
 	m_CollisionMatrix[_lgroup][_rgroup] = _is;
 }
 
@@ -62,7 +62,7 @@ vector<class CCollider*> CCollision_Manager::CollisionCheck_with_Group(CCollider
 	vector<class CCollider*> re;
 	for (CCollider* collider : m_Colliders[_eGroup])
 	{
-		// Ãæµ¹ Ã³¸® °É¸°°Íµé pushback
+		// ì¶©ëŒ ì²˜ë¦¬ ê±¸ë¦°ê²ƒë“¤ pushback
 	}
 
 	return re;
@@ -78,7 +78,7 @@ bool CCollision_Manager::CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3
 	bool bHit = false;
 	XMFLOAT3 finalMove = move;
 
-	// ÃÖ´ë ¹İº¹ È½¼ö ¼³Á¤ (Ãæµ¹ ÇØ°áÀÌ ¿ÏÀüÈ÷ µÉ ¶§±îÁö ¿©·¯ ¹ø ½Ãµµ)
+	// ìµœëŒ€ ë°˜ë³µ íšŸìˆ˜ ì„¤ì • (ì¶©ëŒ í•´ê²°ì´ ì™„ì „íˆ ë  ë•Œê¹Œì§€ ì—¬ëŸ¬ ë²ˆ ì‹œë„)
 	const int MAX_ITER = 4;
 	for (int iter = 0; iter < MAX_ITER; ++iter)
 	{
@@ -86,25 +86,25 @@ bool CCollision_Manager::CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3
 
 		for (CCollider* other : m_Colliders[GROUP_MAP])
 		{
-			// MAP ¿ÀºêÁ§Æ®ÀÇ Collider°¡ È°¼ºÈ­µÇ¾îÀÖ´ÂÁö È®ÀÎ
+			// MAP ì˜¤ë¸Œì íŠ¸ì˜ Colliderê°€ í™œì„±í™”ë˜ì–´ìˆëŠ”ì§€ í™•ì¸
 			if (!other->Get_Enable()) continue;
 
-			// ÀÌµ¿ ÈÄ Ãæµ¹ ÇØ?
+			// ì´ë™ í›„ ì¶©ëŒ í•´?
 			if (IsCollidingAfterMove(me, other, finalMove))
 			{
 				bHit = true;
 
-				// Ãæµ¹ÇÑ ¸éÀÇ ¹ı¼± º¤ÅÍ ±¸ÇÏ±â
+				// ì¶©ëŒí•œ ë©´ì˜ ë²•ì„  ë²¡í„° êµ¬í•˜ê¸°
 				// XMFLOAT3 normal = GetCollisionNormal(me, other);
 				XMFLOAT3 normal = me->Get_CollisionNormal(other);
 				finalMove = Slide(finalMove, normal);
 			}
 		}
 
-		// ´õ ÀÌ»ó Ãæµ¹ ¾øÀ¸¸é Á¶±â Á¾·á
+		// ë” ì´ìƒ ì¶©ëŒ ì—†ìœ¼ë©´ ì¡°ê¸° ì¢…ë£Œ
 		if (!bAnyHitThisIter) break;
 
-		// ½½¶óÀÌµå °á°ú°¡ °ÅÀÇ 0ÀÌ¸é Á¤Áö·Î °£ÁÖ
+		// ìŠ¬ë¼ì´ë“œ ê²°ê³¼ê°€ ê±°ì˜ 0ì´ë©´ ì •ì§€ë¡œ ê°„ì£¼
 		XMVECTOR vLenSq = XMVector3LengthSq(XMLoadFloat3(&finalMove));
 		if (XMVectorGetX(vLenSq) < 1e-8f)
 		{
@@ -120,7 +120,7 @@ bool CCollision_Manager::IsCollidingAfterMove(CCollider* me, CCollider* other, c
 {
 	XMFLOAT3 reverseMove = {-move.x, -move.y, -move.z};
 
-	// other Ãæµ¹Ã¼¸¦ ÀÓ½Ã·Î reverseMove ¸¸Å­ ¿Å±ä »óÅÂ·Î me¿Í °ãÄ¡´ÂÁö °Ë»ç
+	// other ì¶©ëŒì²´ë¥¼ ì„ì‹œë¡œ reverseMove ë§Œí¼ ì˜®ê¸´ ìƒíƒœë¡œ meì™€ ê²¹ì¹˜ëŠ”ì§€ ê²€ì‚¬
 	return me->Intersect_Offset(other, reverseMove);
 }
 

@@ -34,10 +34,10 @@ struct KEYFRAME
 	float			fKeyFramePosition;
 };
 
-// ¼öÁ¤ ÇÊ¿ä
+// ìˆ˜ì • í•„ìš”
 enum LEVELID { LEVEL_STATIC, LEVEL_LOADING, LEVEL_LOGO, LEVEL_GAMEPLAY, LEVEL_MAPLOADING ,LEVEL_END };
 
-// Texture data ÀúÀåÇÏ´Â srv ¸¸µé ¶§ VIEW_DIMENSION ¼³Á¤¿ë
+// Texture data ì €ì¥í•˜ëŠ” srv ë§Œë“¤ ë•Œ VIEW_DIMENSION ì„¤ì •ìš©
 enum TEXTURE_TYPE {
 	TEX_2D ,
 	TEX_CUBE ,
@@ -53,7 +53,7 @@ enum CAMERA_TYPE
 	CAMERA_END
 };
 
-// Root SignatureÀÇ Root Parameter ½½·Ô ¼³Á¤¿ë
+// Root Signatureì˜ Root Parameter ìŠ¬ë¡¯ ì„¤ì •ìš©
 enum RootParameterIndex
 {
 	Camera,
@@ -63,20 +63,20 @@ enum RootParameterIndex
 	BoneMatrix,
 	Light,
 	ShadowMap,
-	// ÈÄ¿¡ Material, BoneMatrix µîµî Ãß°¡ÇÒ ¼ö ÀÖÀ½
+	// í›„ì— Material, BoneMatrix ë“±ë“± ì¶”ê°€í•  ìˆ˜ ìˆìŒ
 	End
 };
 
-// Input Layout°ú PSO ¼³Á¤¿ë
+// Input Layoutê³¼ PSO ì„¤ì •ìš©
 enum PSO_TYPE
 {
-	DEFAULT ,        // ÀÏ¹İ ¹°Ã¼ (Static Mesh / Opaque)
-	SKYBOX ,         // ½ºÄ«ÀÌ¹Ú½º (TextureCube / DepthFunc LessEqual)
-	ANIM ,           // Ä³¸¯ÅÍ (Skeletal Mesh / Opaque)
-	ALPHA_BLEND ,    // ¹İÅõ¸í ÀÌÆåÆ® (Static Mesh / Transparent)
+	DEFAULT ,        // ì¼ë°˜ ë¬¼ì²´ (Static Mesh / Opaque)
+	SKYBOX ,         // ìŠ¤ì¹´ì´ë°•ìŠ¤ (TextureCube / DepthFunc LessEqual)
+	ANIM ,           // ìºë¦­í„° (Skeletal Mesh / Opaque)
+	ALPHA_BLEND ,    // ë°˜íˆ¬ëª… ì´í™íŠ¸ (Static Mesh / Transparent)
 	UI ,             // 2D UI (UI Mesh / Transparent / No Depth)
-	SHADOW_STATIC ,  // ±×¸²ÀÚ »ı¼º¿ë (Static Mesh / Depth Only)
-	SHADOW_ANIM ,    // ±×¸²ÀÚ »ı¼º¿ë (Skeletal Mesh / Depth Only)
+	SHADOW_STATIC ,  // ê·¸ë¦¼ì ìƒì„±ìš© (Static Mesh / Depth Only)
+	SHADOW_ANIM ,    // ê·¸ë¦¼ì ìƒì„±ìš© (Skeletal Mesh / Depth Only)
 	END
 };
 
@@ -149,16 +149,16 @@ typedef struct tagKeyState
 
 // CB
 
-// Camera¿¡¼­ »ç¿ëÇÒ Ä«¸Ş¶ó Á¤º¸ ±¸Á¶Ã¼
+// Cameraì—ì„œ ì‚¬ìš©í•  ì¹´ë©”ë¼ ì •ë³´ êµ¬ì¡°ì²´
 typedef struct
 {
 	XMFLOAT4X4						m_xmf4x4View;
 	XMFLOAT4X4						m_xmf4x4Proj;
 	XMFLOAT3						m_xmf3Position;
-	float							m_fPadding; // 16¹ÙÀÌÆ® Á¤·ÄÀ» À§ÇÑ ÆĞµù
+	float							m_fPadding; // 16ë°”ì´íŠ¸ ì •ë ¬ì„ ìœ„í•œ íŒ¨ë”©
 }CB_VS_CAMERA;
 
-// BoneMatrix¿¡¼­ »ç¿ëÇÒ º» ¸ÅÆ®¸¯½º »ó¼ö ¹öÆÛ ±¸Á¶Ã¼
+// BoneMatrixì—ì„œ ì‚¬ìš©í•  ë³¸ ë§¤íŠ¸ë¦­ìŠ¤ ìƒìˆ˜ ë²„í¼ êµ¬ì¡°ì²´
 typedef struct
 {
 	XMFLOAT4X4						m_BoneMatrices[512];
@@ -178,7 +178,7 @@ typedef struct
 	XMFLOAT4X4 matLightTransform;
 }CB_LIGHT;
 
-// InputLayout¿¡¼­ »ç¿ëÇÒ Á¤Á¡ ±¸Á¶Ã¼
+// InputLayoutì—ì„œ ì‚¬ìš©í•  ì •ì  êµ¬ì¡°ì²´
 typedef struct
 {
 	XMFLOAT3		vPosition;		// 12bytes

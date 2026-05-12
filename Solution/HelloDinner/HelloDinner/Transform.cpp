@@ -194,7 +194,7 @@ void CTransform::EulerRotationQuaternion(_float fX, _float fY, _float fZ)
 	_vector		vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f) * vScale.y;
 	_vector		vLook = XMVectorSet(0.f, 0.f, 1.f, 0.f) * vScale.z;
 
-	// Unity ¿ÀÀÏ·¯ ¼ø¼­: Z ¡æ X ¡æ Y
+	// Unity ì˜¤ì¼ëŸ¬ ìˆœì„œ: Z â†’ X â†’ Y
 	_matrix		RotationMatrix =
 		XMMatrixRotationZ(fZ) *
 		XMMatrixRotationX(fX) *

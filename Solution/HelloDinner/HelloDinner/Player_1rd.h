@@ -32,7 +32,7 @@ public:
 	//CCollider* Get_CollisionCom() const { return m_pColliderCom; }
 	//virtual void TakeDamage(int iDamage) PURE;
 
-public:					// ÇÃ·¹ÀÌ¾î Á¶Á¾¿¡ °ü·ÃÇÑ ÇÔ¼ö ±¸Çö
+public:					// í”Œë ˆì´ì–´ ì¡°ì¢…ì— ê´€ë ¨í•œ í•¨ìˆ˜ êµ¬í˜„
 	void Move(_float _fLook, _float _fRight, _float _val);
 	void TurnYaw(_float _val);
 	void TurnPitch(_float _val);

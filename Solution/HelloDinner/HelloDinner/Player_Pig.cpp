@@ -102,10 +102,10 @@ void CPlayer_Pig::Render(ID3D12GraphicsCommandList* _commandList)
 	XMStoreFloat4x4(&WorldMatrix, m_pTransformCom->Get_WorldMatrix());
 	_commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &WorldMatrix, 0);
 
-	// 2. PSO ¼³Á¤
+	// 2. PSO ì„¤ì •
 	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::ANIM);
 
-	// 3. ¸Ş½¬º° ·»´õ¸µ (¸ÓÆ¼¸®¾ó ¹ÙÀÎµù + DrawIndexedInstanced)
+	// 3. ë©”ì‰¬ë³„ ë Œë”ë§ (ë¨¸í‹°ë¦¬ì–¼ ë°”ì¸ë”© + DrawIndexedInstanced)
 	_uint iNumMeshes = m_pModelCom->Get_NumMeshes();
 	for (_uint i = 0; i < iNumMeshes; ++i)
 	{
@@ -113,7 +113,7 @@ void CPlayer_Pig::Render(ID3D12GraphicsCommandList* _commandList)
 		m_pModelCom->Render(_commandList, i);
 	}
 
-	// Äİ¶óÀÌ´õ µğ¹ö±ë
+	// ì½œë¼ì´ë” ë””ë²„ê¹…
 #ifdef _DEBUG
 	for (CCollider* pCollider : m_vColliderComs)
 	{
@@ -130,15 +130,15 @@ void CPlayer_Pig::Render(ID3D12GraphicsCommandList* _commandList)
 
 void CPlayer_Pig::ShadowRender(ID3D12GraphicsCommandList* _commandList)
 {
-	// Transform ÄÄÆ÷³ÍÆ®ÀÇ ¿ùµå Çà·ÄÀ» RootConstantBuffer¿¡ ³Ñ°ÜÁØ´Ù.
+	// Transform ì»´í¬ë„ŒíŠ¸ì˜ ì›”ë“œ í–‰ë ¬ì„ RootConstantBufferì— ë„˜ê²¨ì¤€ë‹¤.
 	XMFLOAT4X4 WorldMatrix;
 	XMStoreFloat4x4(&WorldMatrix, m_pTransformCom->Get_WorldMatrix());
 	_commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &WorldMatrix, 0);
 
-	// 2. PSO ¼³Á¤
+	// 2. PSO ì„¤ì •
 	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::SHADOW_ANIM);
 
-	// 3. ¸Ş½¬º° ·»´õ¸µ (¸ÓÆ¼¸®¾ó ¹ÙÀÎµù + DrawIndexedInstanced)
+	// 3. ë©”ì‰¬ë³„ ë Œë”ë§ (ë¨¸í‹°ë¦¬ì–¼ ë°”ì¸ë”© + DrawIndexedInstanced)
 	_uint iNumMeshes = m_pModelCom->Get_NumMeshes();
 	for (_uint i = 0; i < iNumMeshes; ++i)
 	{
@@ -150,7 +150,7 @@ void CPlayer_Pig::ShadowRender(ID3D12GraphicsCommandList* _commandList)
 
 HRESULT CPlayer_Pig::Ready_PartObjects()
 {
-	// ÄÉÃ¸°Ç
+	// ì¼€ì²©ê±´
 	{
 		CKetchup_Gun::KETCHUP_GUN_DESC cdesc;
 		cdesc.strModelTag = L"Prototype_Component_ketchupGun";
@@ -167,7 +167,7 @@ HRESULT CPlayer_Pig::Ready_PartObjects()
 
 HRESULT CPlayer_Pig::Ready_Components()
 {
-	// Model ÄÄÆ÷³ÍÆ® »ı¼º
+	// Model ì»´í¬ë„ŒíŠ¸ ìƒì„±
 	if (FAILED(Add_Component(m_iModelLevelIndex, m_strModelTag,
 		TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
 	{
@@ -175,7 +175,7 @@ HRESULT CPlayer_Pig::Ready_Components()
 		return E_FAIL;
 	}
 
-	// Collider ÄÄÆ÷³ÍÆ® »ı¼º
+	// Collider ì»´í¬ë„ŒíŠ¸ ìƒì„±
 	{
 		m_vColliderComs.resize(COLLIDER_END, nullptr);
 		m_vMapColliderComs.resize(2, nullptr);

@@ -86,12 +86,12 @@ void CShadow::DrawSceneToShadowMap(ID3D12GraphicsCommandList* cmdList)
 
 void CShadow::UpdateMatrix(CLight* _light)
 {
-	// ÅÂ¾ç¸¸ ±¸Çö ÈÄ¿¡ ´Ù¸¥ ±¤¿øµµ ±¸ÇöÇÒ ¿¹Á¤
+	// íƒœì–‘ë§Œ êµ¬í˜„ í›„ì— ë‹¤ë¥¸ ê´‘ì›ë„ êµ¬í˜„í•  ì˜ˆì •
 	XMVECTOR vLightDir = XMVector3Normalize(_light->Get_Direction());
 	XMVECTOR vtarget = XMLoadFloat3(&mSceneBounds.Center);
 	XMVECTOR vLightPos = vtarget - (vLightDir * mSceneBounds.Radius);
 	XMVECTOR vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
-	// ºû ¹æÇâµµ ¼öÁ÷ÀÌ¸é up º¤ÅÍ¸¦ zÃàÀ¸·Î º¯°æ
+	// ë¹› ë°©í–¥ë„ ìˆ˜ì§ì´ë©´ up ë²¡í„°ë¥¼ zì¶•ìœ¼ë¡œ ë³€ê²½
 	if (abs(XMVectorGetY(vLightDir)) > 0.99f)
 	{
 		vUp = XMVectorSet(0.f, 0.f, 1.f, 0.f);
@@ -100,11 +100,11 @@ void CShadow::UpdateMatrix(CLight* _light)
 
 	XMStoreFloat3(&m_LightPos, vLightPos);
 
-	// °æ°è±¸ ±¤¿øÀÇ °ø°£À¸·Î º¯È¯
+	// ê²½ê³„êµ¬ ê´‘ì›ì˜ ê³µê°„ìœ¼ë¡œ ë³€í™˜
 	XMFLOAT3 sphereCenterInLightSpace;
 	XMStoreFloat3(&sphereCenterInLightSpace, XMVector3Transform(vtarget, lightView));
 
-	// ±¸Ã¼ÀÇ Áß½ÉÀÌ Æ÷ÇÔµÇµµ·Ï Á÷À°¸éÃ¼ÀÇ ¹üÀ§¸¦ °è»ê
+	// êµ¬ì²´ì˜ ì¤‘ì‹¬ì´ í¬í•¨ë˜ë„ë¡ ì§ìœ¡ë©´ì²´ì˜ ë²”ìœ„ë¥¼ ê³„ì‚°
 	_float left = sphereCenterInLightSpace.x - mSceneBounds.Radius;
 	_float right = sphereCenterInLightSpace.x + mSceneBounds.Radius;
 	_float bottom = sphereCenterInLightSpace.y - mSceneBounds.Radius;
@@ -131,7 +131,7 @@ void CShadow::UpdateMatrix(CLight* _light)
 
 void CShadow::UpdateBoundingSphere(CCamera* _camera)
 {
-	// ÇöÀç ½Ã¾ß¸¦ Æ÷ÇÔÇÏ´Â ±¸Ã¼ÀÇ Áß½É°ú ¹ÝÁö¸§À» °è»êÇÏ¿© mSceneBounds¿¡ ÀúÀå
+	// í˜„ìž¬ ì‹œì•¼ë¥¼ í¬í•¨í•˜ëŠ” êµ¬ì²´ì˜ ì¤‘ì‹¬ê³¼ ë°˜ì§€ë¦„ì„ ê³„ì‚°í•˜ì—¬ mSceneBoundsì— ì €ìž¥
 	XMFLOAT4X4 cameraView = _camera->Get_CameraView();
 	XMFLOAT4X4 cameraProj = _camera->Get_CameraProjection();
 	XMMATRIX matView = XMLoadFloat4x4(&cameraView);
@@ -142,14 +142,14 @@ void CShadow::UpdateBoundingSphere(CCamera* _camera)
 
 	XMVECTOR ndcCorners[8] =
 	{
-		XMVectorSet(-1.f, 1.f, 0.f, 1.f),	// °¡±î¿î Æò¸é ¿ÞÂÊ À§
-		XMVectorSet(1.f, 1.f, 0.f, 1.f),	// °¡±î¿î Æò¸é ¿À¸¥ÂÊ À§
-		XMVectorSet(1.f, -1.f, 0.f, 1.f),	// °¡±î¿î Æò¸é ¿À¸¥ÂÊ ¾Æ·¡
-		XMVectorSet(-1.f, -1.f, 0.f, 1.f),	// °¡±î¿î Æò¸é ¿ÞÂÊ ¾Æ·¡
-		XMVectorSet(-1.f, 1.f, 1.f, 1.f),	// ¸Õ Æò¸é ¿ÞÂÊ À§
-		XMVectorSet(1.f, 1.f, 1.f, 1.f),	// ¸Õ Æò¸é ¿À¸¥ÂÊ À§
-		XMVectorSet(1.f, -1.f, 1.f, 1.f),	// ¸Õ Æò¸é ¿À¸¥ÂÊ ¾Æ·¡
-		XMVectorSet(-1.f, -1.f, 1.f, 1.f)	// ¸Õ Æò¸é ¿ÞÂÊ ¾Æ·¡
+		XMVectorSet(-1.f, 1.f, 0.f, 1.f),	// ê°€ê¹Œìš´ í‰ë©´ ì™¼ìª½ ìœ„
+		XMVectorSet(1.f, 1.f, 0.f, 1.f),	// ê°€ê¹Œìš´ í‰ë©´ ì˜¤ë¥¸ìª½ ìœ„
+		XMVectorSet(1.f, -1.f, 0.f, 1.f),	// ê°€ê¹Œìš´ í‰ë©´ ì˜¤ë¥¸ìª½ ì•„ëž˜
+		XMVectorSet(-1.f, -1.f, 0.f, 1.f),	// ê°€ê¹Œìš´ í‰ë©´ ì™¼ìª½ ì•„ëž˜
+		XMVectorSet(-1.f, 1.f, 1.f, 1.f),	// ë¨¼ í‰ë©´ ì™¼ìª½ ìœ„
+		XMVectorSet(1.f, 1.f, 1.f, 1.f),	// ë¨¼ í‰ë©´ ì˜¤ë¥¸ìª½ ìœ„
+		XMVectorSet(1.f, -1.f, 1.f, 1.f),	// ë¨¼ í‰ë©´ ì˜¤ë¥¸ìª½ ì•„ëž˜
+		XMVectorSet(-1.f, -1.f, 1.f, 1.f)	// ë¨¼ í‰ë©´ ì™¼ìª½ ì•„ëž˜
 	};
 
 	XMVECTOR worldCorners[8];
@@ -251,7 +251,7 @@ void CShadow::Create_Resource()
 		&optClear,
 		IID_PPV_ARGS(&m_pShadowMap)));
 
-	// DSV Heap »ý¼º -> ÈÄ¿¡ Light¿Í Shadow°¡ ¸¹¾ÆÁú °æ¿ì TextureManagerÃ³·³ °ü¸®ÇÏ´Â ¹æ¹ý Ãß°¡ ¿¹Á¤
+	// DSV Heap ìƒì„± -> í›„ì— Lightì™€ Shadowê°€ ë§Žì•„ì§ˆ ê²½ìš° TextureManagerì²˜ëŸ¼ ê´€ë¦¬í•˜ëŠ” ë°©ë²• ì¶”ê°€ ì˜ˆì •
 	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
 	dsvHeapDesc.NumDescriptors = 1;
 	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
@@ -260,7 +260,7 @@ void CShadow::Create_Resource()
 		&dsvHeapDesc, IID_PPV_ARGS(&m_pDsvHeap)));
 	m_hCpuDsvHandle = m_pDsvHeap->GetCPUDescriptorHandleForHeapStart();
 
-	// DSV »ý¼º
+	// DSV ìƒì„±
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
 	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
@@ -268,7 +268,7 @@ void CShadow::Create_Resource()
 
 	m_pContext->device->CreateDepthStencilView(m_pShadowMap.Get(), &dsvDesc, m_hCpuDsvHandle);
 
-	// SRV »ý¼º
+	// SRV ìƒì„±
 	CD3DX12_CPU_DESCRIPTOR_HANDLE srvcpuHandle = m_pGameInstance->Get_CPUHandle();
 	m_iSRVIndex = m_pGameInstance->Get_CurrentIndex();
 	CD3DX12_GPU_DESCRIPTOR_HANDLE srvGpuHandle = m_pGameInstance->Get_GPUHandle(m_iSRVIndex);

@@ -75,7 +75,7 @@ HRESULT CCamera::Bind_CameraBuffer ( ID3D12GraphicsCommandList* pCmdList , RootP
 	XMStoreFloat3(&m_xmf3Position, m_pTransformCom->Get_State(CTransform::STATE_POSITION));
 	memcpy(&m_pCbMappedCameras[iFrameIndex]->m_xmf3Position, &m_xmf3Position, sizeof(_float3));
 
-	// µð¹ö±× Ãâ·Â
+	// ë””ë²„ê·¸ ì¶œë ¥
 	// DebugPrintMatrix ( "View" , xmf4x4View );
 	// DebugPrintMatrix ( "Proj" , xmf4x4Proj );
 	// DebugPrintFloat3 ( "CamPos" , xmf3Pos );

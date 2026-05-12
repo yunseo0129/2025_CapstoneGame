@@ -13,20 +13,20 @@ public:
 	
 	void Update(class CCamera* _camera, class CLight* _light);
 
-	// Light¿¡¼­ °æ°è±¸¸¦ ¹Ù¶óº¸´Â ¸ÅÆ®¸¯½º ¹ÙÀÎµù
+	// Lightì—ì„œ ê²½ê³„êµ¬ë¥¼ ë°”ë¼ë³´ëŠ” ë§¤íŠ¸ë¦­ìŠ¤ ë°”ì¸ë”©
 	void Bind_ShadowBuffer(ID3D12GraphicsCommandList* cmdList, RootParameterIndex _eIndex);
 	
 	void Bind_ShadowMap(ID3D12GraphicsCommandList* cmdList, RootParameterIndex _eIndex);
 
 	XMFLOAT4X4 Get_LightTransform() const { return m_ShadowTransform; }
 
-	// ±×¸²ÀÚ ¸Ê¿¡ ¾ÀÀ» ±×¸®´Â ÇÔ¼ö
+	// ê·¸ë¦¼ì ë§µì— ì”¬ì„ ê·¸ë¦¬ëŠ” í•¨ìˆ˜
 	void DrawSceneToShadowMap(ID3D12GraphicsCommandList* cmdList);
 
 private:
-	// Ä«¸Ş¶ó À§Ä¡¿¡ ¸Â°Ô °æ°è±¸ ¾÷µ¥ÀÌÆ®  - ÀÌ°Å ¸ÕÀú ¾÷µ¥ÀÌÆ®
+	// ì¹´ë©”ë¼ ìœ„ì¹˜ì— ë§ê²Œ ê²½ê³„êµ¬ ì—…ë°ì´íŠ¸  - ì´ê±° ë¨¼ì € ì—…ë°ì´íŠ¸
 	void UpdateBoundingSphere(class CCamera* _camera);
-	// Light¿¡¼­ °æ°è±¸¸¦ ¹Ù¶óº¸´Â ¸ÅÆ®¸¯½º ¾÷µ¥ÀÌÆ®  - ÀÌ°É ³ªÁß¿¡ ¾÷µ¥ÀÌÆ®
+	// Lightì—ì„œ ê²½ê³„êµ¬ë¥¼ ë°”ë¼ë³´ëŠ” ë§¤íŠ¸ë¦­ìŠ¤ ì—…ë°ì´íŠ¸  - ì´ê±¸ ë‚˜ì¤‘ì— ì—…ë°ì´íŠ¸
 	void UpdateMatrix(class CLight* _light);
 
 	HRESULT Create_ShadowBuffer();
@@ -42,7 +42,7 @@ private:
 	_uint m_iWidth = 0;
 	_uint m_iHeight = 0;
 
-	// Camera¸¦ Light À§Ä¡·Î º¯È¯ÇÑ °ªµé ÀúÀåÇÏ´Â º¯¼ö
+	// Cameraë¥¼ Light ìœ„ì¹˜ë¡œ ë³€í™˜í•œ ê°’ë“¤ ì €ì¥í•˜ëŠ” ë³€ìˆ˜
 	XMFLOAT4X4 m_LightView = {};
 	XMFLOAT4X4 m_LightProj = {};
 	XMFLOAT3 m_LightPos = {};
@@ -52,18 +52,18 @@ private:
 	_float m_Lightnear;
 	_float m_Lightfar;
 
-	// srv dsv °ü·Ã
+	// srv dsv ê´€ë ¨
 	_uint m_iSRVIndex = { 0 };
 	CD3DX12_CPU_DESCRIPTOR_HANDLE m_hCpuDsvHandle = {};
 	ComPtr<ID3D12Resource> m_pShadowMap = nullptr;
 	ComPtr<ID3D12DescriptorHeap> m_pDsvHeap = nullptr;
 
-	//cb °ü·Ã
+	//cb ê´€ë ¨
 	static const _int FRAME_COUNT = CGraphic_Device::SWAP_CHAIN_BUFFER_COUNT;
 	ComPtr<ID3D12Resource> m_pShadowbuffer[FRAME_COUNT];
 	CB_VS_CAMERA* m_pCbMappedShadow[FRAME_COUNT]{};
 	
-	// °æ°è±¸
+	// ê²½ê³„êµ¬
 	BoundingSphere mSceneBounds;
 
 public:

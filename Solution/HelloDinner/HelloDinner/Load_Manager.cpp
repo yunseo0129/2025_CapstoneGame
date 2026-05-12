@@ -11,13 +11,13 @@ HRESULT CLoad_Manager::Initialize()
 
 HRESULT CLoad_Manager::Open_File(const wchar_t* filename)
 {
-	m_hFile = CreateFile(filename,		// ÆÄÀÏ °æ·Î¿Í ÀÌ¸§À» ¸í½Ã
-		GENERIC_READ,			// ÆÄÀÏ Á¢±Ù ¸ðµå(GENERIC_WRITE : ¾²±â Àü¿ë, GENERIC_READ : ÀÐ±â Àü¿ë)
-		NULL,					// °øÀ¯ ¹æ½Ä, ÆÄÀÏÀÌ ¿­·ÁÀÖ´Â »óÅÂ¿¡¼­ ´Ù¸¥ ÇÁ·Î¼¼½º°¡ ¿ÀÇÂ ÇÒ ¶§ Çã°¡ÇÏ´Â °Í¿¡ ´ëÇØ¼­ ¼³Á¤(null ÁöÁ¤ ½Ã °øÀ¯ÇÏÁö ¾ÊÀ½)
-		NULL,					// º¸¾È ¼Ó¼º, NULLÀÎ ±âº» °ª ¼³Á¤ À¯Áö
-		OPEN_EXISTING,			// »ý¼º ¹æ½Ä( CREATE_ALWAYS : ÆÄÀÏÀÌ ¾ø´Ù¸é »ý¼º, ÀÖÀ¸¸é µ¤¾î ¾²±â, OPEN_EXISTING : ÆÄÀÏÀÌ ÀÖÀ» °æ¿ì¿¡¸¸ ºÒ·¯¿À±â)
-		FILE_ATTRIBUTE_NORMAL,	// ÆÄÀÏ ¼Ó¼º( FILE_ATTRIBUTE_NORMAL : ¾Æ¹«·± ¼Ó¼ºÀÌ ¾ø´Â ÆÄÀÏ)
-		NULL);					// »ý¼ºµÉ ÆÄÀÏÀÇ ¼Ó¼ºÀ» Á¦°øÇÒ ÅÛÇÃ¸´ ÆÄÀÏ(»ç¿ëÇÏÁö ¾Ê±â ¶§¹®¿¡ NULL)
+	m_hFile = CreateFile(filename,		// íŒŒì¼ ê²½ë¡œì™€ ì´ë¦„ì„ ëª…ì‹œ
+		GENERIC_READ,			// íŒŒì¼ ì ‘ê·¼ ëª¨ë“œ(GENERIC_WRITE : ì“°ê¸° ì „ìš©, GENERIC_READ : ì½ê¸° ì „ìš©)
+		NULL,					// ê³µìœ  ë°©ì‹, íŒŒì¼ì´ ì—´ë ¤ìžˆëŠ” ìƒíƒœì—ì„œ ë‹¤ë¥¸ í”„ë¡œì„¸ìŠ¤ê°€ ì˜¤í”ˆ í•  ë•Œ í—ˆê°€í•˜ëŠ” ê²ƒì— ëŒ€í•´ì„œ ì„¤ì •(null ì§€ì • ì‹œ ê³µìœ í•˜ì§€ ì•ŠìŒ)
+		NULL,					// ë³´ì•ˆ ì†ì„±, NULLì¸ ê¸°ë³¸ ê°’ ì„¤ì • ìœ ì§€
+		OPEN_EXISTING,			// ìƒì„± ë°©ì‹( CREATE_ALWAYS : íŒŒì¼ì´ ì—†ë‹¤ë©´ ìƒì„±, ìžˆìœ¼ë©´ ë®ì–´ ì“°ê¸°, OPEN_EXISTING : íŒŒì¼ì´ ìžˆì„ ê²½ìš°ì—ë§Œ ë¶ˆëŸ¬ì˜¤ê¸°)
+		FILE_ATTRIBUTE_NORMAL,	// íŒŒì¼ ì†ì„±( FILE_ATTRIBUTE_NORMAL : ì•„ë¬´ëŸ° ì†ì„±ì´ ì—†ëŠ” íŒŒì¼)
+		NULL);					// ìƒì„±ë  íŒŒì¼ì˜ ì†ì„±ì„ ì œê³µí•  í…œí”Œë¦¿ íŒŒì¼(ì‚¬ìš©í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì— NULL)
 
 	if (INVALID_HANDLE_VALUE == m_hFile)
 	{

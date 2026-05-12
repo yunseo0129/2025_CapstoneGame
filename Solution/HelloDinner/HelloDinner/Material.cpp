@@ -39,7 +39,7 @@ HRESULT CMaterial::Bind_ShaderResource(ID3D12GraphicsCommandList* pCmdList, Text
 	if (pTexture == nullptr)
 		return E_FAIL;
 
-	// CTexture Å¬·¡½ºÀÇ ¹ÙÀÎµù ÇÔ¼ö È£Ãâ
+	// CTexture í´ë˜ìŠ¤ì˜ ë°”ì¸ë”© í•¨ìˆ˜ í˜¸ì¶œ
 	return pTexture->Bind_ShaderResource(pCmdList, iRootParameterIndex, iTextureIndex);
 }
 
@@ -47,7 +47,7 @@ CMaterial* CMaterial::Create()
 {
 	CMaterial* pInstance = new CMaterial();
 
-	// ÃÊ±âÈ­ (º¤ÅÍ »çÀÌÁî ÇÒ´ç)
+	// ì´ˆê¸°í™” (ë²¡í„° ì‚¬ì´ì¦ˆ í• ë‹¹)
 	pInstance->m_Textures.resize(AI_TEXTURE_TYPE_MAX);
 
 	return pInstance;
@@ -60,7 +60,7 @@ CMaterial* CMaterial::Clone()
 
 void CMaterial::Free()
 {
-	// µé°í ÀÖ´ø ÅØ½ºÃ³ ¸Ş¸ğ¸® ÇØÁ¦
+	// ë“¤ê³  ìˆë˜ í…ìŠ¤ì²˜ ë©”ëª¨ë¦¬ í•´ì œ
 	for (auto& TextureList : m_Textures)
 	{
 		for (auto& pTexture : TextureList)

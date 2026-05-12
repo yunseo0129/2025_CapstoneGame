@@ -8,12 +8,12 @@ public:
 	struct MAP_DESC : public CGameObject::GAMEOBJECT_DESC
 	{
 		_float3		vPosition = {};
-		_float3		vRotation = {};		// degree ´ÜÀ§
+		_float3		vRotation = {};		// degree ë‹¨ìœ„
 		_float3		vScale = { 1.f, 1.f, 1.f };
 		_wstring	strModelTag = L"";
 		_uint		iModelLevelIndex = 0;
 
-		// collider Á¤º¸±îÁö ³Ö¾î¼­ °ü¸®ÇÏÀÚ
+		// collider ì •ë³´ê¹Œì§€ ë„£ì–´ì„œ ê´€ë¦¬í•˜ì
 		CCollider::COLLIDERTYPE eColliderType = CCollider::TYPE_END;
 		_float3    vCenterCollider = {};
 		_float3    vExtentsCollider = {};

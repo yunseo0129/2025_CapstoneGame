@@ -5,7 +5,7 @@
 class NetworkClient
 {
 public:
-    // ³×Æ®¿öÅ© ÀÌº¥Æ® Á¾·ù
+    // ë„¤íŠ¸ì›Œí¬ ì´ë²¤íŠ¸ ì¢…ë¥˜
     enum class NetEventType {
         PLAYER_ADD,
         PLAYER_REMOVE,
@@ -14,14 +14,14 @@ public:
         MATCH_SUCCESS,
     };
 
-    // ¸ŞÀÎ ½º·¹µå¿¡¼­ Ã³¸®ÇÒ ÀÌº¥Æ® ±¸Á¶Ã¼
+    // ë©”ì¸ ìŠ¤ë ˆë“œì—ì„œ ì²˜ë¦¬í•  ì´ë²¤íŠ¸ êµ¬ì¡°ì²´
     struct NetEvent {
         NetEventType	type;
         int				id = -1;
-        _float3			cameraPos = {};		// Ä«¸Ş¶ó(=ÇÃ·¹ÀÌ¾î) À§Ä¡
-        float			cameraYaw = 0.f;		// YÃà È¸Àü
-        float			cameraPitch = 0.f;		// XÃà È¸Àü
-        _float3			cameraLook = {};		// look º¤ÅÍ
+        _float3			cameraPos = {};		// ì¹´ë©”ë¼(=í”Œë ˆì´ì–´) ìœ„ì¹˜
+        float			cameraYaw = 0.f;		// Yì¶• íšŒì „
+        float			cameraPitch = 0.f;		// Xì¶• íšŒì „
+        _float3			cameraLook = {};		// look ë²¡í„°
         unsigned char	keyInput = 0;
         char			name[NAME_SIZE] = {};
         int				roomId = -1;
@@ -33,16 +33,16 @@ public:
     static NetworkClient* GetInstance();
     static void DestroyInstance();
 
-    // ÄÜ¼Ö Ã¢À» ¶ç¿ì°í IP, ÀÌ¸§À» ÀÔ·Â¹Ş¾Æ Á¢¼Ó
+    // ì½˜ì†” ì°½ì„ ë„ìš°ê³  IP, ì´ë¦„ì„ ì…ë ¥ë°›ì•„ ì ‘ì†
     bool ConnectWithConsole();
 
-    // ÆĞÅ¶ ¼ö½Å Ã³¸® ·çÇÁ (º°µµ ½º·¹µå)
+    // íŒ¨í‚· ìˆ˜ì‹  ì²˜ë¦¬ ë£¨í”„ (ë³„ë„ ìŠ¤ë ˆë“œ)
     void RecvThread();
 
-    // ÀÌµ¿ ÆĞÅ¶ Àü¼Û (Ä«¸Ş¶ó Á¤º¸ + Å°ÀÎÇ²)
+    // ì´ë™ íŒ¨í‚· ì „ì†¡ (ì¹´ë©”ë¼ ì •ë³´ + í‚¤ì¸í’‹)
     void Send_Move(unsigned char keyInput, const _float3& camPos, float camYaw, float camPitch, const _float3& camLook);
 
-    // Á¢¼Ó ÇØÁ¦
+    // ì ‘ì† í•´ì œ
     void Disconnect();
 
     bool IsConnected() const { return m_bConnected; }
@@ -53,13 +53,13 @@ public:
     int GetRoomId() const { return m_iRoomId; }
     int GetQueueSize() const { return m_iQueueSize; }
 
-    // ´Ù¸¥ ÇÃ·¹ÀÌ¾î Á¤º¸
+    // ë‹¤ë¥¸ í”Œë ˆì´ì–´ ì •ë³´
     struct PlayerInfo {
         int		    id = -1;
-        _float3	    camPos = {};		// Ä«¸Ş¶ó(=ÇÃ·¹ÀÌ¾î) À§Ä¡
-        float       camYaw = 0.f;		// YÃà È¸Àü
-        float       camPitch = 0.f;		// XÃà È¸Àü
-        _float3     camLook = {};		// look º¤ÅÍ
+        _float3	    camPos = {};		// ì¹´ë©”ë¼(=í”Œë ˆì´ì–´) ìœ„ì¹˜
+        float       camYaw = 0.f;		// Yì¶• íšŒì „
+        float       camPitch = 0.f;		// Xì¶• íšŒì „
+        _float3     camLook = {};		// look ë²¡í„°
         unsigned char keyInput = 0;
         char	    name[NAME_SIZE] = {};
         bool	    active = false;
@@ -67,7 +67,7 @@ public:
 
     const PlayerInfo& GetPlayer(int id) const { return m_players[id]; }
 
-    // ¸ŞÀÎ ½º·¹µå¿¡¼­ È£Ãâ: ´ë±â ÁßÀÎ ÀÌº¥Æ®¸¦ ²¨³»°¨
+    // ë©”ì¸ ìŠ¤ë ˆë“œì—ì„œ í˜¸ì¶œ: ëŒ€ê¸° ì¤‘ì¸ ì´ë²¤íŠ¸ë¥¼ êº¼ë‚´ê°
     void PopAllEvents(std::vector<NetEvent>& outEvents);
 
 private:
@@ -77,7 +77,7 @@ private:
     void Send(void* packet, int size);
     void ProcessPacket(char* packet);
 
-    // ÄÜ¼Ö Ã¢ ´İ±â
+    // ì½˜ì†” ì°½ ë‹«ê¸°
     void CloseConsole();
 
 private:
@@ -85,7 +85,7 @@ private:
 
     SOCKET		m_socket = INVALID_SOCKET;
     bool		m_bConnected = false;
-    // ³» Á¤º¸
+    // ë‚´ ì •ë³´
     bool		m_bLoggedIn = false;
     bool		m_bMatched = false;
 
@@ -102,7 +102,7 @@ private:
 
     PlayerInfo	m_players[MAX_USER] = {};
 
-    // ÀÌº¥Æ® Å¥ (RecvThread¿¡¼­ push, ¸ŞÀÎ ½º·¹µå¿¡¼­ pop)
+    // ì´ë²¤íŠ¸ í (RecvThreadì—ì„œ push, ë©”ì¸ ìŠ¤ë ˆë“œì—ì„œ pop)
     std::vector<NetEvent>	m_pendingEvents;
     std::mutex				m_eventLock;
 

@@ -44,7 +44,7 @@ HRESULT CLoader::Loading()
         break;
 
     default:
-        // ¾Ë ¼ö ¾ø´Â ·¹º§ ID
+        // ì•Œ ìˆ˜ ì—†ëŠ” ë ˆë²¨ ID
         return E_FAIL;
     }
 
@@ -79,25 +79,25 @@ void CLoader::Show_Debug()
 #endif
 
 // ----------------------------------------------------------------------
-//  ·Îµù ÇÔ¼öµé
-//  ÀÌ¶© GPU´Â µ¿ÀÛÇÏÁö ¾Ê°í Windoes API¿Í CPU ÀÛ¾÷¸¸ ÇÔ
+//  ë¡œë”© í•¨ìˆ˜ë“¤
+//  ì´ë• GPUëŠ” ë™ì‘í•˜ì§€ ì•Šê³  Windoes APIì™€ CPU ì‘ì—…ë§Œ í•¨
 // ----------------------------------------------------------------------
 
 HRESULT CLoader::Loading_Level_Logo()
 {
-    Set_LoadingText(TEXT("·Î°í ÅØ½ºÃ³¸¦ ·ÎµùÁßÀÔ´Ï´Ù."));
+    Set_LoadingText(TEXT("ë¡œê³  í…ìŠ¤ì²˜ë¥¼ ë¡œë”©ì¤‘ì…ë‹ˆë‹¤."));
 
-    Set_LoadingText(TEXT("UI¸¦ ·ÎµùÁßÀÔ´Ï´Ù."));
+    Set_LoadingText(TEXT("UIë¥¼ ë¡œë”©ì¤‘ì…ë‹ˆë‹¤."));
 
-    Set_LoadingText(TEXT("·ÎµùÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù."));
+    Set_LoadingText(TEXT("ë¡œë”©ì´ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤."));
 
     return S_OK;
 }
 
 HRESULT CLoader::Loading_Level_GamePlay()
 {
-    Set_LoadingText(TEXT("ÅØ½ºÃ³¸¦ ·ÎµùÁßÀÔ´Ï´Ù."));
-    // ÅØ½ºÃÄ ·Îµå
+    Set_LoadingText(TEXT("í…ìŠ¤ì²˜ë¥¼ ë¡œë”©ì¤‘ì…ë‹ˆë‹¤."));
+    // í…ìŠ¤ì³ ë¡œë“œ
     {      
         // Prototype_Component_Texture_Cube
         if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, L"Prototype_Component_Texture_Cube",
@@ -109,9 +109,9 @@ HRESULT CLoader::Loading_Level_GamePlay()
             return E_FAIL;
     }
 
-    Set_LoadingText(TEXT("ÆùÆ®¸¦ ·ÎµùÁßÀÔ´Ï´Ù."));
+    Set_LoadingText(TEXT("í°íŠ¸ë¥¼ ë¡œë”©ì¤‘ì…ë‹ˆë‹¤."));
 
-    Set_LoadingText(TEXT("Äİ¶óÀÌ´õ¸¦ ·ÎµùÁßÀÔ´Ï´Ù."));
+    Set_LoadingText(TEXT("ì½œë¼ì´ë”ë¥¼ ë¡œë”©ì¤‘ì…ë‹ˆë‹¤."));
     // CCollider
     {
         // Prototype_Component_AABB
@@ -128,15 +128,15 @@ HRESULT CLoader::Loading_Level_GamePlay()
             return E_FAIL;
     }
 
-    Set_LoadingText(TEXT("¿ùµå¸¦ ·ÎµùÁßÀÔ´Ï´Ù."));
+    Set_LoadingText(TEXT("ì›”ë“œë¥¼ ë¡œë”©ì¤‘ì…ë‹ˆë‹¤."));
     CLoader_Map* pMapLoader = CLoader_Map::Create(m_pContext);
     pMapLoader->Load_MaterialData("Resources/NonAnim/Map/MaterialData.json");
     pMapLoader->Load_MapData("Resources/NonAnim/Map/MapData.json", LEVEL_GAMEPLAY);
     Safe_Release(pMapLoader);
 
-    Set_LoadingText(TEXT("¸ğµ¨À» ·ÎµùÁßÀÔ´Ï´Ù."));
-    // ¸ğµ¨ ·Îµå
-    // ±âº» ¹öÆÛ
+    Set_LoadingText(TEXT("ëª¨ë¸ì„ ë¡œë”©ì¤‘ì…ë‹ˆë‹¤."));
+    // ëª¨ë¸ ë¡œë“œ
+    // ê¸°ë³¸ ë²„í¼
     {
         // Prototype_Component_VIBuffer_VtxCube
         if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, L"Prototype_Component_VIBuffer_VtxCube",
@@ -172,8 +172,8 @@ HRESULT CLoader::Loading_Level_GamePlay()
             return E_FAIL;
     }
 
-    Set_LoadingText(TEXT("°´Ã¼¿øÇüÀ» ·ÎµùÁßÀÔ´Ï´Ù."));
-    // °´Ã¼ ¿øÇü ·Îµå
+    Set_LoadingText(TEXT("ê°ì²´ì›í˜•ì„ ë¡œë”©ì¤‘ì…ë‹ˆë‹¤."));
+    // ê°ì²´ ì›í˜• ë¡œë“œ
     // CCollider
     {
         // AABB
@@ -210,7 +210,7 @@ HRESULT CLoader::Loading_Level_GamePlay()
         CPlayer_Pig::Create(m_pContext))))
         return E_FAIL;
 
-    Set_LoadingText(TEXT("·ÎµùÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù."));
+    Set_LoadingText(TEXT("ë¡œë”©ì´ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤."));
 
     return S_OK;
 }

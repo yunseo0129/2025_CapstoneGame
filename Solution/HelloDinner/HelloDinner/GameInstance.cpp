@@ -73,11 +73,11 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineCo
 	if (nullptr == m_pLoad_Manager)
 		return E_FAIL;
 
-	// Å×½ºÆ®¿ë
-	// Camera.h º¯°æÇØ¾ßÇÒ °Íµé
-	// 1. abstract ¼³Á¤
+	// í…ŒìŠ¤íŠ¸ìš©
+	// Camera.h ë³€ê²½í•´ì•¼í•  ê²ƒë“¤
+	// 1. abstract ì„¤ì •
 	// 2. Clone = 0;
-	// 3. »ı¼ºÀÚ, ¼Ò¸êÀÚ protected·Î º¯°æ
+	// 3. ìƒì„±ì, ì†Œë©¸ì protectedë¡œ ë³€ê²½
 
 	return S_OK;
 }
@@ -129,7 +129,7 @@ HRESULT CGameInstance::Render_End()
 
 void CGameInstance::Clear(_int iLevelID)
 {
-	/* Æ¯Á¤ ·¹º§¿ë °´Ã¼µéÀ» Áö¿î´Ù. */
+	/* íŠ¹ì • ë ˆë²¨ìš© ê°ì²´ë“¤ì„ ì§€ìš´ë‹¤. */
 	m_pObject_Manager->Clear(iLevelID);
 
 	m_pPrototype_Manager->Clear(iLevelID);
@@ -571,33 +571,33 @@ void CGameInstance::Free()
 	if ( m_pGraphic_Device )
 		m_pGraphic_Device->WaitForGpuComplete ();
 
-	// 2. ComPtr·Î º¸À¯ÇÑ Ä¿¸Çµå ¸®½ºÆ® ÂüÁ¶ ÇØÁ¦
+	// 2. ComPtrë¡œ ë³´ìœ í•œ ì»¤ë§¨ë“œ ë¦¬ìŠ¤íŠ¸ ì°¸ì¡° í•´ì œ
 	m_pCommandList.Reset ();
 
-	// 3. ·»´õ·¯ ÇØÁ¦ (Device, CmdList¸¦ Safe_AddRef·Î º¸À¯ Áß)
+	// 3. ë Œë”ëŸ¬ í•´ì œ (Device, CmdListë¥¼ Safe_AddRefë¡œ ë³´ìœ  ì¤‘)
 	Safe_Release ( m_pRenderer );
 
-	// 4. °ÔÀÓ ¿ÀºêÁ§Æ® ÇØÁ¦ (ÄÄÆ÷³ÍÆ® ¡æ ÅØ½ºÃ³/¹öÆÛÀÇ ComPtr ÇØÁ¦)
+	// 4. ê²Œì„ ì˜¤ë¸Œì íŠ¸ í•´ì œ (ì»´í¬ë„ŒíŠ¸ â†’ í…ìŠ¤ì²˜/ë²„í¼ì˜ ComPtr í•´ì œ)
 	Safe_Release( m_pCollision_Manager );
 	Safe_Release ( m_pObject_Manager );
 	Safe_Release( m_pController );
 
-	// 5. ·¹º§ ÇØÁ¦
+	// 5. ë ˆë²¨ í•´ì œ
 	Safe_Release ( m_pLevel_Manager );
 
-	// 6. ÇÁ·ÎÅäÅ¸ÀÔ ÇØÁ¦ (ÅØ½ºÃ³/¹öÆÛ ¿øº» ¸®¼Ò½º ÇØÁ¦)
+	// 6. í”„ë¡œí† íƒ€ì… í•´ì œ (í…ìŠ¤ì²˜/ë²„í¼ ì›ë³¸ ë¦¬ì†ŒìŠ¤ í•´ì œ)
 	Safe_Release ( m_pPrototype_Manager );
 
-	// 8. ¼ÎÀÌ´õ ¸Å´ÏÀú ÇØÁ¦ (PSO, RootSignature ÇØÁ¦)
+	// 8. ì…°ì´ë” ë§¤ë‹ˆì € í•´ì œ (PSO, RootSignature í•´ì œ)
 	Safe_Release ( m_pShader_Manager );
 	Safe_Release(m_pTexture_Manager);
 
-	// 9. ³ª¸ÓÁö ¸Å´ÏÀú ÇØÁ¦
+	// 9. ë‚˜ë¨¸ì§€ ë§¤ë‹ˆì € í•´ì œ
 	Safe_Release ( m_pLoad_Manager );
 	Safe_Release ( m_pTimer_Manager );
 	Safe_Release ( m_pInput_Device );
 
-	// 10. Device¸¦ °¡Àå ¸¶Áö¸·¿¡ ÇØÁ¦
+	// 10. Deviceë¥¼ ê°€ì¥ ë§ˆì§€ë§‰ì— í•´ì œ
 	Safe_Release ( m_pGraphic_Device );
 
 	__super::Free();

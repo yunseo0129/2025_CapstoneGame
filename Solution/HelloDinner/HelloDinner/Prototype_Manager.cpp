@@ -89,7 +89,7 @@ void CPrototype_Manager::ReleaseUploadBuffers ( _uint iLevelIndex )
 		if ( nullptr == Pair.second )
 			continue;
 
-		// VIBuffer °è¿­ÀÎÁö È®ÀÎ
+		// VIBuffer ê³„ì—´ì¸ì§€ í™•ì¸
 		CVIBuffer* pVIBuffer = dynamic_cast< CVIBuffer* >( Pair.second );
 		if ( nullptr != pVIBuffer )
 		{
@@ -97,7 +97,7 @@ void CPrototype_Manager::ReleaseUploadBuffers ( _uint iLevelIndex )
 			continue;
 		}
 
-		// Texture °è¿­ÀÎÁö È®ÀÎ
+		// Texture ê³„ì—´ì¸ì§€ í™•ì¸
 		CTexture* pTexture = dynamic_cast< CTexture* >( Pair.second );
 		if ( nullptr != pTexture )
 		{

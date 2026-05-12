@@ -49,7 +49,7 @@ void CMainApp::Update(_float fTimeDelta)
 {
 	m_isLoading = m_pGameInstance->Get_CurrentLevelID() == LEVEL_LOADING;
 
-	if (!m_isLoading) {	// Loading ÁßÀÌ¸é Render ÀÛ¾÷ ÇÏÁö ¾ÊÀ½
+	if (!m_isLoading) {	// Loading ì¤‘ì´ë©´ Render ì‘ì—… í•˜ì§€ ì•ŠìŒ
 		if (FAILED(m_pGameInstance->Render_Begin(_float4 {0.0f, 1.0f, 0.0f, 0.0f})))
 			return;
 	}
@@ -78,7 +78,7 @@ void CMainApp::Update(_float fTimeDelta)
 
 HRESULT CMainApp::Render()
 {
-	// Loading ÁßÀÌ¸é ½ºÅµ
+	// Loading ì¤‘ì´ë©´ ìŠ¤í‚µ
 	if (m_isLoading)
 		return S_OK;
 
@@ -120,7 +120,7 @@ void CMainApp::Free()
 
 	CGameInstance::Release_Engine();
 	Safe_Release(m_pGameInstance);
-	/* ºÎ¸ğ ¸â¹ö¸¦ Á¤¸®ÇÑ´Ù. */
+	/* ë¶€ëª¨ ë©¤ë²„ë¥¼ ì •ë¦¬í•œë‹¤. */
 	__super::Free();
 
 }

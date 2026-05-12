@@ -27,7 +27,7 @@ NetworkClient::~NetworkClient()
 
 void NetworkClient::CloseConsole()
 {
-	// ÄÜ¼Ö Ã¢ ´İ±â
+	// ì½˜ì†” ì°½ ë‹«ê¸°
     fclose(stdin);
     fclose(stdout);
     FreeConsole();
@@ -35,7 +35,7 @@ void NetworkClient::CloseConsole()
 
 bool NetworkClient::ConnectWithConsole()
 {
-    // ÄÜ¼Ö Ã¢ »ı¼º
+    // ì½˜ì†” ì°½ ìƒì„±
     AllocConsole();
     FILE* fp = nullptr;
     freopen_s(&fp, "CONIN$", "r", stdin);
@@ -45,16 +45,16 @@ bool NetworkClient::ConnectWithConsole()
     std::cout << "       HelloDinner - Connect to Server\n";
     std::cout << "========================================\n\n";
 
-    // ¼­¹ö IP ÀÔ·Â
+    // ì„œë²„ IP ì…ë ¥
     char serverIP[64] = {};
     std::cout << "Server IP: ";
     std::cin.getline(serverIP, sizeof(serverIP));
 
-    // ÀÌ¸§ ÀÔ·Â
+    // ì´ë¦„ ì…ë ¥
     std::cout << "Name: ";
     std::cin.getline(m_szName, NAME_SIZE);
 
-    // Winsock ÃÊ±âÈ­
+    // Winsock ì´ˆê¸°í™”
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
         std::cout << "WSAStartup failed.\n";
@@ -62,7 +62,7 @@ bool NetworkClient::ConnectWithConsole()
         return false;
     }
 
-    // ¼ÒÄÏ »ı¼º
+    // ì†Œì¼“ ìƒì„±
     m_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (m_socket == INVALID_SOCKET) {
         std::cout << "Socket creation failed.\n";
@@ -70,7 +70,7 @@ bool NetworkClient::ConnectWithConsole()
         return false;
     }
 
-    // ¼­¹ö ¿¬°á
+    // ì„œë²„ ì—°ê²°
     SOCKADDR_IN serverAddr{};
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_port = htons(PORT_NUM);
@@ -88,7 +88,7 @@ bool NetworkClient::ConnectWithConsole()
 
     std::cout << "Connected! Sending login...\n";
 
-    // ·Î±×ÀÎ ÆĞÅ¶ Àü¼Û
+    // ë¡œê·¸ì¸ íŒ¨í‚· ì „ì†¡
     CS_LOGIN_PACKET packet{};
     packet.size = sizeof(CS_LOGIN_PACKET);
     packet.type = CS_LOGIN;
@@ -96,7 +96,7 @@ bool NetworkClient::ConnectWithConsole()
     Send(&packet, packet.size);
     m_bConnected = true;
 
-    // ¼ö½Å ½º·¹µå ½ÃÀÛ
+    // ìˆ˜ì‹  ìŠ¤ë ˆë“œ ì‹œì‘
     m_recvThread = std::thread(&NetworkClient::RecvThread, this);
 
     std::cout << "Login sent. Waiting for response...\n";
@@ -157,7 +157,7 @@ void NetworkClient::RecvThread()
     }
 }
 
-// ¼­¹ö¿¡¼­ ¹ŞÀº ÆĞÅ¶À» Ã³¸®
+// ì„œë²„ì—ì„œ ë°›ì€ íŒ¨í‚·ì„ ì²˜ë¦¬
 void NetworkClient::ProcessPacket(char* packet)
 {
     switch (packet[1]) {
@@ -178,7 +178,7 @@ void NetworkClient::ProcessPacket(char* packet)
             m_players[m_iMyId].active = true;
         }
 
-        // ³» ÇÃ·¹ÀÌ¾î »ı¼º ÀÌº¥Æ®
+        // ë‚´ í”Œë ˆì´ì–´ ìƒì„± ì´ë²¤íŠ¸
         {
             NetEvent evt{};
             evt.type = NetEventType::PLAYER_ADD;
@@ -239,7 +239,7 @@ void NetworkClient::ProcessPacket(char* packet)
             m_players[p->id].active = true;
         }
 
-        // ´Ù¸¥ ÇÃ·¹ÀÌ¾î »ı¼º ÀÌº¥Æ®¸¦ Å¥¿¡ Ãß°¡
+        // ë‹¤ë¥¸ í”Œë ˆì´ì–´ ìƒì„± ì´ë²¤íŠ¸ë¥¼ íì— ì¶”ê°€
         {
             NetEvent evt{};
             evt.type = NetEventType::PLAYER_ADD;
@@ -262,7 +262,7 @@ void NetworkClient::ProcessPacket(char* packet)
             m_players[p->id].active = false;
         }
 
-        // ÇÃ·¹ÀÌ¾î Á¦°Å ÀÌº¥Æ®¸¦ Å¥¿¡ Ãß°¡
+        // í”Œë ˆì´ì–´ ì œê±° ì´ë²¤íŠ¸ë¥¼ íì— ì¶”ê°€
         {
             NetEvent evt{};
             evt.type = NetEventType::PLAYER_REMOVE;
@@ -319,13 +319,13 @@ void NetworkClient::Disconnect()
     m_bMatched = false;
     m_iRoomId = -1;
     m_iQueueSize = 0;
-    // ¼ÒÄÏ ´İ±â ¡æ RecvThreadÀÇ recv()°¡ ¿¡·¯ ¸®ÅÏÇÏ¸ç ·çÇÁ Å»Ãâ
+    // ì†Œì¼“ ë‹«ê¸° â†’ RecvThreadì˜ recv()ê°€ ì—ëŸ¬ ë¦¬í„´í•˜ë©° ë£¨í”„ íƒˆì¶œ
     if (m_socket != INVALID_SOCKET) {
         closesocket(m_socket);
         m_socket = INVALID_SOCKET;
     }
 
-    // RecvThread°¡ ¿ÏÀüÈ÷ Á¾·áµÉ ¶§±îÁö ´ë±â
+    // RecvThreadê°€ ì™„ì „íˆ ì¢…ë£Œë  ë•Œê¹Œì§€ ëŒ€ê¸°
     if (m_recvThread.joinable())
         m_recvThread.join();
 }

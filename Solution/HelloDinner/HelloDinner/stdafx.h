@@ -1,21 +1,21 @@
-// header.h: Ç¥ÁØ ½Ã½ºÅÛ Æ÷ÇÔ ÆÄÀÏ
-// ¶Ç´Â ÇÁ·ÎÁ§Æ® Æ¯Á¤ Æ÷ÇÔ ÆÄÀÏÀÌ µé¾î ÀÖ´Â Æ÷ÇÔ ÆÄÀÏÀÔ´Ï´Ù.
+// header.h: í‘œì¤€ ì‹œìŠ¤í…œ í¬í•¨ íŒŒì¼
+// ë˜ëŠ” í”„ë¡œì íŠ¸ íŠ¹ì • í¬í•¨ íŒŒì¼ì´ ë“¤ì–´ ìˆëŠ” í¬í•¨ íŒŒì¼ì…ë‹ˆë‹¤.
 //
 
 #pragma once
 
 #include "targetver.h"
-#define WIN32_LEAN_AND_MEAN             // °ÅÀÇ »ç¿ëµÇÁö ¾Ê´Â ³»¿ëÀ» Windows Çì´õ¿¡¼­ Á¦¿ÜÇÕ´Ï´Ù.
-// Windows Çì´õ ÆÄÀÏ
+#define WIN32_LEAN_AND_MEAN             // ê±°ì˜ ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” ë‚´ìš©ì„ Windows í—¤ë”ì—ì„œ ì œì™¸í•©ë‹ˆë‹¤.
+// Windows í—¤ë” íŒŒì¼
 #include <windows.h>
-// C ·±Å¸ÀÓ Çì´õ ÆÄÀÏÀÔ´Ï´Ù.
+// C ëŸ°íƒ€ì„ í—¤ë” íŒŒì¼ì…ë‹ˆë‹¤.
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory>
 #include <tchar.h>
 
-#include <wrl.h>	//comptr »ç¿ë (com °´Ã¼ ÁÖ±â °ü¸®¸¦ È¿À²ÀûÀ¸·Î ÇÏ±â À§ÇØ)
-#include <comdef.h> // _com_error »ç¿ë
+#include <wrl.h>	//comptr ì‚¬ìš© (com ê°ì²´ ì£¼ê¸° ê´€ë¦¬ë¥¼ íš¨ìœ¨ì ìœ¼ë¡œ í•˜ê¸° ìœ„í•´)
+#include <comdef.h> // _com_error ì‚¬ìš©
 using namespace Microsoft::WRL;
 
 #include <d3d12.h>
@@ -29,7 +29,7 @@ using namespace Microsoft::WRL;
 #include <DirectXColors.h>
 #include <DirectXCollision.h>
 
-// DirectX Tool Kit Çì´õ ÆÄÀÏÀÔ´Ï´Ù.
+// DirectX Tool Kit í—¤ë” íŒŒì¼ì…ë‹ˆë‹¤.
 #include <PrimitiveBatch.h>
 #include <VertexTypes.h>
 #include <DirectXColors.h>
@@ -57,7 +57,7 @@ using namespace std;
 #include "Defines.h"
 #include "Utiles.h"
 
-// Server¿Í Client°¡ °øÀ¯ÇÏ´Â ÇÁ·ÎÅäÄİ Çì´õ(ÆĞÅ¶ ±¸Á¶Ã¼)
+// Serverì™€ Clientê°€ ê³µìœ í•˜ëŠ” í”„ë¡œí† ì½œ í—¤ë”(íŒ¨í‚· êµ¬ì¡°ì²´)
 #include "../Server/protocol.h"
 
 #include <thread>

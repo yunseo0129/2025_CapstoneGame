@@ -18,7 +18,7 @@ private:
     HRESULT Ready_Light();
     HRESULT Ready_Layer();
 
-    // ³×Æ®¿öÅ© ÀÌº¥Æ® Ã³¸® (PLAYER_ADD/REMOVE/MOVE µî)
+    // ë„¤íŠ¸ì›Œí¬ ì´ë²¤íŠ¸ ì²˜ë¦¬ (PLAYER_ADD/REMOVE/MOVE ë“±)
     void    Process_NetworkEvents();
 
 public:

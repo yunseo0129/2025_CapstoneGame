@@ -28,13 +28,13 @@ HRESULT CCollider::Initialize_Prototype(COLLIDERTYPE eColliderType)
 
 
 #ifdef _DEBUG
-	// 1. RenderTargetState ¼³Á¤ 
+	// 1. RenderTargetState ì„¤ì • 
 	DXGI_FORMAT renderTargetFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	DXGI_FORMAT depthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	RenderTargetState rtState(renderTargetFormat, depthStencilFormat);
 
-	// 2. PSO ¼³Á¤
+	// 2. PSO ì„¤ì •
 	EffectPipelineStateDescription pd(
 		&VertexPositionColor::InputLayout,
 		CommonStates::Opaque,
@@ -107,7 +107,7 @@ HRESULT CCollider::Render(ID3D12GraphicsCommandList* _pcmdList)
 	m_pEffect->SetProjection(XMLoadFloat4x4(&projMatrix));
 
 	m_pEffect->Apply(_pcmdList);
-	// Begin End ÃÖÀûÈ­ ÇÊ¿ä (ÇÁ·¹ÀÓ´ç ÇÑ¹øÀ¸·Î ¼öÁ¤)
+	// Begin End ìµœì í™” í•„ìš” (í”„ë ˆìž„ë‹¹ í•œë²ˆìœ¼ë¡œ ìˆ˜ì •)
 	m_pBatch->Begin(_pcmdList);
 	m_pBounding->Render(m_pBatch);
 	m_pBatch->End ();
@@ -123,13 +123,13 @@ _bool CCollider::Intersect(const CCollider* pTargetCollider)
 
 _bool CCollider::Intersect_Offset(const CCollider* pTargetCollider, const _float3& vOffset)
 {
-	// CBounding °´Ã¼¿¡°Ô »ó´ë¹æÀÇ Å¸ÀÔ, »ó´ë¹æÀÇ ¹Ù¿îµù º¼·ý, ±×¸®°í ÀÌµ¿ÇÒ °¡Â¥ º¤ÅÍ(vOffset)¸¦ Àü´ÞÇÕ´Ï´Ù.
+	// CBounding ê°ì²´ì—ê²Œ ìƒëŒ€ë°©ì˜ íƒ€ìž…, ìƒëŒ€ë°©ì˜ ë°”ìš´ë”© ë³¼ë¥¨, ê·¸ë¦¬ê³  ì´ë™í•  ê°€ì§œ ë²¡í„°(vOffset)ë¥¼ ì „ë‹¬í•©ë‹ˆë‹¤.
 	return m_pBounding->Intersect_Offset(pTargetCollider->m_eType, pTargetCollider->m_pBounding, vOffset);
 }
 
 _float3 CCollider::Get_CollisionNormal(const CCollider* pTargetCollider)
 {
-	// ³» Bounding °´Ã¼¿¡°Ô »ó´ë¹æÀÇ Å¸ÀÔ°ú Bounding °´Ã¼¸¦ ³Ñ°Ü¼­ ¹ý¼±À» °è»êÇÏ¶ó°í Áö½ÃÇÕ´Ï´Ù.
+	// ë‚´ Bounding ê°ì²´ì—ê²Œ ìƒëŒ€ë°©ì˜ íƒ€ìž…ê³¼ Bounding ê°ì²´ë¥¼ ë„˜ê²¨ì„œ ë²•ì„ ì„ ê³„ì‚°í•˜ë¼ê³  ì§€ì‹œí•©ë‹ˆë‹¤.
 	return m_pBounding->Get_CollisionNormal(pTargetCollider->m_eType, pTargetCollider->m_pBounding);
 }
 

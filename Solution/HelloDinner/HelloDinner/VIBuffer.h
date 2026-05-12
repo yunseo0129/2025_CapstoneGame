@@ -1,14 +1,14 @@
 #pragma once
 #include "Component.h"
 
-// CMesh Å¬·¡½º
-// ÀÎµ¦½º¹öÆÛ¸¦ »ç¿ëÇÏÁö ¾Ê´Â ¸Å½¬ »ç¿ë
+// CMesh í´ë˜ìŠ¤
+// ì¸ë±ìŠ¤ë²„í¼ë¥¼ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” ë§¤ì‰¬ ì‚¬ìš©
 class CVIBuffer abstract : public CComponent
 {
 protected:
-    // ºÎ¸ğ »ı¼ºÀÚ: Device¿Í Context(CommandList)¸¦ ¹Ş¾Æ¿È
+    // ë¶€ëª¨ ìƒì„±ì: Deviceì™€ Context(CommandList)ë¥¼ ë°›ì•„ì˜´
     CVIBuffer(EngineContext* _pContext);
-    // º¹»ç »ı¼ºÀÚ: ÇÁ·ÎÅäÅ¸ÀÔÀÇ µ¥ÀÌÅÍ¸¦ º¹»ç (¾èÀº º¹»ç·Î ¸®¼Ò½º °øÀ¯)
+    // ë³µì‚¬ ìƒì„±ì: í”„ë¡œí† íƒ€ì…ì˜ ë°ì´í„°ë¥¼ ë³µì‚¬ (ì–•ì€ ë³µì‚¬ë¡œ ë¦¬ì†ŒìŠ¤ ê³µìœ )
     CVIBuffer(const CVIBuffer& Prototype);
     virtual ~CVIBuffer() = default;
 
@@ -17,14 +17,14 @@ public:
 
     void LogBufferViews ( const D3D12_VERTEX_BUFFER_VIEW& vbv , const D3D12_INDEX_BUFFER_VIEW& ibv );
 
-    void ReleaseUploadBuffer(); // ·»´õ¸µ ½ÃÀÛ ÈÄ ¾÷·Îµå ¹öÆÛ ÇØÁ¦
+    void ReleaseUploadBuffer(); // ë Œë”ë§ ì‹œì‘ í›„ ì—…ë¡œë“œ ë²„í¼ í•´ì œ
 
     virtual void SetHeapProperties(D3D12_HEAP_PROPERTIES& _heapProps, D3D12_HEAP_TYPE _type);
     virtual void SetResourceDesc(D3D12_RESOURCE_DESC& _resourceDesc, UINT64 _width);
 
-protected: // ÀÚ½Ä Å¬·¡½ºµéÀÌ °øÅëÀ¸·Î ¾µ º¯¼ö
+protected: // ìì‹ í´ë˜ìŠ¤ë“¤ì´ ê³µí†µìœ¼ë¡œ ì“¸ ë³€ìˆ˜
 
-	// Vertex Buffer °ü·Ã ¸â¹ö º¯¼ö
+	// Vertex Buffer ê´€ë ¨ ë©¤ë²„ ë³€ìˆ˜
     ComPtr<ID3D12Resource>      m_pVertexBuffer = nullptr;
     ComPtr<ID3D12Resource>      m_pVertexUploadBuffer = nullptr;
     D3D12_VERTEX_BUFFER_VIEW    m_vertexBufferView;
@@ -33,18 +33,18 @@ protected: // ÀÚ½Ä Å¬·¡½ºµéÀÌ °øÅëÀ¸·Î ¾µ º¯¼ö
     _uint                       m_iVertexStride = 0;
     D3D12_PRIMITIVE_TOPOLOGY    m_ePrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
-	// Index Buffer °ü·Ã ¸â¹ö º¯¼ö
+	// Index Buffer ê´€ë ¨ ë©¤ë²„ ë³€ìˆ˜
     ComPtr<ID3D12Resource>  	m_pIndexBuffer = nullptr;
     ComPtr<ID3D12Resource>  	m_pIndexUploadBuffer = nullptr;
     D3D12_INDEX_BUFFER_VIEW		m_indexBufferView;
 
     _uint						m_iIndices = 0;
-    DXGI_FORMAT                 m_eIndexFormat = DXGI_FORMAT_R32_UINT; // º¸Åë 32ºñÆ® ÀÎµ¦½º
+    DXGI_FORMAT                 m_eIndexFormat = DXGI_FORMAT_R32_UINT; // ë³´í†µ 32ë¹„íŠ¸ ì¸ë±ìŠ¤
 
     _uint                       m_iMaterialIndex = 0;
 
 protected:
-    // DX12 ¹öÆÛ »ı¼º ÇïÆÛ ÇÔ¼ö
+    // DX12 ë²„í¼ ìƒì„± í—¬í¼ í•¨ìˆ˜
     HRESULT Create_Buffer(ID3D12GraphicsCommandList* _pCommandList, ID3D12Resource** _ppDefaultBuffer, ID3D12Resource** _ppUploadBuffer,
         _uint _iBufferSize, const void* _pData, bool _isIndex);
 

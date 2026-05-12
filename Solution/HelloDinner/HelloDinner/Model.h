@@ -3,16 +3,16 @@
 #include "Component.h"
 #include "Graphic_Device.h"
 
-//		ÄÄÆ÷³ÍÆ® »ó¼Ó
+//		ì»´í¬ë„ŒíŠ¸ ìƒì†
 class CModel final : public CComponent
 {
 public:
 	enum TYPE { TYPE_NONANIM, TYPE_ANIM, TYPE_END };
 	
-	// ¸ÓÆ¼¸®¾ó ·Îµå ¸ğµå
+	// ë¨¸í‹°ë¦¬ì–¼ ë¡œë“œ ëª¨ë“œ
 	enum MATERIAL_LOAD_MODE {
-		MATLOAD_FROM_BINARY,     // ¹ÙÀÌ³Ê¸® °æ·Î¿¡¼­ ÅØ½ºÃ³ ·Îµå (Ä³¸¯ÅÍ¿ë)
-		MATLOAD_DDS_FILE		// ¹ÙÀÌ³Ê¸®´Â ÀĞµÇ ÅØ½ºÃ³ ÆÄÀÏÀ» dds·Î ÀĞÀ½
+		MATLOAD_FROM_BINARY,     // ë°”ì´ë„ˆë¦¬ ê²½ë¡œì—ì„œ í…ìŠ¤ì²˜ ë¡œë“œ (ìºë¦­í„°ìš©)
+		MATLOAD_DDS_FILE		// ë°”ì´ë„ˆë¦¬ëŠ” ì½ë˜ í…ìŠ¤ì²˜ íŒŒì¼ì„ ddsë¡œ ì½ìŒ
 	};
 private:
 	CModel(EngineContext* pContext);
@@ -20,9 +20,9 @@ private:
 	virtual ~CModel() = default;
 
 public:
-	// Material ½½·Ô¿¡ ÅØ½ºÃÄ¸¦ ¼¼ÆÃÇÏ´Â ÇÔ¼ö
+	// Material ìŠ¬ë¡¯ì— í…ìŠ¤ì³ë¥¼ ì„¸íŒ…í•˜ëŠ” í•¨ìˆ˜
 	HRESULT Set_MaterialTexture(_uint iMaterialIndex, TextureType eType, class CTexture* pTexture);
-	// ¸Å½¬ °³¼ö¸¦ ¹İÈ¯ÇØÁÜ
+	// ë§¤ì‰¬ ê°œìˆ˜ë¥¼ ë°˜í™˜í•´ì¤Œ
 	_uint Get_NumMeshes() const {
 		return m_iNumMeshes;
 	}
@@ -31,73 +31,73 @@ public:
 	}
 	_bool Get_Blend() const { return m_isBlend; }
 	void  Off_Blend();
-	// °¡Áö°íÀÖ´Â ¸ğµç »À ¼øÈ¸ÇØ¼­ ÀÌ¸§¿¡ ¸Â´Â »À ÀÎµ¦½º¸¦ Ã£¾ÆÁÜ
+	// ê°€ì§€ê³ ìˆëŠ” ëª¨ë“  ë¼ˆ ìˆœíšŒí•´ì„œ ì´ë¦„ì— ë§ëŠ” ë¼ˆ ì¸ë±ìŠ¤ë¥¼ ì°¾ì•„ì¤Œ
 	_uint Get_BoneIndex(const _char* pBoneName) const;
 
-	// ÇöÀç ¾Ö´Ï¸ŞÀÌ¼Ç ¹øÈ£¿Í ·çÇÁÀ¯¹«¸¦ ¼³Á¤ÇØÁÜ
+	// í˜„ì¬ ì• ë‹ˆë©”ì´ì…˜ ë²ˆí˜¸ì™€ ë£¨í”„ìœ ë¬´ë¥¼ ì„¤ì •í•´ì¤Œ
 	void SetUp_Animation(_uint iAnimIndex, _bool isLoop) {
 		m_iCurrentAnimIndex = iAnimIndex;
 		m_isLoop = isLoop;
 	}
 
 	void Change_Animation(_uint iAnimIndex, _float fLinearDurationTime, _bool isLoop);
-	// Çö ¾Ö´Ï¸ŞÀÌ¼Ç¼Ó ÇÔ¼ö¿¡ »À ´Ù ³Ñ°Ü¼­ »Àµé Æ®·£½ºÆû ¹Ù²ãÁÖ°í ·£´õÇÏ±â À§ÇÑ ÃÖÁ¾ ÄÄ¹ÙÀÎµå Çà·Ä ¸¸µê
-	// ¸Å ÇÁ·¹ÀÓ ºÒ·¯ÁØ´Ù
+	// í˜„ ì• ë‹ˆë©”ì´ì…˜ì† í•¨ìˆ˜ì— ë¼ˆ ë‹¤ ë„˜ê²¨ì„œ ë¼ˆë“¤ íŠ¸ëœìŠ¤í¼ ë°”ê¿”ì£¼ê³  ëœë”í•˜ê¸° ìœ„í•œ ìµœì¢… ì»´ë°”ì¸ë“œ í–‰ë ¬ ë§Œë“¦
+	// ë§¤ í”„ë ˆì„ ë¶ˆëŸ¬ì¤€ë‹¤
 	_bool Play_Animation(_float fTimeDelta);
-	// º¸°£ÇÒ¶§ »ç¿ëÇÏ´Â ¾Ö´Ï¸ŞÀÌ¼Ç
+	// ë³´ê°„í• ë•Œ ì‚¬ìš©í•˜ëŠ” ì• ë‹ˆë©”ì´ì…˜
 	_bool Blend_Animation(_float fTimeDelta);
 	const _float4x4* Get_BoneMatrix(const _char* pBoneName) const;
 
-	// ·£´õ ¶§¸¶´Ù È£Ãâ ¼ÎÀÌ´õ¿¡ ¹ÙÀÎµùÇØÁÜ
+	// ëœë” ë•Œë§ˆë‹¤ í˜¸ì¶œ ì…°ì´ë”ì— ë°”ì¸ë”©í•´ì¤Œ
 	HRESULT Bind_BoneMatrices(ID3D12GraphicsCommandList* _cmdList, _uint iMeshIndex);
 
 	HRESULT Ready_MapMaterial(const wchar_t* pModelFilePath, int _nMaterial, TextureType _eType);
 public:
-// ÀÎÀÚ°ªÀ¸·Î ³Ñ¾î¿Â ¸Å½¬¹øÈ£¿¡ ¸Â´Â ¸Å½¬¸¦ ±×·ÁÁÜ (»óÀ§ Å¬·¡½ºÀÇ ·£´õ¿¡¼­ ¸Å½¬°³¼ö¸¸Å­ ºÎ¸¦°ÅÀÓ)
+// ì¸ìê°’ìœ¼ë¡œ ë„˜ì–´ì˜¨ ë§¤ì‰¬ë²ˆí˜¸ì— ë§ëŠ” ë§¤ì‰¬ë¥¼ ê·¸ë ¤ì¤Œ (ìƒìœ„ í´ë˜ìŠ¤ì˜ ëœë”ì—ì„œ ë§¤ì‰¬ê°œìˆ˜ë§Œí¼ ë¶€ë¥¼ê±°ì„)
 	virtual HRESULT Render(ID3D12GraphicsCommandList* _commandList, _uint iMeshIndex, bool IsShadow = false);
 
 private:
-	// ¾Ö´Ô°ú ³í¾Ö´ÔÀ» ±¸º°ÇÏ±â À§ÇÔ
+	// ì• ë‹˜ê³¼ ë…¼ì• ë‹˜ì„ êµ¬ë³„í•˜ê¸° ìœ„í•¨
 	TYPE						m_eModelType = { TYPE_END };
 	MATERIAL_LOAD_MODE m_eMatLoadMode = { MATLOAD_FROM_BINARY };
 
 private:
-	// ¸Å½¬ÀÇ ÃÑ °¹¼ö¸¦ ÀúÀå
+	// ë§¤ì‰¬ì˜ ì´ ê°¯ìˆ˜ë¥¼ ì €ì¥
 	_uint						m_iNumMeshes = { 0 };
-	// ¸Å½¬Á¤º¸µéÀ» ÀúÀåÇÏ´Â º¤ÅÍ
+	// ë§¤ì‰¬ì •ë³´ë“¤ì„ ì €ì¥í•˜ëŠ” ë²¡í„°
 	vector<class CMesh*>		m_Meshes;
-	// »À Á¤º¸µéÀ» ÀúÀåÇÏ´Â º¤ÅÍ
+	// ë¼ˆ ì •ë³´ë“¤ì„ ì €ì¥í•˜ëŠ” ë²¡í„°
 	vector<class CBone*>		m_Bones;
-	// ¾Ö´Ï¸ŞÀÌ¼ÇÀÇ ÃÑ °¹¼ö¸¦ ÀúÀå
+	// ì• ë‹ˆë©”ì´ì…˜ì˜ ì´ ê°¯ìˆ˜ë¥¼ ì €ì¥
 	_uint						m_iNumAnimations = {};
-	// ¾Ö´Ï¸ŞÀÌ¼ÇµéÀ» ÀúÀåÇÏ´Â º¤ÅÍ
+	// ì• ë‹ˆë©”ì´ì…˜ë“¤ì„ ì €ì¥í•˜ëŠ” ë²¡í„°
 	vector<class CAnimation*>	m_Animations;
 
 private:
-	// ÇöÀç Àç»ıµÇ°íÀÖ´Â ¾Ö´Ï¸ŞÀÌ¼Ç ¹øÈ£¸¦ ÀúÀå
+	// í˜„ì¬ ì¬ìƒë˜ê³ ìˆëŠ” ì• ë‹ˆë©”ì´ì…˜ ë²ˆí˜¸ë¥¼ ì €ì¥
 	_uint						m_iCurrentAnimIndex = {};
-	// ÇöÀç Àç»ıµÇ°íÀÖ´Â ¾Ö´Ï¸ŞÀÌ¼ÇÀÇ ·çÇÁ À¯¹«¸¦ ÀúÀå
+	// í˜„ì¬ ì¬ìƒë˜ê³ ìˆëŠ” ì• ë‹ˆë©”ì´ì…˜ì˜ ë£¨í”„ ìœ ë¬´ë¥¼ ì €ì¥
 	_bool						m_isLoop = { false };
-	// Àç»ıµÇ°í ÀÖ´Â ³í·çÇÁ ¾Ö´Ï¸ŞÀÌ¼ÇÀÌ ³¡³µ´ÂÁö¸¦ ÀúÀå
+	// ì¬ìƒë˜ê³  ìˆëŠ” ë…¼ë£¨í”„ ì• ë‹ˆë©”ì´ì…˜ì´ ëë‚¬ëŠ”ì§€ë¥¼ ì €ì¥
 	_bool						m_isFinished = { false };
-	// º¸°£ ÁßÀÏ¶§ true
+	// ë³´ê°„ ì¤‘ì¼ë•Œ true
 	_bool						m_isBlend = { false };
-	// º¸°£ ½Ã°£
+	// ë³´ê°„ ì‹œê°„
 	_float						m_fBlendTime = 0;
 
 private:
-	// ¸ŞÅ×¸®¾ó ÃÑ °¹¼ö
+	// ë©”í…Œë¦¬ì–¼ ì´ ê°¯ìˆ˜
 	_uint						m_iNumMaterials = {};
-	// ¸ŞÅ×¸®¾óµéÀ» ÀúÀåÇÏ´Â º¤ÅÍ -> º¤º¤º¤¸»°í ¸ŞÅ×¸®¾ó Å¬·¡½º ÇÏ³ª¸¸µé¾î¼­ ±×³É º¤ÅÍ·Î ¸¸µé°Í
+	// ë©”í…Œë¦¬ì–¼ë“¤ì„ ì €ì¥í•˜ëŠ” ë²¡í„° -> ë²¡ë²¡ë²¡ë§ê³  ë©”í…Œë¦¬ì–¼ í´ë˜ìŠ¤ í•˜ë‚˜ë§Œë“¤ì–´ì„œ ê·¸ëƒ¥ ë²¡í„°ë¡œ ë§Œë“¤ê²ƒ
 	vector<class CMaterial*>		m_Materials;
 
 private:
-	// ·ÎÄÃ ¸ÅÆ®¸¯½ºÃ³·³ »ç¿ëµÉ ¹Ì¸® ÁØºñÇÑ ¸ÅÆ®¸¯½ºÀÓ È¸Àü, Å©±â Á¤º¸°°Àº ÃÊ±â°ªµéÀ» ´ãÀ½
+	// ë¡œì»¬ ë§¤íŠ¸ë¦­ìŠ¤ì²˜ëŸ¼ ì‚¬ìš©ë  ë¯¸ë¦¬ ì¤€ë¹„í•œ ë§¤íŠ¸ë¦­ìŠ¤ì„ íšŒì „, í¬ê¸° ì •ë³´ê°™ì€ ì´ˆê¸°ê°’ë“¤ì„ ë‹´ìŒ
 	_float4x4					m_PreTransformMatrix = {};
 
 private:
 
-	// º» ¸ÅÆ®¸¯½º Constant Buffer (ÇÁ·¹ÀÓº°)
+	// ë³¸ ë§¤íŠ¸ë¦­ìŠ¤ Constant Buffer (í”„ë ˆì„ë³„)
 	static const _int FRAME_COUNT = CGraphic_Device::SWAP_CHAIN_BUFFER_COUNT;
 	ComPtr<ID3D12Resource>	m_pBoneBuffers[FRAME_COUNT];
 	CB_BONE_MATRICES* m_pCbMappedBones[FRAME_COUNT] = {};

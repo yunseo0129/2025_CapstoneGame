@@ -28,7 +28,7 @@ HRESULT CLevel_GamePlay::Initialize()
     if (FAILED(Ready_Layer()))
         return E_FAIL;
 
-    // ½ÃÀÛ ½ÃÁ¡¿¡ »ç¿ëÇÒ Ä«¸Ş¶ó
+    // ì‹œì‘ ì‹œì ì— ì‚¬ìš©í•  ì¹´ë©”ë¼
     Set_CurrentCamera(CAMERA_FPV);
 
     return S_OK;
@@ -40,7 +40,7 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 
     //Process_NetworkEvents();
 
-    // ³×Æ®¿öÅ© ÀÌº¥Æ® Ã³¸®: ÇÃ·¹ÀÌ¾î Ãß°¡/Á¦°Å/ÀÌµ¿
+    // ë„¤íŠ¸ì›Œí¬ ì´ë²¤íŠ¸ ì²˜ë¦¬: í”Œë ˆì´ì–´ ì¶”ê°€/ì œê±°/ì´ë™
     NetworkClient* pNetwork = NetworkClient::GetInstance();
     if (!pNetwork->IsConnected())
         return;
@@ -51,15 +51,15 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
     for (auto& evt : events) {
         switch (evt.type) {
         case NetworkClient::NetEventType::PLAYER_ADD: {
-            // TODO: evt.id ÇÃ·¹ÀÌ¾î »ı¼º + evt.cameraPos À§Ä¡¿¡ ¹èÄ¡ + evt.name ÀÌ¸§ ¼³Á¤
+            // TODO: evt.id í”Œë ˆì´ì–´ ìƒì„± + evt.cameraPos ìœ„ì¹˜ì— ë°°ì¹˜ + evt.name ì´ë¦„ ì„¤ì •
             break;
         }
         case NetworkClient::NetEventType::PLAYER_REMOVE: {
-            // TODO: evt.id ÇÃ·¹ÀÌ¾î Á¦°Å
+            // TODO: evt.id í”Œë ˆì´ì–´ ì œê±°
             break;
         }
         case NetworkClient::NetEventType::PLAYER_MOVE: {
-            // TODO: ÇØ´ç id ÇÃ·¹ÀÌ¾îÀÇ Transform °»½Å
+            // TODO: í•´ë‹¹ id í”Œë ˆì´ì–´ì˜ Transform ê°±ì‹ 
             break;
         }
         }
@@ -185,7 +185,7 @@ HRESULT CLevel_GamePlay::Ready_Layer()
 
 void CLevel_GamePlay::Process_NetworkEvents()
 {
-	// Update()¿¡¼­ ¸Å ÇÁ·¹ÀÓ¸¶´Ù ³×Æ®¿öÅ© ÀÌº¥Æ®¸¦ Ã³¸®ÇÏ´Â ÇÔ¼ö ¿©±â·Î ¿Å±â±â
+	// Update()ì—ì„œ ë§¤ í”„ë ˆì„ë§ˆë‹¤ ë„¤íŠ¸ì›Œí¬ ì´ë²¤íŠ¸ë¥¼ ì²˜ë¦¬í•˜ëŠ” í•¨ìˆ˜ ì—¬ê¸°ë¡œ ì˜®ê¸°ê¸°
 }
 
 CLevel_GamePlay* CLevel_GamePlay::Create(EngineContext* pContext)

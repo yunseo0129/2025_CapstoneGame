@@ -3,7 +3,7 @@
 #include "VIBuffer.h"
 #include "Model.h"
 
-//		VIBuffer »ó¼Ó
+//		VIBuffer ìƒì†
 class CMesh final : public CVIBuffer
 {
 private:
@@ -14,13 +14,13 @@ public:
 	_uint Get_MaterialIndex() const { return m_iMaterialIndex; }
 
 public:
-	// ¸â¹öº¯¼ö ¿Ü¿¡ ¹ÙÀÌ³Ê¸®ÇØ¾ß µÉ °Í ÀÖÀ½
+	// ë©¤ë²„ë³€ìˆ˜ ì™¸ì— ë°”ì´ë„ˆë¦¬í•´ì•¼ ë  ê²ƒ ìˆìŒ
 	virtual HRESULT Initialize_Prototype(CModel::TYPE eModelType, class CModel* pModel, _fmatrix PreTransformMatrix);
 	virtual HRESULT Initialize(void* pArg);
 
 public:
-	// ¾Ö´Ô¸ğµ¨°ú ³í¾Ö´Ô¸ğµ¨Àº Á¤Á¡¹öÆÛ¸¦ µû·Î »ç¿ëÇÑ´Ù
-	// ¹ÙÀÌ³Ê¸®È­ ÇØ¾ßÇÒ °Í ÀÖÀ½
+	// ì• ë‹˜ëª¨ë¸ê³¼ ë…¼ì• ë‹˜ëª¨ë¸ì€ ì •ì ë²„í¼ë¥¼ ë”°ë¡œ ì‚¬ìš©í•œë‹¤
+	// ë°”ì´ë„ˆë¦¬í™” í•´ì•¼í•  ê²ƒ ìˆìŒ
 	HRESULT Ready_VertexBuffer_For_NonAnim(_fmatrix PreTransformMatrix);
 	HRESULT Ready_VertexBuffer_For_Anim(class CModel* pModel);
 
@@ -32,15 +32,15 @@ public:
 	_uint Get_NumBones() const { return m_iNumBones; }
 
 private:
-	// ÀÌ ¸Å½¬ÀÇ ÀÌ¸§
+	// ì´ ë§¤ì‰¬ì˜ ì´ë¦„
 	_char						m_szName[MAX_PATH] = "";
-	// ÀÌ ¸Å½¬ÀÇ »À °³¼ö
+	// ì´ ë§¤ì‰¬ì˜ ë¼ˆ ê°œìˆ˜
 	_uint						m_iNumBones = {};
-	// ÀÌ ¸Å½¬¿¡ ¿µÇâÀ» ÁÖ´Â »ÀµéÀÇ ¸ğµ¨¿¡ ÀÖ´Â »À ÀÎµ¦½º ¹øÈ£µé
+	// ì´ ë§¤ì‰¬ì— ì˜í–¥ì„ ì£¼ëŠ” ë¼ˆë“¤ì˜ ëª¨ë¸ì— ìˆëŠ” ë¼ˆ ì¸ë±ìŠ¤ ë²ˆí˜¸ë“¤
 	vector<_uint>				m_BoneIndices;
-	// »ÀµéÀÇ ¿ÀÇÁ¼Â ¸ÅÆ®¸¯½º
+	// ë¼ˆë“¤ì˜ ì˜¤í”„ì…‹ ë§¤íŠ¸ë¦­ìŠ¤
 	vector<_float4x4>			m_BoneOffsetMatrices;
-	// ÀÌ ¸Å½¬ÀÇ »À Çà·Ä ÀüºÎ
+	// ì´ ë§¤ì‰¬ì˜ ë¼ˆ í–‰ë ¬ ì „ë¶€
 	_float4x4					m_BoneMatrices[512];
 
 public:

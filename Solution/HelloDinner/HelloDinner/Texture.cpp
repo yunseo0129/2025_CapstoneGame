@@ -11,51 +11,51 @@ CTexture::CTexture(EngineContext* _pDevice)
 CTexture::CTexture(const CTexture& Prototype)
     : CComponent(Prototype.m_pContext)
     , m_iNumTextures(Prototype.m_iNumTextures)
-    , m_Textures(Prototype.m_Textures)                // ¸®¼Ò½º °øÀ¯ (ComPtr·Î ·¹ÆÛ·±½º Ä«¿îÆ® Áõ°¡)
+    , m_Textures(Prototype.m_Textures)                // ë¦¬ì†ŒìŠ¤ ê³µìœ  (ComPtrë¡œ ë ˆí¼ëŸ°ìŠ¤ ì¹´ìš´íŠ¸ ì¦ê°€)
 	, m_iSRVIndex(Prototype.m_iSRVIndex)
 {
     for (auto& pTexture : m_Textures)
-		Safe_AddRef(pTexture); // ÅØ½ºÃ³ ¸®¼Ò½º ÂüÁ¶ Ä«¿îÆ® Áõ°¡
-    // CloneµÈ °´Ã¼´Â UploadBuffer¸¦ °¡Áú ÇÊ¿ä°¡ ¾øÀ¸¹Ç·Î º¹»çÇÏÁö ¾ÊÀ½
+		Safe_AddRef(pTexture); // í…ìŠ¤ì²˜ ë¦¬ì†ŒìŠ¤ ì°¸ì¡° ì¹´ìš´íŠ¸ ì¦ê°€
+    // Cloneëœ ê°ì²´ëŠ” UploadBufferë¥¼ ê°€ì§ˆ í•„ìš”ê°€ ì—†ìœ¼ë¯€ë¡œ ë³µì‚¬í•˜ì§€ ì•ŠìŒ
 }
 
 HRESULT CTexture::Initialize_Prototype(ID3D12GraphicsCommandList* _cmdList, const _tchar* pTextureFilePath, _uint iNumTexture, TEXTURE_TYPE _iTextureType )
 {
-	// 1. ÅØ½ºÃ³ ¼ö ÀúÀå
+	// 1. í…ìŠ¤ì²˜ ìˆ˜ ì €ì¥
     m_iNumTextures = iNumTexture;
-	// 2. ÅØ½ºÃ³ ·Îµù ¹× SRV »ı¼º ·çÇÁ
+	// 2. í…ìŠ¤ì²˜ ë¡œë”© ë° SRV ìƒì„± ë£¨í”„
     m_Textures.resize(m_iNumTextures);
-    m_UploadBuffers.resize(m_iNumTextures); // ¾÷·Îµå ¹öÆÛ º¸°ü
+    m_UploadBuffers.resize(m_iNumTextures); // ì—…ë¡œë“œ ë²„í¼ ë³´ê´€
 
-    // ÈüÀÇ ½ÃÀÛ ÇÚµé °¡Á®¿À±â
+    // í™ì˜ ì‹œì‘ í•¸ë“¤ ê°€ì ¸ì˜¤ê¸°
     CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor = m_pGameInstance->Get_CPUHandle();
 
     _tchar			szTextureFilePath[MAX_PATH] = TEXT("");
 
     for (_uint i = 0; i < m_iNumTextures; ++i)
     {
-        // Æ÷¸Ë ¹®ÀÚ¿­(%d µî)ÀÌ Æ÷ÇÔµÈ °æ·ÎÀÎÁö È®ÀÎ
+        // í¬ë§· ë¬¸ìì—´(%d ë“±)ì´ í¬í•¨ëœ ê²½ë¡œì¸ì§€ í™•ì¸
         if (wcschr(pTextureFilePath, L'%') != nullptr)
             wsprintf(szTextureFilePath, pTextureFilePath, i);
         else
             wcscpy_s(szTextureFilePath, pTextureFilePath);
 
-        // ºó °æ·Î ½ºÅµ
+        // ë¹ˆ ê²½ë¡œ ìŠ¤í‚µ
         if (wcslen(szTextureFilePath) == 0)
             continue;
 
-        /* µå¶óÀÌºê°æ·Î, µğ·ºÅä¸®°æ·Î, ÆÄÀÏ³×ÀÓ, ÆÄÀÏÈ®ÀåÀÚ. */
+        /* ë“œë¼ì´ë¸Œê²½ë¡œ, ë””ë ‰í† ë¦¬ê²½ë¡œ, íŒŒì¼ë„¤ì„, íŒŒì¼í™•ì¥ì. */
         _tchar		szEXT[MAX_PATH] = TEXT("");
 
-        /* D:\Á¤ÀÇÈÆ\147\3d\Framework\Client\Bin\Resources\Textures\Default.jpg */
+        /* D:\ì •ì˜í›ˆ\147\3d\Framework\Client\Bin\Resources\Textures\Default.jpg */
         _wsplitpath_s(szTextureFilePath, nullptr, 0, nullptr, 0, nullptr, 0, szEXT, MAX_PATH);
 
-        // È®ÀÎ
+        // í™•ì¸
         char szLog[1024];
         char szPathA[MAX_PATH];
         char szExtA[MAX_PATH];
 
-        // 3. ÅØ½ºÃ³ ÆÄÀÏ ·Îµå
+        // 3. í…ìŠ¤ì²˜ íŒŒì¼ ë¡œë“œ
         if (false == lstrcmpW(szEXT, TEXT(".dds")))
         {
             if (FAILED(Load_DDSTexture(_cmdList, szTextureFilePath, i)))
@@ -72,7 +72,7 @@ HRESULT CTexture::Initialize_Prototype(ID3D12GraphicsCommandList* _cmdList, cons
         else if (false == lstrcmpW(szEXT, TEXT(".psd")) ||
             false == lstrcmpW(szEXT, TEXT(".tga")))
         {
-            // .psd¿Í .tga´Â WIC ¹ÌÁö¿ø
+            // .psdì™€ .tgaëŠ” WIC ë¯¸ì§€ì›
             continue;
         }
         else
@@ -82,17 +82,17 @@ HRESULT CTexture::Initialize_Prototype(ID3D12GraphicsCommandList* _cmdList, cons
         }
   
 
-		// 4. ÅØ½ºÃ³ÀÇ ¸®¼Ò½º ¼³¸íÀÚ Á¤º¸ ÀúÀå
+		// 4. í…ìŠ¤ì²˜ì˜ ë¦¬ì†ŒìŠ¤ ì„¤ëª…ì ì •ë³´ ì €ì¥
         if (FAILED(SetResourceDesc(m_Textures[i].Get(), _iTextureType)))
 			return E_FAIL;
 
-        // 5. Shader Resource View (SRV) »ı¼º
+        // 5. Shader Resource View (SRV) ìƒì„±
         if (FAILED(CreateShaderResourceView(hDescriptor, i, _iTextureType )))
             return E_FAIL;
 
-		m_iSRVIndex = m_pGameInstance->Get_CurrentIndex(); // ±Û·Î¹ú SRV Èü¿¡¼­ÀÇ ½ÃÀÛ ÀÎµ¦½º ÀúÀå (Manager¿¡¼­ ÇÒ´ç¹ŞÀº À§Ä¡)
+		m_iSRVIndex = m_pGameInstance->Get_CurrentIndex(); // ê¸€ë¡œë²Œ SRV í™ì—ì„œì˜ ì‹œì‘ ì¸ë±ìŠ¤ ì €ì¥ (Managerì—ì„œ í• ë‹¹ë°›ì€ ìœ„ì¹˜)
 
-        // ´ÙÀ½ ÅØ½ºÃ³¸¦ À§ÇØ ÇÚµé ¿ÀÇÁ¼Â ÀÌµ¿
+        // ë‹¤ìŒ í…ìŠ¤ì²˜ë¥¼ ìœ„í•´ í•¸ë“¤ ì˜¤í”„ì…‹ ì´ë™
 		m_pGameInstance->Offset_DescriptorHandle(1);
     }
 
@@ -101,8 +101,8 @@ HRESULT CTexture::Initialize_Prototype(ID3D12GraphicsCommandList* _cmdList, cons
 
 HRESULT CTexture::Initialize(void* pArg)
 {
-    // CloneµÈ °´Ã¼ÀÇ ÃÊ±âÈ­
-    // ÅØ½ºÃ³´Â ÀÌ¹Ì Prototype¿¡¼­ ·ÎµåµÇ¾úÀ¸¹Ç·Î º°µµ ÀÛ¾÷ ºÒÇÊ¿ä
+    // Cloneëœ ê°ì²´ì˜ ì´ˆê¸°í™”
+    // í…ìŠ¤ì²˜ëŠ” ì´ë¯¸ Prototypeì—ì„œ ë¡œë“œë˜ì—ˆìœ¼ë¯€ë¡œ ë³„ë„ ì‘ì—… ë¶ˆí•„ìš”
     return S_OK;
 }
 
@@ -111,10 +111,10 @@ HRESULT CTexture::Bind_ShaderResource(ID3D12GraphicsCommandList* pCommandList, R
     if (iTextureIndex >= m_iNumTextures)
         return E_FAIL;
 
-    // 1. GPU ÇÚµé °è»ê
-	CD3DX12_GPU_DESCRIPTOR_HANDLE hGpuHandle = m_pGameInstance->Get_GPUHandle(m_iSRVIndex); // ±Û·Î¹ú SRV Èü¿¡¼­ÀÇ ½ÃÀÛ ÇÚµé °¡Á®¿À±â
+    // 1. GPU í•¸ë“¤ ê³„ì‚°
+	CD3DX12_GPU_DESCRIPTOR_HANDLE hGpuHandle = m_pGameInstance->Get_GPUHandle(m_iSRVIndex); // ê¸€ë¡œë²Œ SRV í™ì—ì„œì˜ ì‹œì‘ í•¸ë“¤ ê°€ì ¸ì˜¤ê¸°
 
-    // 3. ·çÆ® Å×ÀÌºí¿¡ ¹ÙÀÎµù
+    // 3. ë£¨íŠ¸ í…Œì´ë¸”ì— ë°”ì¸ë”©
     pCommandList->SetGraphicsRootDescriptorTable( (_uint)_eRootParameterIndex , hGpuHandle);
     
 
@@ -124,18 +124,18 @@ HRESULT CTexture::Bind_ShaderResource(ID3D12GraphicsCommandList* pCommandList, R
 
 void CTexture::Release_UploadBuffer()
 {
-    // GPU Àü¼ÛÀÌ È®½ÇÈ÷ ³¡³­ ÈÄ È£ÃâÇØ¾ß ÇÔ (Fence µ¿±âÈ­ ÀÌÈÄ)
+    // GPU ì „ì†¡ì´ í™•ì‹¤íˆ ëë‚œ í›„ í˜¸ì¶œí•´ì•¼ í•¨ (Fence ë™ê¸°í™” ì´í›„)
     for (auto& buffer : m_UploadBuffers)
     {
-        buffer.Reset(); // ComPtr ÇØÁ¦
+        buffer.Reset(); // ComPtr í•´ì œ
     }
     m_UploadBuffers.clear();
 }
 
 HRESULT CTexture::Load_DDSTexture(ID3D12GraphicsCommandList* pCommandList, const wstring& _pFilePath, _uint _iIndex)
 {
-    // DDSTextureLoader »ç¿ë
-    unique_ptr<uint8_t[]> ddsData;  // LoadDDSTextureFromFileEx ÇÔ¼ö ³»ºÎ¿¡¼­ unique_ptr<uint8_t[]>À» ÀÎ¼ö·Î ¹ŞÀ½
+    // DDSTextureLoader ì‚¬ìš©
+    unique_ptr<uint8_t[]> ddsData;  // LoadDDSTextureFromFileEx í•¨ìˆ˜ ë‚´ë¶€ì—ì„œ unique_ptr<uint8_t[]>ì„ ì¸ìˆ˜ë¡œ ë°›ìŒ
     vector<D3D12_SUBRESOURCE_DATA> subresources;
     DDS_ALPHA_MODE ddsAlphaMode{ DDS_ALPHA_MODE_UNKNOWN };
     if (FAILED(DirectX::LoadDDSTextureFromFileEx(m_pContext->device, _pFilePath.c_str(), 0,
@@ -145,7 +145,7 @@ HRESULT CTexture::Load_DDSTexture(ID3D12GraphicsCommandList* pCommandList, const
     UINT nSubresources{ (UINT)subresources.size() };
     const UINT64 TextureSize{ GetRequiredIntermediateSize(m_Textures[_iIndex].Get(), 0, nSubresources)};
 
-    // UploadBuffer »ı¼º
+    // UploadBuffer ìƒì„±
     D3D12_HEAP_PROPERTIES heapUploadProps;
     SetHeapProperties(heapUploadProps, D3D12_HEAP_TYPE_UPLOAD);
 
@@ -183,7 +183,7 @@ HRESULT CTexture::Load_WICTexture(ID3D12GraphicsCommandList* pCommandList, const
 
     const UINT64 TextureSize = GetRequiredIntermediateSize(m_Textures[_iIndex].Get(), 0, 1);
 
-    // UploadBuffer »ı¼º
+    // UploadBuffer ìƒì„±
     D3D12_HEAP_PROPERTIES heapUploadProps;
     SetHeapProperties(heapUploadProps, D3D12_HEAP_TYPE_UPLOAD);
 
@@ -251,7 +251,7 @@ HRESULT CTexture::CreateShaderResourceView(CD3DX12_CPU_DESCRIPTOR_HANDLE _descri
         srvDesc.Texture2DArray.ArraySize = m_iArraySize;
         break;
         break;
-        // ÇÊ¿ä½Ã °è¼Ó Ãß°¡
+        // í•„ìš”ì‹œ ê³„ì† ì¶”ê°€
     default:
         break;
     }
@@ -292,7 +292,7 @@ CTexture* CTexture::Create(EngineContext* _pContext , const _tchar* cFilePath , 
 
     if (FAILED(pInstance->Initialize_Prototype(_pContext->cmdList, cFilePath , iNumTextures , _iTextureType )))
     {
-        Safe_Release(pInstance); // È¤Àº delete pInstance;
+        Safe_Release(pInstance); // í˜¹ì€ delete pInstance;
     }
 
     return pInstance;
@@ -300,7 +300,7 @@ CTexture* CTexture::Create(EngineContext* _pContext , const _tchar* cFilePath , 
 
 CComponent* CTexture::Clone(void* pArg)
 {
-    CTexture* pInstance = new CTexture(*this); // º¹»ç »ı¼ºÀÚ È£Ãâ
+    CTexture* pInstance = new CTexture(*this); // ë³µì‚¬ ìƒì„±ì í˜¸ì¶œ
 
     if (FAILED(pInstance->Initialize(pArg)))
     {
@@ -315,7 +315,7 @@ void CTexture::Free()
 {
     for (auto& texture : m_Textures)
     {
-		texture.Reset(); // ComPtr ÇØÁ¦
+		texture.Reset(); // ComPtr í•´ì œ
 	}
 
 	__super::Free();

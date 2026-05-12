@@ -1,6 +1,6 @@
 #include "VIBuffer.h"
 
-// engine_context±îÁö´Â ÇÊ¿ä¾øÀ» µí
+// engine_contextê¹Œì§€ëŠ” í•„ìš”ì—†ì„ ë“¯
 CVIBuffer::CVIBuffer(EngineContext* _pContext)
     : CComponent(_pContext)
 {
@@ -15,33 +15,33 @@ CVIBuffer::CVIBuffer(EngineContext* _pContext)
 
 CVIBuffer::CVIBuffer(const CVIBuffer& Prototype)
     : CComponent(Prototype.m_pContext)
-    , m_pVertexBuffer(Prototype.m_pVertexBuffer)             // ¸®¼Ò½º °øÀ¯
-    , m_vertexBufferView(Prototype.m_vertexBufferView)       // ºä Á¤º¸ º¹»ç
+    , m_pVertexBuffer(Prototype.m_pVertexBuffer)             // ë¦¬ì†ŒìŠ¤ ê³µìœ 
+    , m_vertexBufferView(Prototype.m_vertexBufferView)       // ë·° ì •ë³´ ë³µì‚¬
     , m_iVertices(Prototype.m_iVertices)
     , m_iVertexStride(Prototype.m_iVertexStride)
     , m_ePrimitiveTopology(Prototype.m_ePrimitiveTopology)
-    , m_pIndexBuffer(Prototype.m_pIndexBuffer)               // ¸®¼Ò½º °øÀ¯
-    , m_indexBufferView(Prototype.m_indexBufferView)         // ºä Á¤º¸ º¹»ç
+    , m_pIndexBuffer(Prototype.m_pIndexBuffer)               // ë¦¬ì†ŒìŠ¤ ê³µìœ 
+    , m_indexBufferView(Prototype.m_indexBufferView)         // ë·° ì •ë³´ ë³µì‚¬
     , m_iIndices(Prototype.m_iIndices)
     , m_eIndexFormat(Prototype.m_eIndexFormat)
 {
 	Safe_AddRef(m_pVertexBuffer);
 	Safe_AddRef(m_pIndexBuffer);
-    // UploadBuffer´Â º¹»çÇÒ ÇÊ¿ä ¾øÀ½ (ÀÌ¹Ì GPU¿¡ ¿Ã¶ó°¬À¸¹Ç·Î)
-    // commendlistµµ ¾÷·Îµå ¹öÆÛ »ý¼º ½Ã¿¡¸¸ ÇÊ¿äÇÏ¹Ç·Î º¹»çÇÏÁö ¾ÊÀ½
-    // Device¿Í Buffer´Â ComPtr·Î °ü¸® ÁßÀÌ¶ó¼­ ÀÚµ¿ addref µÊ.
+    // UploadBufferëŠ” ë³µì‚¬í•  í•„ìš” ì—†ìŒ (ì´ë¯¸ GPUì— ì˜¬ë¼ê°”ìœ¼ë¯€ë¡œ)
+    // commendlistë„ ì—…ë¡œë“œ ë²„í¼ ìƒì„± ì‹œì—ë§Œ í•„ìš”í•˜ë¯€ë¡œ ë³µì‚¬í•˜ì§€ ì•ŠìŒ
+    // Deviceì™€ BufferëŠ” ComPtrë¡œ ê´€ë¦¬ ì¤‘ì´ë¼ì„œ ìžë™ addref ë¨.
 }
 
 HRESULT CVIBuffer::Initialize_Prototype(ID3D12GraphicsCommandList* _pCommandList)
 {
-    // ±âº» ±¸ÇöÀº ¾øÀ½. ÀÚ½Ä¿¡¼­ ±¸Çö.
-    // CloneÀ» »ý¼ºÇÒ ‹š ½ÇÇà
-    // ÀÌ¶§ ¾÷·ÎµåÈü, µðÆúÆ®Èü ¹öÆÛ »ý¼º±îÁö ¸ðµÎ Ã³¸®ÇØ¾ßÇÔ.
+    // ê¸°ë³¸ êµ¬í˜„ì€ ì—†ìŒ. ìžì‹ì—ì„œ êµ¬í˜„.
+    // Cloneì„ ìƒì„±í•  ë–„ ì‹¤í–‰
+    // ì´ë•Œ ì—…ë¡œë“œíž™, ë””í´íŠ¸íž™ ë²„í¼ ìƒì„±ê¹Œì§€ ëª¨ë‘ ì²˜ë¦¬í•´ì•¼í•¨.
 
-    // 1. Á¤Á¡ Á¤º¸ »ý¼º
-    // 2. ÀÎµ¦½º Á¤º¸ »ý¼º
-    // 3. Create_Buffer È£Ãâ (Vertex, Index µÎ¹ø È£Ãâ)
-    // 4. ºä Á¤º¸ ¼³Á¤
+    // 1. ì •ì  ì •ë³´ ìƒì„±
+    // 2. ì¸ë±ìŠ¤ ì •ë³´ ìƒì„±
+    // 3. Create_Buffer í˜¸ì¶œ (Vertex, Index ë‘ë²ˆ í˜¸ì¶œ)
+    // 4. ë·° ì •ë³´ ì„¤ì •
     return S_OK;
 }
 
@@ -52,14 +52,14 @@ HRESULT CVIBuffer::Initialize(void* pArg)
 
 HRESULT CVIBuffer::Render(ID3D12GraphicsCommandList* _commandList)
 {
-    // commendlist´Â ¸Å ÇÁ·¹ÀÓ¸¶´Ù ´Ù¸¦ ¼ö ÀÖÀ¸¹Ç·Î ÀÎÀÚ·Î ¹ÞÀ½.
-    // °øÅë ÆÄÀÌÇÁ¶óÀÎ ¼³Á¤
+    // commendlistëŠ” ë§¤ í”„ë ˆìž„ë§ˆë‹¤ ë‹¤ë¥¼ ìˆ˜ ìžˆìœ¼ë¯€ë¡œ ì¸ìžë¡œ ë°›ìŒ.
+    // ê³µí†µ íŒŒì´í”„ë¼ì¸ ì„¤ì •
     _commandList->IASetPrimitiveTopology(m_ePrimitiveTopology);
     _commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
     _commandList->IASetIndexBuffer(&m_indexBufferView);
     _commandList->DrawIndexedInstanced(m_iIndices, 1, 0, 0, 0);
 
-	// ÀÚ½Ä¿¡¼­ »õ·Î ¸¸µé ÇÊ¿äX - °øÅëÀ¸·Î »ç¿ëÇÒ ¼ö ÀÖµµ·Ï ±¸Çö
+	// ìžì‹ì—ì„œ ìƒˆë¡œ ë§Œë“¤ í•„ìš”X - ê³µí†µìœ¼ë¡œ ì‚¬ìš©í•  ìˆ˜ ìžˆë„ë¡ êµ¬í˜„
     return S_OK;
 }
 
@@ -120,7 +120,7 @@ HRESULT CVIBuffer::Create_Buffer(ID3D12GraphicsCommandList* _pCommandList, ID3D1
     SetResourceDesc(resourceDesc, _iBufferSize);
 
 
-    // 1. Default Heap (GPU Àü¿ë) »ý¼º
+    // 1. Default Heap (GPU ì „ìš©) ìƒì„±
     ThrowIfFailed(m_pContext->device->CreateCommittedResource(
         &DefaultheapProps,
         D3D12_HEAP_FLAG_NONE,
@@ -129,7 +129,7 @@ HRESULT CVIBuffer::Create_Buffer(ID3D12GraphicsCommandList* _pCommandList, ID3D1
         NULL,
         IID_PPV_ARGS(_ppDefaultBuffer)));
 
-    // 2. Upload Heap (CPU -> GPU Àü´Þ¿ë) »ý¼º
+    // 2. Upload Heap (CPU -> GPU ì „ë‹¬ìš©) ìƒì„±
     ThrowIfFailed(m_pContext->device->CreateCommittedResource(
         &UploadheapProps,
         D3D12_HEAP_FLAG_NONE,
@@ -138,7 +138,7 @@ HRESULT CVIBuffer::Create_Buffer(ID3D12GraphicsCommandList* _pCommandList, ID3D1
         NULL,
         IID_PPV_ARGS(_ppUploadBuffer)));
 
-    // 3. µ¥ÀÌÅÍ º¹»ç
+    // 3. ë°ì´í„° ë³µì‚¬
     D3D12_SUBRESOURCE_DATA subResourceData = {};
     subResourceData.pData = _pData;
     subResourceData.RowPitch = _iBufferSize;
@@ -146,7 +146,7 @@ HRESULT CVIBuffer::Create_Buffer(ID3D12GraphicsCommandList* _pCommandList, ID3D1
 
     UpdateSubresources(_pCommandList, *_ppDefaultBuffer, *_ppUploadBuffer, 0, 0, 1, &subResourceData);
 
-        // 4. »óÅÂ ÀüÀÌ (Copy Dest -> Generic Read)
+        // 4. ìƒíƒœ ì „ì´ (Copy Dest -> Generic Read)
 
     if ( _isIndex == false ) {
         auto barrier = CD3DX12_RESOURCE_BARRIER::Transition (

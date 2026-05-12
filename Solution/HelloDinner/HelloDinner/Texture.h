@@ -10,13 +10,13 @@ private:
 	virtual ~CTexture() = default;
 
 public:
-	// ¼ÎÀÌ´õ ¹ÙÀÎµù ÇÔ¼ö
+	// ì…°ì´ë” ë°”ì¸ë”© í•¨ìˆ˜
 	virtual HRESULT Bind_ShaderResource(ID3D12GraphicsCommandList* pCommandList, RootParameterIndex iRootParameterIndex, _uint iTextureIndex = 0);
 
 	virtual void Release_UploadBuffer();
 
 
-	// DESC Á¤º¸
+	// DESC ì •ë³´
 	_uint Get_Width() const { return m_iWidth; }
 	_uint Get_Height() const { return m_iHeight; }
 	DXGI_FORMAT Get_Format() const { return m_FormatDesc; }
@@ -27,22 +27,22 @@ public:
 protected:
 
 	_uint									m_iNumTextures = { 0 };
-	_uint									m_iSRVIndex = { 0 }; // ±Û·Î¹ú SRVÈü¿¡¼­ÀÇ ½ÃÀÛ ÀÎµ¦½º (Manager¿¡¼­ ÇÒ´ç¹ŞÀº À§Ä¡)
+	_uint									m_iSRVIndex = { 0 }; // ê¸€ë¡œë²Œ SRVí™ì—ì„œì˜ ì‹œì‘ ì¸ë±ìŠ¤ (Managerì—ì„œ í• ë‹¹ë°›ì€ ìœ„ì¹˜)
 
-	// ¿©·¯ ÀåÀÇ ÅØ½ºÃ³(¾Ö´Ï¸ŞÀÌ¼Ç µî)¸¦ Áö¿øÇÏ±â À§ÇØ vector·Î °ü¸® 
+	// ì—¬ëŸ¬ ì¥ì˜ í…ìŠ¤ì²˜(ì• ë‹ˆë©”ì´ì…˜ ë“±)ë¥¼ ì§€ì›í•˜ê¸° ìœ„í•´ vectorë¡œ ê´€ë¦¬ 
 	vector<ComPtr<ID3D12Resource>>			m_Textures;
-	vector<ComPtr<ID3D12Resource>>			m_UploadBuffers; // ¾÷·Îµå¿ë ÀÓ½Ã ¹öÆÛ
+	vector<ComPtr<ID3D12Resource>>			m_UploadBuffers; // ì—…ë¡œë“œìš© ì„ì‹œ ë²„í¼
 
-	// [¸ŞÅ¸µ¥ÀÌÅÍ Á¤º¸]
+	// [ë©”íƒ€ë°ì´í„° ì •ë³´]
 	DXGI_FORMAT					m_FormatDesc = {};
 	_uint                       m_iWidth = 0;
 	_uint                       m_iHeight = 0;
-	_uint                       m_iArraySize = 1;  // ±âº» 1, ¾Ö´Ï¸ŞÀÌ¼ÇÀÌ¸é N
+	_uint                       m_iArraySize = 1;  // ê¸°ë³¸ 1, ì• ë‹ˆë©”ì´ì…˜ì´ë©´ N
 	_uint                       m_iMipLevels = 1;
 	TEXTURE_TYPE				m_eType = TEXTURE_TYPE::TEX_2D;
 
 private:
-	// ³»ºÎ À¯Æ¿¸®Æ¼ ÇÔ¼ö
+	// ë‚´ë¶€ ìœ í‹¸ë¦¬í‹° í•¨ìˆ˜
 	virtual HRESULT Load_DDSTexture(ID3D12GraphicsCommandList* pCommandList, const wstring& pFilePath, _uint iIndex);
 	HRESULT Load_WICTexture(ID3D12GraphicsCommandList* pCommandList, const wstring& _pFilePath, _uint _iIndex);
 	HRESULT SetResourceDesc(ID3D12Resource* _pTexture, TEXTURE_TYPE _iTextureType );

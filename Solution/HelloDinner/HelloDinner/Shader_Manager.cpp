@@ -9,7 +9,7 @@ CShader_Manager::CShader_Manager ()
 HRESULT CShader_Manager::Initialize ( const ComPtr<ID3D12Device>& pDevice )
 {
 	m_pDevice = pDevice;
-	// Àü¿ª ·çÆ® ½Ã±×´ÏÃ³ »ı¼º
+	// ì „ì—­ ë£¨íŠ¸ ì‹œê·¸ë‹ˆì²˜ ìƒì„±
 	if ( FAILED ( Create_GlobalRootSignature () ) )
 	{
 		MSG_BOX ( "Failed to Create : GlobalRootSignature" );
@@ -37,15 +37,15 @@ void CShader_Manager::Set_PipelineState ( ID3D12GraphicsCommandList* pCmdList , 
 HRESULT CShader_Manager::Create_GlobalRootSignature ()
 {
 	//----------------------------------------------------------------------
-	// Root Parameter ¼³Á¤
+	// Root Parameter ì„¤ì •
 	//----------------------------------------------------------------------
-	// °è¼Ó Ãß°¡ÇÏÀÚ
+	// ê³„ì† ì¶”ê°€í•˜ì
 	CD3DX12_ROOT_PARAMETER parameters[( _uint )RootParameterIndex::End];
 
 	// [t0, space0]
 	// RangeType: SRV (Shader Resource View)
 	// NumDescriptors: 1
-	// BaseShaderRegister: 0 (t0 ºÎÅÍ ½ÃÀÛ)
+	// BaseShaderRegister: 0 (t0 ë¶€í„° ì‹œì‘)
 	// RegisterSpace: 0 (space0)
 	CD3DX12_DESCRIPTOR_RANGE rangesDiffuse[1]; // 
 	rangesDiffuse[0].Init ( D3D12_DESCRIPTOR_RANGE_TYPE_SRV , 1 , 0 , 0 );	//t0
@@ -58,23 +58,23 @@ HRESULT CShader_Manager::Create_GlobalRootSignature ()
 
 
 
-	// Material¿ëÀ¸·Î Ãß°¡
+	// Materialìš©ìœ¼ë¡œ ì¶”ê°€
 
 	// [Parameter 0] : CBV (Camera)
 	//  cbTransform : register(b0)
-	// Ä«¸Ş¶ó Á¤º¸ (ºä, ÇÁ·ÎÁ§¼Ç Çà·Ä)
+	// ì¹´ë©”ë¼ ì •ë³´ (ë·°, í”„ë¡œì ì…˜ í–‰ë ¬)
 	parameters[RootParameterIndex::Camera].InitAsConstantBufferView ( 0 , 0 );
 
 	// [Parameter 1] : Constant32 (Object)
 	//  cbObject : register(b1)
-	// Transform Á¤º¸
+	// Transform ì •ë³´
 	parameters[RootParameterIndex::GameObject].InitAsConstants ( 16 , 1 );
 
 	// [Parameter 2, 3] : Texture Table
-	// Diffuse Texture (t0)°ú Normal Texture (t1)·Î ³ª´²¼­ °ü¸®
+	// Diffuse Texture (t0)ê³¼ Normal Texture (t1)ë¡œ ë‚˜ëˆ ì„œ ê´€ë¦¬
 	parameters[RootParameterIndex::TEXTURE_Diffuse].InitAsDescriptorTable ( 1 , &rangesDiffuse[0] );
 	parameters[RootParameterIndex::TEXTURE_Normal].InitAsDescriptorTable(1, &rangesNormal[0]);
-	// t3 ±×¸²ÀÚ ¸Ê
+	// t3 ê·¸ë¦¼ì ë§µ
 	parameters[RootParameterIndex::ShadowMap].InitAsDescriptorTable(1, &rangesShadow[0]);
 
 	// [Parameter 3] : CBV (BoneMatrix)
@@ -89,29 +89,29 @@ HRESULT CShader_Manager::Create_GlobalRootSignature ()
 	// Static Sampler s0 ~ s4
 	//----------------------------------------------------------------------
 	CD3DX12_STATIC_SAMPLER_DESC samplers[5];
-	// s0: Linear / Wrap (±âº» 3D ¹°Ã¼)
+	// s0: Linear / Wrap (ê¸°ë³¸ 3D ë¬¼ì²´)
 	samplers[0].Init ( 0 ,
 		D3D12_FILTER_MIN_MAG_MIP_LINEAR ,
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP ,
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP ,
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP );
 
-	// s1: Linear / Clamp (½ºÄ«ÀÌ¹Ú½º, ÀÌÆåÆ®, UI)
+	// s1: Linear / Clamp (ìŠ¤ì¹´ì´ë°•ìŠ¤, ì´í™íŠ¸, UI)
 	samplers[1].Init ( 1 ,
 		D3D12_FILTER_MIN_MAG_MIP_LINEAR ,
 		D3D12_TEXTURE_ADDRESS_MODE_CLAMP ,
 		D3D12_TEXTURE_ADDRESS_MODE_CLAMP ,
 		D3D12_TEXTURE_ADDRESS_MODE_CLAMP );
 
-	// s2: Point / Clamp (µµÆ® ¾ÆÆ®, ÆùÆ®, Á¤È®ÇÑ UV ÂüÁ¶)
+	// s2: Point / Clamp (ë„íŠ¸ ì•„íŠ¸, í°íŠ¸, ì •í™•í•œ UV ì°¸ì¡°)
 	samplers[2].Init ( 2 ,
 		D3D12_FILTER_MIN_MAG_MIP_POINT ,
 		D3D12_TEXTURE_ADDRESS_MODE_CLAMP ,
 		D3D12_TEXTURE_ADDRESS_MODE_CLAMP ,
 		D3D12_TEXTURE_ADDRESS_MODE_CLAMP );
 
-	// s3: Anisotropic (ÁöÇü, ¹Ù´Ú - ¸Ö¸®¼­µµ ¼±¸íÇÔ)
-	// Àß ¾È ¾µµí?
+	// s3: Anisotropic (ì§€í˜•, ë°”ë‹¥ - ë©€ë¦¬ì„œë„ ì„ ëª…í•¨)
+	// ì˜ ì•ˆ ì“¸ë“¯?
 	samplers[3].Init ( 3 ,
 		D3D12_FILTER_ANISOTROPIC ,
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP ,
@@ -119,7 +119,7 @@ HRESULT CShader_Manager::Create_GlobalRootSignature ()
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP ,
 		0.0f , 8 ); // MaxAnisotropy = 8
 
-	// s4: Shadow Comparison (±×¸²ÀÚ ¸Ê Àü¿ë)
+	// s4: Shadow Comparison (ê·¸ë¦¼ì ë§µ ì „ìš©)
 	samplers[4].Init ( 4 ,
 		D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT ,
 		D3D12_TEXTURE_ADDRESS_MODE_BORDER ,
@@ -130,17 +130,17 @@ HRESULT CShader_Manager::Create_GlobalRootSignature ()
 		D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK );
 
 	//----------------------------------------------------------------------
-	// Flags ¼³Á¤
+	// Flags ì„¤ì •
 	//----------------------------------------------------------------------
 	D3D12_ROOT_SIGNATURE_FLAGS rootSigFlags =
-		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | // IA ´Ü°è »ç¿ë Çã¿ë (ÇÊ¼ö)
-		D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |       // HS´Â ·çÆ® ¼­¸í Á¢±Ù ±İÁö (ÃÖÀûÈ­)
-		D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |     // DS´Â Á¢±Ù ±İÁö
-		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;    // GS´Â Á¢±Ù ±İÁö
+		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | // IA ë‹¨ê³„ ì‚¬ìš© í—ˆìš© (í•„ìˆ˜)
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |       // HSëŠ” ë£¨íŠ¸ ì„œëª… ì ‘ê·¼ ê¸ˆì§€ (ìµœì í™”)
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |     // DSëŠ” ì ‘ê·¼ ê¸ˆì§€
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;    // GSëŠ” ì ‘ê·¼ ê¸ˆì§€
 
 
 	//----------------------------------------------------------------------
-	// Root Signature »ı¼º
+	// Root Signature ìƒì„±
 	//----------------------------------------------------------------------
 	CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
 	rootSignatureDesc.Init (
@@ -150,7 +150,7 @@ HRESULT CShader_Manager::Create_GlobalRootSignature ()
 		samplers ,
 		rootSigFlags );
 
-	// Á÷·ÄÈ­ (Serialize) - ÅØ½ºÆ® ¼³Á¤À» ¹ÙÀÌ³Ê¸®·Î º¯È¯
+	// ì§ë ¬í™” (Serialize) - í…ìŠ¤íŠ¸ ì„¤ì •ì„ ë°”ì´ë„ˆë¦¬ë¡œ ë³€í™˜
 	ID3DBlob* pSignature = nullptr;
 	ID3DBlob* pError = nullptr;
 
@@ -164,7 +164,7 @@ HRESULT CShader_Manager::Create_GlobalRootSignature ()
 		return E_FAIL;
 	}
 
-	// ½ÇÁ¦ °´Ã¼ »ı¼º
+	// ì‹¤ì œ ê°ì²´ ìƒì„±
 	if ( FAILED ( m_pDevice->CreateRootSignature ( 0 , pSignature->GetBufferPointer () , pSignature->GetBufferSize () , IID_PPV_ARGS ( &m_pRootSignature ) ) ) )
 		return E_FAIL;
 
@@ -176,12 +176,12 @@ HRESULT CShader_Manager::Create_GlobalRootSignature ()
 
 HRESULT CShader_Manager::Create_PSO ()
 {
-	Create_InputLayouts (); // ·¹ÀÌ¾Æ¿ô ÁØºñ
+	Create_InputLayouts (); // ë ˆì´ì•„ì›ƒ ì¤€ë¹„
 
 	// ----------------------------------------------------------------
-	// 1. ½¦ÀÌ´õ ÄÄÆÄÀÏ
+	// 1. ì‰ì´ë” ì»´íŒŒì¼
 	// ----------------------------------------------------------------
-	// Vertex Shader (Input Layoutº°)
+	// Vertex Shader (Input Layoutë³„)
 	ComPtr<ID3DBlob> vsStatic = Compile_Shader ( L"Shader_Static.hlsl" , "VS_Main_Static" , "vs_5_1" );
 	ComPtr<ID3DBlob> vsSkybox = Compile_Shader ( L"Shader_Skybox.hlsl" , "VS_Main_Skybox" , "vs_5_1" );
 	ComPtr<ID3DBlob> vsAnim = Compile_Shader ( L"Shader_Anim.hlsl" , "VS_Main_Anim" , "vs_5_1" );
@@ -190,13 +190,13 @@ HRESULT CShader_Manager::Create_PSO ()
 	ComPtr<ID3DBlob> vsShadowStatic = Compile_Shader(L"Shader_Static.hlsl", "VS_Main_Shadow", "vs_5_1");
 	ComPtr<ID3DBlob> vsShadowAnim = Compile_Shader(L"Shader_Anim.hlsl", "VS_Main_Shadow", "vs_5_1");
 
-	// Pixel Shader (ÀçÁúº°)
-	ComPtr<ID3DBlob> psLit = Compile_Shader ( L"Shader_Static.hlsl" , "PS_Main_Lit" , "ps_5_1" ); // Á¶¸í O
+	// Pixel Shader (ì¬ì§ˆë³„)
+	ComPtr<ID3DBlob> psLit = Compile_Shader ( L"Shader_Static.hlsl" , "PS_Main_Lit" , "ps_5_1" ); // ì¡°ëª… O
 	ComPtr<ID3DBlob> psSkybox = Compile_Shader ( L"Shader_Skybox.hlsl" , "PS_Main_Skybox" , "ps_5_1" ); // Skybox
-	// ComPtr<ID3DBlob> psUI = Compile_Shader ( L"Shader_UI.hlsl" , "PS_Main_UI" , "ps_5_1" ); // Á¶¸í X
+	// ComPtr<ID3DBlob> psUI = Compile_Shader ( L"Shader_UI.hlsl" , "PS_Main_UI" , "ps_5_1" ); // ì¡°ëª… X
 
 	// ----------------------------------------------------------------
-	// 2. ±âº» PSO Desc ÀÛ¼º (°øÅë ¼³Á¤)
+	// 2. ê¸°ë³¸ PSO Desc ì‘ì„± (ê³µí†µ ì„¤ì •)
 	// ----------------------------------------------------------------
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC baseDesc = {};
 	baseDesc.pRootSignature = m_pRootSignature.Get ();
@@ -223,16 +223,16 @@ HRESULT CShader_Manager::Create_PSO ()
 	// ================================================================
 	// SKYBOX (Static Mesh / TextureCube / DepthFunc LessEqual)
 	// ================================================================
-	psoDesc = baseDesc; // ¸®¼Â
+	psoDesc = baseDesc; // ë¦¬ì…‹
 	psoDesc.InputLayout = { m_LayoutStatic.data (), ( UINT )m_LayoutStatic.size () };
 	psoDesc.VS = { vsSkybox->GetBufferPointer (), vsSkybox->GetBufferSize () };
 	psoDesc.PS = { psSkybox->GetBufferPointer (), psSkybox->GetBufferSize () };
 
-	// ½ºÄ«ÀÌ¹Ú½º´Â Ç×»ó °¡Àå µÚ¿¡ ÀÖ¾î¾ß ÇÏ¹Ç·Î z=w Æ®¸¯ »ç¿ë
-	// DepthFunc¸¦ LESS_EQUAL·Î º¯°æÇØ¾ß z=1(far plane)¿¡¼­µµ Åë°ú
+	// ìŠ¤ì¹´ì´ë°•ìŠ¤ëŠ” í•­ìƒ ê°€ì¥ ë’¤ì— ìˆì–´ì•¼ í•˜ë¯€ë¡œ z=w íŠ¸ë¦­ ì‚¬ìš©
+	// DepthFuncë¥¼ LESS_EQUALë¡œ ë³€ê²½í•´ì•¼ z=1(far plane)ì—ì„œë„ í†µê³¼
 	psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
-	// ½ºÄ«ÀÌ¹Ú½º ³»ºÎ¿¡¼­ ·»´õ¸µÇÏ¹Ç·Î Front Face Culling (¾ÈÂÊ ¸éÀ» º¸¿©ÁÜ)
+	// ìŠ¤ì¹´ì´ë°•ìŠ¤ ë‚´ë¶€ì—ì„œ ë Œë”ë§í•˜ë¯€ë¡œ Front Face Culling (ì•ˆìª½ ë©´ì„ ë³´ì—¬ì¤Œ)
 	psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
 
 	m_pDevice->CreateGraphicsPipelineState ( &psoDesc , IID_PPV_ARGS ( &m_pPSOs[( UINT )PSO_TYPE::SKYBOX] ) );
@@ -241,8 +241,8 @@ HRESULT CShader_Manager::Create_PSO ()
 	// ================================================================
 	// ANIMATION (Anim Mesh / Opaque / Lit)
 	// ================================================================
-	psoDesc = baseDesc; // ¸®¼Â
-	// º¯°æÁ¡: InputLayout°ú VertexShader°¡ ¾Ö´Ï¸ŞÀÌ¼Ç¿ëÀ¸·Î ¹Ù²ñ
+	psoDesc = baseDesc; // ë¦¬ì…‹
+	// ë³€ê²½ì : InputLayoutê³¼ VertexShaderê°€ ì• ë‹ˆë©”ì´ì…˜ìš©ìœ¼ë¡œ ë°”ë€œ
 	psoDesc.InputLayout = { m_LayoutAnim.data (), ( UINT )m_LayoutAnim.size () };
 	psoDesc.VS = { vsAnim->GetBufferPointer (), vsAnim->GetBufferSize () };
 	psoDesc.PS = { psLit->GetBufferPointer (), psLit->GetBufferSize () };
@@ -253,19 +253,19 @@ HRESULT CShader_Manager::Create_PSO ()
 	// ================================================================
 	// ALPHA BLEND (Static Mesh / Transparent / Lit)
 	// ================================================================
-	psoDesc = baseDesc; // ¸®¼Â
+	psoDesc = baseDesc; // ë¦¬ì…‹
 	psoDesc.InputLayout = { m_LayoutStatic.data (), ( UINT )m_LayoutStatic.size () };
 	psoDesc.VS = { vsStatic->GetBufferPointer (), vsStatic->GetBufferSize () };
 	psoDesc.PS = { psLit->GetBufferPointer (), psLit->GetBufferSize () };
 
-	// º¯°æÁ¡: ºí·»µå ÄÑ±â & ±íÀÌ ¾²±â ²ô±â(Z-Write Off)
+	// ë³€ê²½ì : ë¸”ë Œë“œ ì¼œê¸° & ê¹Šì´ ì“°ê¸° ë„ê¸°(Z-Write Off)
 	D3D12_RENDER_TARGET_BLEND_DESC& blend = psoDesc.BlendState.RenderTarget[0];
 	blend.BlendEnable = TRUE;
 	blend.SrcBlend = D3D12_BLEND_SRC_ALPHA;
 	blend.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
 	blend.BlendOp = D3D12_BLEND_OP_ADD;
 
-	// ¹İÅõ¸íÀº º¸Åë ±íÀÌ Å×½ºÆ®´Â ÇÏµÇ, ±â·Ï(Write)Àº ¾È ÇÔ (µÚ¿¡ ÀÖ´Â °Íµµ º¸¿©¾ß ÇÏ´Ï±î)
+	// ë°˜íˆ¬ëª…ì€ ë³´í†µ ê¹Šì´ í…ŒìŠ¤íŠ¸ëŠ” í•˜ë˜, ê¸°ë¡(Write)ì€ ì•ˆ í•¨ (ë’¤ì— ìˆëŠ” ê²ƒë„ ë³´ì—¬ì•¼ í•˜ë‹ˆê¹Œ)
 	psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 
 	m_pDevice->CreateGraphicsPipelineState ( &psoDesc , IID_PPV_ARGS ( &m_pPSOs[( UINT )PSO_TYPE::ALPHA_BLEND] ) );
@@ -274,20 +274,20 @@ HRESULT CShader_Manager::Create_PSO ()
 	// ================================================================
 	// UI (UI Mesh / Transparent / Unlit)
 	// ================================================================
-	psoDesc = baseDesc; // ¸®¼Â
-	// º¯°æÁ¡: UI ·¹ÀÌ¾Æ¿ô, UI ½¦ÀÌ´õ(Á¶¸íX), ±íÀÌ °Ë»ç ²ô±â
+	psoDesc = baseDesc; // ë¦¬ì…‹
+	// ë³€ê²½ì : UI ë ˆì´ì•„ì›ƒ, UI ì‰ì´ë”(ì¡°ëª…X), ê¹Šì´ ê²€ì‚¬ ë„ê¸°
 	psoDesc.InputLayout = { m_LayoutUI.data (), ( UINT )m_LayoutUI.size () };
 	psoDesc.VS = { vsUI->GetBufferPointer (), vsUI->GetBufferSize () };
 	psoDesc.PS = { psUI->GetBufferPointer (), psUI->GetBufferSize () };
 
-	// ºí·»µå ÄÑ±â
+	// ë¸”ë Œë“œ ì¼œê¸°
 	psoDesc.BlendState.RenderTarget[0].BlendEnable = TRUE;
 	psoDesc.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
 	psoDesc.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
 
-	// ±íÀÌ °Ë»ç ¾Æ¿¹ ²ô±â (Ç×»ó ±×¸²)
+	// ê¹Šì´ ê²€ì‚¬ ì•„ì˜ˆ ë„ê¸° (í•­ìƒ ê·¸ë¦¼)
 	psoDesc.DepthStencilState.DepthEnable = FALSE;
-	psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE; // ¾ç¸é ´Ù ±×¸²
+	psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE; // ì–‘ë©´ ë‹¤ ê·¸ë¦¼
 
 	m_pDevice->CreateGraphicsPipelineState ( &psoDesc , IID_PPV_ARGS ( &m_pPSOs[( UINT )PSO_TYPE::UI] ) );
 
@@ -295,19 +295,19 @@ HRESULT CShader_Manager::Create_PSO ()
 	// ================================================================
 	// SHADOW (Static Mesh / No Color / Depth Only)
 	// ================================================================
-	psoDesc = baseDesc; // ¸®¼Â
+	psoDesc = baseDesc; // ë¦¬ì…‹
 	psoDesc.InputLayout = { m_LayoutStatic.data (), ( UINT )m_LayoutStatic.size () };
-	// ±×¸²ÀÚ¿ë
+	// ê·¸ë¦¼ììš©
 	psoDesc.VS = { vsShadowStatic->GetBufferPointer (), vsShadowStatic->GetBufferSize () };
 	psoDesc.PS = { nullptr, 0 };
 
-	// ·»´õ Å¸°Ù ¾øÀ½ (¿ÀÁ÷ Depth Buffer¿¡¸¸ ±â·Ï)
+	// ë Œë” íƒ€ê²Ÿ ì—†ìŒ (ì˜¤ì§ Depth Bufferì—ë§Œ ê¸°ë¡)
 	psoDesc.NumRenderTargets = 0;
 	psoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
 	
 	psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
 
-	// ±×¸²ÀÚ ¾ÆÆ¼ÆÑÆ®(Shadow Acne) ¹æÁö ¹ÙÀÌ¾î½º
+	// ê·¸ë¦¼ì ì•„í‹°íŒ©íŠ¸(Shadow Acne) ë°©ì§€ ë°”ì´ì–´ìŠ¤
 	psoDesc.RasterizerState.DepthBias = 0;
 	psoDesc.RasterizerState.DepthBiasClamp = 0.0f;
 	psoDesc.RasterizerState.SlopeScaledDepthBias = 0.0f;
@@ -317,8 +317,8 @@ HRESULT CShader_Manager::Create_PSO ()
 	// ================================================================
 	// SHADOW_ANIM (Anim Mesh / No Color / Depth Only)
 	// ================================================================
-	psoDesc = baseDesc; // ¸®¼Â
-	psoDesc.InputLayout = { m_LayoutAnim.data(), (UINT)m_LayoutAnim.size() }; // ?? ¾Ö´Ï¸ŞÀÌ¼Ç¿ë ·¹ÀÌ¾Æ¿ô »ç¿ë
+	psoDesc = baseDesc; // ë¦¬ì…‹
+	psoDesc.InputLayout = { m_LayoutAnim.data(), (UINT)m_LayoutAnim.size() }; // ?? ì• ë‹ˆë©”ì´ì…˜ìš© ë ˆì´ì•„ì›ƒ ì‚¬ìš©
 	psoDesc.VS = { vsShadowAnim->GetBufferPointer(), vsShadowAnim->GetBufferSize() };
 	psoDesc.PS = { nullptr, 0 };
 
@@ -334,13 +334,13 @@ HRESULT CShader_Manager::Create_PSO ()
 	return S_OK;
 }
 
-// ½¦ÀÌ´õ ÄÄÆÄÀÏ ÇïÆÛ (¸Å¹ø Ä¡±â ±ÍÂúÀ¸´Ï ÇÔ¼ö·Î »­)
+// ì‰ì´ë” ì»´íŒŒì¼ í—¬í¼ (ë§¤ë²ˆ ì¹˜ê¸° ê·€ì°®ìœ¼ë‹ˆ í•¨ìˆ˜ë¡œ ëºŒ)
 ID3DBlob* CShader_Manager::Compile_Shader ( const wstring& strPath , const char* strEntry , const char* strTarget )
 {
 	ID3DBlob* pBlob = nullptr;
 	ID3DBlob* pError = nullptr;
 
-	// µğ¹ö±× ¸ğµå¸é ÃÖÀûÈ­ ²ô°í µğ¹ö±× Á¤º¸ Æ÷ÇÔ
+	// ë””ë²„ê·¸ ëª¨ë“œë©´ ìµœì í™” ë„ê³  ë””ë²„ê·¸ ì •ë³´ í¬í•¨
 	UINT iFlag = D3DCOMPILE_ENABLE_STRICTNESS;
 #ifdef _DEBUG
 	iFlag |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
@@ -371,7 +371,7 @@ void CShader_Manager::Create_InputLayouts ()
 	};
 
 	// 2) Animation Mesh (Static + BoneID, Weights)
-	m_LayoutAnim = m_LayoutStatic; // ±âº» º¹»ç ÈÄ Ãß°¡
+	m_LayoutAnim = m_LayoutStatic; // ê¸°ë³¸ ë³µì‚¬ í›„ ì¶”ê°€
 	m_LayoutAnim.push_back({ "BLENDINDICES", 0, DXGI_FORMAT_R32G32B32A32_UINT,  0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 });
 	m_LayoutAnim.push_back({ "BLENDWEIGHT",  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 });
 	

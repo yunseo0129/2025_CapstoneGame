@@ -40,7 +40,7 @@ namespace Vector3
 }
 
 
-// DX ¿¹¿Ü Ã³¸® Å¬·¡½º
+// DX ì˜ˆì™¸ ì²˜ë¦¬ í´ëž˜ìŠ¤
 inline std::wstring AnsiToWString(const std::string& str)
 {
     WCHAR buffer[512];
@@ -62,7 +62,7 @@ public:
 
     std::wstring ToString()const
     {
-		// ¿¡·¯ ÄÚµå¿¡ ´ëÇÑ ¸Þ½ÃÁö ¾ò±â
+		// ì—ëŸ¬ ì½”ë“œì— ëŒ€í•œ ë©”ì‹œì§€ ì–»ê¸°
         _com_error err(ErrorCode);
         std::wstring msg = err.ErrorMessage();
 
@@ -85,7 +85,7 @@ public:
 #endif
 //---------------------------------------------------------------------
 
-// COM °´Ã¼ ÇØÁ¦ ¸ÅÅ©·Î
+// COM ê°ì²´ í•´ì œ ë§¤í¬ë¡œ
 #ifndef ReleaseCom
 #define ReleaseCom(x) { if(x){ x->Release(); x = 0; } }
 #endif

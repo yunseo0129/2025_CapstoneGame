@@ -10,26 +10,26 @@ CMesh::CMesh(EngineContext* _pContext)
 
 HRESULT CMesh::Initialize_Prototype(CModel::TYPE eModelType, class CModel* pModel, _fmatrix PreTransformMatrix)
 {
-	// MaterialIndex ÀĞ±â
+	// MaterialIndex ì½ê¸°
 	m_pGameInstance->Read_File(m_iMaterialIndex);
 
-	// MeshÀÇ ÀÌ¸§
+	// Meshì˜ ì´ë¦„
 	m_pGameInstance->Read_File(m_szName);
-	// MeshÀÇ Á¤Á¡ °³¼ö
+	// Meshì˜ ì •ì  ê°œìˆ˜
 	m_pGameInstance->Read_File(m_iVertices);
-	// MeshÀÇ »ï°¢ÇüÀÇ °³¼ö
+	// Meshì˜ ì‚¼ê°í˜•ì˜ ê°œìˆ˜
 	_uint iNumTriangles;
 	m_pGameInstance->Read_File(iNumTriangles);
 
 	/*
-	// µğ¹ö±× ·Î±× Ãâ·Â
+	// ë””ë²„ê·¸ ë¡œê·¸ ì¶œë ¥
 	char szLog[512];
 	sprintf_s(szLog, "[Mesh] Name:%s | Vtx:%u | Tri:%u | Idx:%u | MatIdx:%u\n",
 		m_szName, m_iVertices, iNumTriangles, iNumTriangles * 3, m_iMaterialIndex);
 	OutputDebugStringA(szLog);
 	*/
 
-	m_iIndices = iNumTriangles * 3; // ÀÎµ¦½º °³¼ö´Â »ï°¢Çü °³¼ö * 3
+	m_iIndices = iNumTriangles * 3; // ì¸ë±ìŠ¤ ê°œìˆ˜ëŠ” ì‚¼ê°í˜• ê°œìˆ˜ * 3
 
 	m_eIndexFormat = DXGI_FORMAT_R32_UINT;
 	m_ePrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -46,7 +46,7 @@ HRESULT CMesh::Initialize_Prototype(CModel::TYPE eModelType, class CModel* pMode
 #pragma endregion
 
 #pragma region INDEX_BUFFER
-	// ÀÎµ¦½º Á¤º¸ ¹Ş¾Æ¼­ ¹öÆÛ »ı¼º
+	// ì¸ë±ìŠ¤ ì •ë³´ ë°›ì•„ì„œ ë²„í¼ ìƒì„±
 	vector<_uint> indices;
 	indices.resize(m_iIndices);
 
@@ -57,12 +57,12 @@ HRESULT CMesh::Initialize_Prototype(CModel::TYPE eModelType, class CModel* pMode
 
 	_uint indexBufferSize = sizeof(_uint) * m_iIndices;
 
-	// ºÎ¸ğÀÇ ¹öÆÛ »ı¼º ÇÔ¼ö¸¦ ÀÌ¿ëÇØ Index Buffer »ı¼º
+	// ë¶€ëª¨ì˜ ë²„í¼ ìƒì„± í•¨ìˆ˜ë¥¼ ì´ìš©í•´ Index Buffer ìƒì„±
 	if (FAILED(Create_Buffer(m_pContext->cmdList, &m_pIndexBuffer, &m_pIndexUploadBuffer,
 		indexBufferSize, indices.data(), true)))
 		return E_FAIL;
 
-	// ºä ¼³Á¤
+	// ë·° ì„¤ì •
 	m_indexBufferView.BufferLocation = m_pIndexBuffer->GetGPUVirtualAddress();
 	m_indexBufferView.Format = m_eIndexFormat;
 	m_indexBufferView.SizeInBytes = indexBufferSize;
@@ -78,7 +78,7 @@ HRESULT CMesh::Initialize(void* pArg)
 
 HRESULT CMesh::Ready_VertexBuffer_For_NonAnim(_fmatrix PreTransformMatrix)
 {
-	// ¹ÙÀÌ³Ê¸® ÀúÀå ¼ø¼­: Position[] ¡æ Normal[] ¡æ TexCoord[] ¡æ Tangent[]
+	// ë°”ì´ë„ˆë¦¬ ì €ì¥ ìˆœì„œ: Position[] â†’ Normal[] â†’ TexCoord[] â†’ Tangent[]
 	vector<VTXMESH> vertices;
 	vertices.resize(m_iVertices);
 
@@ -176,7 +176,7 @@ void CMesh::SetUp_BoneMatrices(const vector<CBone*>& Bones, _float4x4* pBoneMatr
 {
 	for (_uint i = 0; i < m_iNumBones; ++i)
 	{
-		// OffsetMatrix * CombinedMatrix = ÃÖÁ¾ º» ¸ÅÆ®¸¯½º
+		// OffsetMatrix * CombinedMatrix = ìµœì¢… ë³¸ ë§¤íŠ¸ë¦­ìŠ¤
 		
 		_matrix OffsetMatrix = XMLoadFloat4x4(&m_BoneOffsetMatrices[i]);
 

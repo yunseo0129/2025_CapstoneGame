@@ -37,11 +37,11 @@ HRESULT CMap::Initialize(void* pArg)
 	m_strModelTag = pDesc->strModelTag;
 	m_iModelLevelIndex = pDesc->iModelLevelIndex;
 
-	// CGameObject::Initialize°¡ Transform »ı¼º ¹× ¼Óµµ ¼³Á¤
+	// CGameObject::Initializeê°€ Transform ìƒì„± ë° ì†ë„ ì„¤ì •
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
 
-	// JSON¿¡¼­ ¹ŞÀº TRS Àû¿ë
+	// JSONì—ì„œ ë°›ì€ TRS ì ìš©
 	m_pTransformCom->Scaling(pDesc->vScale.x, pDesc->vScale.y, pDesc->vScale.z);
 
 	m_pTransformCom->EulerRotationQuaternion(pDesc->vRotation.x,pDesc->vRotation.y,pDesc->vRotation.z);
@@ -49,7 +49,7 @@ HRESULT CMap::Initialize(void* pArg)
 	m_pTransformCom->Set_State(CTransform::STATE_POSITION,
 		XMVectorSet(pDesc->vPosition.x, pDesc->vPosition.y, pDesc->vPosition.z, 1.f));
 
-	// Collider Á¤º¸
+	// Collider ì •ë³´
 	m_eColliderType = pDesc->eColliderType;
 	m_vCenterCollider = pDesc->vCenterCollider;
 	m_vExtentsCollider = pDesc->vExtentsCollider;
@@ -82,20 +82,20 @@ void CMap::Late_Update(_float fTimeDelta)
 	}
 
 	m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, this);
-	m_pGameInstance->Add_CollisionGroup(0, m_pColliderCom);	// enumÀ¸·Î ¼öÁ¤
+	m_pGameInstance->Add_CollisionGroup(0, m_pColliderCom);	// enumìœ¼ë¡œ ìˆ˜ì •
 }
 
 void CMap::Render(ID3D12GraphicsCommandList* _commandList)
 {
-	// Transform ÄÄÆ÷³ÍÆ®ÀÇ ¿ùµå Çà·ÄÀ» RootConstantBuffer¿¡ ³Ñ°ÜÁØ´Ù.
+	// Transform ì»´í¬ë„ŒíŠ¸ì˜ ì›”ë“œ í–‰ë ¬ì„ RootConstantBufferì— ë„˜ê²¨ì¤€ë‹¤.
 	XMFLOAT4X4 WorldMatrix;
 	XMStoreFloat4x4(&WorldMatrix, m_pTransformCom->Get_WorldMatrix());
 	_commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &WorldMatrix, 0);
 
-	// 2. PSO ¼³Á¤
+	// 2. PSO ì„¤ì •
 	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::DEFAULT);
 
-	// 3. ¸Ş½¬º° ·»´õ¸µ (¸ÓÆ¼¸®¾ó ¹ÙÀÎµù + DrawIndexedInstanced)
+	// 3. ë©”ì‰¬ë³„ ë Œë”ë§ (ë¨¸í‹°ë¦¬ì–¼ ë°”ì¸ë”© + DrawIndexedInstanced)
 	_uint iNumMeshes = m_pModelCom->Get_NumMeshes();
 	for (_uint i = 0; i < iNumMeshes; ++i)
 	{
@@ -109,15 +109,15 @@ void CMap::Render(ID3D12GraphicsCommandList* _commandList)
 
 void CMap::ShadowRender(ID3D12GraphicsCommandList* _commandList)
 {
-	// Transform ÄÄÆ÷³ÍÆ®ÀÇ ¿ùµå Çà·ÄÀ» RootConstantBuffer¿¡ ³Ñ°ÜÁØ´Ù.
+	// Transform ì»´í¬ë„ŒíŠ¸ì˜ ì›”ë“œ í–‰ë ¬ì„ RootConstantBufferì— ë„˜ê²¨ì¤€ë‹¤.
 	XMFLOAT4X4 WorldMatrix;
 	XMStoreFloat4x4(&WorldMatrix, m_pTransformCom->Get_WorldMatrix());
 	_commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &WorldMatrix, 0);
 
-	// 2. PSO ¼³Á¤
+	// 2. PSO ì„¤ì •
 	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::SHADOW_STATIC);
 
-	// 3. ¸Ş½¬º° ·»´õ¸µ (¸ÓÆ¼¸®¾ó ¹ÙÀÎµù + DrawIndexedInstanced)
+	// 3. ë©”ì‰¬ë³„ ë Œë”ë§ (ë¨¸í‹°ë¦¬ì–¼ ë°”ì¸ë”© + DrawIndexedInstanced)
 	_uint iNumMeshes = m_pModelCom->Get_NumMeshes();
 	for (_uint i = 0; i < iNumMeshes; ++i)
 	{
@@ -128,14 +128,14 @@ void CMap::ShadowRender(ID3D12GraphicsCommandList* _commandList)
 
 bool CMap::Get_WorldBoundingSphere(_float3& outCenter, _float& outRadius) const
 {
-	// collider Á¤º¸°¡ ¼¼ÆÃ ¾È µÈ ¸ÊÀº ÄÃ¸µ ÆĞ½º (false positive ¾ÈÀü)
+	// collider ì •ë³´ê°€ ì„¸íŒ… ì•ˆ ëœ ë§µì€ ì»¬ë§ íŒ¨ìŠ¤ (false positive ì•ˆì „)
 	if (m_eColliderType == CCollider::TYPE_END)
 		return false;
 
-	// 1. center: ÀÌ¹Ì world ÁÂÇ¥ ¡æ ±×´ë·Î ¹İÈ¯
+	// 1. center: ì´ë¯¸ world ì¢Œí‘œ â†’ ê·¸ëŒ€ë¡œ ë°˜í™˜
 	outCenter = m_vCenterCollider;
 
-	// 2. radius: extentsµµ ÀÌ¹Ì world Å©±â ¡æ È¸Àü°ú ¹«°üÇÏ°Ô ¿ÜÁ¢±¸ ¹İÁö¸§Àº ´ë°¢¼± Àı¹İ
+	// 2. radius: extentsë„ ì´ë¯¸ world í¬ê¸° â†’ íšŒì „ê³¼ ë¬´ê´€í•˜ê²Œ ì™¸ì ‘êµ¬ ë°˜ì§€ë¦„ì€ ëŒ€ê°ì„  ì ˆë°˜
 	if (m_eColliderType == CCollider::TYPE_SPHERE)
 	{
 		outRadius = m_fRadius;
@@ -158,7 +158,7 @@ HRESULT CMap::Ready_Components()
 		return E_FAIL;
 	}
 
-	// Collider Ãæµ¹Ã¼ »ı¼º
+	// Collider ì¶©ëŒì²´ ìƒì„±
 	if (m_eColliderType == CCollider::TYPE_SPHERE)
 	{
 		CBounding_Sphere::BOUND_SPHERE_DESC SphereDesc;

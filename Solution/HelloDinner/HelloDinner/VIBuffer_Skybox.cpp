@@ -12,7 +12,7 @@ CVIBuffer_Skybox::CVIBuffer_Skybox(const CVIBuffer_Skybox& Prototype)
 
 HRESULT CVIBuffer_Skybox::Initialize_Prototype(ID3D12GraphicsCommandList* _commandList)
 {
-    // 1. ¡§¡° µ•¿Ã≈Õ ¡§¿«
+    // 1. Ï†ïÏ†ê Îç∞Ïù¥ÌÑ∞ Ï†ïÏùò
     vector<VTXMESH> vertices;
 
     const XMFLOAT3 LEFTDOWNFRONT = { -1.f, -1.f, -1.f };
@@ -24,13 +24,13 @@ HRESULT CVIBuffer_Skybox::Initialize_Prototype(ID3D12GraphicsCommandList* _comma
     const XMFLOAT3 RIGHTUPFRONT = { +1.f, +1.f, -1.f };
     const XMFLOAT3 RIGHTUPBACK = { +1.f, +1.f, +1.f };
 
-    // --- ªÛ¥‹ (Upper) 4∞≥ ¡§¡° ---
+    // --- ÏÉÅÎã® (Upper) 4Í∞ú Ï†ïÏ†ê ---
     vertices.emplace_back(LEFTUPBACK, XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f));
     vertices.emplace_back(RIGHTUPBACK, XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f));
     vertices.emplace_back(RIGHTUPFRONT, XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f));
     vertices.emplace_back(LEFTUPFRONT, XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f));
 
-    // --- «œ¥‹ (Down) 4∞≥ ¡§¡° ---    
+    // --- ÌïòÎã® (Down) 4Í∞ú Ï†ïÏ†ê ---    
     vertices.emplace_back(LEFTDOWNBACK, XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f));
     vertices.emplace_back(RIGHTDOWNBACK, XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f));
     vertices.emplace_back(RIGHTDOWNFRONT, XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f));
@@ -42,17 +42,17 @@ HRESULT CVIBuffer_Skybox::Initialize_Prototype(ID3D12GraphicsCommandList* _comma
     m_iVertices = vertices.size();
     _uint vertexBufferSize = m_iVertexStride * m_iVertices;
 
-    // ∫Œ∏¿« «Ô∆€ «‘ºˆ∏¶ ¿ÃøÎ«ÿ Vertex Buffer ª˝º∫
+    // Î∂ÄÎ™®Ïùò Ìó¨Ìçº Ìï®ÏàòÎ•º Ïù¥Ïö©Ìï¥ Vertex Buffer ÏÉùÏÑ±
     if (FAILED(Create_Buffer(_commandList, &m_pVertexBuffer, &m_pVertexUploadBuffer,
         vertexBufferSize, vertices.data(), false)))
         return E_FAIL;
 
-    // ∫‰ º≥¡§
+    // Î∑∞ ÏÑ§Ï†ï
     m_vertexBufferView.BufferLocation = m_pVertexBuffer->GetGPUVirtualAddress();
     m_vertexBufferView.StrideInBytes = m_iVertexStride;
     m_vertexBufferView.SizeInBytes = vertexBufferSize;
 
-    // 2. ¿Œµ¶Ω∫ µ•¿Ã≈Õ ¡§¿«
+    // 2. Ïù∏Îç±Ïä§ Îç∞Ïù¥ÌÑ∞ Ï†ïÏùò
     vector<_uint> indices;
     indices.push_back(0); indices.push_back(2); indices.push_back(1);
     indices.push_back(0); indices.push_back(3); indices.push_back(2);
@@ -75,12 +75,12 @@ HRESULT CVIBuffer_Skybox::Initialize_Prototype(ID3D12GraphicsCommandList* _comma
     m_iIndices = indices.size();
     _uint indexBufferSize = sizeof(_uint) * m_iIndices;
 
-    // ∫Œ∏¿« «Ô∆€ «‘ºˆ ¿Á»∞øÎ (Index Bufferµµ Buffer¿Ãπ«∑Œ µø¿œ«‘)
+    // Î∂ÄÎ™®Ïùò Ìó¨Ìçº Ìï®Ïàò Ïû¨ÌôúÏö© (Index BufferÎèÑ BufferÏù¥ÎØÄÎ°ú ÎèôÏùºÌï®)
     if (FAILED(Create_Buffer(_commandList, &m_pIndexBuffer, &m_pIndexUploadBuffer,
         indexBufferSize, indices.data(), true)))
         return E_FAIL;
 
-    // ¿Œµ¶Ω∫ ∫‰ º≥¡§
+    // Ïù∏Îç±Ïä§ Î∑∞ ÏÑ§Ï†ï
     m_indexBufferView.BufferLocation = m_pIndexBuffer->GetGPUVirtualAddress();
     m_indexBufferView.Format = m_eIndexFormat;
     m_indexBufferView.SizeInBytes = indexBufferSize;

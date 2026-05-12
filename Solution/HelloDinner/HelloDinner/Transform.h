@@ -36,7 +36,7 @@ public:
 		return &m_WorldMatrix;
 	}
 
-	// 1ÀÎÄª Ä«¸Ş¶ó Àü¿ë ÇÔ¼öÀÓ. ´Ù¸¥ °÷ »ç¿ë Àı´ë ±İÁö!
+	// 1ì¸ì¹­ ì¹´ë©”ë¼ ì „ìš© í•¨ìˆ˜ì„. ë‹¤ë¥¸ ê³³ ì‚¬ìš© ì ˆëŒ€ ê¸ˆì§€!
 	void Set_WorldMatrix(_float4x4 _Matrix) {
 		m_WorldMatrix = _Matrix;
 	}
@@ -64,11 +64,11 @@ public:
 
 	void LookAt(_fvector vAt);
 
-	/* ±âÁ¸ È¸ÀüÀ» ±âÁØÀ¸·Î Ãß°¡·Î Á¤ÇØÁø ¼Óµµ·Î È¸ÀüÇÑ´Ù. */
+	/* ê¸°ì¡´ íšŒì „ì„ ê¸°ì¤€ìœ¼ë¡œ ì¶”ê°€ë¡œ ì •í•´ì§„ ì†ë„ë¡œ íšŒì „í•œë‹¤. */
 	void Turn(_fvector vAxis, _float fTimeDelta);
-	/* Ç×µî»óÅÂ¸¦ ±âÁØÀ¸·Î ÁöÁ¤ÇÑ °¢µµ·Î È¸ÀüÇÑ´Ù. */
+	/* í•­ë“±ìƒíƒœë¥¼ ê¸°ì¤€ìœ¼ë¡œ ì§€ì •í•œ ê°ë„ë¡œ íšŒì „í•œë‹¤. */
 	void Rotation(_fvector vAxis, _float fRadian);
-	/* Ç×µî»óÅÂ ±âÁØ ÄõÅÍ´Ï¾ğ È¸Àü */
+	/* í•­ë“±ìƒíƒœ ê¸°ì¤€ ì¿¼í„°ë‹ˆì–¸ íšŒì „ */
 	void RotationQuaternion(_float fX, _float fY, _float fZ);
 
 	void EulerRotationQuaternion(_float fX, _float fY, _float fZ);

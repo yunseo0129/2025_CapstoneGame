@@ -15,11 +15,11 @@ private:
 public:
     HRESULT Initialize(HINSTANCE hInstance, HWND hParent);
 
-    // ¸Å ÇÁ·¹ÀÓ È£Ãâ. ÅØ½ºÆ®/ÁøÇà·ü °»½Å + InvalidateRect·Î ´Ù½Ã ±×¸®±â ¿äÃ»
-    // fProgress: 0.0 ~ 1.0 ¹üÀ§. À½¼ö¸é ÁøÇà¹Ù ¹ÌÇ¥½Ã
+    // ë§¤ í”„ë ˆì„ í˜¸ì¶œ. í…ìŠ¤íŠ¸/ì§„í–‰ë¥  ê°±ì‹  + InvalidateRectë¡œ ë‹¤ì‹œ ê·¸ë¦¬ê¸° ìš”ì²­
+    // fProgress: 0.0 ~ 1.0 ë²”ìœ„. ìŒìˆ˜ë©´ ì§„í–‰ë°” ë¯¸í‘œì‹œ
     void   Update(const _tchar* pText, _float fProgress = -1.f);
 
-    // À©µµ¿ì ´İ±â
+    // ìœˆë„ìš° ë‹«ê¸°
     void   Close();
 
 private:

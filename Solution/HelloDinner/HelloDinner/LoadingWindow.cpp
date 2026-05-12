@@ -13,7 +13,7 @@ HRESULT CLoadingWindow::Initialize(HINSTANCE hInstance, HWND hParent)
 {
     m_hInstance = hInstance;
 
-    // À©µµ¿ì Å¬·¡½º µî·Ï (ÀÌ¹Ì µî·ÏµÇ¾î ÀÖ¾îµµ GetLastError·Î È®ÀÎÇÏÁö ¾Ê°í ±×³É ÁøÇà)
+    // ìœˆë„ìš° í´ëž˜ìŠ¤ ë“±ë¡ (ì´ë¯¸ ë“±ë¡ë˜ì–´ ìžˆì–´ë„ GetLastErrorë¡œ í™•ì¸í•˜ì§€ ì•Šê³  ê·¸ëƒ¥ ì§„í–‰)
     WNDCLASSEX wcex = {};
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.style = CS_HREDRAW | CS_VREDRAW;
@@ -24,11 +24,11 @@ HRESULT CLoadingWindow::Initialize(HINSTANCE hInstance, HWND hParent)
     wcex.lpszClassName = WND_CLASS_NAME;
     RegisterClassEx(&wcex);
 
-    // ºÎ¸ð À©µµ¿ì(¶Ç´Â È­¸é) Áß¾Ó ÁÂÇ¥ °è»ê
+    // ë¶€ëª¨ ìœˆë„ìš°(ë˜ëŠ” í™”ë©´) ì¤‘ì•™ ì¢Œí‘œ ê³„ì‚°
     RECT rcParent;
     if (hParent && GetWindowRect(hParent, &rcParent))
     {
-        // ºÎ¸ð ÁÂÇ¥ ±×´ë·Î »ç¿ë
+        // ë¶€ëª¨ ì¢Œí‘œ ê·¸ëŒ€ë¡œ ì‚¬ìš©
     }
     else
     {
@@ -39,14 +39,14 @@ HRESULT CLoadingWindow::Initialize(HINSTANCE hInstance, HWND hParent)
     int x = (rcParent.left + rcParent.right) / 2 - WIDTH / 2;
     int y = (rcParent.top + rcParent.bottom) / 2 - HEIGHT / 2;
 
-    // ÆË¾÷ ½ºÅ¸ÀÏ (Å¸ÀÌÆ²¹Ù ¾øÀ½, Ç×»ó À§)
+    // íŒì—… ìŠ¤íƒ€ì¼ (íƒ€ì´í‹€ë°” ì—†ìŒ, í•­ìƒ ìœ„)
     m_hWnd = CreateWindowEx(
         WS_EX_TOPMOST,
         WND_CLASS_NAME,
         TEXT("Loading"),
         WS_POPUP | WS_BORDER | WS_VISIBLE,
         x, y, WIDTH, HEIGHT,
-        nullptr,    // ºÎ¸ð X (Å¾·¹º§·Î ¶ç¿ò)
+        nullptr,    // ë¶€ëª¨ X (íƒ‘ë ˆë²¨ë¡œ ë„ì›€)
         nullptr,
         hInstance,
         this);
@@ -54,7 +54,7 @@ HRESULT CLoadingWindow::Initialize(HINSTANCE hInstance, HWND hParent)
     if (nullptr == m_hWnd)
         return E_FAIL;
 
-    // WndProc¿¡¼­ this Æ÷ÀÎÅÍ È¸¼öÇÒ ¼ö ÀÖµµ·Ï GWLP_USERDATA¿¡ ÀúÀå
+    // WndProcì—ì„œ this í¬ì¸í„° íšŒìˆ˜í•  ìˆ˜ ìžˆë„ë¡ GWLP_USERDATAì— ì €ìž¥
     SetWindowLongPtr(m_hWnd, GWLP_USERDATA, (LONG_PTR)this);
 
     UpdateWindow(m_hWnd);
@@ -67,7 +67,7 @@ void CLoadingWindow::Update(const _tchar* pText, _float fProgress)
         lstrcpyn(m_szText, pText, MAX_PATH);
     m_fProgress = fProgress;
 
-    // WM_PAINT Æ®¸®°Å
+    // WM_PAINT íŠ¸ë¦¬ê±°
     if (m_hWnd)
         InvalidateRect(m_hWnd, nullptr, FALSE);
 }
@@ -93,7 +93,7 @@ LRESULT CALLBACK CLoadingWindow::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
         return 0;
 
     case WM_DESTROY:
-        // ¸ÞÀÎ À©µµ¿ì°¡ ¾Æ´Ï¹Ç·Î PostQuitMessage È£Ãâ ¾È ÇÔ
+        // ë©”ì¸ ìœˆë„ìš°ê°€ ì•„ë‹ˆë¯€ë¡œ PostQuitMessage í˜¸ì¶œ ì•ˆ í•¨
         return 0;
     }
 
@@ -108,26 +108,26 @@ void CLoadingWindow::OnPaint(HWND hWnd)
     RECT rc;
     GetClientRect(hWnd, &rc);
 
-    // ---- ¹è°æ ----
+    // ---- ë°°ê²½ ----
     HBRUSH hBgBrush = CreateSolidBrush(RGB(40, 44, 52));
     FillRect(hdc, &rc, hBgBrush);
     DeleteObject(hBgBrush);
 
-    // ---- ÅØ½ºÆ® ----
+    // ---- í…ìŠ¤íŠ¸ ----
     SetBkMode(hdc, TRANSPARENT);
     SetTextColor(hdc, RGB(220, 220, 220));
 
     HFONT hFont = CreateFont(
         20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
         DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-        DEFAULT_QUALITY, DEFAULT_PITCH, TEXT("¸¼Àº °íµñ"));
+        DEFAULT_QUALITY, DEFAULT_PITCH, TEXT("ë§‘ì€ ê³ ë”•"));
     HFONT hOld = (HFONT)SelectObject(hdc, hFont);
 
     RECT rcText = rc;
     rcText.bottom = rc.bottom - 50;
     DrawText(hdc, m_szText, -1, &rcText, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
-    // ---- ÁøÇà¹Ù (fProgress >= 0ÀÏ ¶§¸¸) ----
+    // ---- ì§„í–‰ë°” (fProgress >= 0ì¼ ë•Œë§Œ) ----
     if (m_fProgress >= 0.f)
     {
         const int barMargin = 30;
@@ -135,12 +135,12 @@ void CLoadingWindow::OnPaint(HWND hWnd)
         RECT rcBarBg = {rc.left + barMargin, rc.bottom - 35,
             rc.right - barMargin, rc.bottom - 35 + barHeight};
 
-        // ¹è°æ
+        // ë°°ê²½
         HBRUSH hBarBg = CreateSolidBrush(RGB(80, 80, 80));
         FillRect(hdc, &rcBarBg, hBarBg);
         DeleteObject(hBarBg);
 
-        // Ã¤¿öÁø ºÎºÐ
+        // ì±„ì›Œì§„ ë¶€ë¶„
         RECT rcBar = rcBarBg;
         int width = rcBar.right - rcBar.left;
         _float fProg = (m_fProgress > 1.f) ? 1.f : m_fProgress;

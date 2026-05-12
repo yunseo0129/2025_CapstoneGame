@@ -60,10 +60,10 @@ void CKetchup_Gun::Render(ID3D12GraphicsCommandList* _commandList)
 	XMStoreFloat4x4(&WorldMatrix, m_pTransformCom->Get_WorldMatrix());
 	_commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &m_WorldMatrix, 0);
 
-	// 2. PSO ¼³Á¤
+	// 2. PSO ì„¤ì •
 	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::DEFAULT);
 
-	// 3. ¸Ş½¬º° ·»´õ¸µ (¸ÓÆ¼¸®¾ó ¹ÙÀÎµù + DrawIndexedInstanced)
+	// 3. ë©”ì‰¬ë³„ ë Œë”ë§ (ë¨¸í‹°ë¦¬ì–¼ ë°”ì¸ë”© + DrawIndexedInstanced)
 	_uint iNumMeshes = m_pModelCom->Get_NumMeshes();
 	for (_uint i = 0; i < iNumMeshes; ++i)
 	{
@@ -78,10 +78,10 @@ void CKetchup_Gun::ShadowRender(ID3D12GraphicsCommandList* _commandList)
 	XMStoreFloat4x4(&WorldMatrix, m_pTransformCom->Get_WorldMatrix());
 	_commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &m_WorldMatrix, 0);
 
-	// 2. PSO ¼³Á¤
+	// 2. PSO ì„¤ì •
 	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::SHADOW_STATIC);
 
-	// 3. ¸Ş½¬º° ·»´õ¸µ (¸ÓÆ¼¸®¾ó ¹ÙÀÎµù + DrawIndexedInstanced)
+	// 3. ë©”ì‰¬ë³„ ë Œë”ë§ (ë¨¸í‹°ë¦¬ì–¼ ë°”ì¸ë”© + DrawIndexedInstanced)
 	_uint iNumMeshes = m_pModelCom->Get_NumMeshes();
 	for (_uint i = 0; i < iNumMeshes; ++i)
 	{
