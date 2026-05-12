@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Bounding.h"
 class CBounding_OBB final : public CBounding

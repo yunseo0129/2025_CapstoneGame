@@ -1,4 +1,4 @@
-#include "VIBuffer_Skybox.h"
+﻿#include "VIBuffer_Skybox.h"
 
 CVIBuffer_Skybox::CVIBuffer_Skybox(EngineContext* _pContext)
     : CVIBuffer(_pContext)

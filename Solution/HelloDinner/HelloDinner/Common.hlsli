@@ -1,30 +1,30 @@
-// Áßº¹ Á¤ÀÇ ¹æÁö
+ï»¿// ì¤‘ë³µ ì •ì˜ ë°©ì§€
 #ifndef __COMMON_HLSLI__
 #define __COMMON_HLSLI__
 
 // --------------------------------------------------------
-//  Constant Buffers (»ó¼ö ¹öÆÛ)
+//  Constant Buffers (ìƒìˆ˜ ë²„í¼)
 // --------------------------------------------------------
-// b0 : camera Çà·Ä Á¤º¸ (¸Å ÇÁ·¹ÀÓ °»½Å)
+// b0 : camera í–‰ë ¬ ì •ë³´ (ë§¤ í”„ë ˆì„ ê°±ì‹ )
 cbuffer cbTransform : register(b0)
 {
-    row_major matrix g_matView; // ºä Çà·Ä
-    row_major matrix g_matProj; // Åõ¿µ Çà·Ä
-    float3 g_vCamPosWS; // ¿ùµå °ø°£ Ä«¸Ş¶ó À§Ä¡
+    row_major matrix g_matView; // ë·° í–‰ë ¬
+    row_major matrix g_matProj; // íˆ¬ì˜ í–‰ë ¬
+    float3 g_vCamPosWS; // ì›”ë“œ ê³µê°„ ì¹´ë©”ë¼ ìœ„ì¹˜
 };
-// b1 : Object Çà·Ä Á¤º¸ (¿ÀºêÁ§Æ®¸¶´Ù °»½Å)
+// b1 : Object í–‰ë ¬ ì •ë³´ (ì˜¤ë¸Œì íŠ¸ë§ˆë‹¤ ê°±ì‹ )
 cbuffer cbObject : register(b1)
 {
-    row_major matrix g_matWorld; // ¿ùµå Çà·Ä
+    row_major matrix g_matWorld; // ì›”ë“œ í–‰ë ¬
 };
 
-// b2 : Bone Matrices (¾Ö´Ï¸ŞÀÌ¼Ç ¸Ş½¬ Àü¿ë)
+// b2 : Bone Matrices (ì• ë‹ˆë©”ì´ì…˜ ë©”ì‰¬ ì „ìš©)
 cbuffer cbBoneMatrices : register(b2)
 {
     row_major matrix g_BoneMatrices[512];
 };
 
-// b3 : Á¶¸í Á¤º¸ (¸Å ÇÁ·¹ÀÓ °»½Å)
+// b3 : ì¡°ëª… ì •ë³´ (ë§¤ í”„ë ˆì„ ê°±ì‹ )
 cbuffer LightParams : register(b3)
 {
     float4 g_vLightDir;
@@ -40,18 +40,18 @@ cbuffer LightParams : register(b3)
 // ------------------------------------------------
 // Textures & Samplers
 // ------------------------------------------------
-// t0 ~ t1 : ÅØ½ºÃ³ Á¤º¸
+// t0 ~ t1 : í…ìŠ¤ì²˜ ì •ë³´
 Texture2D g_DiffuseTextures : register(t0);
 Texture2D g_NormalTextures : register(t1);
 Texture2D g_ShadowMap : register(t2);
-// t0, space1 : Å¥ºê¸Ê ÅØ½ºÃ³ (Skybox Àü¿ë, º°µµ space »ç¿ë)
+// t0, space1 : íë¸Œë§µ í…ìŠ¤ì²˜ (Skybox ì „ìš©, ë³„ë„ space ì‚¬ìš©)
 TextureCube g_DiffuseTexCube : register(t0);
 
 // Static Samplers
-SamplerState g_samWrap : register(s0); // ÀÏ¹İ 3D
+SamplerState g_samWrap : register(s0); // ì¼ë°˜ 3D
 SamplerState g_samClamp : register(s1); // UI
-SamplerState g_samPoint : register(s2); // µµÆ®
-SamplerState g_samAnisotropic : register(s3); // ÁöÇü
+SamplerState g_samPoint : register(s2); // ë„íŠ¸
+SamplerState g_samAnisotropic : register(s3); // ì§€í˜•
 // ------------------------------------------------
 
 // --------------------------------------------------------
@@ -59,14 +59,14 @@ SamplerState g_samAnisotropic : register(s3); // ÁöÇü
 // --------------------------------------------------------
 struct VS_OUT
 {
-    float4 vPosition : SV_POSITION; // È­¸é ÁÂÇ¥
-    float3 vWorldPos : TEXCOORD1; // ¿ùµå ÁÂÇ¥ (Á¶¸í °è»ê¿ë)
-    float3 vNormal : NORMAL; // ³ë¸Ö
+    float4 vPosition : SV_POSITION; // í™”ë©´ ì¢Œí‘œ
+    float3 vWorldPos : TEXCOORD1; // ì›”ë“œ ì¢Œí‘œ (ì¡°ëª… ê³„ì‚°ìš©)
+    float3 vNormal : NORMAL; // ë…¸ë©€
     float2 vUV : TEXCOORD0; // UV
     float3 vBinormal : BINORMAL; 
     float3 vTangent : TANGENT;
     
-    float4 ShadowPos : TEXCOORD2; // ±×¸²ÀÚ ¸Ê¿ë ÁÂÇ¥ (ºûÀÇ ½ÃÁ¡¿¡¼­ º¯È¯µÈ À§Ä¡)
+    float4 ShadowPos : TEXCOORD2; // ê·¸ë¦¼ì ë§µìš© ì¢Œí‘œ (ë¹›ì˜ ì‹œì ì—ì„œ ë³€í™˜ëœ ìœ„ì¹˜)
 };
 
 // --------------------------------------------------------
@@ -79,27 +79,27 @@ float CalcShadowFactor(float4 shadowPos)
         shadowPos.y < 0.0f || shadowPos.y > 1.0f ||
         shadowPos.z < 0.0f || shadowPos.z > 1.0f)
     {
-        return 1.0f; // ±×¸²ÀÚ ¸Ê ¹üÀ§ ¹Û, ±×¸²ÀÚ ¾øÀ½
+        return 1.0f; // ê·¸ë¦¼ì ë§µ ë²”ìœ„ ë°–, ê·¸ë¦¼ì ì—†ìŒ
     }
     
     float shadowMapDepth = g_ShadowMap.Sample(g_samClamp, shadowPos.xy).r;
     
     float currentDepth = shadowPos.z;
     
-    float bias = 0.00001f; // ±×¸²ÀÚ °æ°è¼± ±ôºıÀÓ ¹æÁö¿ë ¹ÙÀÌ¾î½º
+    float bias = 0.00001f; // ê·¸ë¦¼ì ê²½ê³„ì„  ê¹œë¹¡ì„ ë°©ì§€ìš© ë°”ì´ì–´ìŠ¤
     
     if (currentDepth - bias > shadowMapDepth)
     {
-        return 0.5f; // ±×¸²ÀÚ ÀÖÀ½ (0.5´Â ¹İÅõ¸í ±×¸²ÀÚ È¿°ú)
+        return 0.5f; // ê·¸ë¦¼ì ìˆìŒ (0.5ëŠ” ë°˜íˆ¬ëª… ê·¸ë¦¼ì íš¨ê³¼)
     }
     
-    return 1.0f; // ±×¸²ÀÚ ¾øÀ½
+    return 1.0f; // ê·¸ë¦¼ì ì—†ìŒ
 }
 
 // --------------------------------------------------------
 // Common Pixel Shader (Lit)
 // --------------------------------------------------------
-// ÀÏ¹İ/¾Ö´Ï¸ŞÀÌ¼Ç ¸Ş½¬ °øÅë »ç¿ë
+// ì¼ë°˜/ì• ë‹ˆë©”ì´ì…˜ ë©”ì‰¬ ê³µí†µ ì‚¬ìš©
 float4 PS_Main_Lit(VS_OUT In) : SV_TARGET
 {
     float4 normalMapColor = g_NormalTextures.Sample(g_samWrap, In.vUV);
@@ -109,13 +109,13 @@ float4 PS_Main_Lit(VS_OUT In) : SV_TARGET
     
     float3 vNormal = float3(x, y, z);
 
-    // 2. World Normal º¯È¯
+    // 2. World Normal ë³€í™˜
     float3x3 matTBN = float3x3(normalize(In.vTangent),
                                normalize(In.vBinormal),
                                normalize(In.vNormal));
     float3 vWorldNormal = normalize(mul(vNormal, matTBN));
 
-    // 3. ¶óÀÌÆÃ
+    // 3. ë¼ì´íŒ…
     float3 vL = normalize(g_vLightDir.xyz * -1.0f);
     float fDiffuseIdx = max(dot(In.vNormal, vL), 0.0f);
 
@@ -124,7 +124,7 @@ float4 PS_Main_Lit(VS_OUT In) : SV_TARGET
     float3 vDiffuse = diffuseColor.rgb * (g_vLightDiffuse.rgb * fDiffuseIdx);
     float3 vAmbient = diffuseColor.rgb * g_vLightAmbient.rgb;
 
-    //±×¸²ÀÚ
+    //ê·¸ë¦¼ì
     float shadowFactor = CalcShadowFactor(In.ShadowPos);
     vDiffuse *= shadowFactor;
 

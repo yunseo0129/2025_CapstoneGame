@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "PartObj.h"
 
 class CKetchup_Gun final : public CPartObj

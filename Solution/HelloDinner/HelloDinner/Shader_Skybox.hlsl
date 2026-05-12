@@ -1,4 +1,4 @@
-#include "Common.hlsli"
+Ôªø#include "Common.hlsli"
 
 struct VS_IN_STATIC
 {
@@ -14,7 +14,7 @@ struct VS_OUT_SKYBOX
     float3 vTexCoord : TEXCOORD0;
 };
 
-// SkyboxøÎ VS
+// SkyboxÏö© VS
 VS_OUT_SKYBOX VS_Main_Skybox(VS_IN_STATIC In)
 {
     VS_OUT_SKYBOX Out = (VS_OUT_SKYBOX) 0;
@@ -28,7 +28,7 @@ VS_OUT_SKYBOX VS_Main_Skybox(VS_IN_STATIC In)
     float4 vWorldPos = mul(float4(In.vPos, 1.0f), g_matWorld);
     float4 vViewPos = mul(vWorldPos, viewNoTranslation);
     
-    // .xyww∏¶ ≈Î«ÿ Z∞™¿ª π´¡∂∞« √÷¥Î ±Ì¿Ã(1.0)∑Œ ∏∏µÍ
+    // .xywwÎ•º ÌÜµÌï¥ ZÍ∞íÏùÑ Î¨¥Ï°∞Í±¥ ÏµúÎåÄ ÍπäÏù¥(1.0)Î°ú ÎßåÎì¶
     Out.vPosition = mul(vViewPos, g_matProj).xyww;
     Out.vTexCoord = In.vPos;
     

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "GameObject.h"
 #include "Collider.h"
 class CObj_CollisionTest final : public CGameObject

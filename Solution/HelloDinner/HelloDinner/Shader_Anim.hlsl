@@ -1,4 +1,4 @@
-#include "Common.hlsli"
+ï»¿#include "Common.hlsli"
 
 struct VS_IN_ANIM
 {
@@ -10,7 +10,7 @@ struct VS_IN_ANIM
     float4 vBoneWeights : BLENDWEIGHT;
 };
 
-// ¾Ö´Ï¸ŞÀÌ¼Ç ¹°Ã¼¿ë VS
+// ì• ë‹ˆë©”ì´ì…˜ ë¬¼ì²´ìš© VS
 VS_OUT VS_Main_Anim(VS_IN_ANIM In)
 {
     VS_OUT Out = (VS_OUT) 0;
@@ -48,7 +48,7 @@ VS_SHADOW_OUT VS_Main_Shadow(VS_IN_ANIM In)
 {
     VS_SHADOW_OUT vout = (VS_SHADOW_OUT) 0;
 
-    // ½ºÅ²´× ¿¬»ê (Á¤Á¡ À§Ä¡ = º» Çà·Ä * °¡ÁßÄ¡)
+    // ìŠ¤í‚¨ë‹ ì—°ì‚° (ì •ì  ìœ„ì¹˜ = ë³¸ í–‰ë ¬ * ê°€ì¤‘ì¹˜)
     float4x4 matBone = g_BoneMatrices[In.vBoneIndices.x] * In.vBoneWeights.x;
     matBone += g_BoneMatrices[In.vBoneIndices.y] * In.vBoneWeights.y;
     matBone += g_BoneMatrices[In.vBoneIndices.z] * In.vBoneWeights.z;
@@ -58,7 +58,7 @@ VS_SHADOW_OUT VS_Main_Shadow(VS_IN_ANIM In)
 
     float4 vWorldPos = mul(float4(In.vPos, 1.f), matWorldAnim);
     
-    // ºûÀÇ ½ÃÁ¡À¸·Î º¯È¯
+    // ë¹›ì˜ ì‹œì ìœ¼ë¡œ ë³€í™˜
     float4 posV = mul(vWorldPos, g_matView);
     vout.Pos = mul(posV, g_matProj);
 

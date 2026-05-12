@@ -1,4 +1,4 @@
-#include "Timer.h"
+﻿#include "Timer.h"
 
 CTimer::CTimer(void)
 	: m_fTimeDelta(0.f)

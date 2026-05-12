@@ -1,4 +1,4 @@
-#include "Common.hlsli"
+﻿#include "Common.hlsli"
 
 struct VS_IN_STATIC
 {
@@ -8,7 +8,7 @@ struct VS_IN_STATIC
     float3 vTangent : TANGENT;
 };
 
-// �Ϲ� ��ü�� VS
+// 일반 물체용 VS
 VS_OUT VS_Main_Static(VS_IN_STATIC In)
 {
     VS_OUT Out = (VS_OUT) 0;
@@ -35,7 +35,7 @@ VS_OUT VS_Main_Static(VS_IN_STATIC In)
 
 struct VS_SHADOW_OUT {
     float4 Pos : SV_POSITION;
-    float2 Tex : TEXCOORD0; // ���� Ŭ���ο� �ؽ�ó ��ǥ
+    float2 Tex : TEXCOORD0; // 알파 클리핑용 텍스처 좌표
 };
 
 VS_SHADOW_OUT VS_Main_Shadow(VS_IN_STATIC vin)
@@ -45,13 +45,13 @@ VS_SHADOW_OUT VS_Main_Shadow(VS_IN_STATIC vin)
     // 1. Local Space -> World Space
     float4 posW = mul(float4(vin.vPos, 1.0f), g_matWorld);
 
-    // 2. World Space -> Light View Space (���� ����)
+    // 2. World Space -> Light View Space (빛의 시점)
     float4 posV = mul(posW, g_matView);
 
-    // 3. Light View Space -> Light Projection Space (���� ȭ�� ����)
+    // 3. Light View Space -> Light Projection Space (빛의 화면 공간)
     vout.Pos = mul(posV, g_matProj);
 
-    // �ؽ�ó ��ǥ ���� (���� Ŭ���ο�)
+    // 텍스처 좌표 전달 (알파 클리핑용)
     vout.Tex = vin.vUV;
 
     return vout;

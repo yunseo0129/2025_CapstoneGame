@@ -1,4 +1,4 @@
-#include "Component.h"
+﻿#include "Component.h"
 #include "GameInstance.h"
 
 CComponent::CComponent(EngineContext* _context)

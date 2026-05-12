@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 // 레벨 로딩 클래스 변경하면 옮길 것들
 #include "Base.h"

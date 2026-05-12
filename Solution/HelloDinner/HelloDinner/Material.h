@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Base.h"
 #include "Texture.h" // 앞서 만드신 CTexture 헤더 포함
 
