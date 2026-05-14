@@ -43,8 +43,12 @@ public:
 		return m_xmf4x4Projection;
 	}
 
-	static void DebugPrintMatrix ( const char* name , const XMFLOAT4X4& m );
+    // Frustum Culling
+    void  Update_ViewProjection();
+    _bool IsSphereInFrustum(const _float3& vCenter, _float fRadius) const;
 
+    // DebugRendering을 위한 디버그 출력 함수
+	static void DebugPrintMatrix ( const char* name , const XMFLOAT4X4& m );
 	static void DebugPrintFloat3 ( const char* name , const XMFLOAT3& v );
 
 protected:
@@ -68,6 +72,10 @@ private:
 	XMFLOAT4X4						m_xmf4x4View;
 	XMFLOAT4X4						m_xmf4x4Projection;
 	XMFLOAT3						m_xmf3Position;
+
+    // Frustum Culling
+    DirectX::BoundingFrustum    m_FrustumWorld;
+    _bool                        m_bFrustumValid = false;
 
 public:
 	

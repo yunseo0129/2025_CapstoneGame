@@ -90,8 +90,9 @@ void CGameInstance::Update_Engine(_float fTimeDelta)
 	m_pCollision_Manager->Update_Collision();
 	m_pObject_Manager->Update(fTimeDelta);
 	m_pCollision_Manager->Clear_CollisionGroup();
-	m_pObject_Manager->Late_Update(fTimeDelta);
 	m_pLevel_Manager->Update(fTimeDelta);
+    m_pLevel_Manager->Reset_CullStats();
+    m_pObject_Manager->Late_Update(fTimeDelta);
 }
 
 HRESULT CGameInstance::Render_Begin(const _float4& vClearColor)
@@ -373,6 +374,51 @@ XMFLOAT4X4 CGameInstance::Get_CurrentCameraProjection()
 	if (nullptr == m_pLevel_Manager)
 		return XMFLOAT4X4();
 	return m_pLevel_Manager->Get_CurrentCameraProjection();
+}
+
+// ------------------------------------------------------------------------
+// Frustum Culling (위임만)
+// ------------------------------------------------------------------------
+_bool CGameInstance::IsSphereInFrustum(const _float3& vCenter, _float fRadius)
+{
+    if (nullptr == m_pLevel_Manager) return true;
+    return m_pLevel_Manager->IsSphereInFrustum(vCenter, fRadius);
+}
+
+void CGameInstance::Set_CullingEnabled(_bool b)
+{
+    if (nullptr == m_pLevel_Manager) return;
+    m_pLevel_Manager->Set_CullingEnabled(b);
+}
+
+_bool CGameInstance::Is_CullingEnabled() const
+{
+    if (nullptr == m_pLevel_Manager) return false;
+    return m_pLevel_Manager->Is_CullingEnabled();
+}
+
+void CGameInstance::Reset_CullStats()
+{
+    if (nullptr == m_pLevel_Manager) return;
+    m_pLevel_Manager->Reset_CullStats();
+}
+
+void CGameInstance::Add_CullStat(_bool bRendered)
+{
+    if (nullptr == m_pLevel_Manager) return;
+    m_pLevel_Manager->Add_CullStat(bRendered);
+}
+
+_uint CGameInstance::Get_CullStat_Total() const
+{
+    if (nullptr == m_pLevel_Manager) return 0;
+    return m_pLevel_Manager->Get_CullStat_Total();
+}
+
+_uint CGameInstance::Get_CullStat_Rendered() const
+{
+    if (nullptr == m_pLevel_Manager) return 0;
+    return m_pLevel_Manager->Get_CullStat_Rendered();
 }
 
 // ------------------------------------------------------------------------

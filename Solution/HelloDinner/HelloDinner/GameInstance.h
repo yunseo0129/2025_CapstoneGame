@@ -72,6 +72,15 @@ public: /* for.Level_Manager */
 	XMFLOAT4X4 Get_CurrentCameraView ();
 	XMFLOAT4X4 Get_CurrentCameraProjection ();
 
+public: /* for.Frustum_Culling */
+    _bool IsSphereInFrustum(const _float3& vCenter, _float fRadius);
+    void  Set_CullingEnabled(_bool b);
+    _bool Is_CullingEnabled() const;
+    void  Reset_CullStats();
+    void  Add_CullStat(_bool bRendered);
+    _uint Get_CullStat_Total()    const;
+    _uint Get_CullStat_Rendered() const;
+
 public: /* For.Prototype_Manager */
 	HRESULT Add_Prototype(_uint iLevelIndex, const _wstring& strPrototypeTag, class CBase* pPrototype);
 	class CBase* Clone_Prototype(Engine::PROTOTYPE eType, _uint iLevelIndex, const _wstring& strPrototypeTag, void* pArg = nullptr);

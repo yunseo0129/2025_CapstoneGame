@@ -65,12 +65,28 @@ void CMainApp::Update(_float fTimeDelta)
 
 	acc += fTimeDelta;
 
+    // culling 되는 지 확인용
+    if (m_pGameInstance->Key_Down(DIK_F1))
+        m_pGameInstance->Set_CullingEnabled(!m_pGameInstance->Is_CullingEnabled());
+
+
 	if (acc >= 1.f)
 	{
+        /*
 		acc -= 1.f;
 		std::wstring title = TEXT("HelloDinner / FPS : ") + std::to_wstring(FPS);
 		SetWindowText(g_hWnd, title.c_str());
 		FPS = 0;
+        */
+        acc -= 1.f;
+        const wchar_t* szCull = m_pGameInstance->Is_CullingEnabled() ? L"ON" : L"OFF";
+        _uint iRendered = m_pGameInstance->Get_CullStat_Rendered();
+        _uint iTotal = m_pGameInstance->Get_CullStat_Total();
+        std::wstring title = TEXT("HelloDinner / FPS : ") + std::to_wstring(FPS)
+            + TEXT("  /  Cull ") + szCull
+            + TEXT("  /  Map ") + std::to_wstring(iRendered) + TEXT("/") + std::to_wstring(iTotal);
+        SetWindowText(g_hWnd, title.c_str());
+        FPS = 0;
 	}
 
 	++FPS;

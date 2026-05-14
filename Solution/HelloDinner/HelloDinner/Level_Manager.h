@@ -24,12 +24,27 @@ public:
 	XMFLOAT4X4 Get_CurrentCameraView();
 	XMFLOAT4X4 Get_CurrentCameraProjection();
 	_int Get_CurrentLevelID() const { return m_iCurrentLevelID; }
+    class CCamera* Get_CurrentCamera();
+
+    // [Frustum Culling]
+    _bool IsSphereInFrustum(const _float3& vCenter, _float fRadius);
+    void  Set_CullingEnabled(_bool b) { m_bCullingEnabled = b; }
+    _bool Is_CullingEnabled() const { return m_bCullingEnabled; }
+    void  Reset_CullStats() { m_iCullTotal = 0; m_iCullRendered = 0; }
+    void  Add_CullStat(_bool bRendered);
+    _uint Get_CullStat_Total()    const { return m_iCullTotal; }
+    _uint Get_CullStat_Rendered() const { return m_iCullRendered; }
 
 private:
 	_int					m_iCurrentLevelID = { -1 };
 	class CLevel* m_pCurrentLevel = { nullptr };
 	class CGameInstance* m_pGameInstance = { nullptr };
 
+    _bool m_bCullingEnabled = true;
+    
+    // Culling 통계 Debug용
+    _uint m_iCullTotal = 0;
+    _uint m_iCullRendered = 0;
 public:
 	static CLevel_Manager* Create();
 	virtual void Free() override;

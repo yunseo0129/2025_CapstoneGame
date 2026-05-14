@@ -22,6 +22,7 @@ void CLevel::Update(_float fTimeDelta)
 		if (pCamera == nullptr)
 			continue;
 		pCamera->Update(fTimeDelta);
+        pCamera->Late_Update(fTimeDelta);
 	}
 	for (auto& pLight : m_pLights) {
 		if (pLight == nullptr)

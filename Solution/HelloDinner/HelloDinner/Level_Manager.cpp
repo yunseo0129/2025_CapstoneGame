@@ -1,6 +1,7 @@
 #include "Level_Manager.h"
 
 #include "Level.h"
+#include "Camera.h"
 #include "GameInstance.h"
 
 CLevel_Manager::CLevel_Manager()
@@ -74,6 +75,32 @@ XMFLOAT4X4 CLevel_Manager::Get_CurrentCameraProjection ()
 	if (nullptr != m_pCurrentLevel)
 		return m_pCurrentLevel->Get_CurrentCameraProjection();
 	return XMFLOAT4X4 ();
+}
+
+CCamera* CLevel_Manager::Get_CurrentCamera()
+{
+    if (nullptr == m_pCurrentLevel)
+        return nullptr;
+    return m_pCurrentLevel->Get_CurrentCamera();
+}
+
+_bool CLevel_Manager::IsSphereInFrustum(const _float3& vCenter, _float fRadius)
+{
+    if (!m_bCullingEnabled)
+        return true;  // OFF: 다 통과
+
+    CCamera* pCamera = Get_CurrentCamera();
+    if (nullptr == pCamera)
+        return true;  // 카메라 없으면 안전하게 통과
+
+    return pCamera->IsSphereInFrustum(vCenter, fRadius);
+}
+
+void CLevel_Manager::Add_CullStat(_bool bRendered)
+{
+    ++m_iCullTotal;
+    if (bRendered)
+        ++m_iCullRendered;
 }
 
 CLevel_Manager* CLevel_Manager::Create()

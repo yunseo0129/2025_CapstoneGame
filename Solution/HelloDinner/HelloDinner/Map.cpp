@@ -72,17 +72,21 @@ void CMap::Update(_float fTimeDelta)
 
 void CMap::Late_Update(_float fTimeDelta)
 {
-	_float3 c; _float r;
-	if (Get_WorldBoundingSphere(c, r))
-	{
-		char buf[256];
-		sprintf_s(buf, "Map sphere: center(%.2f, %.2f, %.2f), radius=%.2f\n",
-			c.x, c.y, c.z, r);
-		OutputDebugStringA(buf);
-	}
+    _bool bRender = true;
 
-	m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, this);
-	m_pGameInstance->Add_CollisionGroup(0, m_pColliderCom);	// enum으로 수정
+    _float3 vCenter; _float fRadius;
+    if (Get_WorldBoundingSphere(vCenter, fRadius))
+    {
+        bRender = m_pGameInstance->IsSphereInFrustum(vCenter, fRadius);
+    }
+
+    // 디버그 통계
+    m_pGameInstance->Add_CullStat(bRender);
+
+    if (bRender)
+        m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, this);
+
+    m_pGameInstance->Add_CollisionGroup(0, m_pColliderCom);
 }
 
 void CMap::Render(ID3D12GraphicsCommandList* _commandList)

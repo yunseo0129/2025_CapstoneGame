@@ -54,7 +54,7 @@ void CCamera::Update(_float fTimeDelta)
 
 void CCamera::Late_Update(_float fTimeDelta)
 {
-
+    Update_ViewProjection();
 }
 
 HRESULT CCamera::Render()
@@ -62,29 +62,52 @@ HRESULT CCamera::Render()
 	return S_OK;
 }
 
-HRESULT CCamera::Bind_CameraBuffer ( ID3D12GraphicsCommandList* pCmdList , RootParameterIndex _eIndex )
+void CCamera::Update_ViewProjection()
 {
-	_int iFrameIndex = m_pGameInstance->GetCurrentFrameIndex ();
+    m_bFrustumValid = false;
 
-	XMStoreFloat4x4(&m_xmf4x4View, m_pTransformCom->Get_WorldMatrix_Inverse());
-	memcpy(&m_pCbMappedCameras[iFrameIndex]->m_xmf4x4View, &m_xmf4x4View, sizeof (_float4x4));
+    XMStoreFloat4x4(&m_xmf4x4View, m_pTransformCom->Get_WorldMatrix_Inverse());
+    XMStoreFloat4x4(&m_xmf4x4Projection, XMMatrixPerspectiveFovLH(m_fFovy, m_fAspect, m_fNear, m_fFar));
+    XMStoreFloat3(&m_xmf3Position, m_pTransformCom->Get_State(CTransform::STATE_POSITION));
 
-	XMStoreFloat4x4(&m_xmf4x4Projection, XMMatrixPerspectiveFovLH(m_fFovy, m_fAspect, m_fNear, m_fFar));
-	memcpy(&m_pCbMappedCameras[iFrameIndex]->m_xmf4x4Proj, &m_xmf4x4Projection, sizeof(_float4x4));
-	
-	XMStoreFloat3(&m_xmf3Position, m_pTransformCom->Get_State(CTransform::STATE_POSITION));
-	memcpy(&m_pCbMappedCameras[iFrameIndex]->m_xmf3Position, &m_xmf3Position, sizeof(_float3));
+    // [Frustum Culling]
+    XMMATRIX matView = XMLoadFloat4x4(&m_xmf4x4View);
+    XMMATRIX matProj = XMLoadFloat4x4(&m_xmf4x4Projection);
 
-	// 디버그 출력
-	// DebugPrintMatrix ( "View" , xmf4x4View );
-	// DebugPrintMatrix ( "Proj" , xmf4x4Proj );
-	// DebugPrintFloat3 ( "CamPos" , xmf3Pos );
+    XMVECTOR det;
+    XMMATRIX matViewInv = XMMatrixInverse(&det, matView);
+    if (fabsf(XMVectorGetX(det)) < 1e-6f)
+        return;  // singular (첫 프레임 등) — 안전망
 
+    // projection 공간 frustum 생성 → view inverse로 world 공간으로 변환
+    BoundingFrustum::CreateFromMatrix(m_FrustumWorld, matProj);
+    m_FrustumWorld.Transform(m_FrustumWorld, matViewInv);
 
-	pCmdList->SetGraphicsRootConstantBufferView ( _eIndex , m_pCameraBuffers[iFrameIndex]->GetGPUVirtualAddress ());
+    m_bFrustumValid = true;
+}
 
+_bool CCamera::IsSphereInFrustum(const _float3& vCenter, _float fRadius) const
+{
+    if (!m_bFrustumValid)
+        return true;  // 안전망: 첫 프레임 등
 
-	return S_OK;
+    BoundingSphere sphere(vCenter, fRadius);
+    return m_FrustumWorld.Intersects(sphere);
+}
+
+HRESULT CCamera::Bind_CameraBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameterIndex _eIndex)
+{
+    _int iFrameIndex = m_pGameInstance->GetCurrentFrameIndex();
+
+    Update_ViewProjection();
+
+    memcpy(&m_pCbMappedCameras[iFrameIndex]->m_xmf4x4View, &m_xmf4x4View, sizeof(_float4x4));
+    memcpy(&m_pCbMappedCameras[iFrameIndex]->m_xmf4x4Proj, &m_xmf4x4Projection, sizeof(_float4x4));
+    memcpy(&m_pCbMappedCameras[iFrameIndex]->m_xmf3Position, &m_xmf3Position, sizeof(_float3));
+
+    pCmdList->SetGraphicsRootConstantBufferView(_eIndex, m_pCameraBuffers[iFrameIndex]->GetGPUVirtualAddress());
+
+    return S_OK;
 }
 
 void CCamera::DebugPrintMatrix ( const char* name , const XMFLOAT4X4& m )
