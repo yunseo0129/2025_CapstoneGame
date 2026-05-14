@@ -1,4 +1,4 @@
-﻿#include "ContainerObj.h"
+#include "ContainerObj.h"
 
 CContainerObj::CContainerObj(EngineContext* pContext)
 	: CGameObject{ pContext }

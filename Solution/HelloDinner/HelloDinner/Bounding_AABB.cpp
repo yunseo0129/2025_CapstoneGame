@@ -1,4 +1,4 @@
-﻿#include "Bounding_AABB.h"
+#include "Bounding_AABB.h"
 
 #include "Bounding_OBB.h"
 #include "Bounding_Sphere.h"

@@ -1,4 +1,4 @@
-﻿#include "VIBuffer_Cube.h"
+#include "VIBuffer_Cube.h"
 
 CVIBuffer_Cube::CVIBuffer_Cube(EngineContext* _pContext)
     : CVIBuffer(_pContext)

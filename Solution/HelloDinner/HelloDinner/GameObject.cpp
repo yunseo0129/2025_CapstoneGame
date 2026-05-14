@@ -1,4 +1,4 @@
-﻿#include "GameObject.h"
+#include "GameObject.h"
 #include "GameInstance.h"
 
 CGameObject::CGameObject(EngineContext* _pcontext)

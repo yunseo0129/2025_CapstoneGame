@@ -1,4 +1,4 @@
-﻿#include "Texture.h"
+#include "Texture.h"
 #include "GameInstance.h"
 #include "../HelloDinner/Common/DDSTextureLoader12.h"
 #include "../HelloDinner/Common/WICTextureLoader12.h"

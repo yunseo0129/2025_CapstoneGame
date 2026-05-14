@@ -1,4 +1,4 @@
-﻿#include "Map.h"
+#include "Map.h"
 #include "Transform.h"
 #include "GameInstance.h"
 #include "Model.h"

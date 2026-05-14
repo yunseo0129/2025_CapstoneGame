@@ -1,4 +1,4 @@
-﻿#include "Transform.h"
+#include "Transform.h"
 
 CTransform::CTransform(EngineContext* _pcontext)
 	: CComponent{ _pcontext }

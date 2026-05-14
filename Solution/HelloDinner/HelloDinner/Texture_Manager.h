@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 // Normal 텍스쳐 같은 NULL일 수 있는 텍스쳐의 기본값을 가지고 있는 클래스
 #include "Base.h"

@@ -1,7 +1,7 @@
 #pragma once
 #include "OverllapedEXP.h"
 
-// Å¬¶óÀÌ¾ğÆ® Á¤º¸¸¦ °ü¸®ÇÏ´Â Å¬·¡½º
+// í´ë¼ì´ì–¸íŠ¸ ì •ë³´ë¥¼ ê´€ë¦¬í•˜ëŠ” í´ë˜ìŠ¤
 class Session
 {
 	OverllapedEXP m_recv_over;
@@ -11,7 +11,7 @@ class Session
 		S_STATE		m_state;
 		SOCKET		m_socket;
 
-		// Player Á¤º¸
+		// Player ì •ë³´
 		PlayerInfo	m_player;
 		CameraInfo	m_camera;
 		

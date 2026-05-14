@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Prototype_Manager.h"
 #include "Renderer.h"
 

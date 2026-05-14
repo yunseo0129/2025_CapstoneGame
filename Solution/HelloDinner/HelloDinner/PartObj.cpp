@@ -1,4 +1,4 @@
-﻿#include "PartObj.h"
+#include "PartObj.h"
 
 CPartObj::CPartObj(EngineContext* pContext)
 	: CGameObject{ pContext }

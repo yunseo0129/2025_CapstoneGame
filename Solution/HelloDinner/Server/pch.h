@@ -11,7 +11,7 @@
 #include "PlayerInfo.h"
 #include "protocol.h"
 
-// À©¼Ó ¶óÀÌºê·¯¸®
+// ìœˆì† ë¼ì´ë¸ŒëŸ¬ë¦¬
 #pragma comment(lib, "WS2_32.lib")
 #pragma comment(lib, "MSWSock.lib")
 

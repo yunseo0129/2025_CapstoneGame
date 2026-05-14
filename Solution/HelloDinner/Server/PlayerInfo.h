@@ -1,22 +1,22 @@
 #pragma once
 #include "protocol.h"
 
-// Ä«¸Ş¶ó Á¤º¸ 
+// ì¹´ë©”ë¼ ì •ë³´ 
 struct CameraInfo
 {
-	float	positionX = 0.f;		// Ä«¸Ş¶ó(=ÇÃ·¹ÀÌ¾î) À§Ä¡
+	float	positionX = 0.f;		// ì¹´ë©”ë¼(=í”Œë ˆì´ì–´) ìœ„ì¹˜
 	float	positionY = 0.f;
 	float	positionZ = 0.f;
-	float	yaw = 0.f;				// ÁÂ¿ì È¸Àü (YÃà)
-	float	pitch = 0.f;			// »óÇÏ È¸Àü (XÃà)
-	float	lookX = 0.f;			// look º¤ÅÍ
+	float	yaw = 0.f;				// ì¢Œìš° íšŒì „ (Yì¶•)
+	float	pitch = 0.f;			// ìƒí•˜ íšŒì „ (Xì¶•)
+	float	lookX = 0.f;			// look ë²¡í„°
 	float	lookY = 0.f;
 	float	lookZ = 1.f;
 };
 
-// ÇÃ·¹ÀÌ¾î Á¤º¸ (Ä«¸Ş¶ó·ÎºÎÅÍ position, yaw¸¦ »ó¼Ó¹Ş´Â ±¸Á¶)
-// position ¡æ CameraInfo.positionXYZ »ç¿ë
-// rotationY(Yaw) ¡æ CameraInfo.yaw »ç¿ë
+// í”Œë ˆì´ì–´ ì •ë³´ (ì¹´ë©”ë¼ë¡œë¶€í„° position, yawë¥¼ ìƒì†ë°›ëŠ” êµ¬ì¡°)
+// position â†’ CameraInfo.positionXYZ ì‚¬ìš©
+// rotationY(Yaw) â†’ CameraInfo.yaw ì‚¬ìš©
 struct PlayerInfo
 {
 	int		id = -1;

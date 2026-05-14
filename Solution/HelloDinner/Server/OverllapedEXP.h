@@ -1,7 +1,7 @@
 #pragma once
 #include "pch.h"
 
-// OVERLAPPED ╠╦а╤ц╪©м WSABUF ╠╦а╤ц╪╦╕ х╝юЕго©╘ ╟Э╦╝го╢б е╛╥║╫╨
+// OVERLAPPED Й╣╛Л║╟Л╡╢Л≥─ WSABUF Й╣╛Л║╟Л╡╢К╔╪ М≥∙Л·╔М∙≤Л≈╛ Й╢─К╕╛М∙≤К┼■ М│╢К·≤Л┼╓
 class OverllapedEXP 
 {
 public:

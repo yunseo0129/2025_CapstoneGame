@@ -1,4 +1,4 @@
-﻿#include "GameInstance.h"
+#include "GameInstance.h"
 
 #include "Graphic_Device.h"
 #include "Renderer.h"

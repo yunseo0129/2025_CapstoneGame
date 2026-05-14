@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "MainApp.h"
 #include "GameInstance.h"
 #include <WindowsX.h>

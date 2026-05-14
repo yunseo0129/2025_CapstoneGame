@@ -1,4 +1,4 @@
-﻿#include "Shader_Manager.h"
+#include "Shader_Manager.h"
 
 IMPLEMENT_SINGLETON ( CShader_Manager )
 

@@ -1,4 +1,4 @@
-﻿#include "Layer.h"
+#include "Layer.h"
 #include "GameObject.h"
 
 CLayer::CLayer()

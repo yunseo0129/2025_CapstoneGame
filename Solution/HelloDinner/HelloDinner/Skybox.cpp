@@ -1,4 +1,4 @@
-﻿#include "Skybox.h"
+#include "Skybox.h"
 #include "Transform.h"
 #include "GameInstance.h"
 #include "Texture.h"

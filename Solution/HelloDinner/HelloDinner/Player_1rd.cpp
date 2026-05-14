@@ -1,4 +1,4 @@
-﻿#include "Player_1rd.h"
+#include "Player_1rd.h"
 #include "GameInstance.h"
 #include "Transform.h"
 #include "Ketchup_Gun.h"

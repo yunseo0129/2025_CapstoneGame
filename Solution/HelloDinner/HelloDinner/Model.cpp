@@ -1,4 +1,4 @@
-﻿#include "Model.h"
+#include "Model.h"
 #include "Mesh.h"
 #include "GameInstance.h"
 #include "Texture.h"

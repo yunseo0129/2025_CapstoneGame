@@ -1,4 +1,4 @@
-﻿#include "VIBuffer.h"
+#include "VIBuffer.h"
 
 // engine_context까지는 필요없을 듯
 CVIBuffer::CVIBuffer(EngineContext* _pContext)

@@ -1,4 +1,4 @@
-﻿#include "Mesh.h"
+#include "Mesh.h"
 #include "GameInstance.h"
 #include "Bone.h"
 

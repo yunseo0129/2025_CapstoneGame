@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "LoadingWindow.h"
 
 #pragma comment(lib, "gdi32.lib")

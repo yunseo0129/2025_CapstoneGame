@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "VIBuffer.h"
 
 class CVIBuffer_Skybox : public CVIBuffer

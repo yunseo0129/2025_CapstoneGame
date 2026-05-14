@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Transform.h"
 
 class CGameObject abstract : public CBase

@@ -1,7 +1,7 @@
 #include "SessionManager.h"
 #include "MatchManager.h"
 
-// »õ·Î¿î Å¬¶óÀÌ¾ğÆ®°¡ Á¢¼ÓÇßÀ» ¶§, ºó ½½·ÔÀ» Ã£¾Æ¼­ ±× ½½·ÔÀÇ ÀÎµ¦½º(id)¸¦ ¹İÈ¯
+// ìƒˆë¡œìš´ í´ë¼ì´ì–¸íŠ¸ê°€ ì ‘ì†í–ˆì„ ë•Œ, ë¹ˆ ìŠ¬ë¡¯ì„ ì°¾ì•„ì„œ ê·¸ ìŠ¬ë¡¯ì˜ ì¸ë±ìŠ¤(id)ë¥¼ ë°˜í™˜
 int SessionManager::GetNewClientId()
 {
     for (int i = 0; i < MAX_USER; ++i) {
@@ -14,16 +14,16 @@ int SessionManager::GetNewClientId()
     return -1;
 }
 
-// Å¬¶óÀÌ¾ğÆ®·ÎºÎÅÍ ¹ŞÀº ÆĞÅ¶À» Ã³¸®
+// í´ë¼ì´ì–¸íŠ¸ë¡œë¶€í„° ë°›ì€ íŒ¨í‚·ì„ ì²˜ë¦¬
 void SessionManager::ProcessPacket(int c_id, char* packet)
 {
     switch (packet[1]) {
-        // ·Î±×ÀÎ ÆĞÅ¶ Ã³¸® ¡æ ¸ÅÄª ´ë±âÅ¥¿¡ ÁøÀÔ
+        // ë¡œê·¸ì¸ íŒ¨í‚· ì²˜ë¦¬ â†’ ë§¤ì¹­ ëŒ€ê¸°íì— ì§„ì…
     case CS_LOGIN: {
         CS_LOGIN_PACKET* p = reinterpret_cast<CS_LOGIN_PACKET*>(packet);
         strcpy_s(m_clients[c_id].m_player.name, p->name);
 
-        // ÃÊ±â À§Ä¡ ¼³Á¤
+        // ì´ˆê¸° ìœ„ì¹˜ ì„¤ì •
         m_clients[c_id].m_camera.positionX = c_id * 100.0f;
         m_clients[c_id].m_camera.positionY = 0;
         m_clients[c_id].m_camera.positionZ = 0;
@@ -39,22 +39,22 @@ void SessionManager::ProcessPacket(int c_id, char* packet)
             m_clients[c_id].m_state = ST_LOBBY;
         }
 
-        // ¸ÅÄª ´ë±âÅ¥¿¡ µî·Ï
+        // ë§¤ì¹­ ëŒ€ê¸°íì— ë“±ë¡
         MatchManager::GetInstance()->EnqueuePlayer(c_id);
         cout << "Client [" << c_id << "] logged in as " << p->name << "." << endl;
         break;
     }
-        // ÀÌµ¿ ÆĞÅ¶ Ã³¸® (°°Àº ¹æ ÇÃ·¹ÀÌ¾î¿¡°Ô¸¸ Àü¼Û)
+        // ì´ë™ íŒ¨í‚· ì²˜ë¦¬ (ê°™ì€ ë°© í”Œë ˆì´ì–´ì—ê²Œë§Œ ì „ì†¡)
     case CS_MOVE: {
         CS_MOVE_PACKET* p = reinterpret_cast<CS_MOVE_PACKET*>(packet);
 
-        // Å¬¶óÀÌ¾ğÆ®°¡ º¸³½ µ¥ÀÌÅÍ¸¦ ¼¼¼Ç¿¡ ÀúÀå
+        // í´ë¼ì´ì–¸íŠ¸ê°€ ë³´ë‚¸ ë°ì´í„°ë¥¼ ì„¸ì…˜ì— ì €ì¥
         m_clients[c_id].m_player.keyInput = p->keyInput;
         m_clients[c_id].m_camera.lookX = p->cameraLookX;
         m_clients[c_id].m_camera.lookY = p->cameraLookY;
         m_clients[c_id].m_camera.lookZ = p->cameraLookZ;
         
-		// Todo: ¿òÁ÷ÀÓ ·ÎÁ÷ ¼öÁ¤ ÇÊ¿ä (ÇöÀç´Â ´Ü¼øÈ÷ Å° ÀÔ·Â¿¡ µû¶ó À§Ä¡ º¯°æ)
+		// Todo: ì›€ì§ì„ ë¡œì§ ìˆ˜ì • í•„ìš” (í˜„ì¬ëŠ” ë‹¨ìˆœíˆ í‚¤ ì…ë ¥ì— ë”°ë¼ ìœ„ì¹˜ ë³€ê²½)
         switch (m_clients[c_id].m_player.keyInput)
         {
         case KEY_W:
@@ -86,7 +86,7 @@ void SessionManager::ProcessPacket(int c_id, char* packet)
         }
         break;
     }
-        // ·Î±×¾Æ¿ô ÆĞÅ¶ Ã³¸®
+        // ë¡œê·¸ì•„ì›ƒ íŒ¨í‚· ì²˜ë¦¬
     case CS_LOGOUT: {
         cout << "Client [" << c_id << "] logout requested." << endl;
         Disconnect(c_id);
@@ -95,7 +95,7 @@ void SessionManager::ProcessPacket(int c_id, char* packet)
     }
 }
 
-// ¿¬°á ÇØÁ¦
+// ì—°ê²° í•´ì œ
 void SessionManager::Disconnect(int c_id)
 {
     {
@@ -105,10 +105,10 @@ void SessionManager::Disconnect(int c_id)
 
     int room_id = m_clients[c_id].m_room_id;
 
-    // ¸ÅÄª ´ë±âÅ¥¿¡¼­ Á¦°Å
+    // ë§¤ì¹­ ëŒ€ê¸°íì—ì„œ ì œê±°
     MatchManager::GetInstance()->DequeuePlayer(c_id);
 
-    // ¹æ¿¡¼­ Á¦°Å ¹× °°Àº ¹æ ÇÃ·¹ÀÌ¾î¿¡°Ô ¾Ë¸²
+    // ë°©ì—ì„œ ì œê±° ë° ê°™ì€ ë°© í”Œë ˆì´ì–´ì—ê²Œ ì•Œë¦¼
     if (room_id != -1) {
         auto* room = MatchManager::GetInstance()->GetRoom(room_id);
         if (room && room->IsActive()) {

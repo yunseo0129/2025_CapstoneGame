@@ -1,4 +1,4 @@
-﻿#ifndef InputDev_h__
+#ifndef InputDev_h__
 #define InputDev_h__
 
 #include "Base.h"

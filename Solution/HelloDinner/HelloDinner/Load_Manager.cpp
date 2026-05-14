@@ -1,4 +1,4 @@
-﻿#include "Load_Manager.h"
+#include "Load_Manager.h"
 
 CLoad_Manager::CLoad_Manager()
 {

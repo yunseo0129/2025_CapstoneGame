@@ -12,7 +12,7 @@ void MatchManager::EnqueuePlayer(int c_id)
 	cout << "[Match] Player " << c_id << " (" << sm->GetClient(c_id).m_player.name
 		<< ") entered queue. Waiting: " << queue_size << "/" << ROOM_MAX_PLAYER << endl;
 
-	// ´ë±â ÁßÀÎ ¸ğµç ÇÃ·¹ÀÌ¾î¿¡°Ô ´ë±â »óÅÂ ¾Ë¸²
+	// ëŒ€ê¸° ì¤‘ì¸ ëª¨ë“  í”Œë ˆì´ì–´ì—ê²Œ ëŒ€ê¸° ìƒíƒœ ì•Œë¦¼
 	for (int id : m_wait_queue)
 		sm->GetClient(id).Send_Match_Wait_Packet(queue_size);
 
@@ -31,19 +31,19 @@ void MatchManager::DequeuePlayer(int c_id)
 
 void MatchManager::TryMatch()
 {
-	// m_queue_lockÀº È£ÃâÀÚ°¡ ÀÌ¹Ì Àâ°í ÀÖ´Â »óÅÂ
+	// m_queue_lockì€ í˜¸ì¶œìê°€ ì´ë¯¸ ì¡ê³  ìˆëŠ” ìƒíƒœ
 	if (static_cast<int>(m_wait_queue.size()) < ROOM_MAX_PLAYER)
 		return;
 
-	// ´ë±âÅ¥¿¡¼­ ROOM_MAX_PLAYER¸í ÃßÃâ
+	// ëŒ€ê¸°íì—ì„œ ROOM_MAX_PLAYERëª… ì¶”ì¶œ
 	vector<int> matched_players(m_wait_queue.begin(), m_wait_queue.begin() + ROOM_MAX_PLAYER);
 	m_wait_queue.erase(m_wait_queue.begin(), m_wait_queue.begin() + ROOM_MAX_PLAYER);
 
-	// ¹æ »ı¼º
+	// ë°© ìƒì„±
 	int room_id = GetNewRoomId();
 	if (room_id == -1) {
 		cout << "[Match] No available room slot!\n";
-		// ´Ù½Ã Å¥¿¡ ³Ö±â
+		// ë‹¤ì‹œ íì— ë„£ê¸°
 		m_wait_queue.insert(m_wait_queue.begin(), matched_players.begin(), matched_players.end());
 		return;
 	}
@@ -59,7 +59,7 @@ void MatchManager::TryMatch()
 	cout << "  [MATCH SUCCESS] Room " << room_id << endl;
 	cout << "  Players:";
 
-	// ¸ÅÄªµÈ ÇÃ·¹ÀÌ¾î »óÅÂ ÀüÈ¯ ¹× ¾Ë¸²
+	// ë§¤ì¹­ëœ í”Œë ˆì´ì–´ ìƒíƒœ ì „í™˜ ë° ì•Œë¦¼
 	for (int i = 0; i < ROOM_MAX_PLAYER; ++i) {
 		int pid = matched_players[i];
 		auto& client = sm->GetClient(pid);
@@ -74,7 +74,7 @@ void MatchManager::TryMatch()
 	cout << endl;
 	cout << "========================================" << endl;
 
-	// °°Àº ¹æ ÇÃ·¹ÀÌ¾î³¢¸® ¼­·Î ADD_PLAYER
+	// ê°™ì€ ë°© í”Œë ˆì´ì–´ë¼ë¦¬ ì„œë¡œ ADD_PLAYER
 	for (int i = 0; i < ROOM_MAX_PLAYER; ++i) {
 		for (int j = 0; j < ROOM_MAX_PLAYER; ++j) {
 			if (i == j) continue;

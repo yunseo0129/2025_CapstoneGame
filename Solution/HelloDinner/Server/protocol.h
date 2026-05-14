@@ -5,16 +5,16 @@ constexpr int BUF_SIZE = 200;
 constexpr int NAME_SIZE = 20;
 
 constexpr int MAX_USER = 4000;
-constexpr int ROOM_MAX_PLAYER = 6;		// 6ÀÎ ¸ÅÄª	
+constexpr int ROOM_MAX_PLAYER = 6;		// 6ì¸ ë§¤ì¹­	
 constexpr int MAX_ROOM = MAX_USER / ROOM_MAX_PLAYER;			
 
-// Å°ÀÎÇ² 
+// í‚¤ì¸í’‹ 
 constexpr char KEY_W = 1;
 constexpr char KEY_A = 2;
 constexpr char KEY_S = 3;
 constexpr char KEY_D = 4;
 
-// ÆĞÅ¶ ID
+// íŒ¨í‚· ID
 constexpr char CS_LOGIN = 0;
 constexpr char CS_MOVE = 1;
 constexpr char CS_LOGOUT = 2;
@@ -26,13 +26,13 @@ constexpr char SC_MOVE_PLAYER = 3;
 constexpr char SC_MATCH_WAIT = 4;		
 constexpr char SC_MATCH_SUCCESS = 5;	
 
-// ÆĞÅ¶ Ã³¸® ¿Ï·á À¯ÇüÀ» ³ªÅ¸³»´Â enum
+// íŒ¨í‚· ì²˜ë¦¬ ì™„ë£Œ ìœ í˜•ì„ ë‚˜íƒ€ë‚´ëŠ” enum
 enum COMP_TYPE { OP_ACCEPT, OP_RECV, OP_SEND };
 
-// ¼¼¼Ç »óÅÂ¸¦ ³ªÅ¸³»´Â enum
+// ì„¸ì…˜ ìƒíƒœë¥¼ ë‚˜íƒ€ë‚´ëŠ” enum
 enum S_STATE { ST_FREE, ST_ALLOC, ST_LOBBY, ST_INGAME };
 
-// ================================ Å¬¶óÀÌ¾ğÆ® => ¼­¹ö ÆĞÅ¶ ================================
+// ================================ í´ë¼ì´ì–¸íŠ¸ => ì„œë²„ íŒ¨í‚· ================================
 #pragma pack (push, 1)
 struct CS_LOGIN_PACKET {
 	unsigned char size;
@@ -43,13 +43,13 @@ struct CS_LOGIN_PACKET {
 struct CS_MOVE_PACKET {
 	unsigned char size;
 	char	type;
-	unsigned char	keyInput;			// Å°ÀÎÇ²
-	float	cameraPosX;					// Ä«¸Ş¶ó À§Ä¡ (= ÇÃ·¹ÀÌ¾î À§Ä¡)
+	unsigned char	keyInput;			// í‚¤ì¸í’‹
+	float	cameraPosX;					// ì¹´ë©”ë¼ ìœ„ì¹˜ (= í”Œë ˆì´ì–´ ìœ„ì¹˜)
 	float	cameraPosY;
 	float	cameraPosZ;
-	float	cameraYaw;					// ÁÂ¿ì È¸Àü (= ÇÃ·¹ÀÌ¾î YÃà È¸Àü)
-	float	cameraPitch;				// »óÇÏ È¸Àü
-	float	cameraLookX;				// Ä«¸Ş¶ó look º¤ÅÍ
+	float	cameraYaw;					// ì¢Œìš° íšŒì „ (= í”Œë ˆì´ì–´ Yì¶• íšŒì „)
+	float	cameraPitch;				// ìƒí•˜ íšŒì „
+	float	cameraLookX;				// ì¹´ë©”ë¼ look ë²¡í„°
 	float	cameraLookY;
 	float	cameraLookZ;
 };
@@ -59,27 +59,27 @@ struct CS_LOGOUT_PACKET {
 	char	type;
 };
 
-// ================================ ¼­¹ö => Å¬¶óÀÌ¾ğÆ® ÆĞÅ¶ ================================
+// ================================ ì„œë²„ => í´ë¼ì´ì–¸íŠ¸ íŒ¨í‚· ================================
 struct SC_LOGIN_INFO_PACKET {
 	unsigned char size;
 	char	type;
 	int		id;
-	float	cameraPosX;					// ÃÊ±â À§Ä¡
+	float	cameraPosX;					// ì´ˆê¸° ìœ„ì¹˜
 	float	cameraPosY;
 	float	cameraPosZ;
-	float	cameraYaw;					// ÃÊ±â YÃà È¸Àü
-	float	cameraPitch;				// ÃÊ±â XÃà È¸Àü
+	float	cameraYaw;					// ì´ˆê¸° Yì¶• íšŒì „
+	float	cameraPitch;				// ì´ˆê¸° Xì¶• íšŒì „
 };
 
 struct SC_ADD_PLAYER_PACKET {
 	unsigned char size;
 	char	type;
 	int		id;
-	float	cameraPosX;					// ÇØ´ç ÇÃ·¹ÀÌ¾î À§Ä¡
+	float	cameraPosX;					// í•´ë‹¹ í”Œë ˆì´ì–´ ìœ„ì¹˜
 	float	cameraPosY;
 	float	cameraPosZ;
-	float	cameraYaw;					// ÇØ´ç ÇÃ·¹ÀÌ¾î YÃà È¸Àü
-	float	cameraPitch;				// ÇØ´ç ÇÃ·¹ÀÌ¾î XÃà È¸Àü
+	float	cameraYaw;					// í•´ë‹¹ í”Œë ˆì´ì–´ Yì¶• íšŒì „
+	float	cameraPitch;				// í•´ë‹¹ í”Œë ˆì´ì–´ Xì¶• íšŒì „
 	char	name[NAME_SIZE];
 };
 
@@ -93,13 +93,13 @@ struct SC_MOVE_PLAYER_PACKET {
 	unsigned char size;
 	char	type;
 	int		id;
-	unsigned char	keyInput;			// Å°ÀÎÇ² (Å¬¶ó¿¡¼­ ¾Ö´Ï¸ŞÀÌ¼Ç ÆÇ´Ü¿ë)
-	float	cameraPosX;					// Ä«¸Ş¶ó À§Ä¡ (= ÇÃ·¹ÀÌ¾î À§Ä¡)
+	unsigned char	keyInput;			// í‚¤ì¸í’‹ (í´ë¼ì—ì„œ ì• ë‹ˆë©”ì´ì…˜ íŒë‹¨ìš©)
+	float	cameraPosX;					// ì¹´ë©”ë¼ ìœ„ì¹˜ (= í”Œë ˆì´ì–´ ìœ„ì¹˜)
 	float	cameraPosY;
 	float	cameraPosZ;
-	float	cameraYaw;					// ÁÂ¿ì È¸Àü (= ÇÃ·¹ÀÌ¾î YÃà È¸Àü)
-	float	cameraPitch;				// »óÇÏ È¸Àü
-	float	cameraLookX;				// Ä«¸Ş¶ó look º¤ÅÍ
+	float	cameraYaw;					// ì¢Œìš° íšŒì „ (= í”Œë ˆì´ì–´ Yì¶• íšŒì „)
+	float	cameraPitch;				// ìƒí•˜ íšŒì „
+	float	cameraLookX;				// ì¹´ë©”ë¼ look ë²¡í„°
 	float	cameraLookY;
 	float	cameraLookZ;
 };
@@ -107,13 +107,13 @@ struct SC_MOVE_PLAYER_PACKET {
 struct SC_MATCH_WAIT_PACKET {
 	unsigned char size;
 	char	type;
-	int		queue_size;					// ÇöÀç ´ë±âÅ¥ ÀÎ¿ø
+	int		queue_size;					// í˜„ì¬ ëŒ€ê¸°í ì¸ì›
 };
 
 struct SC_MATCH_SUCCESS_PACKET {
 	unsigned char size;
 	char	type;
-	// Todo: ¼öÁ¤ ÇÊ¿ä
+	// Todo: ìˆ˜ì • í•„ìš”
 	int		room_id;
 	int		player_count;
 	int		player_ids[ROOM_MAX_PLAYER];
