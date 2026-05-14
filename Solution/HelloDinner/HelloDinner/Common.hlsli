@@ -82,7 +82,7 @@ float CalcShadowFactor(float4 shadowPos)
         return 1.0f; // 그림자 맵 범위 밖, 그림자 없음
     }
     
-    float shadowMapDepth = g_ShadowMap.Sample(g_samPoint, shadowPos.xy).r;
+    float shadowMapDepth = g_ShadowMap.Sample(g_samClamp, shadowPos.xy).r;
     
     float currentDepth = shadowPos.z;
     

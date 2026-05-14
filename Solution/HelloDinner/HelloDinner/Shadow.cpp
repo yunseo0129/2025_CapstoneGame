@@ -98,35 +98,49 @@ void CShadow::UpdateMatrix(CLight* _light)
 	}
 	XMMATRIX lightView = XMMatrixLookAtLH(vLightPos, vtarget, vUp);
 
-	XMStoreFloat3(&m_LightPos, vLightPos);
+    float r = mSceneBounds.Radius;
+    float nearZ = 0.f;
+    float farZ = 2.f * r;
 
-	// 경계구 광원의 공간으로 변환
-	XMFLOAT3 sphereCenterInLightSpace;
-	XMStoreFloat3(&sphereCenterInLightSpace, XMVector3Transform(vtarget, lightView));
+    XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(-r, r, -r, r, nearZ, farZ);
 
-	// 구체의 중심이 포함되도록 직육면체의 범위를 계산
-	_float left = sphereCenterInLightSpace.x - mSceneBounds.Radius;
-	_float right = sphereCenterInLightSpace.x + mSceneBounds.Radius;
-	_float bottom = sphereCenterInLightSpace.y - mSceneBounds.Radius;
-	_float top = sphereCenterInLightSpace.y + mSceneBounds.Radius;
-	_float nearZ = 0.f;
-	_float farZ = sphereCenterInLightSpace.z + mSceneBounds.Radius;
+    XMMATRIX viewProj = lightView * lightProj;
 
-	m_Lightnear = nearZ;
-	m_Lightfar = farZ;
+    // 원점(0,0,0,1)을 shadow clip space로 변환
+    XMVECTOR shadowOrigin = XMVectorSet(0.f, 0.f, 0.f, 1.f);
+    shadowOrigin = XMVector4Transform(shadowOrigin, viewProj);
 
-	XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(left, right, bottom, top, nearZ, farZ);
+    // [-1,1] NDC → [0, m_iWidth] 텍셀 좌표로 변환
+    float halfShadowMapSize = m_iWidth * 0.5f;
+    shadowOrigin = XMVectorScale(shadowOrigin, halfShadowMapSize);
 
-	XMMATRIX T(
-		0.5f, 0.f, 0.f, 0.f,
-		0.f, -0.5f, 0.f, 0.f,
-		0.f, 0.f, 1.f, 0.f,
-		0.5f, 0.5f, 0.f, 1.f);
+    // 정수 텍셀 위치로 반올림한 뒤, 그 차이를 보정값으로
+    XMVECTOR rounded = XMVectorRound(shadowOrigin);
+    XMVECTOR roundOffset = XMVectorSubtract(rounded, shadowOrigin);
+    roundOffset = XMVectorScale(roundOffset, 1.f / halfShadowMapSize);
 
-	XMMATRIX S = lightView * lightProj * T;
-	XMStoreFloat4x4(&m_LightView, lightView);
-	XMStoreFloat4x4(&m_LightProj, lightProj);
-	XMStoreFloat4x4(&m_ShadowTransform, S);
+    // proj 행렬의 translation 성분에 offset 가산 (z, w는 0)
+    XMFLOAT4X4 projF;
+    XMStoreFloat4x4(&projF, lightProj);
+    projF._41 += XMVectorGetX(roundOffset);
+    projF._42 += XMVectorGetY(roundOffset);
+    lightProj = XMLoadFloat4x4(&projF);
+
+    XMStoreFloat3(&m_LightPos, vLightPos);
+
+    XMMATRIX T(
+        0.5f, 0.f, 0.f, 0.f,
+        0.f, -0.5f, 0.f, 0.f,
+        0.f, 0.f, 1.f, 0.f,
+        0.5f, 0.5f, 0.f, 1.f);
+
+    XMMATRIX S = lightView * lightProj * T;
+    XMStoreFloat4x4(&m_LightView, lightView);
+    XMStoreFloat4x4(&m_LightProj, lightProj);
+    XMStoreFloat4x4(&m_ShadowTransform, S);
+
+    m_Lightnear = nearZ;
+    m_Lightfar = farZ;
 }
 
 void CShadow::UpdateBoundingSphere(CCamera* _camera)
@@ -166,16 +180,13 @@ void CShadow::UpdateBoundingSphere(CCamera* _camera)
 	}
 	sphereCenter = XMVectorScale(sphereCenter, 1.0f / 8.0f);
 
-	float sphereRadius = 0.f;
-	for(int i = 0; i < 8; ++i)
-	{
-		XMVECTOR vLength = XMVector3Length(XMVectorSubtract(worldCorners[i], sphereCenter));
-		float distance = XMVectorGetX(vLength);
-		sphereRadius = max(sphereRadius, distance);
-	}
+    XMVECTOR vDiag1 = XMVector3Length(XMVectorSubtract(worldCorners[0], worldCorners[6]));
+    XMVECTOR vDiag2 = XMVector3Length(XMVectorSubtract(worldCorners[4], worldCorners[6]));
+    float radius = max(XMVectorGetX(vDiag1), XMVectorGetX(vDiag2)) * 0.5f;
+
 
 	mSceneBounds.Center = XMFLOAT3(XMVectorGetX(sphereCenter), XMVectorGetY(sphereCenter), XMVectorGetZ(sphereCenter));
-	mSceneBounds.Radius = sphereRadius;
+	mSceneBounds.Radius = radius;
 }
 
 HRESULT CShadow::Create_ShadowBuffer()
