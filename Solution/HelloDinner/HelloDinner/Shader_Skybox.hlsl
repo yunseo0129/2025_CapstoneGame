@@ -14,7 +14,7 @@ struct VS_OUT_SKYBOX
     float3 vTexCoord : TEXCOORD0;
 };
 
-// Skybox¿ë VS
+// Skyboxìš© VS
 VS_OUT_SKYBOX VS_Main_Skybox(VS_IN_STATIC In)
 {
     VS_OUT_SKYBOX Out = (VS_OUT_SKYBOX) 0;
@@ -28,7 +28,7 @@ VS_OUT_SKYBOX VS_Main_Skybox(VS_IN_STATIC In)
     float4 vWorldPos = mul(float4(In.vPos, 1.0f), g_matWorld);
     float4 vViewPos = mul(vWorldPos, viewNoTranslation);
     
-    // .xyww¸¦ ÅëÇØ Z°ªÀ» ¹«Á¶°Ç ÃÖ´ë ±íÀÌ(1.0)·Î ¸¸µê
+    // .xywwë¥¼ í†µí•´ Zê°’ì„ ë¬´ì¡°ê±´ ìµœëŒ€ ê¹Šì´(1.0)ë¡œ ë§Œë“¦
     Out.vPosition = mul(vViewPos, g_matProj).xyww;
     Out.vTexCoord = In.vPos;
     

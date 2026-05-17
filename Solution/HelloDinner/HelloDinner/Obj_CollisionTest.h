@@ -7,7 +7,7 @@ public:
 	struct Obj_CollisionTest_DESC : public CGameObject::GAMEOBJECT_DESC
 	{
 		_float3		vPosition = {};
-		_float3		vRotation = {};		// degree ´ÜÀ§
+		_float3		vRotation = {};		// degree ë‹¨ìœ„
 		_float3		vScale = { 1.f, 1.f, 1.f };
 		CCollider::COLLIDERTYPE	eColliderType = CCollider::TYPE_END;
 	};

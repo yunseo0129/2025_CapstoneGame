@@ -1,6 +1,6 @@
 #pragma once
 
-// Normal ÅØ½ºÃÄ °°Àº NULLÀÏ ¼ö ÀÖ´Â ÅØ½ºÃÄÀÇ ±âº»°ªÀ» °¡Áö°í ÀÖ´Â Å¬·¡½º
+// Normal í…ìŠ¤ì³ ê°™ì€ NULLì¼ ìˆ˜ ìˆëŠ” í…ìŠ¤ì³ì˜ ê¸°ë³¸ê°’ì„ ê°€ì§€ê³  ìˆëŠ” í´ë˜ìŠ¤
 #include "Base.h"
 
 class CTexture_Manager final : public CBase

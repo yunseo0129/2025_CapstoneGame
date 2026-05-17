@@ -45,22 +45,22 @@ private:
 	void LogOutputDisplayModes(IDXGIOutput* _output, DXGI_FORMAT _format);
 
 private:
-	// È°¼ºÈ­ »óÅÂ ÇÃ·¡±× (¾ÆÁ÷ »ç¿ë X)
+	// í™œì„±í™” ìƒíƒœ í”Œë˜ê·¸ (ì•„ì§ ì‚¬ìš© X)
 	// _bool m_isActivate;
 
-	// ¸ŞÀÎÀ©µµ¿ì ÇÚµéÁ¤º¸ (swapchain»ı¼º½Ã ÇÊ¿ä)
+	// ë©”ì¸ìœˆë„ìš° í•¸ë“¤ì •ë³´ (swapchainìƒì„±ì‹œ í•„ìš”)
 	HWND      m_hMainWnd = nullptr; 
 
-	// µå·¡±×·Î Å©±âÁ¶Àı °ü·Ã ÇÃ·¡±× (¾ÆÁ÷ »ç¿ë X)
-	_bool      m_isAppPaused = false;  // ÆÛÁîÀÎ°¡?
-	_bool      m_isMinimized = false;  // °¡Àå ÀÛÀº »óÅÂÀÎ°¡?
-	_bool      m_isMaximized = false;  // °¡Àå Å« »óÅÂÀÎ°¡?
-	_bool      m_isResizing = false;   // µå	·¡±×·Î Å©±âÁ¶ÀıÁßÀÎ°¡?
-	_bool      m_isFullscreenState = false;// Ç®½ºÅ©¸° »óÅÂÀÎ°¡?
+	// ë“œë˜ê·¸ë¡œ í¬ê¸°ì¡°ì ˆ ê´€ë ¨ í”Œë˜ê·¸ (ì•„ì§ ì‚¬ìš© X)
+	_bool      m_isAppPaused = false;  // í¼ì¦ˆì¸ê°€?
+	_bool      m_isMinimized = false;  // ê°€ì¥ ì‘ì€ ìƒíƒœì¸ê°€?
+	_bool      m_isMaximized = false;  // ê°€ì¥ í° ìƒíƒœì¸ê°€?
+	_bool      m_isResizing = false;   // ë“œ	ë˜ê·¸ë¡œ í¬ê¸°ì¡°ì ˆì¤‘ì¸ê°€?
+	_bool      m_isFullscreenState = false;// í’€ìŠ¤í¬ë¦° ìƒíƒœì¸ê°€?
 
-	//´ÙÁß»ùÇÃ¸µ ¾ØÆ¼¾Ù¸®¾î½Ì(MSAA) ¼³Á¤
-	_bool      m_is4xMsaaState = false;    // 4x´ÙÁß»ùÇÃ¸µ ¾ØÆ¼¾Ù¸®¾î½Ì »ç¿ë ¿©ºÎ
-	_uint      m_i4xMsaaQuality = 0;      // Ä÷¸®Æ¼ ·¹º§
+	//ë‹¤ì¤‘ìƒ˜í”Œë§ ì•¤í‹°ì•¨ë¦¬ì–´ì‹±(MSAA) ì„¤ì •
+	_bool      m_is4xMsaaState = false;    // 4xë‹¤ì¤‘ìƒ˜í”Œë§ ì•¤í‹°ì•¨ë¦¬ì–´ì‹± ì‚¬ìš© ì—¬ë¶€
+	_uint      m_i4xMsaaQuality = 0;      // í€„ë¦¬í‹° ë ˆë²¨
 
 
 	// Graphics
@@ -71,20 +71,20 @@ private:
 	ComPtr<ID3D12CommandQueue> m_pCommandQueue;
 	ComPtr<ID3D12GraphicsCommandList> m_pCommandList;
 
-	// ¹öÆÛ ¼ö 3
+	// ë²„í¼ ìˆ˜ 3
 	static const _int m_iSwapChainBufferCount = SWAP_CHAIN_BUFFER_COUNT;
 	_int			m_iCurrBackBuffer = 0;
 	ComPtr<ID3D12Resource> m_pSwapChainBuffer[m_iSwapChainBufferCount];
 	ComPtr<ID3D12Resource> m_pDepthStencilBuffer;
 
-	// Ä¿¸Çµå ¸®½ºÆ®´Â ÇÁ·¹ÀÓ¸¶´Ù ÇÏ³ª¾¿ »ç¿ëÇÏ¹Ç·Î, ¹öÆÛ ¼ö¸¸Å­ Ä¿¸Çµå ÇÒ·ÎÄÉÀÌÅÍ°¡ ÇÊ¿äÇÏ´Ù.
+	// ì»¤ë§¨ë“œ ë¦¬ìŠ¤íŠ¸ëŠ” í”„ë ˆì„ë§ˆë‹¤ í•˜ë‚˜ì”© ì‚¬ìš©í•˜ë¯€ë¡œ, ë²„í¼ ìˆ˜ë§Œí¼ ì»¤ë§¨ë“œ í• ë¡œì¼€ì´í„°ê°€ í•„ìš”í•˜ë‹¤.
 	ComPtr<ID3D12CommandAllocator> m_pCmdListAlloc[m_iSwapChainBufferCount];
 
 	ComPtr<ID3D12DescriptorHeap> m_pRtvHeap;
 	ComPtr<ID3D12DescriptorHeap> m_pDsvHeap;
 	ComPtr<ID3D12RootSignature>	 m_pRootSignature;
 
-	//Ææ½º °ªµµ 3°³´Ù
+	//íœìŠ¤ ê°’ë„ 3ê°œë‹¤
 	ComPtr<ID3D12Fence> m_pFence;
 	UINT64				m_nFenceValues[m_iSwapChainBufferCount];
 	UINT64				m_iFenceValueCounter = 0;
@@ -101,7 +101,7 @@ private:
 	DXGI_FORMAT m_BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	DXGI_FORMAT m_DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
-	// ±×·¡ÇÈ ¸Ş¸ğ¸® °ü¸® °´Ã¼
+	// ê·¸ë˜í”½ ë©”ëª¨ë¦¬ ê´€ë¦¬ ê°ì²´
 	std::unique_ptr<DirectX::GraphicsMemory> m_pGraphicsMemory = nullptr;
 
 public:

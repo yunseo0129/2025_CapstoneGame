@@ -22,6 +22,7 @@ void CLevel::Update(_float fTimeDelta)
 		if (pCamera == nullptr)
 			continue;
 		pCamera->Update(fTimeDelta);
+        pCamera->Late_Update(fTimeDelta);
 	}
 	for (auto& pLight : m_pLights) {
 		if (pLight == nullptr)
@@ -62,7 +63,7 @@ HRESULT CLevel::Render()
 void CLevel::Add_Camera()
 {
 }
-
+ 
 void CLevel::Bind_CameraBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameterIndex _eIndex, CAMERA_TYPE _eType)
 {
 	if (_eIndex >= RootParameterIndex::End)

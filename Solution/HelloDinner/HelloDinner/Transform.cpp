@@ -124,7 +124,7 @@ void CTransform::Go_Up(_float fTimeDelta)
 void CTransform::Move(_vector vDir, _float fTimeDelta)
 {
 	_vector		vPosition = Get_State(STATE_POSITION);
-	vPosition += XMVector3Normalize(vDir) * m_fSpeedPerSec * fTimeDelta;
+	vPosition += vDir * m_fSpeedPerSec * fTimeDelta;
 
 	Set_State(STATE_POSITION, vPosition);
 }
@@ -194,7 +194,7 @@ void CTransform::EulerRotationQuaternion(_float fX, _float fY, _float fZ)
 	_vector		vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f) * vScale.y;
 	_vector		vLook = XMVectorSet(0.f, 0.f, 1.f, 0.f) * vScale.z;
 
-	// Unity ø¿¿œ∑Ø º¯º≠: Z °Ê X °Ê Y
+	// Unity Ïò§ÏùºÎü¨ ÏàúÏÑú: Z ‚Üí X ‚Üí Y
 	_matrix		RotationMatrix =
 		XMMatrixRotationZ(fZ) *
 		XMMatrixRotationX(fX) *

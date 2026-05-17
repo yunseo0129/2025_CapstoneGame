@@ -47,7 +47,7 @@ HRESULT CPlayer_Pig::Initialize(void* pArg)
 		return E_FAIL;
 
 	m_iState = 0;
-	m_pModelCom->SetUp_Animation(a++, true);
+	m_pModelCom->SetUp_Animation(5, true);
 
 	if (FAILED(Ready_PartObjects()))
 		return E_FAIL;
@@ -62,7 +62,19 @@ void CPlayer_Pig::Priority_Update(_float fTimeDelta)
 
 void CPlayer_Pig::Update(_float fTimeDelta)
 {
-	m_pModelCom->Play_Animation(fTimeDelta);
+	static bool d = false;
+	if (!d)
+		m_pModelCom->Play_Animation(fTimeDelta);
+	else
+	{
+		if (m_pModelCom->Blend_Animation(fTimeDelta))
+			d = false;
+	}
+	if (m_pGameInstance->Key_Pressing(DIK_1))
+	{
+		m_pModelCom->Change_Animation(4, 10.f, true);
+		d = true;
+	}
 
 	for (CCollider* pCollider : m_vColliderComs)
 	{
@@ -90,10 +102,10 @@ void CPlayer_Pig::Render(ID3D12GraphicsCommandList* _commandList)
 	XMStoreFloat4x4(&WorldMatrix, m_pTransformCom->Get_WorldMatrix());
 	_commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &WorldMatrix, 0);
 
-	// 2. PSO ¼³Á¤
+	// 2. PSO ì„¤ì •
 	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::ANIM);
 
-	// 3. ¸Ş½¬º° ·»´õ¸µ (¸ÓÆ¼¸®¾ó ¹ÙÀÎµù + DrawIndexedInstanced)
+	// 3. ë©”ì‰¬ë³„ ë Œë”ë§ (ë¨¸í‹°ë¦¬ì–¼ ë°”ì¸ë”© + DrawIndexedInstanced)
 	_uint iNumMeshes = m_pModelCom->Get_NumMeshes();
 	for (_uint i = 0; i < iNumMeshes; ++i)
 	{
@@ -101,7 +113,7 @@ void CPlayer_Pig::Render(ID3D12GraphicsCommandList* _commandList)
 		m_pModelCom->Render(_commandList, i);
 	}
 
-	// Äİ¶óÀÌ´õ µğ¹ö±ë
+	// ì½œë¼ì´ë” ë””ë²„ê¹…
 #ifdef _DEBUG
 	for (CCollider* pCollider : m_vColliderComs)
 	{
@@ -118,15 +130,15 @@ void CPlayer_Pig::Render(ID3D12GraphicsCommandList* _commandList)
 
 void CPlayer_Pig::ShadowRender(ID3D12GraphicsCommandList* _commandList)
 {
-	// Transform ÄÄÆ÷³ÍÆ®ÀÇ ¿ùµå Çà·ÄÀ» RootConstantBuffer¿¡ ³Ñ°ÜÁØ´Ù.
+	// Transform ì»´í¬ë„ŒíŠ¸ì˜ ì›”ë“œ í–‰ë ¬ì„ RootConstantBufferì— ë„˜ê²¨ì¤€ë‹¤.
 	XMFLOAT4X4 WorldMatrix;
 	XMStoreFloat4x4(&WorldMatrix, m_pTransformCom->Get_WorldMatrix());
 	_commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &WorldMatrix, 0);
 
-	// 2. PSO ¼³Á¤
+	// 2. PSO ì„¤ì •
 	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::SHADOW_ANIM);
 
-	// 3. ¸Ş½¬º° ·»´õ¸µ (¸ÓÆ¼¸®¾ó ¹ÙÀÎµù + DrawIndexedInstanced)
+	// 3. ë©”ì‰¬ë³„ ë Œë”ë§ (ë¨¸í‹°ë¦¬ì–¼ ë°”ì¸ë”© + DrawIndexedInstanced)
 	_uint iNumMeshes = m_pModelCom->Get_NumMeshes();
 	for (_uint i = 0; i < iNumMeshes; ++i)
 	{
@@ -138,15 +150,15 @@ void CPlayer_Pig::ShadowRender(ID3D12GraphicsCommandList* _commandList)
 
 HRESULT CPlayer_Pig::Ready_PartObjects()
 {
-	// ÄÉÃ¸°Ç
+	// ì¼€ì²©ê±´
 	{
 		CKetchup_Gun::KETCHUP_GUN_DESC cdesc;
 		cdesc.strModelTag = L"Prototype_Component_ketchupGun";
-		cdesc.iModelLevelIndex = 1;
+		cdesc.iModelLevelIndex = m_iModelLevelIndex;
 		cdesc.pParentMatrix = m_pTransformCom->Get_WorldFloat4x4_Ptr();
 		cdesc.pSocketMatrix = m_pModelCom->Get_BoneMatrix("weapon");
 		cdesc.vScale = _float3(1.f, 1.f, 1.f);
-		m_PartObjects[0] = static_cast<CPartObj*>(m_pGameInstance->Clone_Prototype(Engine::PROTOTYPE::PROTO_GAMEOBJ, 1, TEXT("Prototype_GameObject_Ketchup_Gun"), &cdesc));
+		m_PartObjects[0] = static_cast<CPartObj*>(m_pGameInstance->Clone_Prototype(Engine::PROTOTYPE::PROTO_GAMEOBJ, m_iModelLevelIndex, TEXT("Prototype_GameObject_Ketchup_Gun"), &cdesc));
 		if (nullptr == m_PartObjects[0])
 			return E_FAIL;
 	}
@@ -155,7 +167,7 @@ HRESULT CPlayer_Pig::Ready_PartObjects()
 
 HRESULT CPlayer_Pig::Ready_Components()
 {
-	// Model ÄÄÆ÷³ÍÆ® »ı¼º
+	// Model ì»´í¬ë„ŒíŠ¸ ìƒì„±
 	if (FAILED(Add_Component(m_iModelLevelIndex, m_strModelTag,
 		TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
 	{
@@ -163,7 +175,7 @@ HRESULT CPlayer_Pig::Ready_Components()
 		return E_FAIL;
 	}
 
-	// Collider ÄÄÆ÷³ÍÆ® »ı¼º
+	// Collider ì»´í¬ë„ŒíŠ¸ ìƒì„±
 	{
 		m_vColliderComs.resize(COLLIDER_END, nullptr);
 		m_vMapColliderComs.resize(2, nullptr);

@@ -8,7 +8,7 @@ struct VS_IN_STATIC
     float3 vTangent : TANGENT;
 };
 
-// ÀÏ¹Ý ¹°Ã¼¿ë VS
+// ì¼ë°˜ ë¬¼ì²´ìš© VS
 VS_OUT VS_Main_Static(VS_IN_STATIC In)
 {
     VS_OUT Out = (VS_OUT) 0;
@@ -35,7 +35,7 @@ VS_OUT VS_Main_Static(VS_IN_STATIC In)
 
 struct VS_SHADOW_OUT {
     float4 Pos : SV_POSITION;
-    float2 Tex : TEXCOORD0; // ¾ËÆÄ Å¬¸®ÇÎ¿ë ÅØ½ºÃ³ ÁÂÇ¥
+    float2 Tex : TEXCOORD0; // ì•ŒíŒŒ í´ë¦¬í•‘ìš© í…ìŠ¤ì²˜ ì¢Œí‘œ
 };
 
 VS_SHADOW_OUT VS_Main_Shadow(VS_IN_STATIC vin)
@@ -45,13 +45,13 @@ VS_SHADOW_OUT VS_Main_Shadow(VS_IN_STATIC vin)
     // 1. Local Space -> World Space
     float4 posW = mul(float4(vin.vPos, 1.0f), g_matWorld);
 
-    // 2. World Space -> Light View Space (ºûÀÇ ½ÃÁ¡)
+    // 2. World Space -> Light View Space (ë¹›ì˜ ì‹œì )
     float4 posV = mul(posW, g_matView);
 
-    // 3. Light View Space -> Light Projection Space (ºûÀÇ È­¸é °ø°£)
+    // 3. Light View Space -> Light Projection Space (ë¹›ì˜ í™”ë©´ ê³µê°„)
     vout.Pos = mul(posV, g_matProj);
 
-    // ÅØ½ºÃ³ ÁÂÇ¥ Àü´Þ (¾ËÆÄ Å¬¸®ÇÎ¿ë)
+    // í…ìŠ¤ì²˜ ì¢Œí‘œ ì „ë‹¬ (ì•ŒíŒŒ í´ë¦¬í•‘ìš©)
     vout.Tex = vin.vUV;
 
     return vout;

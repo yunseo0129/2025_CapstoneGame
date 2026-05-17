@@ -18,9 +18,9 @@ CLoader_Map::CLoader_Map(EngineContext* pContext)
 
 void CLoader_Map::FlushCommandList()
 {
-	// ÇöÀç Ä¿¸Çµå ¸®½ºÆ®¸¦ ½ÇÇà ¡æ GPU µ¿±âÈ­ ¡æ ¸®¼Â
+	// í˜„ì¬ ì»¤ë§¨ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ì‹¤í–‰ â†’ GPU ë™ê¸°í™” â†’ ë¦¬ì…‹
 	m_pGameInstance->CloseCmdList();
-	// GPU ¿Ï·á ÈÄ¿¡¾ß ´ë±â ÁßÀÎ ¸®¼Ò½º¸¦ ¾ÈÀüÇÏ°Ô »èÁ¦
+	// GPU ì™„ë£Œ í›„ì—ì•¼ ëŒ€ê¸° ì¤‘ì¸ ë¦¬ì†ŒìŠ¤ë¥¼ ì•ˆì „í•˜ê²Œ ì‚­ì œ
 	ReleasePendingResources();
 	m_pGameInstance->ResetCmdList();
 	m_iLoadCounter = 0;
@@ -47,7 +47,7 @@ HRESULT CLoader_Map::Load_MaterialData(const string& strJsonPath)
 	file >> matJson;
 	file.close();
 
-	// Áßº¹ ¹æÁö¿ë set (°°Àº PNG¸¦ ¿©·¯ ¸ÓÆ¼¸®¾óÀÌ °øÀ¯ÇÒ ¼ö ÀÖÀ½)
+	// ì¤‘ë³µ ë°©ì§€ìš© set (ê°™ì€ PNGë¥¼ ì—¬ëŸ¬ ë¨¸í‹°ë¦¬ì–¼ì´ ê³µìœ í•  ìˆ˜ ìˆìŒ)
 	unordered_set<string> registeredTextures;
 
 	for (auto& mat : matJson["materials"])
@@ -56,25 +56,25 @@ HRESULT CLoader_Map::Load_MaterialData(const string& strJsonPath)
 		string albedoFile = mat["albedoTexture"].get<string>();
 		string normalFile = mat["normalTexture"].get<string>();
 
-		// ---- Albedo ÅØ½ºÃ³ µî·Ï ----
-		if (!albedoFile.empty()) // ÆÄÀÏ¸íÀÌ ºñ¾îÀÖÁö ¾ÊÀ¸¸é
+		// ---- Albedo í…ìŠ¤ì²˜ ë“±ë¡ ----
+		if (!albedoFile.empty()) // íŒŒì¼ëª…ì´ ë¹„ì–´ìˆì§€ ì•Šìœ¼ë©´
 		{
-			if (registeredTextures.find(albedoFile) == registeredTextures.end()) // Áßº¹ÀÌ ¾Æ´Ï¸é
+			if (registeredTextures.find(albedoFile) == registeredTextures.end()) // ì¤‘ë³µì´ ì•„ë‹ˆë©´
 			{
-				_wstring strPath = L"Resources/NonAnim/Map/dds/" + _wstring(albedoFile.begin(), albedoFile.end());	//Ex) "albedo.dds" ¡æ L"Resources/Map/dds/albedo.dds"
+				_wstring strPath = L"Resources/NonAnim/Map/dds/" + _wstring(albedoFile.begin(), albedoFile.end());	//Ex) "albedo.dds" â†’ L"Resources/Map/dds/albedo.dds"
 				registeredTextures.insert(albedoFile);
-				m_MaterialInfos[matName].strAlbedoFile = strPath; // ¸ÓÆ¼¸®¾ó ÀÌ¸§ ¡æ ¾Ëº£µµ ÆÄÀÏ¸í ÀúÀå
+				m_MaterialInfos[matName].strAlbedoFile = strPath; // ë¨¸í‹°ë¦¬ì–¼ ì´ë¦„ â†’ ì•Œë² ë„ íŒŒì¼ëª… ì €ì¥
 			}
 		}
 
-		// ---- Normal ÅØ½ºÃ³ µî·Ï ----
-		if (!normalFile.empty()) // ÆÄÀÏ¸íÀÌ ºñ¾îÀÖÁö ¾ÊÀ¸¸é
+		// ---- Normal í…ìŠ¤ì²˜ ë“±ë¡ ----
+		if (!normalFile.empty()) // íŒŒì¼ëª…ì´ ë¹„ì–´ìˆì§€ ì•Šìœ¼ë©´
 		{
-			if (registeredTextures.find(normalFile) == registeredTextures.end()) // Áßº¹ÀÌ ¾Æ´Ï¸é
+			if (registeredTextures.find(normalFile) == registeredTextures.end()) // ì¤‘ë³µì´ ì•„ë‹ˆë©´
 			{
 				_wstring strPath = L"Resources/NonAnim/Map/dds/" + _wstring(normalFile.begin(), normalFile.end());
 				registeredTextures.insert(normalFile);
-				m_MaterialInfos[matName].strNormalFile = strPath; // ¸ÓÆ¼¸®¾ó ÀÌ¸§ ¡æ ³ë¸» ÆÄÀÏ¸í ÀúÀå
+				m_MaterialInfos[matName].strNormalFile = strPath; // ë¨¸í‹°ë¦¬ì–¼ ì´ë¦„ â†’ ë…¸ë§ íŒŒì¼ëª… ì €ì¥
 			}
 		}
 	}
@@ -83,7 +83,7 @@ HRESULT CLoader_Map::Load_MaterialData(const string& strJsonPath)
 
 HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 {
-	// JSON ÆÄÀÏ ¿­±â
+	// JSON íŒŒì¼ ì—´ê¸°
 	ifstream file(strJsonPath);
 	if (!file.is_open())
 	{
@@ -95,20 +95,20 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 	file >> mapJson;
 	file.close();
 
-	// CMap °ÔÀÓ¿ÀºêÁ§Æ® ÇÁ·ÎÅäÅ¸ÀÔ µî·Ï (ÇÑ ¹ø¸¸)
+	// CMap ê²Œì„ì˜¤ë¸Œì íŠ¸ í”„ë¡œí† íƒ€ì… ë“±ë¡ (í•œ ë²ˆë§Œ)
 	if (FAILED(m_pGameInstance->Add_Prototype(iLevelIndex,
 		L"Prototype_GameObject_Map", CMap::Create(m_pContext))))
 	{
-		// ÀÌ¹Ì µî·ÏµÇ¾î ÀÖÀ» ¼ö ÀÖÀ¸¹Ç·Î ½ÇÆĞÇØµµ °è¼Ó ÁøÇà
+		// ì´ë¯¸ ë“±ë¡ë˜ì–´ ìˆì„ ìˆ˜ ìˆìœ¼ë¯€ë¡œ ì‹¤íŒ¨í•´ë„ ê³„ì† ì§„í–‰
 	}
 
-	// mapData ¹è¿­ ¼øÈ¸
+	// mapData ë°°ì—´ ìˆœíšŒ
 	for (auto& entry : mapJson["mapData"])
 	{
 		string fbxName = entry["fbxName"].get<string>();
 		_wstring strModelTag = Get_ModelTag(fbxName);
 
-		// materialNames ¹è¿­ ÀĞ±â (À¯´ÏÆ¼¿¡¼­ »ÌÀº MatIdxº° ÅØ½ºÃ³ ÆÄÀÏ¸í)
+		// materialNames ë°°ì—´ ì½ê¸° (ìœ ë‹ˆí‹°ì—ì„œ ë½‘ì€ MatIdxë³„ í…ìŠ¤ì²˜ íŒŒì¼ëª…)
 		vector<string> materialNames;
 		if (entry.contains("materialNames"))
 		{
@@ -118,11 +118,11 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 			}
 		}
 
-		// ÇØ´ç fbxNameÀÇ CModel ÇÁ·ÎÅäÅ¸ÀÔÀÌ ¾ÆÁ÷ ¾øÀ¸¸é µî·Ï
+		// í•´ë‹¹ fbxNameì˜ CModel í”„ë¡œí† íƒ€ì…ì´ ì•„ì§ ì—†ìœ¼ë©´ ë“±ë¡
 		if (nullptr == m_pGameInstance->Clone_Prototype(
 			Engine::PROTOTYPE::PROTO_COMPONENT, iLevelIndex, strModelTag, nullptr))
 		{
-			// Clone ½ÇÆĞ = ÇÁ·ÎÅäÅ¸ÀÔÀÌ ¾ø´Ù´Â ¶æ ¡æ »õ·Î µî·Ï
+			// Clone ì‹¤íŒ¨ = í”„ë¡œí† íƒ€ì…ì´ ì—†ë‹¤ëŠ” ëœ» â†’ ìƒˆë¡œ ë“±ë¡
 			_wstring strBinaryPath = Get_BinaryPath(fbxName);
 
 			CModel* pModel = CModel::Create(m_pContext,
@@ -143,7 +143,7 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 					const auto& matInfo = m_MaterialInfos[matName];
 					if (!matInfo.strAlbedoFile.empty())
 					{
-						// ´Ù¸¥ ¸ğµ¨ÀÌ TextureType_DIFFUSE·Î ÀĞ¾î¿ÔÀ» °æ¿ì ¸Ê ¸ğµ¨µµ ¼öÁ¤ ÇÊ¿ä
+						// ë‹¤ë¥¸ ëª¨ë¸ì´ TextureType_DIFFUSEë¡œ ì½ì–´ì™”ì„ ê²½ìš° ë§µ ëª¨ë¸ë„ ìˆ˜ì • í•„ìš”
 						pModel->Ready_MapMaterial(matInfo.strAlbedoFile.c_str(), i, TextureType_DIFFUSE);
 					}
 					if (!matInfo.strNormalFile.empty())
@@ -155,43 +155,43 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 
 			if (FAILED(m_pGameInstance->Add_Prototype(iLevelIndex, strModelTag, pModel)))
 			{
-				// ¸ğµ¨µµ Áï½Ã »èÁ¦ÇÏÁö ¾Ê°í º¸·ù
+				// ëª¨ë¸ë„ ì¦‰ì‹œ ì‚­ì œí•˜ì§€ ì•Šê³  ë³´ë¥˜
 				m_PendingReleases.push_back(pModel);
 				continue;
 			}
 
-			// ¸Ş½¬ ¹öÆÛ ¾÷·Îµå ÈÄ ¹èÄ¡ ÇÃ·¯½Ã (¼öÁ¤ ÇÊ¿ä)
+			// ë©”ì‰¬ ë²„í¼ ì—…ë¡œë“œ í›„ ë°°ì¹˜ í”ŒëŸ¬ì‹œ (ìˆ˜ì • í•„ìš”)
 			if (++m_iLoadCounter >= FLUSH_INTERVAL)
 				FlushCommandList();
 		}
 
-		// °¢ ÀÎ½ºÅÏ½º¸¶´Ù CMap Clone »ı¼º
+		// ê° ì¸ìŠ¤í„´ìŠ¤ë§ˆë‹¤ CMap Clone ìƒì„±
 		for (auto& inst : entry["instances"])
 		{
 			CMap::MAP_DESC desc{};
 			desc.strModelTag = strModelTag;
 			desc.iModelLevelIndex = iLevelIndex;
 
-			// ÀÌµ¿
+			// ì´ë™
 			desc.vPosition.x = inst["position"]["x"].get<float>();
 			desc.vPosition.y = inst["position"]["y"].get<float>() - 1.5f;
 			desc.vPosition.z = inst["position"]["z"].get<float>();
 
-			// È¸Àü
+			// íšŒì „
 			desc.vRotation.x = XMConvertToRadians(inst["rotation"]["x"].get<float>());
 			desc.vRotation.y = XMConvertToRadians(inst["rotation"]["y"].get<float>() + 180);
 			desc.vRotation.z = XMConvertToRadians(inst["rotation"]["z"].get<float>());
 
-			// ½ºÄÉÀÏ
+			// ìŠ¤ì¼€ì¼
 			desc.vScale.x = inst["scale"]["x"].get<float>();
 			desc.vScale.y = inst["scale"]["y"].get<float>();
 			desc.vScale.z = inst["scale"]["z"].get<float>();
 
-			// Collider Á¤º¸
+			// Collider ì •ë³´
 			auto& colliderNode = inst["collider"];
 			std::string strColliderType = colliderNode["colliderType"].get<std::string>();
 
-			// 1. Ãæµ¹Ã¼ Å¸ÀÔ
+			// 1. ì¶©ëŒì²´ íƒ€ì…
 			if (strColliderType == "AABB")
 				desc.eColliderType = CCollider::TYPE_AABB;
 			else if (strColliderType == "OBB")
@@ -199,24 +199,24 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 			else if (strColliderType == "SPHERE")
 				desc.eColliderType = CCollider::TYPE_SPHERE;
 			else
-				desc.eColliderType = CCollider::TYPE_END; // "NONE" ÀÌ°Å³ª ¾Ë ¼ö ¾ø´Â Å¸ÀÔ
+				desc.eColliderType = CCollider::TYPE_END; // "NONE" ì´ê±°ë‚˜ ì•Œ ìˆ˜ ì—†ëŠ” íƒ€ì…
 
-			// 2. Áß½É ÁÂÇ¥ (positionÀÌ¶û Á¤È®ÇÏ°Ô ¸ÂÃç¾ßµÊ)
+			// 2. ì¤‘ì‹¬ ì¢Œí‘œ (positionì´ë‘ ì •í™•í•˜ê²Œ ë§ì¶°ì•¼ë¨)
 			desc.vCenterCollider.x = colliderNode["center"]["x"].get<float>();
 			desc.vCenterCollider.y = colliderNode["center"]["y"].get<float>() - 1.5f;
 			desc.vCenterCollider.z = colliderNode["center"]["z"].get<float>();
 
-			// 3. »çÀÌÁî
+			// 3. ì‚¬ì´ì¦ˆ
 			desc.vExtentsCollider.x = colliderNode["extents"]["x"].get<float>();
 			desc.vExtentsCollider.y = colliderNode["extents"]["y"].get<float>();
 			desc.vExtentsCollider.z = colliderNode["extents"]["z"].get<float>();
 
-			// 4. È¸Àü (¸Ş½¬¶û ¸ÂÃç¾ßµÊ)
+			// 4. íšŒì „ (ë©”ì‰¬ë‘ ë§ì¶°ì•¼ë¨)
 			desc.vRotationCollider.x = XMConvertToRadians(colliderNode["rotation"]["x"].get<float>());
 			desc.vRotationCollider.y = XMConvertToRadians(colliderNode["rotation"]["y"].get<float>() + 180.f);
 			desc.vRotationCollider.z = XMConvertToRadians(colliderNode["rotation"]["z"].get<float>());
 
-			// 5. ¹İÁö¸§ (±¸Çü Ãæµ¹Ã¼¿ë)
+			// 5. ë°˜ì§€ë¦„ (êµ¬í˜• ì¶©ëŒì²´ìš©)
 			desc.fRadius = colliderNode["radius"].get<float>() * 100.f;
 
 			if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
@@ -228,7 +228,7 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 		}
 	}
 
-	// ³²Àº Ä¿¸Çµå ÇÃ·¯½Ã (¼öÁ¤ÇÊ¿ä)
+	// ë‚¨ì€ ì»¤ë§¨ë“œ í”ŒëŸ¬ì‹œ (ìˆ˜ì •í•„ìš”)
 	if (m_iLoadCounter > 0)
 		FlushCommandList();
 	//
@@ -238,7 +238,7 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 
 HRESULT CLoader_Map::Check_Fbx_Existence ( const string& strJsonPath )
 {
-	// 1. JSON ÆÄÀÏ ¿­±â
+	// 1. JSON íŒŒì¼ ì—´ê¸°
 	ifstream file ( strJsonPath );
 	if ( !file.is_open () )
 	{
@@ -251,7 +251,7 @@ HRESULT CLoader_Map::Check_Fbx_Existence ( const string& strJsonPath )
 	file.close ();
 
 
-	// 3. mapData ¹è¿­ ¼øÈ¸
+	// 3. mapData ë°°ì—´ ìˆœíšŒ
 	for ( auto& entry : mapJson["mapData"] )
 	{
 		string fbxName = entry["fbxName"].get<string> ();
@@ -274,7 +274,7 @@ HRESULT CLoader_Map::Check_Fbx_Existence ( const string& strJsonPath )
 
 _wstring CLoader_Map::Get_BinaryPath(const string& strFbxName)
 {
-	// FBX ÆÄÀÏ¸í¿¡¼­ È®ÀåÀÚ Á¦°Å ÈÄ ¹ÙÀÌ³Ê¸® °æ·Î »ı¼º
+	// FBX íŒŒì¼ëª…ì—ì„œ í™•ì¥ì ì œê±° í›„ ë°”ì´ë„ˆë¦¬ ê²½ë¡œ ìƒì„±
 	string name = strFbxName.substr(0, strFbxName.find_last_of('.'));
 	string path = "Resources/NonAnim/Map/fbx/Prototype_Component_" + name + ".txt";
 
@@ -297,7 +297,7 @@ CLoader_Map* CLoader_Map::Create(EngineContext* pContext)
 
 void CLoader_Map::Free()
 {
-	// È¤½Ã ³²¾ÆÀÖÀ» ¼ö ÀÖ´Â º¸·ù ¸®¼Ò½º Á¤¸®
+	// í˜¹ì‹œ ë‚¨ì•„ìˆì„ ìˆ˜ ìˆëŠ” ë³´ë¥˜ ë¦¬ì†ŒìŠ¤ ì •ë¦¬
 	ReleasePendingResources();
 	Safe_Release(m_pGameInstance);
 	__super::Free();

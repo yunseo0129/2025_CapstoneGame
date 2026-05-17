@@ -13,7 +13,7 @@ HRESULT CChannel::Initialize(const CModel* pModel)
 	m_pGameInstance->Read_File(m_szName);
 	m_iBoneIndex = pModel->Get_BoneIndex(m_szName);
 
-	// ¹Ì»ç¿ë µ¥ÀÌÅÍÀÓ
+	// ë¯¸ì‚¬ìš© ë°ì´í„°ìž„
 	m_pGameInstance->Read_File(m_iNumScaleFrameKeys);
 	m_pGameInstance->Read_File(m_iNumRotationFrameKeys);
 	m_pGameInstance->Read_File(m_iNumPositionFrameKeys);

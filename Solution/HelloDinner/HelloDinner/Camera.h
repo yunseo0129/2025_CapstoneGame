@@ -34,7 +34,7 @@ public:
 	_float			Get_RotY() const { return m_fRotY; }
 	void			Move(_vector vTarget) { m_pTransformCom->Set_State(CTransform::STATE_POSITION, vTarget); }
 
-	// CBV ¹ÙÀÎµù ÇÔ¼ö
+	// CBV ë°”ì¸ë”© í•¨ìˆ˜
 	HRESULT Bind_CameraBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameterIndex _eIndex);
 	XMFLOAT4X4 Get_CameraView() {
 		return m_xmf4x4View;
@@ -43,8 +43,12 @@ public:
 		return m_xmf4x4Projection;
 	}
 
-	static void DebugPrintMatrix ( const char* name , const XMFLOAT4X4& m );
+    // Frustum Culling
+    void  Update_ViewProjection();
+    _bool IsSphereInFrustum(const _float3& vCenter, _float fRadius) const;
 
+    // DebugRenderingì„ ìœ„í•œ ë””ë²„ê·¸ ì¶œë ¥ í•¨ìˆ˜
+	static void DebugPrintMatrix ( const char* name , const XMFLOAT4X4& m );
 	static void DebugPrintFloat3 ( const char* name , const XMFLOAT3& v );
 
 protected:
@@ -56,7 +60,7 @@ protected:
 	_float			m_fRotY = { 0.f };
 
 private:
-	// Ä«¸Ş¶ó Constant Buffer »ı¼º
+	// ì¹´ë©”ë¼ Constant Buffer ìƒì„±
 	HRESULT Create_CameraBuffer();
 
 
@@ -69,9 +73,13 @@ private:
 	XMFLOAT4X4						m_xmf4x4Projection;
 	XMFLOAT3						m_xmf3Position;
 
+    // Frustum Culling
+    DirectX::BoundingFrustum    m_FrustumWorld;
+    _bool                        m_bFrustumValid = false;
+
 public:
 	
 	virtual CGameObject* Clone(void* pArg);
-	// CloneÀÌ ÇÊ¿äÇÑ°¡?
+	// Cloneì´ í•„ìš”í•œê°€?
 	virtual void Free() override;
 }; 

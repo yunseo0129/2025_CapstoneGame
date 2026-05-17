@@ -21,7 +21,7 @@ protected:
 	virtual HRESULT Bind_ShaderResources();
 
 private:
-	// ÄÄÆ÷³ÍÆ®µé
+	// ì»´í¬ë„ŒíŠ¸ë“¤
 	class CVIBuffer* m_pVIBufferCom = { nullptr };
 	class CTexture* m_pTextureCom = { nullptr };
 

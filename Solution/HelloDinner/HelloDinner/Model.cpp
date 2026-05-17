@@ -21,16 +21,16 @@ CModel::CModel(const CModel& Prototype)
 	, m_Materials{ Prototype.m_Materials }
 	, m_PreTransformMatrix{ Prototype.m_PreTransformMatrix }
 {
-	// BoneÀº ÀÎ½ºÅÏ½º¸¶´Ù ¾Ö´Ï¸ÞÀÌ¼Ç »óÅÂ°¡ ´Ù¸£¹Ç·Î ±íÀº º¹»ç
+	// Boneì€ ì¸ìŠ¤í„´ìŠ¤ë§ˆë‹¤ ì• ë‹ˆë©”ì´ì…˜ ìƒíƒœê°€ ë‹¤ë¥´ë¯€ë¡œ ê¹Šì€ ë³µì‚¬
 
 	for (auto& pBone : Prototype.m_Bones)
 		m_Bones.push_back(pBone->Clone());
 
-	// Animationµµ ±íÀº º¹»ç
+	// Animationë„ ê¹Šì€ ë³µì‚¬
 	for (auto& pAnim : Prototype.m_Animations)
 		m_Animations.push_back(pAnim->Clone());
 
-	// ¾Ö´Ô ¸ðµ¨ÀÌ¸é º» ¸ÅÆ®¸¯½º ¾÷·Îµå ¹öÆÛ »ý¼º
+	// ì• ë‹˜ ëª¨ë¸ì´ë©´ ë³¸ ë§¤íŠ¸ë¦­ìŠ¤ ì—…ë¡œë“œ ë²„í¼ ìƒì„±
 	if (TYPE_ANIM == m_eModelType)
 		Create_BoneBuffer();
 }
@@ -80,12 +80,12 @@ HRESULT CModel::Render(ID3D12GraphicsCommandList* _commandList, _uint iMeshIndex
 		return E_FAIL;
 	if (!IsShadow)
 	{
-	// ÀÌ ¸Þ½¬°¡ ÂüÁ¶ÇÏ´Â ¸ÓÆ¼¸®¾óÀÇ Diffuse ÅØ½ºÃ³ ¹ÙÀÎµù
+	// ì´ ë©”ì‰¬ê°€ ì°¸ì¡°í•˜ëŠ” ë¨¸í‹°ë¦¬ì–¼ì˜ Diffuse í…ìŠ¤ì²˜ ë°”ì¸ë”©
 	_uint iMaterialIndex = m_Meshes[iMeshIndex]->Get_MaterialIndex();
 
 		if (iMaterialIndex < m_iNumMaterials)
 		{
-			// ÅØ½ºÃ³°¡ ½ÇÁ¦·Î ÀÖ´ÂÁö È®ÀÎ
+			// í…ìŠ¤ì²˜ê°€ ì‹¤ì œë¡œ ìžˆëŠ”ì§€ í™•ì¸
 			CTexture* pTex = m_Materials[iMaterialIndex]->Get_Texture((TextureType)TextureType_DIFFUSE, 0);
 			if (pTex == nullptr)
 			{
@@ -107,7 +107,7 @@ HRESULT CModel::Render(ID3D12GraphicsCommandList* _commandList, _uint iMeshIndex
 			}
 		}
 	}
-	// 2. ¸Þ½¬ ·»´õ (IASet + DrawIndexedInstanced)
+	// 2. ë©”ì‰¬ ë Œë” (IASet + DrawIndexedInstanced)
 	m_Meshes[iMeshIndex]->Render(_commandList);
 
 
@@ -173,7 +173,7 @@ HRESULT CModel::Ready_Bones()
 	{
 		m_pGameInstance->Read_File(BoneName);
 		m_pGameInstance->Read_File(BoneTransformMatrix);
-		m_pGameInstance->Read_File(CombindTransformationMatrix); // Ãß°¡ÇÔ(È°¿ë¾ÈÇÔ) -> ¾Ö´Ï¸ÞÀÌ¼Ç Àç»ý ¾ÈÇÒ¶§ ±âº»»óÅÂ°ª Á¶Á¤¿¡ »ç¿ëÇØ¾ßÇÔ
+		m_pGameInstance->Read_File(CombindTransformationMatrix); // ì¶”ê°€í•¨(í™œìš©ì•ˆí•¨) -> ì• ë‹ˆë©”ì´ì…˜ ìž¬ìƒ ì•ˆí• ë•Œ ê¸°ë³¸ìƒíƒœê°’ ì¡°ì •ì— ì‚¬ìš©í•´ì•¼í•¨
 		m_pGameInstance->Read_File(BoneParentIndex);
 
 		CBone* pBone = CBone::Create(BoneName, BoneTransformMatrix, BoneParentIndex, CombindTransformationMatrix);
@@ -237,19 +237,19 @@ HRESULT CModel::Ready_Materials(const wchar_t* pModelFilePath, MATERIAL_LOAD_MOD
 
 		for (size_t j = 0; j < 25; j++)
 		{
-			// °¢ ½½·Ô¸¶´Ù MAX_PATH¹ÙÀÌÆ® °æ·Î¸¦ ÀÐÀ½
+			// ê° ìŠ¬ë¡¯ë§ˆë‹¤ MAX_PATHë°”ì´íŠ¸ ê²½ë¡œë¥¼ ì½ìŒ
 			_char szPath[MAX_PATH] = "";
 			m_pGameInstance->Read_File(szPath);
 
-			// "Not_Data"ÀÌ¸é ÅØ½ºÃ³ ¾øÀ½ ¡æ ½ºÅµ
+			// "Not_Data"ì´ë©´ í…ìŠ¤ì²˜ ì—†ìŒ â†’ ìŠ¤í‚µ
 			if (strcmp(szPath, "Not_Data") == 0)
 				continue;
 
-			// ¹Ì¸® dds ÆÄÀÏ·Î ¸¸µé¾î µ×´Ù¸é dds ÆÄÀÏ·Î ÀÐ¾î¿À±â
+			// ë¯¸ë¦¬ dds íŒŒì¼ë¡œ ë§Œë“¤ì–´ ë’€ë‹¤ë©´ dds íŒŒì¼ë¡œ ì½ì–´ì˜¤ê¸°
 			if (eMatMode == MATLOAD_DDS_FILE)
 				continue;
 
-			// char ¡æ wchar_t º¯È¯
+			// char â†’ wchar_t ë³€í™˜
 			_tchar szPerfectPath[MAX_PATH] = TEXT("");
 			MultiByteToWideChar(CP_ACP, 0, szPath, -1, szPerfectPath, MAX_PATH);
 
@@ -268,7 +268,7 @@ HRESULT CModel::Bind_Material(_uint iMeshIndex, TextureType eType, _uint iTextur
 	if (iMeshIndex >= m_iNumMaterials)
 		return E_FAIL;
 
-	// RootParameterIndex Ãß°¡ ÈÄ º¯°æ
+	// RootParameterIndex ì¶”ê°€ í›„ ë³€ê²½
 	RootParameterIndex rootParameterIndex = RootParameterIndex::TEXTURE_Diffuse;
 
 	if (eType == TextureType_NORMALS)
@@ -353,7 +353,7 @@ _uint CModel::Get_BoneIndex(const _char* pBoneName) const
 		});
 
 	if (iter == m_Bones.end())
-		MSG_BOX("¾ø¾î");
+		MSG_BOX("ì—†ì–´");
 
 
 	return iBoneIndex;
@@ -372,10 +372,10 @@ void CModel::Change_Animation(_uint iAnimIndex, _float fLinearDurationTime, _boo
 
 _bool CModel::Play_Animation(_float fTimeDelta)
 {
-	/* Ç¥ÇöÇÏ°íÀÚ ÇÏ´Â ¾Ö´Ï¸ÞÀÌ¼Ç¿¡ µû¸¥, »ÀÀÇ »óÅÂ(TransformationMatrix)¸¦ °»½ÅÇØÁØ´Ù.  */
+	/* í‘œí˜„í•˜ê³ ìž í•˜ëŠ” ì• ë‹ˆë©”ì´ì…˜ì— ë”°ë¥¸, ë¼ˆì˜ ìƒíƒœ(TransformationMatrix)ë¥¼ ê°±ì‹ í•´ì¤€ë‹¤.  */
 	m_isFinished = m_Animations[m_iCurrentAnimIndex]->Update_TransformationMatrices(m_Bones, m_isLoop, fTimeDelta);
 
-	/* »ÀÀÇ ¹Ù²ï TransformationMatrix¸¦ È°¿ëÇÏ¿© ·»´úÀÌÇÏ±âÀ§ÇÑ ÃÖÁ¾ »ÀÀÇ CombinedTransformationMatrix¸¦ ¸¸µé¾î³½´Ù. */
+	/* ë¼ˆì˜ ë°”ë€ TransformationMatrixë¥¼ í™œìš©í•˜ì—¬ ë Œëœì´í•˜ê¸°ìœ„í•œ ìµœì¢… ë¼ˆì˜ CombinedTransformationMatrixë¥¼ ë§Œë“¤ì–´ë‚¸ë‹¤. */
 	for (auto& pBone : m_Bones)
 	{
 		pBone->Update_CombinedTransformationMatrix(m_Bones, XMLoadFloat4x4(&m_PreTransformMatrix));
@@ -386,10 +386,10 @@ _bool CModel::Play_Animation(_float fTimeDelta)
 
 _bool CModel::Blend_Animation(_float fTimeDelta)
 {
-	/* Ç¥ÇöÇÏ°íÀÚ ÇÏ´Â ¾Ö´Ï¸ÞÀÌ¼Ç¿¡ µû¸¥, »ÀÀÇ »óÅÂ(TransformationMatrix)¸¦ °»½ÅÇØÁØ´Ù.  */
+	/* í‘œí˜„í•˜ê³ ìž í•˜ëŠ” ì• ë‹ˆë©”ì´ì…˜ì— ë”°ë¥¸, ë¼ˆì˜ ìƒíƒœ(TransformationMatrix)ë¥¼ ê°±ì‹ í•´ì¤€ë‹¤.  */
 	m_isFinished = m_Animations[m_iCurrentAnimIndex]->Update_TransformationMatrices(m_Bones, m_fBlendTime, fTimeDelta);
 
-	/* »ÀÀÇ ¹Ù²ï TransformationMatrix¸¦ È°¿ëÇÏ¿© ·»´úÀÌÇÏ±âÀ§ÇÑ ÃÖÁ¾ »ÀÀÇ CombinedTransformationMatrix¸¦ ¸¸µé¾î³½´Ù. */
+	/* ë¼ˆì˜ ë°”ë€ TransformationMatrixë¥¼ í™œìš©í•˜ì—¬ ë Œëœì´í•˜ê¸°ìœ„í•œ ìµœì¢… ë¼ˆì˜ CombinedTransformationMatrixë¥¼ ë§Œë“¤ì–´ë‚¸ë‹¤. */
 	for (auto& pBone : m_Bones)
 	{
 		pBone->Update_CombinedTransformationMatrix(m_Bones, XMLoadFloat4x4(&m_PreTransformMatrix));
@@ -421,10 +421,10 @@ HRESULT CModel::Bind_BoneMatrices(ID3D12GraphicsCommandList* _cmdList, _uint iMe
 
 	_int iFrameIndex = m_pGameInstance->GetCurrentFrameIndex();
 
-	// 1. ¸Þ½¬ÀÇ º» ¸ÅÆ®¸¯½º °è»ê (OffsetMatrix * CombinedMatrix) ¡æ ¸ÅÇÎµÈ ¹öÆÛ¿¡ Á÷Á¢ ±â·Ï
+	// 1. ë©”ì‰¬ì˜ ë³¸ ë§¤íŠ¸ë¦­ìŠ¤ ê³„ì‚° (OffsetMatrix * CombinedMatrix) â†’ ë§¤í•‘ëœ ë²„í¼ì— ì§ì ‘ ê¸°ë¡
 	m_Meshes[iMeshIndex]->SetUp_BoneMatrices(m_Bones, m_pCbMappedBones[iFrameIndex]->m_BoneMatrices);
 
-	// 2. CBV ¹ÙÀÎµù
+	// 2. CBV ë°”ì¸ë”©
 	_cmdList->SetGraphicsRootConstantBufferView(
 		RootParameterIndex::BoneMatrix,
 		m_pBoneBuffers[iFrameIndex]->GetGPUVirtualAddress());

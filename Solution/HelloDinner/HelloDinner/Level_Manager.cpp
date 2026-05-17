@@ -1,6 +1,7 @@
 #include "Level_Manager.h"
 
 #include "Level.h"
+#include "Camera.h"
 #include "GameInstance.h"
 
 CLevel_Manager::CLevel_Manager()
@@ -11,8 +12,8 @@ CLevel_Manager::CLevel_Manager()
 
 HRESULT CLevel_Manager::Open_Level(_int iLevelIndex, CLevel* pNewLevel)
 {
-	/* ¿ÀºêÁ§Æ® ¸Å´ÏÁ®¿¡ Ãß°¡ ÇØ³õÀº ±âÁ¸ ·¹º§¿ë °´Ã¼µéÀ» »èÁ¦ÇÑ´Ù. */
-	/* ÄÄÆ÷³ÍÆ® ¸Å´ÏÁ®¿¡ Ãß°¡ ÇØ³õÀº ±âÁ¸ ·¹º§¿ë °´Ã¼µéÀ» »èÁ¦ÇÑ´Ù. */
+	/* ì˜¤ë¸Œì íŠ¸ ë§¤ë‹ˆì ¸ì— ì¶”ê°€ í•´ë†“ì€ ê¸°ì¡´ ë ˆë²¨ìš© ê°ì²´ë“¤ì„ ì‚­ì œí•œë‹¤. */
+	/* ì»´í¬ë„ŒíŠ¸ ë§¤ë‹ˆì ¸ì— ì¶”ê°€ í•´ë†“ì€ ê¸°ì¡´ ë ˆë²¨ìš© ê°ì²´ë“¤ì„ ì‚­ì œí•œë‹¤. */
 
 	if (nullptr != m_pCurrentLevel)
 	{
@@ -74,6 +75,32 @@ XMFLOAT4X4 CLevel_Manager::Get_CurrentCameraProjection ()
 	if (nullptr != m_pCurrentLevel)
 		return m_pCurrentLevel->Get_CurrentCameraProjection();
 	return XMFLOAT4X4 ();
+}
+
+CCamera* CLevel_Manager::Get_CurrentCamera()
+{
+    if (nullptr == m_pCurrentLevel)
+        return nullptr;
+    return m_pCurrentLevel->Get_CurrentCamera();
+}
+
+_bool CLevel_Manager::IsSphereInFrustum(const _float3& vCenter, _float fRadius)
+{
+    if (!m_bCullingEnabled)
+        return true;  // OFF: ë‹¤ í†µê³¼
+
+    CCamera* pCamera = Get_CurrentCamera();
+    if (nullptr == pCamera)
+        return true;  // ì¹´ë©”ë¼ ì—†ìœ¼ë©´ ì•ˆì „í•˜ê²Œ í†µê³¼
+
+    return pCamera->IsSphereInFrustum(vCenter, fRadius);
+}
+
+void CLevel_Manager::Add_CullStat(_bool bRendered)
+{
+    ++m_iCullTotal;
+    if (bRendered)
+        ++m_iCullRendered;
 }
 
 CLevel_Manager* CLevel_Manager::Create()

@@ -51,6 +51,90 @@ _bool CBounding_OBB::Intersect(CCollider::COLLIDERTYPE eType, CBounding* pTarget
 	return m_isColl;
 }
 
+_bool CBounding_OBB::Intersect_Offset(CCollider::COLLIDERTYPE eType, CBounding* pTargetBounding, const _float3& vOffset)
+{
+	m_isColl = false;
+	XMVECTOR vOff = XMLoadFloat3(&vOffset);
+
+	switch (eType)
+	{
+	case CCollider::TYPE_AABB:
+	{
+		DirectX::BoundingBox tempDesc = *static_cast<CBounding_AABB*>(pTargetBounding)->Get_Desc();
+		XMVECTOR vCenter = XMLoadFloat3(&tempDesc.Center);
+		XMStoreFloat3(&tempDesc.Center, XMVectorAdd(vCenter, vOff));
+		m_isColl = m_pBoundDesc->Intersects(tempDesc);
+		break;
+	}
+	case CCollider::TYPE_OBB:
+	{
+		DirectX::BoundingOrientedBox tempDesc = *static_cast<CBounding_OBB*>(pTargetBounding)->Get_Desc();
+		XMVECTOR vCenter = XMLoadFloat3(&tempDesc.Center);
+		XMStoreFloat3(&tempDesc.Center, XMVectorAdd(vCenter, vOff));
+		m_isColl = m_pBoundDesc->Intersects(tempDesc);
+		break;
+	}
+	case CCollider::TYPE_SPHERE:
+	{
+		DirectX::BoundingSphere tempDesc = *static_cast<CBounding_Sphere*>(pTargetBounding)->Get_Desc();
+		XMVECTOR vCenter = XMLoadFloat3(&tempDesc.Center);
+		XMStoreFloat3(&tempDesc.Center, XMVectorAdd(vCenter, vOff));
+		m_isColl = m_pBoundDesc->Intersects(tempDesc);
+		break;
+	}
+	}
+
+	return m_isColl;
+}
+
+_float3 CBounding_OBB::Get_CollisionNormal(CCollider::COLLIDERTYPE eTargetType, CBounding* pTargetBounding)
+{
+	XMVECTOR vMeCenter = XMLoadFloat3(&m_pBoundDesc->Center);
+	XMVECTOR vOrientation = XMLoadFloat4(&m_pBoundDesc->Orientation);
+
+	XMVECTOR vTargetCenter = XMVectorZero();
+	switch (eTargetType)
+	{
+	case CCollider::TYPE_AABB:
+		vTargetCenter = XMLoadFloat3(&static_cast<CBounding_AABB*>(pTargetBounding)->Get_Desc()->Center);
+		break;
+	case CCollider::TYPE_OBB:
+		vTargetCenter = XMLoadFloat3(&static_cast<CBounding_OBB*>(pTargetBounding)->Get_Desc()->Center);
+		break;
+	case CCollider::TYPE_SPHERE:
+		vTargetCenter = XMLoadFloat3(&static_cast<CBounding_Sphere*>(pTargetBounding)->Get_Desc()->Center);
+		break;
+	}
+
+	// 내 로컬 좌표계 기준으로 상대 중심 위치 계산
+	XMVECTOR vDelta = XMVectorSubtract(vTargetCenter, vMeCenter);
+	XMVECTOR vInvOrient = XMQuaternionConjugate(vOrientation);
+	XMVECTOR vLocalDelta = XMVector3Rotate(vDelta, vInvOrient);
+
+	_float3 fLocal;
+	XMStoreFloat3(&fLocal, vLocalDelta);
+
+	// 로컬 좌표에서 가장 큰 축 결정
+	_float fAbsX = fabsf(fLocal.x);
+	_float fAbsY = fabsf(fLocal.y);
+	_float fAbsZ = fabsf(fLocal.z);
+
+	_float3 vLocalNormal {0.f, 0.f, 0.f};
+	if (fAbsX >= fAbsY && fAbsX >= fAbsZ)
+		vLocalNormal.x = (fLocal.x >= 0.f) ? -1.f : 1.f;   // 상대 반대방향
+	else if (fAbsY >= fAbsX && fAbsY >= fAbsZ)
+		vLocalNormal.y = (fLocal.y >= 0.f) ? -1.f : 1.f;
+	else
+		vLocalNormal.z = (fLocal.z >= 0.f) ? -1.f : 1.f;
+
+	// 다시 월드 좌표계로 회전
+	XMVECTOR vWorldNormal = XMVector3Rotate(XMLoadFloat3(&vLocalNormal), vOrientation);
+
+	_float3 result;
+	XMStoreFloat3(&result, vWorldNormal);
+	return result;
+}
+
 _float3 CBounding_OBB::Get_Center()
 {
 	return m_pBoundDesc->Center;

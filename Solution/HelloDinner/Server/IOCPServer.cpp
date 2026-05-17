@@ -9,7 +9,7 @@ IOCPServer::~IOCPServer()
 
 bool IOCPServer::Initialize()
 {
-    // À©¼Ó ÃÊ±âÈ­
+    // ìœˆì† ì´ˆê¸°í™”
     WSADATA WSAData;
     WSAStartup(MAKEWORD(2, 2), &WSAData);
     m_listen_socket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
@@ -19,14 +19,14 @@ bool IOCPServer::Initialize()
         return false;
     }
 
-    // ¼­¹ö ¼ÒÄÏ ÁÖ¼Ò Á¤º¸ ¼³Á¤
+    // ì„œë²„ ì†Œì¼“ ì£¼ì†Œ ì •ë³´ ì„¤ì •
     SOCKADDR_IN server_addr;
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(INTERNAL_PORT);
     server_addr.sin_addr.S_un.S_addr = INADDR_ANY;
 
-    // ¹ÙÀÎµù ¹× ¸®½¼
+    // ë°”ì¸ë”© ë° ë¦¬ìŠ¨
     if (bind(m_listen_socket, reinterpret_cast<sockaddr*>(&server_addr), sizeof(server_addr)) == SOCKET_ERROR) {
         cout << "Bind failed.\n";
         return false;
@@ -37,7 +37,7 @@ bool IOCPServer::Initialize()
         return false;
     }
 
-    // IOCP »ı¼º ¹× ¸®½¼ ¼ÒÄÏ ¿¬°á
+    // IOCP ìƒì„± ë° ë¦¬ìŠ¨ ì†Œì¼“ ì—°ê²°
     m_h_iocp = CreateIoCompletionPort(INVALID_HANDLE_VALUE, 0, 0, 0);
     CreateIoCompletionPort(reinterpret_cast<HANDLE>(m_listen_socket), m_h_iocp, 9999, 0);
 
@@ -54,10 +54,10 @@ bool IOCPServer::Initialize()
 
 void IOCPServer::Run()
 {
-    // Ã¹ AcceptEx È£Ãâ
+    // ì²« AcceptEx í˜¸ì¶œ
     AcceptClient();
 
-    // ¿öÄ¿ ½º·¹µå »ı¼º
+    // ì›Œì»¤ ìŠ¤ë ˆë“œ ìƒì„±
     vector<thread> worker_threads;
     int num_threads = std::thread::hardware_concurrency();
     for (int i = 0; i < num_threads; ++i)
@@ -103,7 +103,7 @@ void IOCPServer::WorkerThread()
             continue;
         }
 
-        // ÀÛ¾÷ ¿Ï·áµÈ IOCP ÆĞÅ¶ÀÇ Á¾·ù¿¡ µû¶ó Ã³¸®
+        // ì‘ì—… ì™„ë£Œëœ IOCP íŒ¨í‚·ì˜ ì¢…ë¥˜ì— ë”°ë¼ ì²˜ë¦¬
         switch (ex_over->m_comp_type) {
         case OP_ACCEPT: {
             int client_id = sm->GetNewClientId();

@@ -6,7 +6,7 @@ class CCollision_Manager final : public CBase
 	DECLARE_SINGLETON(CCollision_Manager)
 
 public:
-	// Collider class¾È¿¡¼­ ¼ÒÀ¯ÀÚ³ª ºÎÀ§ µî ID °ª Á¤ÇØÁà¼­ È°¿ëÇØ¾ß ÇÒ µí (ex ÇÇ¾Æ½Äº°)
+	// Collider classì•ˆì—ì„œ ì†Œìœ ìë‚˜ ë¶€ìœ„ ë“± ID ê°’ ì •í•´ì¤˜ì„œ í™œìš©í•´ì•¼ í•  ë“¯ (ex í”¼ì•„ì‹ë³„)
 	enum COLLISION_GROUP {
 		GROUP_MAP,
 		GROUP_PLAYER,
@@ -26,15 +26,17 @@ public:
 	void Delete_CollisionGroup(COLLISION_GROUP _eGroup, class CCollider* _pCollider);
 	vector<class CCollider*> CollisionCheck_with_Group(class CCollider* _pCollider, COLLISION_GROUP _eGroup);
 	bool CollisionCheck_with_Collider(class CCollider* _pMyCollider, class CCollider* _pOtherCollider);
-	bool CheckMove(CCollider* me, const XMFLOAT3& pos, const XMFLOAT3& move, XMFLOAT3& outSlide);
+	bool CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide);
 
 private:
+	bool IsCollidingAfterMove ( CCollider* me , CCollider* other , const XMFLOAT3& move );
+	XMFLOAT3 GetCollisionNormal ( CCollider* me , CCollider* other );
 	XMFLOAT3 Slide(const XMFLOAT3& move, const XMFLOAT3& normal);
 
 private:
 	class CGameInstance*		m_pGameInstance = nullptr;
-	vector<class CCollider*>	m_Colliders[GROUP_END]; // ±×·ì¸¶´Ù µû·Î Äİ¶óÀÌ´õ ³Ö¾îÁÖ±â
-	_bool						m_CollisionMatrix[GROUP_END][GROUP_END]; // ¿ŞÂÊ ±×·ìÀÌ ¿À¸¥ÂÊ ±×·ì°ú Ãæµ¹Ã³¸® ¿©ºÎ(¿ŞÂÊÀÌ ¸ŞÀÎ)
+	vector<class CCollider*>	m_Colliders[GROUP_END]; // ê·¸ë£¹ë§ˆë‹¤ ë”°ë¡œ ì½œë¼ì´ë” ë„£ì–´ì£¼ê¸°
+	_bool						m_CollisionMatrix[GROUP_END][GROUP_END]; // ì™¼ìª½ ê·¸ë£¹ì´ ì˜¤ë¥¸ìª½ ê·¸ë£¹ê³¼ ì¶©ëŒì²˜ë¦¬ ì—¬ë¶€(ì™¼ìª½ì´ ë©”ì¸)
 
 public:
 	static CCollision_Manager* Create();

@@ -1,6 +1,6 @@
 #pragma once
 #include "Base.h"
-#include "Texture.h" // ¾Õ¼­ ¸¸µå½Å CTexture Çì´õ Æ÷ÇÔ
+#include "Texture.h" // ì•ì„œ ë§Œë“œì‹  CTexture í—¤ë” í¬í•¨
 
 class CMaterial : public CBase
 {

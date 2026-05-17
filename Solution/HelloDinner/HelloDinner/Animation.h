@@ -2,7 +2,7 @@
 
 #include "Base.h"
 
-/* 1. ÀÌ ¾Ö´Ï¸ŞÀÌ¼Ç(´ë±â, °ø°İ etc)ÀÌ ÄÁÆ®·ÑÇØ¾ßÇÏ´Â »À(Channel)ÀÇ Á¤º¸¸¦ °¡Áø´Ù.  */
+/* 1. ì´ ì• ë‹ˆë©”ì´ì…˜(ëŒ€ê¸°, ê³µê²© etc)ì´ ì»¨íŠ¸ë¡¤í•´ì•¼í•˜ëŠ” ë¼ˆ(Channel)ì˜ ì •ë³´ë¥¼ ê°€ì§„ë‹¤.  */
 /* 2. */
 class CAnimation final : public CBase
 {
@@ -13,9 +13,9 @@ private:
 
 public:
 	HRESULT Initialize(const class CModel* pModel);
-	// ¸Å ÇÁ·¹ÀÓ È£ÃâÇÔ
+	// ë§¤ í”„ë ˆì„ í˜¸ì¶œí•¨
 	// 
-	// ÄÁÆ®·Ñ ÇØ¾ß ÇÏ´Â »ÀµéÀ» ¾÷µ¥ÀÌÆ® ÇØÁÜ  
+	// ì»¨íŠ¸ë¡¤ í•´ì•¼ í•˜ëŠ” ë¼ˆë“¤ì„ ì—…ë°ì´íŠ¸ í•´ì¤Œ  
 	_bool Update_TransformationMatrices(const vector<class CBone*>& Bones, _bool isLoop, _float fTimeDelta);
 
 	_bool Update_TransformationMatrices(const vector<class CBone*>& Bones, _float fBlendTime, _float fTimeDelta);
@@ -27,20 +27,20 @@ public:
 	vector<class CChannel*> Get_Channels() { return m_Channels; }
 
 private:
-	// ¾Ö´Ï¸ŞÀÌ¼Ç ÀÌ¸§
+	// ì• ë‹ˆë©”ì´ì…˜ ì´ë¦„
 	_char					m_szName[MAX_PATH] = {};
-	// ÄÁÆ®·ÑÇØ¾ß ÇÏ´Â Ã¤³ÎÀÇ ¼ö
+	// ì»¨íŠ¸ë¡¤í•´ì•¼ í•˜ëŠ” ì±„ë„ì˜ ìˆ˜
 	_uint					m_iNumChannels = {};
-	// ÄÁÆ®·Ñ ÇØ¾ß ÇÏ´Â Ã¤³Î ¹éÅÍ
+	// ì»¨íŠ¸ë¡¤ í•´ì•¼ í•˜ëŠ” ì±„ë„ ë°±í„°
 	vector<class CChannel*> m_Channels;
 
-	// ÀÌ ¾Ö´Ï¸ŞÀÌ¼ÇÀÇ Àç»ı½Ã°£
+	// ì´ ì• ë‹ˆë©”ì´ì…˜ì˜ ì¬ìƒì‹œê°„
 	_float					m_fDuration = {};
-	// ¹ºÁö ¸ô°Ú´Âµ¥ ÀÏ´Ü fbx¿¡¼­ ¹Ş¾Æ¿Í¾ßÇÏ´Â°Ç ¸ÂÀ½
+	// ë­”ì§€ ëª°ê² ëŠ”ë° ì¼ë‹¨ fbxì—ì„œ ë°›ì•„ì™€ì•¼í•˜ëŠ”ê±´ ë§ìŒ
 	_float					m_fTickPerSecond = {};
-	// ÇöÀç Àç»ı±¸°£
+	// í˜„ì¬ ì¬ìƒêµ¬ê°„
 	_float					m_fCurrentTrackPosition = {};
-	// Ã¤³Î º° ÇöÀç ÁøÇàÇÏ°í ÀÖ´Â Å°ÇÁ·¹ÀÓÀÎ°Å°°À½
+	// ì±„ë„ ë³„ í˜„ì¬ ì§„í–‰í•˜ê³  ìˆëŠ” í‚¤í”„ë ˆì„ì¸ê±°ê°™ìŒ
 	vector<_uint>			m_CurrentKeyFrameIndices;
 
 	class CGameInstance* m_pGameInstance = { nullptr };

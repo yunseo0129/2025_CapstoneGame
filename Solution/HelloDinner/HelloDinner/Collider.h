@@ -3,7 +3,7 @@
 
 
 
-/* °´Ã¼¿¡ ¾º¿ö¾ßÇÒ Ãæµ¹Ã¼¸¦ ÀÇ¹ÌÇÑ´Ù. */
+/* ê°ì²´ì— ì”Œì›Œì•¼í•  ì¶©ëŒì²´ë¥¼ ì˜ë¯¸í•œë‹¤. */
 /* Sphere, AABB, OBB */
 class CCollider final : public CComponent
 {
@@ -25,6 +25,8 @@ public:
 
 public:
 	_bool Intersect(const CCollider* pTargetCollider);
+	_bool Intersect_Offset(const CCollider* pTargetCollider, const _float3& vOffset);
+	_float3 Get_CollisionNormal(const CCollider* pTargetCollider);
 	_bool Get_Enable() const { return m_isEnable; }
 	void Set_Enable(_bool isWhat) { m_isEnable = isWhat; }
 	_float3 Get_Center();
@@ -34,7 +36,7 @@ private:
 	COLLIDERTYPE						m_eType = { TYPE_END };
 	class CBounding* m_pBounding = { nullptr };
 	_bool	m_isEnable = { true };
-	const _float4x4* m_pSocketMatrix = { nullptr };		// ¼ÒÄÏ ¸ÅÆ®¸¯½º (¾Ö´Ï¸ŞÀÌ¼ÇÀÌ ÀÖ´Â ¸ğµ¨ÀÇ °æ¿ì, º»¿¡ µû¶ó Ãæµ¹Ã¼°¡ ¿òÁ÷¿©¾ßÇÏ¹Ç·Î)
+	const _float4x4* m_pSocketMatrix = { nullptr };		// ì†Œì¼“ ë§¤íŠ¸ë¦­ìŠ¤ (ì• ë‹ˆë©”ì´ì…˜ì´ ìˆëŠ” ëª¨ë¸ì˜ ê²½ìš°, ë³¸ì— ë”°ë¼ ì¶©ëŒì²´ê°€ ì›€ì§ì—¬ì•¼í•˜ë¯€ë¡œ)
 	const _float4x4* m_pParentMatrix = { nullptr };
 
 #ifdef _DEBUG

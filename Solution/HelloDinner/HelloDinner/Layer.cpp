@@ -35,12 +35,12 @@ void CLayer::Priority_Update(_float fTimeDelta)
 		if ((*it)->IsDead())
 		{
 			Safe_Release(*it);
-			it = m_GameObjects.erase(it);  // 'erase'´Â Áö¿î ¿ä¼Ò ´ÙÀ½ ¿ä¼ÒÀÇ ¹Ýº¹ÀÚ¸¦ ¹ÝÈ¯
+			it = m_GameObjects.erase(it);  // 'erase'ëŠ” ì§€ìš´ ìš”ì†Œ ë‹¤ìŒ ìš”ì†Œì˜ ë°˜ë³µìžë¥¼ ë°˜í™˜
 		}
 		else
 		{
 			(*it)->Priority_Update(fTimeDelta);
-			++it;  // Á×Áö ¾ÊÀº ¿ÀºêÁ§Æ®ÀÇ °æ¿ì¸¸ ¹Ýº¹ÀÚ Áõ°¡
+			++it;  // ì£½ì§€ ì•Šì€ ì˜¤ë¸Œì íŠ¸ì˜ ê²½ìš°ë§Œ ë°˜ë³µìž ì¦ê°€
 		}
 	}
 }

@@ -8,7 +8,7 @@ CInput_Device::CInput_Device(void)
 HRESULT CInput_Device::Initialize(HINSTANCE hInst, HWND hWnd)
 {
 
-	// DInput ÄÄ°´Ã¼¸¦ »ý¼ºÇÏ´Â ÇÔ¼ö
+	// DInput ì»´ê°ì²´ë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
 	if (FAILED(DirectInput8Create(hInst,
 		DIRECTINPUT_VERSION,
 		IID_IDirectInput8,
@@ -16,32 +16,32 @@ HRESULT CInput_Device::Initialize(HINSTANCE hInst, HWND hWnd)
 		return E_FAIL;
 
 
-	// Å°º¸µå °´Ã¼ »ý¼º
+	// í‚¤ë³´ë“œ ê°ì²´ ìƒì„±
 	if (FAILED(m_pInputSDK->CreateDevice(GUID_SysKeyboard, &m_pKeyBoard, nullptr)))
 		return E_FAIL;
 
 
-	// »ý¼ºµÈ Å°º¸µå °´Ã¼ÀÇ ´ëÇÑ Á¤º¸¸¦ ÄÄ °´Ã¼¿¡°Ô Àü´ÞÇÏ´Â ÇÔ¼ö
+	// ìƒì„±ëœ í‚¤ë³´ë“œ ê°ì²´ì˜ ëŒ€í•œ ì •ë³´ë¥¼ ì»´ ê°ì²´ì—ê²Œ ì „ë‹¬í•˜ëŠ” í•¨ìˆ˜
 	m_pKeyBoard->SetDataFormat(&c_dfDIKeyboard);
 
-	// ÀåÄ¡¿¡ ´ëÇÑ µ¶Á¡±ÇÀ» ¼³Á¤ÇØÁÖ´Â ÇÔ¼ö, (Å¬¶óÀÌ¾ðÆ®°¡ ¶°ÀÖ´Â »óÅÂ¿¡¼­ Å° ÀÔ·ÂÀ» ¹ÞÀ»Áö ¸»Áö¸¦ °áÁ¤ÇÏ´Â ÇÔ¼ö)
+	// ìž¥ì¹˜ì— ëŒ€í•œ ë…ì ê¶Œì„ ì„¤ì •í•´ì£¼ëŠ” í•¨ìˆ˜, (í´ë¼ì´ì–¸íŠ¸ê°€ ë– ìžˆëŠ” ìƒíƒœì—ì„œ í‚¤ ìž…ë ¥ì„ ë°›ì„ì§€ ë§ì§€ë¥¼ ê²°ì •í•˜ëŠ” í•¨ìˆ˜)
 	m_pKeyBoard->SetCooperativeLevel(hWnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
 
-	// ÀåÄ¡¿¡ ´ëÇÑ access ¹öÀüÀ» ¹Þ¾Æ¿À´Â ÇÔ¼ö
+	// ìž¥ì¹˜ì— ëŒ€í•œ access ë²„ì „ì„ ë°›ì•„ì˜¤ëŠ” í•¨ìˆ˜
 	m_pKeyBoard->Acquire();
 
 
-	// ¸¶¿ì½º °´Ã¼ »ý¼º
+	// ë§ˆìš°ìŠ¤ ê°ì²´ ìƒì„±
 	if (FAILED(m_pInputSDK->CreateDevice(GUID_SysMouse, &m_pMouse, nullptr)))
 		return E_FAIL;
 
-	// »ý¼ºµÈ ¸¶¿ì½º °´Ã¼ÀÇ ´ëÇÑ Á¤º¸¸¦ ÄÄ °´Ã¼¿¡°Ô Àü´ÞÇÏ´Â ÇÔ¼ö
+	// ìƒì„±ëœ ë§ˆìš°ìŠ¤ ê°ì²´ì˜ ëŒ€í•œ ì •ë³´ë¥¼ ì»´ ê°ì²´ì—ê²Œ ì „ë‹¬í•˜ëŠ” í•¨ìˆ˜
 	m_pMouse->SetDataFormat(&c_dfDIMouse);
 
-	// ÀåÄ¡¿¡ ´ëÇÑ µ¶Á¡±ÇÀ» ¼³Á¤ÇØÁÖ´Â ÇÔ¼ö, Å¬¶óÀÌ¾ðÆ®°¡ ¶°ÀÖ´Â »óÅÂ¿¡¼­ Å° ÀÔ·ÂÀ» ¹ÞÀ»Áö ¸»Áö¸¦ °áÁ¤ÇÏ´Â ÇÔ¼ö
+	// ìž¥ì¹˜ì— ëŒ€í•œ ë…ì ê¶Œì„ ì„¤ì •í•´ì£¼ëŠ” í•¨ìˆ˜, í´ë¼ì´ì–¸íŠ¸ê°€ ë– ìžˆëŠ” ìƒíƒœì—ì„œ í‚¤ ìž…ë ¥ì„ ë°›ì„ì§€ ë§ì§€ë¥¼ ê²°ì •í•˜ëŠ” í•¨ìˆ˜
 	m_pMouse->SetCooperativeLevel(hWnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
 
-	// ÀåÄ¡¿¡ ´ëÇÑ access ¹öÀüÀ» ¹Þ¾Æ¿À´Â ÇÔ¼ö
+	// ìž¥ì¹˜ì— ëŒ€í•œ access ë²„ì „ì„ ë°›ì•„ì˜¤ëŠ” í•¨ìˆ˜
 	m_pMouse->Acquire();
 
 

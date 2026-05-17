@@ -8,12 +8,12 @@ public:
 	struct MAP_DESC : public CGameObject::GAMEOBJECT_DESC
 	{
 		_float3		vPosition = {};
-		_float3		vRotation = {};		// degree ´ÜÀ§
+		_float3		vRotation = {};		// degree ë‹¨ìœ„
 		_float3		vScale = { 1.f, 1.f, 1.f };
 		_wstring	strModelTag = L"";
 		_uint		iModelLevelIndex = 0;
 
-		// collider Á¤º¸±îÁö ³Ö¾î¼­ °ü¸®ÇÏÀÚ
+		// collider ì •ë³´ê¹Œì§€ ë„£ì–´ì„œ ê´€ë¦¬í•˜ì
 		CCollider::COLLIDERTYPE eColliderType = CCollider::TYPE_END;
 		_float3    vCenterCollider = {};
 		_float3    vExtentsCollider = {};
@@ -34,6 +34,10 @@ public:
 	virtual void Late_Update(_float fTimeDelta) override;
 	virtual void Render(ID3D12GraphicsCommandList* _commandList) override;
 	virtual void ShadowRender(ID3D12GraphicsCommandList* _commandList) override;
+	 
+public:
+	// Frustum Culling
+	virtual bool Get_WorldBoundingSphere(_float3& pOutCenter, _float& pOutRadius) const override;
 
 private:
 	HRESULT Ready_Components();

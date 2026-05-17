@@ -141,9 +141,6 @@
     <Filter Include="소스 파일\02. Game\01. Levels">
       <UniqueIdentifier>{c43918c2-52f7-4d36-b26f-9d3e5e424d88}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\02. Game\01. Levels\Loading">
-      <UniqueIdentifier>{a4800bdf-b883-4c6d-af45-92216972cf92}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\02. Game\GameObject\Object">
       <UniqueIdentifier>{abee257d-9e76-488e-9a5b-bcfceaefba0e}</UniqueIdentifier>
     </Filter>
@@ -218,6 +215,18 @@
     </Filter>
     <Filter Include="소스 파일\03. Network\Player">
       <UniqueIdentifier>{bcc5c4c1-5036-467f-88f2-ab1e7ac44f59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\01. Levels\03. GamePlay">
+      <UniqueIdentifier>{b895ede4-18e7-460e-8289-f1ba6908a82a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\01. Levels\99. Loader">
+      <UniqueIdentifier>{a22c076e-328e-4303-ac4c-639e0779cd79}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\01. Levels\01. Loading">
+      <UniqueIdentifier>{a4800bdf-b883-4c6d-af45-92216972cf92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\01. Levels\04. MapLoading">
+      <UniqueIdentifier>{1112550d-cf2d-4e1c-806a-9851151a0e80}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -321,7 +330,7 @@
       <Filter>소스 파일\01. Engine\06. Shader\Manager</Filter>
     </ClInclude>
     <ClInclude Include="Level_Loading.h">
-      <Filter>소스 파일\02. Game\01. Levels\Loading</Filter>
+      <Filter>소스 파일\02. Game\01. Levels\01. Loading</Filter>
     </ClInclude>
     <ClInclude Include="Cube.h">
       <Filter>소스 파일\02. Game\GameObject\Object</Filter>
@@ -337,9 +346,6 @@
     </ClInclude>
     <ClInclude Include="Map.h">
       <Filter>소스 파일\02. Game\GameObject\Object</Filter>
-    </ClInclude>
-    <ClInclude Include="Loader_Map.h">
-      <Filter>소스 파일\02. Game\01. Levels\Loading</Filter>
     </ClInclude>
     <ClInclude Include="Common\WICTextureLoader12.h">
       <Filter>외부 파일</Filter>
@@ -406,6 +412,18 @@
     </ClInclude>
     <ClInclude Include="NetPlayer.h">
       <Filter>소스 파일\03. Network\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Loader_Map.h">
+      <Filter>소스 파일\02. Game\01. Levels\99. Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="Loader.h">
+      <Filter>소스 파일\02. Game\01. Levels\99. Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="Level_Gameplay.h">
+      <Filter>소스 파일\02. Game\01. Levels\03. GamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="LoadingWindow.h">
+      <Filter>소스 파일\02. Game\01. Levels\01. Loading</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -488,7 +506,7 @@
       <Filter>소스 파일\01. Engine\06. Shader\Manager</Filter>
     </ClCompile>
     <ClCompile Include="Level_Loading.cpp">
-      <Filter>소스 파일\02. Game\01. Levels\Loading</Filter>
+      <Filter>소스 파일\02. Game\01. Levels\01. Loading</Filter>
     </ClCompile>
     <ClCompile Include="Cube.cpp">
       <Filter>소스 파일\02. Game\GameObject\Object</Filter>
@@ -508,14 +526,8 @@
     <ClCompile Include="Map.cpp">
       <Filter>소스 파일\02. Game\GameObject\Object</Filter>
     </ClCompile>
-    <ClCompile Include="Loader_Map.cpp">
-      <Filter>소스 파일\02. Game\01. Levels\Loading</Filter>
-    </ClCompile>
     <ClCompile Include="Common\WICTextureLoader12.cpp">
       <Filter>외부 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Player_Pig.cpp">
-      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd\02. Pig_3rd</Filter>
     </ClCompile>
     <ClCompile Include="Channel.cpp">
       <Filter>소스 파일\01. Engine\04. Components\02. Model\Animation\Channel</Filter>
@@ -589,6 +601,21 @@
     <ClCompile Include="NetPlayer.cpp">
       <Filter>소스 파일\03. Network\Player</Filter>
     </ClCompile>
+    <ClCompile Include="Loader_Map.cpp">
+      <Filter>소스 파일\02. Game\01. Levels\99. Loader</Filter>
+    </ClCompile>
+    <ClCompile Include="Loader.cpp">
+      <Filter>소스 파일\02. Game\01. Levels\99. Loader</Filter>
+    </ClCompile>
+    <ClCompile Include="Level_Gameplay.cpp">
+      <Filter>소스 파일\02. Game\01. Levels\03. GamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="LoadingWindow.cpp">
+      <Filter>소스 파일\02. Game\01. Levels\01. Loading</Filter>
+    </ClCompile>
+    <ClCompile Include="Player_Pig.cpp">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd\02. Pig_3rd</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="HelloDinner.rc">
@@ -621,5 +648,6 @@
     <None Include="Common.hlsli">
       <Filter>셰이더 파일</Filter>
     </None>
+    <None Include=".editorconfig" />
   </ItemGroup>
 </Project>

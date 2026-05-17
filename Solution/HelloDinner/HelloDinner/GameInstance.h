@@ -68,8 +68,18 @@ public: /* For.Load_Manager */
 
 public: /* for.Level_Manager */
 	HRESULT Open_Level(_int iLevelIndex, class CLevel* pNewLevel);
+	_int    Get_CurrentLevelID();
 	XMFLOAT4X4 Get_CurrentCameraView ();
 	XMFLOAT4X4 Get_CurrentCameraProjection ();
+
+public: /* for.Frustum_Culling */
+    _bool IsSphereInFrustum(const _float3& vCenter, _float fRadius);
+    void  Set_CullingEnabled(_bool b);
+    _bool Is_CullingEnabled() const;
+    void  Reset_CullStats();
+    void  Add_CullStat(_bool bRendered);
+    _uint Get_CullStat_Total()    const;
+    _uint Get_CullStat_Rendered() const;
 
 public: /* For.Prototype_Manager */
 	HRESULT Add_Prototype(_uint iLevelIndex, const _wstring& strPrototypeTag, class CBase* pPrototype);
@@ -102,7 +112,7 @@ public: /* For.Collision_Manager */
 	void Delete_CollisionGroup(int _eGroup, class CCollider* _pCollider);
 	vector<class CCollider*> CollisionCheck_with_Group(class CCollider* _pCollider, int _eGroup);
 	bool CollisionCheck_with_Collider(class CCollider* _pMyCollider, class CCollider* _pOtherCollider);
-	bool CheckMove(CCollider* me, const XMFLOAT3& pos, const XMFLOAT3& move, XMFLOAT3& outSlide);
+	bool CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide);
 
 public: /* For.Renderer */
 	HRESULT Add_RenderObject(CRenderer::RENDERGROUP eRenderGroup, class CGameObject* pRenderObject);

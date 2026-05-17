@@ -1,6 +1,6 @@
 #pragma once
 
-// ·¹º§ ·Îµù Å¬·¡½º º¯°æÇÏ¸é ¿Å±æ °Íµé
+// ë ˆë²¨ ë¡œë”© í´ë˜ìŠ¤ ë³€ê²½í•˜ë©´ ì˜®ê¸¸ ê²ƒë“¤
 #include "Base.h"
 
 class CLoader_Map final : public CBase
@@ -16,38 +16,38 @@ private:
 	virtual ~CLoader_Map() = default;
 
 public:
-	// MaterialData.jsonÀ» ÀĞ¾î Material Á¤º¸ Å×ÀÌºí ±¸Ãà
+	// MaterialData.jsonì„ ì½ì–´ Material ì •ë³´ í…Œì´ë¸” êµ¬ì¶•
 	HRESULT Load_MaterialData(const string& strJsonPath);
 
-	// MapData.jsonÀ» ÀĞ¾î ¸ğµ¨ + ¸Ê ¿ÀºêÁ§Æ® »ı¼º
+	// MapData.jsonì„ ì½ì–´ ëª¨ë¸ + ë§µ ì˜¤ë¸Œì íŠ¸ ìƒì„±
 	HRESULT Load_MapData(const string& strJsonPath, _uint iLevelIndex);
 
 	HRESULT Check_Fbx_Existence ( const string& strJsonPath );
 
 private:
-	// fbxName ¡æ ¹ÙÀÌ³Ê¸® ÆÄÀÏ °æ·Î º¯È¯
+	// fbxName â†’ ë°”ì´ë„ˆë¦¬ íŒŒì¼ ê²½ë¡œ ë³€í™˜
 	_wstring	Get_BinaryPath(const string& strFbxName);
-	// fbxName ¡æ ÇÁ·ÎÅäÅ¸ÀÔ ÅÂ±× »ı¼º
+	// fbxName â†’ í”„ë¡œí† íƒ€ì… íƒœê·¸ ìƒì„±
 	_wstring	Get_ModelTag(const string& strFbxName);
-	// PNG ÆÄÀÏ¸í ¡æ ÅØ½ºÃ³ Prototype ÅÂ±× º¯È¯
+	// PNG íŒŒì¼ëª… â†’ í…ìŠ¤ì²˜ Prototype íƒœê·¸ ë³€í™˜
 	_wstring	Get_TextureTag(const string& strPngFileName);
 
 private:
-	// GPU Ä¿¸Çµå ÇÃ·¯½Ã(¹èÄ¡ ¾÷·Îµå¿ë)
-	// ÈÄ¿¡ CopyQueue Á¦ÀÛÇÏ¸é »èÁ¦
+	// GPU ì»¤ë§¨ë“œ í”ŒëŸ¬ì‹œ(ë°°ì¹˜ ì—…ë¡œë“œìš©)
+	// í›„ì— CopyQueue ì œì‘í•˜ë©´ ì‚­ì œ
 	void		FlushCommandList();
-	// ÇÃ·¯½Ã ÈÄ ´ë±â ÁßÀÎ ¸®¼Ò½ºµéÀ» ¾ÈÀüÇÏ°Ô ÇØÁ¦
+	// í”ŒëŸ¬ì‹œ í›„ ëŒ€ê¸° ì¤‘ì¸ ë¦¬ì†ŒìŠ¤ë“¤ì„ ì•ˆì „í•˜ê²Œ í•´ì œ
 	void		ReleasePendingResources();
 	_uint m_iLoadCounter = { 0 };
-	static const _uint FLUSH_INTERVAL = 5; // 10°³¸¶´Ù GPU ÇÃ·¯½Ã
-	// ÇÃ·¯½Ã Àü±îÁö »èÁ¦¸¦ º¸·ùÇÒ ¸®¼Ò½ºµé
+	static const _uint FLUSH_INTERVAL = 5; // 10ê°œë§ˆë‹¤ GPU í”ŒëŸ¬ì‹œ
+	// í”ŒëŸ¬ì‹œ ì „ê¹Œì§€ ì‚­ì œë¥¼ ë³´ë¥˜í•  ë¦¬ì†ŒìŠ¤ë“¤
 	vector<class CComponent*> m_PendingReleases;
 	//
 private:
 	EngineContext* m_pContext = { nullptr };
 	class CGameInstance* m_pGameInstance = { nullptr };
 
-	// material fileÀ» ÀĞ¾î Á¸ÀçÇÏ´Â texture ÆÄÀÏ¸íÀ» ÀúÀå
+	// material fileì„ ì½ì–´ ì¡´ì¬í•˜ëŠ” texture íŒŒì¼ëª…ì„ ì €ì¥
 	unordered_map<std::string, MATERIAL_INFO> m_MaterialInfos;
 
 public:

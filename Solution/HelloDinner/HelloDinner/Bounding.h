@@ -4,8 +4,8 @@
 #include "DebugDraw.h"
 #include "Collider.h"
 
-/* 1. °¢ Ãæµ¹Ã¼ Å¬·¡½ºµéÀÇ ºÎ¸ğ Å¬·¡½º´Ù. */
-/* 2. ¿ø·£ ±¸Á¶Ã¼¸¦ ¾²¸éµÇ´Â ±¸Á¶Ã¼ÀÇ ºÎ¸ğ ±¸Á¶Ã¼°¡ ¾ø´õ¶ó. */
+/* 1. ê° ì¶©ëŒì²´ í´ë˜ìŠ¤ë“¤ì˜ ë¶€ëª¨ í´ë˜ìŠ¤ë‹¤. */
+/* 2. ì›ëœ êµ¬ì¡°ì²´ë¥¼ ì“°ë©´ë˜ëŠ” êµ¬ì¡°ì²´ì˜ ë¶€ëª¨ êµ¬ì¡°ì²´ê°€ ì—†ë”ë¼. */
 
 class CBounding abstract : public CBase
 {
@@ -26,6 +26,8 @@ public:
 	virtual void Update(_fmatrix WorldMatrix) = 0;
 	virtual void Render(PrimitiveBatch<VertexPositionColor>* pBatch) = 0;
 	virtual _bool Intersect(CCollider::COLLIDERTYPE eType, CBounding* pTargetBounding) = 0;
+	virtual _bool Intersect_Offset(CCollider::COLLIDERTYPE eType, CBounding* pTargetBounding, const _float3& vOffset) = 0;
+	virtual _float3 Get_CollisionNormal(CCollider::COLLIDERTYPE eTargetType, CBounding* pTargetBounding) = 0;
 	virtual _float3 Get_Center() = 0;
 
 protected:

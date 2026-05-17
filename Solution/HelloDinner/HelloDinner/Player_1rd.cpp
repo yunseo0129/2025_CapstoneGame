@@ -64,17 +64,45 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
 
 void CPlayer_1rd::Priority_Update(_float fTimeDelta)
 {
-    //  ÇÁ¸® Ä«¸Ş¶ó Àü¿ë Å°ÀÎÇ²ÀÔ´Ï´Ù. Ãæµ¹Ã³¸® ÈÄ »ç¶óÁú ÄÚµåÀÔ´Ï´Ù.
+    //  í”„ë¦¬ ì¹´ë©”ë¼ ì „ìš© í‚¤ì¸í’‹ì…ë‹ˆë‹¤. ì¶©ëŒì²˜ë¦¬ í›„ ì‚¬ë¼ì§ˆ ì½”ë“œì…ë‹ˆë‹¤.
     if (m_pGameInstance->Key_Pressing(DIK_SPACE))
     {
         m_pTransformCom->Go_Up(fTimeDelta);
     }
     else if (m_pGameInstance->Key_Pressing(DIK_LCONTROL))
     {
-        m_pTransformCom->Go_Up(-fTimeDelta);
+        // ë°”ë‹¥ ì¶©ëŒ í…ŒìŠ¤íŠ¸
+        // m_pTransformCom->Go_Up(-fTimeDelta);
+        _vector vDir = XMVectorSet(0.f, -1.f, 0.f, 0.f);
+
+        _float fFrameDist = m_pTransformCom->Get_SpeedPerSec() * fTimeDelta;
+        if (fFrameDist >= 1e-6f)
+        {
+            _vector vMove = vDir * fFrameDist;
+
+            // Move()ì™€ ë™ì¼ íŒ¨í„´: ê° colliderë§ˆë‹¤ ìŠ¬ë¼ì´ë“œ ëˆ„ì 
+            for (CCollider* pCollider : m_vMapColliderComs)
+            {
+                if (pCollider == nullptr) continue;
+
+                _float3 vOffset;
+                XMStoreFloat3(&vOffset, vMove);
+
+                _float3 vSlide;
+                if (m_pGameInstance->CheckMove(pCollider, vOffset, vSlide))
+                {
+                    vMove = XMLoadFloat3(&vSlide);   // ìŠ¬ë¼ì´ë“œëœ ê°’ìœ¼ë¡œ ë‹¤ìŒ ê²€ì‚¬
+                }
+            }
+
+            // ìµœì¢… ê²°ì •ëœ vMoveë¡œ í•œ ë²ˆë§Œ ì´ë™
+            _vector vPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+            vPos = XMVectorAdd(vPos, vMove);
+            m_pTransformCom->Set_State(CTransform::STATE_POSITION, vPos);
+        }
     }
 
-    // 1ÀÎÄª ¸ğµ¨ µ¿±âÈ­
+    // 1ì¸ì¹­ ëª¨ë¸ ë™ê¸°í™”
     XMMATRIX matFps = m_pTransformCom->Get_WorldMatrix();
     _vector		vRight = matFps.r[0];
     _vector		vUp = matFps.r[1];
@@ -85,7 +113,7 @@ void CPlayer_1rd::Priority_Update(_float fTimeDelta)
     matFps.r[2] = XMVector3TransformNormal(vLook, RotationMatrix);
     matFps *= XMMatrixTranslation(0.f, 1.39f, 0.f);
     XMStoreFloat4x4(&m_matFPSModel, matFps);
-    // Ä«¸Ş¶ó µ¿±âÈ­
+    // ì¹´ë©”ë¼ ë™ê¸°í™”
     m_pCamera->Set_WorldMatrix(m_matFPSModel);
 
     __super::Priority_Update(fTimeDelta);
@@ -107,6 +135,20 @@ void CPlayer_1rd::Update(_float fTimeDelta)
             pCollider->Update();
     }
 
+#ifdef _DEBUG
+    {
+        XMFLOAT3 vP; XMStoreFloat3(&vP, m_pTransformCom->Get_State(CTransform::STATE_POSITION));
+        auto* pS0 = m_vMapColliderComs[0] ? static_cast<const CBounding_Sphere*>(m_vMapColliderComs[0]->Get_Bounding())->Get_Desc() : nullptr;
+        auto* pS1 = m_vMapColliderComs[1] ? static_cast<const CBounding_Sphere*>(m_vMapColliderComs[1]->Get_Bounding())->Get_Desc() : nullptr;
+        char buf[256];
+        sprintf_s(buf, "Player y=%.2f | Foot center=(%.2f, %.2f, %.2f) | Body center=(%.2f, %.2f, %.2f)\n",
+            vP.y,
+            pS0 ? pS0->Center.x : 0, pS0 ? pS0->Center.y : 0, pS0 ? pS0->Center.z : 0,
+            pS1 ? pS1->Center.x : 0, pS1 ? pS1->Center.y : 0, pS1 ? pS1->Center.z : 0);
+        OutputDebugStringA(buf);
+    }
+#endif
+
     __super::Update(fTimeDelta);
 }
 
@@ -120,10 +162,10 @@ void CPlayer_1rd::Render(ID3D12GraphicsCommandList* _commandList)
 {
     _commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &m_matFPSModel, 0);
 
-    // 2. PSO ¼³Á¤
+    // 2. PSO ì„¤ì •
     m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::ANIM);
 
-    // 3. ¸Ş½¬º° ·»´õ¸µ (¸ÓÆ¼¸®¾ó ¹ÙÀÎµù + DrawIndexedInstanced)
+    // 3. ë©”ì‰¬ë³„ ë Œë”ë§ (ë¨¸í‹°ë¦¬ì–¼ ë°”ì¸ë”© + DrawIndexedInstanced)
     _uint iNumMeshes = m_pFPSModelCom->Get_NumMeshes();
     for (_uint i = 0; i < iNumMeshes; ++i)
     {
@@ -131,9 +173,9 @@ void CPlayer_1rd::Render(ID3D12GraphicsCommandList* _commandList)
         m_pFPSModelCom->Render(_commandList, i);
     }
 
-    // Äİ¶óÀÌ´õ µğ¹ö±ë
+    // ì½œë¼ì´ë” ë””ë²„ê¹…
 #ifdef _DEBUG
-   /* for (CCollider* pCollider : m_vColliderComs)
+    for (CCollider* pCollider : m_vColliderComs)
     {
         if (pCollider != nullptr)
             m_pGameInstance->Add_RenderCollider(pCollider);
@@ -142,21 +184,21 @@ void CPlayer_1rd::Render(ID3D12GraphicsCommandList* _commandList)
     {
         if (pCollider != nullptr)
             m_pGameInstance->Add_RenderCollider(pCollider);
-    }*/
+    }
 #endif
 }
 
 void CPlayer_1rd::ShadowRender(ID3D12GraphicsCommandList* _commandList)
 {
-    // Transform ÄÄÆ÷³ÍÆ®ÀÇ ¿ùµå Çà·ÄÀ» RootConstantBuffer¿¡ ³Ñ°ÜÁØ´Ù.
+    // Transform ì»´í¬ë„ŒíŠ¸ì˜ ì›”ë“œ í–‰ë ¬ì„ RootConstantBufferì— ë„˜ê²¨ì¤€ë‹¤.
     XMFLOAT4X4 WorldMatrix;
     XMStoreFloat4x4(&WorldMatrix, m_pTransformCom->Get_WorldMatrix());
     _commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &WorldMatrix, 0);
 
-    // 2. PSO ¼³Á¤
+    // 2. PSO ì„¤ì •
     m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::SHADOW_ANIM);
 
-    // 3. ¸Ş½¬º° ·»´õ¸µ (¸ÓÆ¼¸®¾ó ¹ÙÀÎµù + DrawIndexedInstanced)
+    // 3. ë©”ì‰¬ë³„ ë Œë”ë§ (ë¨¸í‹°ë¦¬ì–¼ ë°”ì¸ë”© + DrawIndexedInstanced)
     _uint iNumMeshes = m_pModelCom->Get_NumMeshes();
     for (_uint i = 0; i < iNumMeshes; ++i)
     {
@@ -175,13 +217,38 @@ void CPlayer_1rd::Move(_float _fLook, _float _fRight, _float _val)
     vRight.m128_f32[1] = 0.f;
     vRight = XMVector3Normalize(vRight) * _fRight;
 
-    // ÃÖÁ¾ ÀÌµ¿ ÇÒ ¹æÇâº¤ÅÍ(Å©±â°¡ °Å¸®)
+    // ìµœì¢… ì´ë™ í•  ë°©í–¥ë²¡í„°(í¬ê¸°ê°€ ê±°ë¦¬)
     _vector vDir = vLook + vRight;
 
-    // ¿©±â¼­ Ãæµ¹Ã¼Å©¸¦ ÇØÁÖ´Â°Ô ÁÁÀ» °Í °°¼Ò
+    if (XMVectorGetX(XMVector3LengthSq(vDir)) < 1e-6f)
+        return;
 
-    // Ãæµ¹ÇÏÁö ¾Ê´Â´Ù¸é
-    m_pTransformCom->Move(vDir, _val);
+    vDir = XMVector3Normalize(vDir);
+
+    _float fFrameDist = m_pTransformCom->Get_SpeedPerSec() * _val;
+    if (fFrameDist < 1e-6f) return;
+    _vector vMove = vDir * fFrameDist;
+
+    // ì—¬ê¸°ì„œ ì¶©ëŒì²´í¬ë¥¼ í•´ì£¼ëŠ”ê²Œ ì¢‹ì„ ê²ƒ ê°™ì†Œ
+    
+    for (CCollider* pCollider : m_vMapColliderComs)
+    {
+        if (pCollider == nullptr) continue;
+
+        _float3 vOffset;
+        XMStoreFloat3(&vOffset, vMove);
+
+        _float3 vSlide;
+        if (m_pGameInstance->CheckMove(pCollider, vOffset, vSlide))
+        {
+            vMove = XMLoadFloat3(&vSlide);
+        }
+	}
+
+    // ì¶©ëŒí•˜ì§€ ì•ŠëŠ”ë‹¤ë©´
+    _vector vPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+    vPos = XMVectorAdd(vPos, vMove);
+    m_pTransformCom->Set_State(CTransform::STATE_POSITION, vPos);
 }
 
 void CPlayer_1rd::TurnYaw(_float _val)
@@ -196,25 +263,25 @@ void CPlayer_1rd::TurnPitch(_float _val)
 
 void CPlayer_1rd::Jump(_float _val)
 {
-    // _valÀº Á¡ÇÁÀÇ Èû °­µµ ¹è¼öÀÔ´Ï´Ù.
+    // _valì€ ì í”„ì˜ í˜ ê°•ë„ ë°°ìˆ˜ì…ë‹ˆë‹¤.
 }
 
 void CPlayer_1rd::Crouch(_float _val)
 {
-    // ¿õÅ©¸®±â
+    // ì›…í¬ë¦¬ê¸°
 }
 
 HRESULT CPlayer_1rd::Ready_PartObjects()
 {
-    // ÄÉÃ¸°Ç
+    // ì¼€ì²©ê±´
     {
         CKetchup_Gun::KETCHUP_GUN_DESC cdesc;
         cdesc.strModelTag = L"Prototype_Component_ketchupGun";
-        cdesc.iModelLevelIndex = 1;
+        cdesc.iModelLevelIndex = m_iModelLevelIndex;
         cdesc.pParentMatrix = &m_matFPSModel;
         cdesc.pSocketMatrix = m_pFPSModelCom->Get_BoneMatrix("weapon");
         cdesc.vScale = _float3(1.f, 1.f, 1.f);
-        m_PartObjects[0] = static_cast<CPartObj*>(m_pGameInstance->Clone_Prototype(Engine::PROTOTYPE::PROTO_GAMEOBJ, 1, TEXT("Prototype_GameObject_Ketchup_Gun"), &cdesc));
+        m_PartObjects[0] = static_cast<CPartObj*>(m_pGameInstance->Clone_Prototype(Engine::PROTOTYPE::PROTO_GAMEOBJ, m_iModelLevelIndex, TEXT("Prototype_GameObject_Ketchup_Gun"), &cdesc));
         if (nullptr == m_PartObjects[0])
             return E_FAIL;
     }
@@ -223,7 +290,7 @@ HRESULT CPlayer_1rd::Ready_PartObjects()
 
 HRESULT CPlayer_1rd::Ready_Components()
 {
-    // Model ÄÄÆ÷³ÍÆ® »ı¼º
+    // Model ì»´í¬ë„ŒíŠ¸ ìƒì„±
     if (FAILED(Add_Component(m_iModelLevelIndex, m_strModelTag,
         TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom))))
     {
@@ -231,15 +298,15 @@ HRESULT CPlayer_1rd::Ready_Components()
         return E_FAIL;
     }
 
-    // FPS Model ÄÄÆ÷³ÍÆ® »ı¼º
-    if (FAILED(Add_Component(LEVEL_LOADING, TEXT("Prototype_Component_Player_Pig_fps"),
+    // FPS Model ì»´í¬ë„ŒíŠ¸ ìƒì„±
+    if (FAILED(Add_Component(m_iModelLevelIndex, TEXT("Prototype_Component_Player_Pig_fps"),
         TEXT("Com_FPSModel"), reinterpret_cast<CComponent**>(&m_pFPSModelCom))))
     {
         MSG_BOX("Failed to Add Component : Model in CPlayer_1rd");
         return E_FAIL;
     }
 
-    // Collider ÄÄÆ÷³ÍÆ® »ı¼º
+    // Collider ì»´í¬ë„ŒíŠ¸ ìƒì„±
     {
         m_vColliderComs.resize(COLLIDER_END, nullptr);
         m_vMapColliderComs.resize(2, nullptr);

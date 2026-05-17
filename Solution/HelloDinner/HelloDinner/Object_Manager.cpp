@@ -111,11 +111,11 @@ CGameObject* CObject_Manager::Get_GameObject_To_Layer(_uint iLevelIndex, const _
 {
 	auto itLayer = m_pLayers[iLevelIndex].find(strLayerTag);
 
-	// ¸¸¾à ·¹ÀÌ¾î¸¦ Ã£Áö ¸øÇßÀ» °æ¿ì
+	// ë§Œì•½ ë ˆì´ì–´ë¥¼ ì°¾ì§€ ëª»í–ˆì„ ê²½ìš°
 	if (itLayer == m_pLayers[iLevelIndex].end())
 		return nullptr;
 
-	// ·¹ÀÌ¾î ³»ºÎ¿¡¼­ CGameObject*¸¦ Ã£´Â´Ù°í °¡Á¤
+	// ë ˆì´ì–´ ë‚´ë¶€ì—ì„œ CGameObject*ë¥¼ ì°¾ëŠ”ë‹¤ê³  ê°€ì •
 	CLayer* pLayer = itLayer->second;
 	return pLayer->Get_GameObject(Index);
 }
@@ -124,11 +124,11 @@ list<class CGameObject*> CObject_Manager::Get_List(_uint iLevelIndex, const _wst
 {
 	auto itLayer = m_pLayers[iLevelIndex].find(strLayerTag);
 
-	// ¸¸¾à ·¹ÀÌ¾î¸¦ Ã£Áö ¸øÇßÀ» °æ¿ì
+	// ë§Œì•½ ë ˆì´ì–´ë¥¼ ì°¾ì§€ ëª»í–ˆì„ ê²½ìš°
 	if (itLayer == m_pLayers[iLevelIndex].end())
 		return list<class CGameObject*>();
 
-	// ·¹ÀÌ¾î ³»ºÎ¿¡¼­ CGameObject*¸¦ Ã£´Â´Ù°í °¡Á¤
+	// ë ˆì´ì–´ ë‚´ë¶€ì—ì„œ CGameObject*ë¥¼ ì°¾ëŠ”ë‹¤ê³  ê°€ì •
 	CLayer* pLayer = itLayer->second;
 	return pLayer->Get_List();
 }

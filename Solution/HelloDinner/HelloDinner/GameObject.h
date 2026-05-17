@@ -23,10 +23,14 @@ public:
 	virtual void		Late_Update(_float fTimeDelta);
 	virtual void		Render(ID3D12GraphicsCommandList* _commandList);
 	virtual void		ShadowRender(ID3D12GraphicsCommandList* _commandList);
+	
+public:
+	// Frustum Culling
+	virtual bool Get_WorldBoundingSphere(_float3& pOutCenter, _float& pOutRadius) const { return false; }
 
 public:
 	class CComponent*	Find_Component(const _wstring& strComponentTag);
-	const _float4x4* Get_WorldMatrix4x4Ptr();		//RootConstantBuffer¿¡ WorldMatrix¸¦ ³Ñ°ÜÁÙ ¶§ »ç¿ë
+	const _float4x4* Get_WorldMatrix4x4Ptr();		//RootConstantBufferì— WorldMatrixë¥¼ ë„˜ê²¨ì¤„ ë•Œ ì‚¬ìš©
 	bool			IsDead() { return m_bDead; }
 	void			SetDead() { m_bDead = true; }
 
@@ -37,7 +41,7 @@ protected:
 	class CGameInstance*						m_pGameInstance = { nullptr };
 	EngineContext*								m_pContext = { nullptr };
 	
-	// º¸À¯ÇÑ ÄÄÆ÷³ÍÆ® Á¤º¸
+	// ë³´ìœ í•œ ì»´í¬ë„ŒíŠ¸ ì •ë³´
 	map<const _wstring, class CComponent*>		m_Components;
 	class CTransform* m_pTransformCom = { nullptr };
 

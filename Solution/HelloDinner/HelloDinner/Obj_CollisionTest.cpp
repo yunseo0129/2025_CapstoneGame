@@ -36,11 +36,11 @@ HRESULT CObj_CollisionTest::Initialize ( void* pArg )
 	_float3 rotation = pDesc->vRotation;
 	_float3 scale = pDesc->vScale;
 
-	// CGameObject::Initialize°¡ Transform »ı¼º ¹× ¼Óµµ ¼³Á¤
+	// CGameObject::Initializeê°€ Transform ìƒì„± ë° ì†ë„ ì„¤ì •
 	if ( FAILED ( __super::Initialize ( pArg ) ) )
 		return E_FAIL;
 
-	// JSON¿¡¼­ ¹ŞÀº TRS Àû¿ë
+	// JSONì—ì„œ ë°›ì€ TRS ì ìš©
 	m_pTransformCom->Scaling ( scale.x , scale.y , scale.z );
 	m_pTransformCom->RotationQuaternion ( rotation.x , rotation.y , rotation.z );
 	m_pTransformCom->Set_State ( CTransform::STATE_POSITION ,
@@ -63,7 +63,7 @@ void CObj_CollisionTest::Update ( _float fTimeDelta )
 	__super::Update ( fTimeDelta );
 
 
-	// Ãæµ¹Ã¼ ¾÷µ¥ÀÌÆ®
+	// ì¶©ëŒì²´ ì—…ë°ì´íŠ¸
 	_matrix WorldMatrix = m_pTransformCom->Get_WorldMatrix ();
 	// 1. Main Collider
 	if ( m_pColliderCom != nullptr ) {
@@ -79,14 +79,14 @@ void CObj_CollisionTest::Late_Update ( _float fTimeDelta )
 #ifdef _DEBUG
 void CObj_CollisionTest::Render ( ID3D12GraphicsCommandList* _commandList )
 {
-	// Transform ÄÄÆ÷³ÍÆ®ÀÇ ¿ùµå Çà·ÄÀ» RootConstantBuffer¿¡ ³Ñ°ÜÁØ´Ù.
+	// Transform ì»´í¬ë„ŒíŠ¸ì˜ ì›”ë“œ í–‰ë ¬ì„ RootConstantBufferì— ë„˜ê²¨ì¤€ë‹¤.
 	m_pGameInstance->Add_RenderCollider(m_pColliderCom );
 }
 #endif
 
 HRESULT CObj_CollisionTest::Ready_Components ()
 {
-	// Collider ÄÄÆ÷³ÍÆ® »ı¼º
+	// Collider ì»´í¬ë„ŒíŠ¸ ìƒì„±
 	// Main Collider
 
 	if ( m_eColliderType == CCollider::TYPE_AABB )

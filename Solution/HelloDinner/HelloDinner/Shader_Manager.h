@@ -10,14 +10,14 @@ private:
     virtual ~CShader_Manager () = default;
 
 public:
-    // ÃÊ±âÈ­: ·çÆ® ½Ã±×´ÏÃ³ »ı¼º
+    // ì´ˆê¸°í™”: ë£¨íŠ¸ ì‹œê·¸ë‹ˆì²˜ ìƒì„±
     HRESULT Initialize ( const ComPtr<ID3D12Device>& pDevice );
 
-    // ·çÆ® ½Ã±×´ÏÃ³ ¹İÈ¯
+    // ë£¨íŠ¸ ì‹œê·¸ë‹ˆì²˜ ë°˜í™˜
     ComPtr<ID3D12RootSignature> Get_RootSignature () const { return m_pRootSignature; }
 
 public:
-    // ·»´õ¸µ ÆÄÀÌÇÁ¶óÀÎ ¼³Á¤À» µµ¿ÍÁÖ´Â ÇÔ¼ö (ÆíÀÇ¼º)
+    // ë Œë”ë§ íŒŒì´í”„ë¼ì¸ ì„¤ì •ì„ ë„ì™€ì£¼ëŠ” í•¨ìˆ˜ (í¸ì˜ì„±)
     void Set_PipelineState ( ID3D12GraphicsCommandList* pCmdList , const PSO_TYPE& _eType );
 
     void Set_RootSignature ( ID3D12GraphicsCommandList* pCmdList )
@@ -26,26 +26,26 @@ public:
     }
 
 private:
-    // ÃÊ±â »ı¼º ÇÔ¼öµé
+    // ì´ˆê¸° ìƒì„± í•¨ìˆ˜ë“¤
     HRESULT Create_GlobalRootSignature ();
     HRESULT Create_PSO ();
 
-    // PSO ¹İÈ¯
+    // PSO ë°˜í™˜
     ComPtr<ID3D12PipelineState> Get_PSO ( PSO_TYPE eType ) { return m_pPSOs[( _uint )eType]; }
 
-    // Create_PSO¿¡¼­ »ç¿ëÇÒ ÇÔ¼ö
+    // Create_PSOì—ì„œ ì‚¬ìš©í•  í•¨ìˆ˜
     ID3DBlob* Compile_Shader ( const wstring& strPath , const char* strEntry , const char* strTarget );
-    void Create_InputLayouts (); // ·¹ÀÌ¾Æ¿ô ÃÊ±âÈ­ ÇÔ¼ö
+    void Create_InputLayouts (); // ë ˆì´ì•„ì›ƒ ì´ˆê¸°í™” í•¨ìˆ˜
 private:
     ComPtr<ID3D12Device> m_pDevice = nullptr;
 
-    // Àü¿ª ·çÆ® ½Ã±×´ÏÃ³
-    ComPtr<ID3D12RootSignature> m_pRootSignature = nullptr; // Àü¿ª ·çÆ® ½Ã±×´ÏÃ³
+    // ì „ì—­ ë£¨íŠ¸ ì‹œê·¸ë‹ˆì²˜
+    ComPtr<ID3D12RootSignature> m_pRootSignature = nullptr; // ì „ì—­ ë£¨íŠ¸ ì‹œê·¸ë‹ˆì²˜
 
-    // ÆÄÀÌÇÁ¶óÀÎ »óÅÂ °´Ã¼µé
+    // íŒŒì´í”„ë¼ì¸ ìƒíƒœ ê°ì²´ë“¤
     ComPtr<ID3D12PipelineState> m_pPSOs[( _uint )PSO_TYPE::END] = { nullptr };
 
-    // Input Layout Á¤ÀÇ (3°¡Áö Å¸ÀÔ)
+    // Input Layout ì •ì˜ (3ê°€ì§€ íƒ€ì…)
     vector<D3D12_INPUT_ELEMENT_DESC> m_LayoutStatic;
     vector<D3D12_INPUT_ELEMENT_DESC> m_LayoutAnim;
     vector<D3D12_INPUT_ELEMENT_DESC> m_LayoutUI;

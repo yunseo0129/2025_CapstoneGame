@@ -18,13 +18,13 @@ HRESULT CBone::Initialize(_char* Name, _float4x4 TransformMatrix, _int ParentInd
 
 void CBone::Update_CombinedTransformationMatrix(const vector<CBone*>& Bones, _fmatrix PreTransformMatrix)
 {
-	// ·çÆ® º» ÀÏ ¶§		ÀÚ½Å Æ®·£½ºÆû¿¡ ÇÁ¸®Æ®·£½ºÆû¸¸À» Àû¿ëÇÑ °ªÀ» ÀÚ±â ÄÄ¹ÙÀÎµå¿¡ ÀúÀå
+	// ë£¨íŠ¸ ë³¸ ì¼ ë•Œ		ìžì‹  íŠ¸ëžœìŠ¤í¼ì— í”„ë¦¬íŠ¸ëžœìŠ¤í¼ë§Œì„ ì ìš©í•œ ê°’ì„ ìžê¸° ì»´ë°”ì¸ë“œì— ì €ìž¥
 	if (-1 == m_iParentBoneIndex)
 	{
 		XMStoreFloat4x4(&m_CombindTransformationMatrix, XMLoadFloat4x4(&m_TransformationMatrix) * PreTransformMatrix);
 		return;
 	}
-	// ·çÆ® º» ¾Æ´Ò ¶§		ÀÚ½Å Æ®·£½ºÆû¿¡ ºÎ¸ð ÄÄ¹ÙÀÎµåÇà·ÄÀ» Àû¿ëÇÑ °ªÀ» ÀÚ±â ÄÄ¹ÙÀÎµå¿¡ ÀúÀå
+	// ë£¨íŠ¸ ë³¸ ì•„ë‹ ë•Œ		ìžì‹  íŠ¸ëžœìŠ¤í¼ì— ë¶€ëª¨ ì»´ë°”ì¸ë“œí–‰ë ¬ì„ ì ìš©í•œ ê°’ì„ ìžê¸° ì»´ë°”ì¸ë“œì— ì €ìž¥
 	XMStoreFloat4x4(&m_CombindTransformationMatrix, XMLoadFloat4x4(&m_TransformationMatrix) *
 		XMLoadFloat4x4(&Bones[m_iParentBoneIndex]->m_CombindTransformationMatrix));
 }

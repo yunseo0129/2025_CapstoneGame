@@ -19,12 +19,12 @@ HRESULT CLight::Initialize(const LIGHT_DESC& LightDesc)
 
 void CLight::Update(const _float fTimeDelta)
 {
-	//Light ¾÷µ¥ÀÌÆ® 
+	//Light ì—…ë°ì´íŠ¸ 
 }
 
 void CLight::Render_Begin(CCamera* _camera)
 {
-	// Light¿¡¼­ ±×¸²ÀÚ ¸Ê¿¡ ¾ÀÀ» ±×¸®´Â ÇÔ¼ö È£Ãâ
+	// Lightì—ì„œ ê·¸ë¦¼ìž ë§µì— ì”¬ì„ ê·¸ë¦¬ëŠ” í•¨ìˆ˜ í˜¸ì¶œ
 	if (m_pShadow)
 		m_pShadow->Update(_camera, this);
 }

@@ -38,13 +38,13 @@ void initialize_near_sector()
 	near_sector[7] = { 1, 1 };
 }
 
-// ÇØ½Ã ÇÔ¼ö
+// í•´ì‹œ í•¨ìˆ˜
 struct pair_hash {
 	template <class T1, class T2>
 	std::size_t operator () (const std::pair<T1, T2>& pair) const {
 		auto hash1 = std::hash<T1>{}(pair.first);
 		auto hash2 = std::hash<T2>{}(pair.second);
-		return hash1 ^ hash2;  // XOR ¿¬»êÀ» »ç¿ëÇÏ¿© µÎ ÇØ½Ã °ªÀ» °áÇÕ
+		return hash1 ^ hash2;  // XOR ì—°ì‚°ì„ ì‚¬ìš©í•˜ì—¬ ë‘ í•´ì‹œ ê°’ì„ ê²°í•©
 	}
 };
 
@@ -58,7 +58,7 @@ public:
 
 	SECTOR(const SECTOR& other) 
 	{
-		// _player_list ¸â¹ö¸¦ º¹»çÇÕ´Ï´Ù.
+		// _player_list ë©¤ë²„ë¥¼ ë³µì‚¬í•©ë‹ˆë‹¤.
 		_player_list = other._player_list;
 
 	}
@@ -81,7 +81,7 @@ public:
 
 	void remove_player_list(int c_id)
 	{
-		// ÇÃ·¹ÀÌ¾î°¡ ¾øÀ» °æ¿ì return
+		// í”Œë ˆì´ì–´ê°€ ì—†ì„ ê²½ìš° return
 		if (0 == _player_list.count(c_id)) return;
 
 		_pl_l.lock();
@@ -91,7 +91,7 @@ public:
 
 };
 
-// sector Çà, ¿­ ¹øÈ£¿Í SECTOR¸¦ mappingÇÏ´Â ÀÚ·áÇü
+// sector í–‰, ì—´ ë²ˆí˜¸ì™€ SECTORë¥¼ mappingí•˜ëŠ” ìë£Œí˜•
 unordered_map<pair<int, int>, SECTOR, pair_hash> g_sectors;
 
 
@@ -151,7 +151,7 @@ public:
 	unordered_set<int> view_list;
 	mutex	_vl_l;
 
-	// SECTOR ÁÂÇ¥(Çà, ¿­)
+	// SECTOR ì¢Œí‘œ(í–‰, ì—´)
 	pair<int, int> _sector;
 	
 	int		_prev_remain;
@@ -268,13 +268,13 @@ void SESSION::update_sector()
 	pair<int, int> new_sector{ static_cast<int>(x / SECTOR_ROW),
 		static_cast<int>(y / SECTOR_COL) };
 
-	// SECTOR º¯È­ ¾øÀ¸¸é return
+	// SECTOR ë³€í™” ì—†ìœ¼ë©´ return
 	if (_sector == new_sector) return;
 
-	// ±âÁ¸ SECTOR¿¡¼­ »èÁ¦
+	// ê¸°ì¡´ SECTORì—ì„œ ì‚­ì œ
 	g_sectors[_sector].remove_player_list(_id);
 
-	// »õ·Î¿î SECTOR¿¡ Ãß°¡
+	// ìƒˆë¡œìš´ SECTORì— ì¶”ê°€
 	g_sectors[new_sector].add_player_list(_id);
 
 	_sector = new_sector;
@@ -298,7 +298,7 @@ void process_packet(int c_id, char* packet)
 		strcpy_s(clients[c_id]._name, p->name);
 		clients[c_id].send_login_info_packet();
 
-		// ·Î±×ÀÎ ½Ã SECTOR ÇÒ´ç
+		// ë¡œê·¸ì¸ ì‹œ SECTOR í• ë‹¹
 		clients[c_id].initialize_sector();
 
 		{
@@ -306,7 +306,7 @@ void process_packet(int c_id, char* packet)
 			clients[c_id]._state = ST_INGAME;
 		}
 
-		// ÇöÀç Å¬¶óÀÌ¾ğÆ®°¡ ¼ÓÇØÀÖ´Â SECTOR ³»ºÎ °Ë»öÀ¸·Î ÁÖº¯ ´Ù¸¥ client¿¡°Ô Àü¼Û
+		// í˜„ì¬ í´ë¼ì´ì–¸íŠ¸ê°€ ì†í•´ìˆëŠ” SECTOR ë‚´ë¶€ ê²€ìƒ‰ìœ¼ë¡œ ì£¼ë³€ ë‹¤ë¥¸ clientì—ê²Œ ì „ì†¡
 		for (int pl : g_sectors[clients[c_id]._sector]._player_list)
 		{
 			if (false == can_see(c_id, pl)) continue;
@@ -333,7 +333,7 @@ void process_packet(int c_id, char* packet)
 		// sector update
 		clients[c_id].update_sector();
 
-		// client ÁÖº¯ sector °Ë»ö ÈÄ new_player_list¿¡ Ãß°¡
+		// client ì£¼ë³€ sector ê²€ìƒ‰ í›„ new_player_listì— ì¶”ê°€
 		unordered_set<int> near_sector_player_list;
 
 		pair<int, int> current_sector = clients[c_id]._sector;

@@ -73,11 +73,11 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineCo
 	if (nullptr == m_pLoad_Manager)
 		return E_FAIL;
 
-	// Å×½ºÆ®¿ë
-	// Camera.h º¯°æÇØ¾ßÇÒ °Íµé
-	// 1. abstract ¼³Á¤
+	// í…ŒìŠ¤íŠ¸ìš©
+	// Camera.h ë³€ê²½í•´ì•¼í•  ê²ƒë“¤
+	// 1. abstract ì„¤ì •
 	// 2. Clone = 0;
-	// 3. »ı¼ºÀÚ, ¼Ò¸êÀÚ protected·Î º¯°æ
+	// 3. ìƒì„±ì, ì†Œë©¸ì protectedë¡œ ë³€ê²½
 
 	return S_OK;
 }
@@ -89,8 +89,10 @@ void CGameInstance::Update_Engine(_float fTimeDelta)
 	m_pObject_Manager->Priority_Update(fTimeDelta);
 	m_pCollision_Manager->Update_Collision();
 	m_pObject_Manager->Update(fTimeDelta);
-	m_pObject_Manager->Late_Update(fTimeDelta);
+	m_pCollision_Manager->Clear_CollisionGroup();
 	m_pLevel_Manager->Update(fTimeDelta);
+    m_pLevel_Manager->Reset_CullStats();
+    m_pObject_Manager->Late_Update(fTimeDelta);
 }
 
 HRESULT CGameInstance::Render_Begin(const _float4& vClearColor)
@@ -128,7 +130,7 @@ HRESULT CGameInstance::Render_End()
 
 void CGameInstance::Clear(_int iLevelID)
 {
-	/* Æ¯Á¤ ·¹º§¿ë °´Ã¼µéÀ» Áö¿î´Ù. */
+	/* íŠ¹ì • ë ˆë²¨ìš© ê°ì²´ë“¤ì„ ì§€ìš´ë‹¤. */
 	m_pObject_Manager->Clear(iLevelID);
 
 	m_pPrototype_Manager->Clear(iLevelID);
@@ -355,6 +357,11 @@ HRESULT CGameInstance::Open_Level(_int iLevelIndex, CLevel* pNewLevel)
 	return m_pLevel_Manager->Open_Level(iLevelIndex, pNewLevel);
 }
 
+_int CGameInstance::Get_CurrentLevelID()
+{
+	return m_pLevel_Manager->Get_CurrentLevelID();
+}
+
 XMFLOAT4X4 CGameInstance::Get_CurrentCameraView()
 {
 	if (nullptr == m_pLevel_Manager)
@@ -367,6 +374,51 @@ XMFLOAT4X4 CGameInstance::Get_CurrentCameraProjection()
 	if (nullptr == m_pLevel_Manager)
 		return XMFLOAT4X4();
 	return m_pLevel_Manager->Get_CurrentCameraProjection();
+}
+
+// ------------------------------------------------------------------------
+// Frustum Culling (ìœ„ì„ë§Œ)
+// ------------------------------------------------------------------------
+_bool CGameInstance::IsSphereInFrustum(const _float3& vCenter, _float fRadius)
+{
+    if (nullptr == m_pLevel_Manager) return true;
+    return m_pLevel_Manager->IsSphereInFrustum(vCenter, fRadius);
+}
+
+void CGameInstance::Set_CullingEnabled(_bool b)
+{
+    if (nullptr == m_pLevel_Manager) return;
+    m_pLevel_Manager->Set_CullingEnabled(b);
+}
+
+_bool CGameInstance::Is_CullingEnabled() const
+{
+    if (nullptr == m_pLevel_Manager) return false;
+    return m_pLevel_Manager->Is_CullingEnabled();
+}
+
+void CGameInstance::Reset_CullStats()
+{
+    if (nullptr == m_pLevel_Manager) return;
+    m_pLevel_Manager->Reset_CullStats();
+}
+
+void CGameInstance::Add_CullStat(_bool bRendered)
+{
+    if (nullptr == m_pLevel_Manager) return;
+    m_pLevel_Manager->Add_CullStat(bRendered);
+}
+
+_uint CGameInstance::Get_CullStat_Total() const
+{
+    if (nullptr == m_pLevel_Manager) return 0;
+    return m_pLevel_Manager->Get_CullStat_Total();
+}
+
+_uint CGameInstance::Get_CullStat_Rendered() const
+{
+    if (nullptr == m_pLevel_Manager) return 0;
+    return m_pLevel_Manager->Get_CullStat_Rendered();
 }
 
 // ------------------------------------------------------------------------
@@ -528,8 +580,8 @@ bool CGameInstance::CollisionCheck_with_Collider(class CCollider* _pMyCollider, 
 	return m_pCollision_Manager->CollisionCheck_with_Collider(_pMyCollider, _pOtherCollider);
 }
 
-bool CGameInstance::CheckMove(CCollider* me, const XMFLOAT3& pos, const XMFLOAT3& move, XMFLOAT3& outSlide) {
-	return m_pCollision_Manager->CheckMove(me, pos, move, outSlide);
+bool CGameInstance::CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide) {
+	return m_pCollision_Manager->CheckMove(me, move, outSlide);
 }
 
 // ------------------------------------------------------------------------
@@ -565,33 +617,33 @@ void CGameInstance::Free()
 	if ( m_pGraphic_Device )
 		m_pGraphic_Device->WaitForGpuComplete ();
 
-	// 2. ComPtr·Î º¸À¯ÇÑ Ä¿¸Çµå ¸®½ºÆ® ÂüÁ¶ ÇØÁ¦
+	// 2. ComPtrë¡œ ë³´ìœ í•œ ì»¤ë§¨ë“œ ë¦¬ìŠ¤íŠ¸ ì°¸ì¡° í•´ì œ
 	m_pCommandList.Reset ();
 
-	// 3. ·»´õ·¯ ÇØÁ¦ (Device, CmdList¸¦ Safe_AddRef·Î º¸À¯ Áß)
+	// 3. ë Œë”ëŸ¬ í•´ì œ (Device, CmdListë¥¼ Safe_AddRefë¡œ ë³´ìœ  ì¤‘)
 	Safe_Release ( m_pRenderer );
 
-	// 4. °ÔÀÓ ¿ÀºêÁ§Æ® ÇØÁ¦ (ÄÄÆ÷³ÍÆ® ¡æ ÅØ½ºÃ³/¹öÆÛÀÇ ComPtr ÇØÁ¦)
+	// 4. ê²Œì„ ì˜¤ë¸Œì íŠ¸ í•´ì œ (ì»´í¬ë„ŒíŠ¸ â†’ í…ìŠ¤ì²˜/ë²„í¼ì˜ ComPtr í•´ì œ)
 	Safe_Release( m_pCollision_Manager );
 	Safe_Release ( m_pObject_Manager );
 	Safe_Release( m_pController );
 
-	// 5. ·¹º§ ÇØÁ¦
+	// 5. ë ˆë²¨ í•´ì œ
 	Safe_Release ( m_pLevel_Manager );
 
-	// 6. ÇÁ·ÎÅäÅ¸ÀÔ ÇØÁ¦ (ÅØ½ºÃ³/¹öÆÛ ¿øº» ¸®¼Ò½º ÇØÁ¦)
+	// 6. í”„ë¡œí† íƒ€ì… í•´ì œ (í…ìŠ¤ì²˜/ë²„í¼ ì›ë³¸ ë¦¬ì†ŒìŠ¤ í•´ì œ)
 	Safe_Release ( m_pPrototype_Manager );
 
-	// 8. ¼ÎÀÌ´õ ¸Å´ÏÀú ÇØÁ¦ (PSO, RootSignature ÇØÁ¦)
+	// 8. ì…°ì´ë” ë§¤ë‹ˆì € í•´ì œ (PSO, RootSignature í•´ì œ)
 	Safe_Release ( m_pShader_Manager );
 	Safe_Release(m_pTexture_Manager);
 
-	// 9. ³ª¸ÓÁö ¸Å´ÏÀú ÇØÁ¦
+	// 9. ë‚˜ë¨¸ì§€ ë§¤ë‹ˆì € í•´ì œ
 	Safe_Release ( m_pLoad_Manager );
 	Safe_Release ( m_pTimer_Manager );
 	Safe_Release ( m_pInput_Device );
 
-	// 10. Device¸¦ °¡Àå ¸¶Áö¸·¿¡ ÇØÁ¦
+	// 10. Deviceë¥¼ ê°€ì¥ ë§ˆì§€ë§‰ì— í•´ì œ
 	Safe_Release ( m_pGraphic_Device );
 
 	__super::Free();

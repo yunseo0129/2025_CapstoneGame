@@ -33,6 +33,7 @@ HRESULT CShadow::Initialize()
 void CShadow::Update(CCamera* _camera, CLight* _light)
 {
 	UpdateBoundingSphere(_camera);
+
 	UpdateMatrix(_light);
 }
 
@@ -85,52 +86,66 @@ void CShadow::DrawSceneToShadowMap(ID3D12GraphicsCommandList* cmdList)
 
 void CShadow::UpdateMatrix(CLight* _light)
 {
-	// ÅÂ¾ç¸¸ ±¸Çö ÈÄ¿¡ ´Ù¸¥ ±¤¿øµµ ±¸ÇöÇÒ ¿¹Á¤
+	// íƒœì–‘ë§Œ êµ¬í˜„ í›„ì— ë‹¤ë¥¸ ê´‘ì›ë„ êµ¬í˜„í•  ì˜ˆì •
 	XMVECTOR vLightDir = XMVector3Normalize(_light->Get_Direction());
 	XMVECTOR vtarget = XMLoadFloat3(&mSceneBounds.Center);
 	XMVECTOR vLightPos = vtarget - (vLightDir * mSceneBounds.Radius);
 	XMVECTOR vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f);
-	// ºû ¹æÇâµµ ¼öÁ÷ÀÌ¸é up º¤ÅÍ¸¦ zÃàÀ¸·Î º¯°æ
+	// ë¹› ë°©í–¥ë„ ìˆ˜ì§ì´ë©´ up ë²¡í„°ë¥¼ zì¶•ìœ¼ë¡œ ë³€ê²½
 	if (abs(XMVectorGetY(vLightDir)) > 0.99f)
 	{
 		vUp = XMVectorSet(0.f, 0.f, 1.f, 0.f);
 	}
 	XMMATRIX lightView = XMMatrixLookAtLH(vLightPos, vtarget, vUp);
 
-	XMStoreFloat3(&m_LightPos, vLightPos);
+    float r = mSceneBounds.Radius;
+    float nearZ = 0.f;
+    float farZ = 2.f * r;
 
-	// °æ°è±¸ ±¤¿øÀÇ °ø°£À¸·Î º¯È¯
-	XMFLOAT3 sphereCenterInLightSpace;
-	XMStoreFloat3(&sphereCenterInLightSpace, XMVector3Transform(vtarget, lightView));
+    XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(-r, r, -r, r, nearZ, farZ);
 
-	// ±¸Ã¼ÀÇ Áß½ÉÀÌ Æ÷ÇÔµÇµµ·Ï Á÷À°¸éÃ¼ÀÇ ¹üÀ§¸¦ °è»ê
-	_float left = sphereCenterInLightSpace.x - mSceneBounds.Radius;
-	_float right = sphereCenterInLightSpace.x + mSceneBounds.Radius;
-	_float bottom = sphereCenterInLightSpace.y - mSceneBounds.Radius;
-	_float top = sphereCenterInLightSpace.y + mSceneBounds.Radius;
-	_float nearZ = 0.f;
-	_float farZ = sphereCenterInLightSpace.z + mSceneBounds.Radius;
+    XMMATRIX viewProj = lightView * lightProj;
 
-	m_Lightnear = nearZ;
-	m_Lightfar = farZ;
+    // ì›ì (0,0,0,1)ì„ shadow clip spaceë¡œ ë³€í™˜
+    XMVECTOR shadowOrigin = XMVectorSet(0.f, 0.f, 0.f, 1.f);
+    shadowOrigin = XMVector4Transform(shadowOrigin, viewProj);
 
-	XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(left, right, bottom, top, nearZ, farZ);
+    // [-1,1] NDC â†’ [0, m_iWidth] í…ì…€ ì¢Œí‘œë¡œ ë³€í™˜
+    float halfShadowMapSize = m_iWidth * 0.5f;
+    shadowOrigin = XMVectorScale(shadowOrigin, halfShadowMapSize);
 
-	XMMATRIX T(
-		0.5f, 0.f, 0.f, 0.f,
-		0.f, -0.5f, 0.f, 0.f,
-		0.f, 0.f, 1.f, 0.f,
-		0.5f, 0.5f, 0.f, 1.f);
+    // ì •ìˆ˜ í…ì…€ ìœ„ì¹˜ë¡œ ë°˜ì˜¬ë¦¼í•œ ë’¤, ê·¸ ì°¨ì´ë¥¼ ë³´ì •ê°’ìœ¼ë¡œ
+    XMVECTOR rounded = XMVectorRound(shadowOrigin);
+    XMVECTOR roundOffset = XMVectorSubtract(rounded, shadowOrigin);
+    roundOffset = XMVectorScale(roundOffset, 1.f / halfShadowMapSize);
 
-	XMMATRIX S = lightView * lightProj * T;
-	XMStoreFloat4x4(&m_LightView, lightView);
-	XMStoreFloat4x4(&m_LightProj, lightProj);
-	XMStoreFloat4x4(&m_ShadowTransform, S);
+    // proj í–‰ë ¬ì˜ translation ì„±ë¶„ì— offset ê°€ì‚° (z, wëŠ” 0)
+    XMFLOAT4X4 projF;
+    XMStoreFloat4x4(&projF, lightProj);
+    projF._41 += XMVectorGetX(roundOffset);
+    projF._42 += XMVectorGetY(roundOffset);
+    lightProj = XMLoadFloat4x4(&projF);
+
+    XMStoreFloat3(&m_LightPos, vLightPos);
+
+    XMMATRIX T(
+        0.5f, 0.f, 0.f, 0.f,
+        0.f, -0.5f, 0.f, 0.f,
+        0.f, 0.f, 1.f, 0.f,
+        0.5f, 0.5f, 0.f, 1.f);
+
+    XMMATRIX S = lightView * lightProj * T;
+    XMStoreFloat4x4(&m_LightView, lightView);
+    XMStoreFloat4x4(&m_LightProj, lightProj);
+    XMStoreFloat4x4(&m_ShadowTransform, S);
+
+    m_Lightnear = nearZ;
+    m_Lightfar = farZ;
 }
 
 void CShadow::UpdateBoundingSphere(CCamera* _camera)
 {
-	// ÇöÀç ½Ã¾ß¸¦ Æ÷ÇÔÇÏ´Â ±¸Ã¼ÀÇ Áß½É°ú ¹İÁö¸§À» °è»êÇÏ¿© mSceneBounds¿¡ ÀúÀå
+	// í˜„ì¬ ì‹œì•¼ë¥¼ í¬í•¨í•˜ëŠ” êµ¬ì²´ì˜ ì¤‘ì‹¬ê³¼ ë°˜ì§€ë¦„ì„ ê³„ì‚°í•˜ì—¬ mSceneBoundsì— ì €ì¥
 	XMFLOAT4X4 cameraView = _camera->Get_CameraView();
 	XMFLOAT4X4 cameraProj = _camera->Get_CameraProjection();
 	XMMATRIX matView = XMLoadFloat4x4(&cameraView);
@@ -141,14 +156,14 @@ void CShadow::UpdateBoundingSphere(CCamera* _camera)
 
 	XMVECTOR ndcCorners[8] =
 	{
-		XMVectorSet(-1.f, 1.f, 0.f, 1.f),	// °¡±î¿î Æò¸é ¿ŞÂÊ À§
-		XMVectorSet(1.f, 1.f, 0.f, 1.f),	// °¡±î¿î Æò¸é ¿À¸¥ÂÊ À§
-		XMVectorSet(1.f, -1.f, 0.f, 1.f),	// °¡±î¿î Æò¸é ¿À¸¥ÂÊ ¾Æ·¡
-		XMVectorSet(-1.f, -1.f, 0.f, 1.f),	// °¡±î¿î Æò¸é ¿ŞÂÊ ¾Æ·¡
-		XMVectorSet(-1.f, 1.f, 1.f, 1.f),	// ¸Õ Æò¸é ¿ŞÂÊ À§
-		XMVectorSet(1.f, 1.f, 1.f, 1.f),	// ¸Õ Æò¸é ¿À¸¥ÂÊ À§
-		XMVectorSet(1.f, -1.f, 1.f, 1.f),	// ¸Õ Æò¸é ¿À¸¥ÂÊ ¾Æ·¡
-		XMVectorSet(-1.f, -1.f, 1.f, 1.f)	// ¸Õ Æò¸é ¿ŞÂÊ ¾Æ·¡
+		XMVectorSet(-1.f, 1.f, 0.f, 1.f),	// ê°€ê¹Œìš´ í‰ë©´ ì™¼ìª½ ìœ„
+		XMVectorSet(1.f, 1.f, 0.f, 1.f),	// ê°€ê¹Œìš´ í‰ë©´ ì˜¤ë¥¸ìª½ ìœ„
+		XMVectorSet(1.f, -1.f, 0.f, 1.f),	// ê°€ê¹Œìš´ í‰ë©´ ì˜¤ë¥¸ìª½ ì•„ë˜
+		XMVectorSet(-1.f, -1.f, 0.f, 1.f),	// ê°€ê¹Œìš´ í‰ë©´ ì™¼ìª½ ì•„ë˜
+		XMVectorSet(-1.f, 1.f, 1.f, 1.f),	// ë¨¼ í‰ë©´ ì™¼ìª½ ìœ„
+		XMVectorSet(1.f, 1.f, 1.f, 1.f),	// ë¨¼ í‰ë©´ ì˜¤ë¥¸ìª½ ìœ„
+		XMVectorSet(1.f, -1.f, 1.f, 1.f),	// ë¨¼ í‰ë©´ ì˜¤ë¥¸ìª½ ì•„ë˜
+		XMVectorSet(-1.f, -1.f, 1.f, 1.f)	// ë¨¼ í‰ë©´ ì™¼ìª½ ì•„ë˜
 	};
 
 	XMVECTOR worldCorners[8];
@@ -165,16 +180,13 @@ void CShadow::UpdateBoundingSphere(CCamera* _camera)
 	}
 	sphereCenter = XMVectorScale(sphereCenter, 1.0f / 8.0f);
 
-	float sphereRadius = 0.f;
-	for(int i = 0; i < 8; ++i)
-	{
-		XMVECTOR vLength = XMVector3Length(XMVectorSubtract(worldCorners[i], sphereCenter));
-		float distance = XMVectorGetX(vLength);
-		sphereRadius = max(sphereRadius, distance);
-	}
+    XMVECTOR vDiag1 = XMVector3Length(XMVectorSubtract(worldCorners[0], worldCorners[6]));
+    XMVECTOR vDiag2 = XMVector3Length(XMVectorSubtract(worldCorners[4], worldCorners[6]));
+    float radius = max(XMVectorGetX(vDiag1), XMVectorGetX(vDiag2)) * 0.5f;
+
 
 	mSceneBounds.Center = XMFLOAT3(XMVectorGetX(sphereCenter), XMVectorGetY(sphereCenter), XMVectorGetZ(sphereCenter));
-	mSceneBounds.Radius = sphereRadius;
+	mSceneBounds.Radius = radius;
 }
 
 HRESULT CShadow::Create_ShadowBuffer()
@@ -250,7 +262,7 @@ void CShadow::Create_Resource()
 		&optClear,
 		IID_PPV_ARGS(&m_pShadowMap)));
 
-	// DSV Heap »ı¼º -> ÈÄ¿¡ Light¿Í Shadow°¡ ¸¹¾ÆÁú °æ¿ì TextureManagerÃ³·³ °ü¸®ÇÏ´Â ¹æ¹ı Ãß°¡ ¿¹Á¤
+	// DSV Heap ìƒì„± -> í›„ì— Lightì™€ Shadowê°€ ë§ì•„ì§ˆ ê²½ìš° TextureManagerì²˜ëŸ¼ ê´€ë¦¬í•˜ëŠ” ë°©ë²• ì¶”ê°€ ì˜ˆì •
 	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
 	dsvHeapDesc.NumDescriptors = 1;
 	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
@@ -259,7 +271,7 @@ void CShadow::Create_Resource()
 		&dsvHeapDesc, IID_PPV_ARGS(&m_pDsvHeap)));
 	m_hCpuDsvHandle = m_pDsvHeap->GetCPUDescriptorHandleForHeapStart();
 
-	// DSV »ı¼º
+	// DSV ìƒì„±
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
 	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
@@ -267,7 +279,7 @@ void CShadow::Create_Resource()
 
 	m_pContext->device->CreateDepthStencilView(m_pShadowMap.Get(), &dsvDesc, m_hCpuDsvHandle);
 
-	// SRV »ı¼º
+	// SRV ìƒì„±
 	CD3DX12_CPU_DESCRIPTOR_HANDLE srvcpuHandle = m_pGameInstance->Get_CPUHandle();
 	m_iSRVIndex = m_pGameInstance->Get_CurrentIndex();
 	CD3DX12_GPU_DESCRIPTOR_HANDLE srvGpuHandle = m_pGameInstance->Get_GPUHandle(m_iSRVIndex);

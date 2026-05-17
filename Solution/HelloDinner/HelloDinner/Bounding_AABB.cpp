@@ -56,6 +56,95 @@ _bool CBounding_AABB::Intersect(CCollider::COLLIDERTYPE eType, CBounding* pTarge
 	return m_isColl;
 }
 
+_bool CBounding_AABB::Intersect_Offset(CCollider::COLLIDERTYPE eType, CBounding* pTargetBounding, const _float3& vOffset)
+{
+	m_isColl = false;
+
+	XMVECTOR vOff = XMLoadFloat3(&vOffset);
+
+	switch (eType)
+	{
+	case CCollider::TYPE_AABB:
+	{
+		// 임시 바운딩 박스 생성
+		DirectX::BoundingBox tempDesc = *static_cast<CBounding_AABB*>(pTargetBounding)->Get_Desc();
+
+		// 임시 바운딩 박스에 Offset 적용
+		XMVECTOR vCenter = XMLoadFloat3(&tempDesc.Center);
+		vCenter = XMVectorAdd(vCenter, vOff); 
+		XMStoreFloat3(&tempDesc.Center, vCenter);
+
+		// 나와 임시 바운딩 박스의 충돌 여부 체크
+		m_isColl = m_pBoundDesc->Intersects(tempDesc);
+		break;
+	}
+
+	case CCollider::TYPE_OBB:
+	{
+		DirectX::BoundingOrientedBox tempDesc = *static_cast<CBounding_OBB*>(pTargetBounding)->Get_Desc();
+
+		XMVECTOR vCenter = XMLoadFloat3(&tempDesc.Center);
+		vCenter = XMVectorAdd(vCenter, vOff);
+		XMStoreFloat3(&tempDesc.Center, vCenter);
+
+		m_isColl = m_pBoundDesc->Intersects(tempDesc);
+		break;
+	}
+
+	case CCollider::TYPE_SPHERE:
+	{
+		DirectX::BoundingSphere tempDesc = *static_cast<CBounding_Sphere*>(pTargetBounding)->Get_Desc();
+
+		XMVECTOR vCenter = XMLoadFloat3(&tempDesc.Center);
+		vCenter = XMVectorAdd(vCenter, vOff);
+		XMStoreFloat3(&tempDesc.Center, vCenter);
+
+		m_isColl = m_pBoundDesc->Intersects(tempDesc);
+		break;
+	}
+	}
+
+	return m_isColl;
+}
+
+_float3 CBounding_AABB::Get_CollisionNormal(CCollider::COLLIDERTYPE eTargetType, CBounding* pTargetBounding)
+{
+	XMVECTOR vMeCenter = XMLoadFloat3(&m_pBoundDesc->Center);
+	XMVECTOR vTargetCenter = XMVectorZero();
+
+	switch (eTargetType)
+	{
+	case CCollider::TYPE_AABB:
+		vTargetCenter = XMLoadFloat3(&static_cast<CBounding_AABB*>(pTargetBounding)->Get_Desc()->Center);
+		break;
+	case CCollider::TYPE_OBB:
+		vTargetCenter = XMLoadFloat3(&static_cast<CBounding_OBB*>(pTargetBounding)->Get_Desc()->Center);
+		break;
+	case CCollider::TYPE_SPHERE:
+		vTargetCenter = XMLoadFloat3(&static_cast<CBounding_Sphere*>(pTargetBounding)->Get_Desc()->Center);
+		break;
+	}
+
+	// 내 중심에서 상대 중심으로 향하는 벡터의 가장 큰 축이 충돌 면의 법선
+	XMVECTOR vDelta = XMVectorSubtract(vMeCenter, vTargetCenter);
+	_float3 fDelta;
+	XMStoreFloat3(&fDelta, vDelta);
+
+	_float fAbsX = fabsf(fDelta.x);
+	_float fAbsY = fabsf(fDelta.y);
+	_float fAbsZ = fabsf(fDelta.z);
+
+	_float3 vNormal {0.f, 0.f, 0.f};
+	if (fAbsX >= fAbsY && fAbsX >= fAbsZ)
+		vNormal.x = (fDelta.x >= 0.f) ? 1.f : -1.f;
+	else if (fAbsY >= fAbsX && fAbsY >= fAbsZ)
+		vNormal.y = (fDelta.y >= 0.f) ? 1.f : -1.f;
+	else
+		vNormal.z = (fDelta.z >= 0.f) ? 1.f : -1.f;
+
+	return vNormal;
+}
+
 CBounding_AABB* CBounding_AABB::Create(EngineContext* pContext, const BOUND_DESC* pBoundDesc)
 {
 	CBounding_AABB* pInstance = new CBounding_AABB(pContext);
