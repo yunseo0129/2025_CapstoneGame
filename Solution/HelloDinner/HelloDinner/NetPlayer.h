@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 
-// ³×Æ®¿öÅ© ÇÃ·¹ÀÌ¾î: ¼­¹ö¿¡¼­ ¼ö½ÅÇÑ »óÅÂ¸¦ °ü¸®ÇÏ°í ÀÌº¥Æ®¸¦ ¹ß»ı½ÃÅ²´Ù.
+// ë„¤íŠ¸ì›Œí¬ í”Œë ˆì´ì–´: ì„œë²„ì—ì„œ ìˆ˜ì‹ í•œ ìƒíƒœë¥¼ ê´€ë¦¬í•˜ê³  ì´ë²¤íŠ¸ë¥¼ ë°œìƒì‹œí‚¨ë‹¤.
 class NetPlayer
 {
 public:
@@ -24,19 +24,19 @@ public:
     NetPlayer() = default;
     ~NetPlayer() = default;
 
-    // --- »óÅÂ Á¢±Ù ---
+    // --- ìƒíƒœ ì ‘ê·¼ ---
     int             GetId()         const { return m_id; }
     const char*     GetName()       const { return m_name; }
     const float*    GetWorldMatrix()const { return m_worldMatrix; }
     unsigned char   GetKeyInput()   const { return m_keyInput; }
     bool            IsActive()      const { return m_bActive; }
 
-    // --- RecvThread¿¡¼­ È£Ãâ: ¼­¹ö ÆĞÅ¶À¸·Î »óÅÂ °»½Å + ÀÌº¥Æ® »ı¼º ---
+    // --- RecvThreadì—ì„œ í˜¸ì¶œ: ì„œë²„ íŒ¨í‚·ìœ¼ë¡œ ìƒíƒœ ê°±ì‹  + ì´ë²¤íŠ¸ ìƒì„± ---
     void OnAdded(int id, const float* worldMatrix, const char* name);
     void OnRemoved();
     void OnMoved(unsigned char keyInput, const float* worldMatrix);
 
-    // --- ¸ŞÀÎ ½º·¹µå¿¡¼­ È£Ãâ: º¸·ù ÀÌº¥Æ®¸¦ ¸ğµÎ °¡Á®¿Â´Ù ---
+    // --- ë©”ì¸ ìŠ¤ë ˆë“œì—ì„œ í˜¸ì¶œ: ë³´ë¥˜ ì´ë²¤íŠ¸ë¥¼ ëª¨ë‘ ê°€ì ¸ì˜¨ë‹¤ ---
     void PopEvents(std::vector<Event>& outEvents);
 
 private:

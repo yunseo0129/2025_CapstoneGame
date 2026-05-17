@@ -10,26 +10,26 @@ public:
         return &instance;
     }
 
-    // ÀÎ½ºÅÏ½º ¼­¹öÀÇ ³»ºÎ Á¢¼ÓÀ» ¹Ş±â À§ÇÑ ¸®½º´× ½ÃÀÛ
+    // ì¸ìŠ¤í„´ìŠ¤ ì„œë²„ì˜ ë‚´ë¶€ ì ‘ì†ì„ ë°›ê¸° ìœ„í•œ ë¦¬ìŠ¤ë‹ ì‹œì‘
     bool StartInternalListener();
 
-    // ³»ºÎ Åë½Å ¼ö½Å ½º·¹µå (ÀÎ½ºÅÏ½º ¼­¹ö µî·Ï + Heartbeat)
+    // ë‚´ë¶€ í†µì‹  ìˆ˜ì‹  ìŠ¤ë ˆë“œ (ì¸ìŠ¤í„´ìŠ¤ ì„œë²„ ë“±ë¡ + Heartbeat)
     void InternalAcceptThread();
     void InternalRecvThread(int inst_id);
 
-    // µî·ÏµÈ ÀÎ½ºÅÏ½º ¼­¹ö Áß °¡Àå ¿©À¯·Î¿î ¼­¹ö ¼±ÅÃ
+    // ë“±ë¡ëœ ì¸ìŠ¤í„´ìŠ¤ ì„œë²„ ì¤‘ ê°€ì¥ ì—¬ìœ ë¡œìš´ ì„œë²„ ì„ íƒ
     InstanceInfo* SelectBestInstance();
 
-    // ÀÎ½ºÅÏ½º ¼­¹ö µî·Ï
+    // ì¸ìŠ¤í„´ìŠ¤ ì„œë²„ ë“±ë¡
     void RegisterInstance(int id, const char* ip, unsigned short port, SOCKET sock);
 
-    // Heartbeat ¼ö½Å Ã³¸®
+    // Heartbeat ìˆ˜ì‹  ì²˜ë¦¬
     void UpdateHeartbeat(const IS_HEARTBEAT_PACKET& pkt);
 
-    // ¸ÅÄª ¿Ï·á ½Ã ÀÎ½ºÅÏ½º ¼­¹ö¿¡ ¹æ Á¤º¸ Àü´Ş
+    // ë§¤ì¹­ ì™„ë£Œ ì‹œ ì¸ìŠ¤í„´ìŠ¤ ì„œë²„ì— ë°© ì •ë³´ ì „ë‹¬
     void NotifyRoomToInstance(InstanceInfo* inst, const IS_ROOM_NOTIFY_PACKET& pkt);
 
-    // ÀÎ½ºÅÏ½º Á¤º¸ Á¶È¸
+    // ì¸ìŠ¤í„´ìŠ¤ ì •ë³´ ì¡°íšŒ
     InstanceInfo* GetInstanceInfo(int id);
 
 private:

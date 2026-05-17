@@ -24,7 +24,7 @@ private:
 	mutex			m_queue_lock;
 	vector<int>		m_wait_queue;
 
-	// room_id Ä«¿îÅÍ (ÀÎ½ºÅÏ½º¿¡ Àü´ŞÇÒ °íÀ¯ ¹øÈ£)
+	// room_id ì¹´ìš´í„° (ì¸ìŠ¤í„´ìŠ¤ì— ì „ë‹¬í•  ê³ ìœ  ë²ˆí˜¸)
 	mutex			m_room_id_lock;
 	int				m_next_room_id = 0;
 };

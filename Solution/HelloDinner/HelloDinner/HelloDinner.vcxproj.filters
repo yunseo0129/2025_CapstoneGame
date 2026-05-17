@@ -416,14 +416,16 @@
     <ClInclude Include="Loader_Map.h">
       <Filter>소스 파일\02. Game\01. Levels\99. Loader</Filter>
     </ClInclude>
-    <ClInclude Include="Loader.h">
-      <Filter>소스 파일\02. Game\01. Levels\99. Loader</Filter>
+    <ClInclude Include="Collision_Manager.h" />
+    <ClInclude Include="Controller.h" />
+    <ClInclude Include="LoadingWindow.h">
+      <Filter>소스 파일\02. Game\01. Levels\01. Loading</Filter>
     </ClInclude>
     <ClInclude Include="Level_Gameplay.h">
       <Filter>소스 파일\02. Game\01. Levels\03. GamePlay</Filter>
     </ClInclude>
-    <ClInclude Include="LoadingWindow.h">
-      <Filter>소스 파일\02. Game\01. Levels\01. Loading</Filter>
+    <ClInclude Include="Loader.h">
+      <Filter>소스 파일\02. Game\01. Levels\99. Loader</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -604,17 +606,23 @@
     <ClCompile Include="Loader_Map.cpp">
       <Filter>소스 파일\02. Game\01. Levels\99. Loader</Filter>
     </ClCompile>
-    <ClCompile Include="Loader.cpp">
-      <Filter>소스 파일\02. Game\01. Levels\99. Loader</Filter>
+    <ClCompile Include="Player_Pig.cpp">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd\02. Pig_3rd</Filter>
     </ClCompile>
-    <ClCompile Include="Level_Gameplay.cpp">
-      <Filter>소스 파일\02. Game\01. Levels\03. GamePlay</Filter>
+    <ClCompile Include="Collision_Manager.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Controller.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="LoadingWindow.cpp">
       <Filter>소스 파일\02. Game\01. Levels\01. Loading</Filter>
     </ClCompile>
-    <ClCompile Include="Player_Pig.cpp">
-      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd\02. Pig_3rd</Filter>
+    <ClCompile Include="Level_Gameplay.cpp">
+      <Filter>소스 파일\02. Game\01. Levels\03. GamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="Loader.cpp">
+      <Filter>소스 파일\02. Game\01. Levels\99. Loader</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -648,6 +656,5 @@
     <None Include="Common.hlsli">
       <Filter>셰이더 파일</Filter>
     </None>
-    <None Include=".editorconfig" />
   </ItemGroup>
 </Project>

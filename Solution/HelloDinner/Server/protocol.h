@@ -1,8 +1,8 @@
 #pragma once
 
 constexpr int LOBBY_PORT = 4000;
-constexpr int INSTANCE_PORT_BASE = 5000;  // ÀÎ½ºÅÏ½ºº° 5001, 5002, ...
-constexpr int INTERNAL_PORT = 3999;       // ·Îºñ¡êÀÎ½ºÅÏ½º ³»ºÎ Åë½Å Æ÷Æ®
+constexpr int INSTANCE_PORT_BASE = 5000;  // ì¸ìŠ¤í„´ìŠ¤ë³„ 5001, 5002, ...
+constexpr int INTERNAL_PORT = 3999;       // ë¡œë¹„â†”ì¸ìŠ¤í„´ìŠ¤ ë‚´ë¶€ í†µì‹  í¬íŠ¸
 constexpr int BUF_SIZE = 200;
 constexpr int NAME_SIZE = 20;
 
@@ -11,7 +11,7 @@ constexpr int ROOM_MAX_PLAYER = 6;
 constexpr int MAX_ROOM = MAX_USER / ROOM_MAX_PLAYER;
 constexpr int MAX_INSTANCE_SERVERS = 5;
 
-// Å°ÀÔ·Â (ºñÆ® ÇÃ·¡±×)
+// í‚¤ì…ë ¥ (ë¹„íŠ¸ í”Œë˜ê·¸)
 constexpr unsigned char KEY_W     = 0x01;
 constexpr unsigned char KEY_S     = 0x02;
 constexpr unsigned char KEY_A     = 0x04;
@@ -19,25 +19,25 @@ constexpr unsigned char KEY_D     = 0x08;
 constexpr unsigned char KEY_SPACE = 0x10;
 constexpr unsigned char KEY_CTRL  = 0x20;
 
-// ÆĞÅ¶ ID (Å¬¶ó ¡æ ¼­¹ö)
+// íŒ¨í‚· ID (í´ë¼ â†’ ì„œë²„)
 constexpr char CS_LOGIN = 0;
 constexpr char CS_MOVE = 1;
 constexpr char CS_LOGOUT = 2;
-constexpr char CS_JOIN_ROOM = 3;       // ÀÎ½ºÅÏ½º ¼­¹ö¿¡ ¹æ ÁøÀÔ ¿äÃ»
+constexpr char CS_JOIN_ROOM = 3;       // ì¸ìŠ¤í„´ìŠ¤ ì„œë²„ì— ë°© ì§„ì… ìš”ì²­
 
-// ÆĞÅ¶ ID (¼­¹ö ¡æ Å¬¶ó)
+// íŒ¨í‚· ID (ì„œë²„ â†’ í´ë¼)
 constexpr char SC_LOGIN_INFO = 0;
 constexpr char SC_ADD_PLAYER = 1;
 constexpr char SC_REMOVE_PLAYER = 2;
 constexpr char SC_MOVE_PLAYER = 3;
 constexpr char SC_MATCH_WAIT = 4;
 constexpr char SC_MATCH_SUCCESS = 5;
-constexpr char SC_REDIRECT = 6;        // ÀÎ½ºÅÏ½º ¼­¹ö ÁÖ¼Ò Àü´Ş
+constexpr char SC_REDIRECT = 6;        // ì¸ìŠ¤í„´ìŠ¤ ì„œë²„ ì£¼ì†Œ ì „ë‹¬
 
-// ÀÎ½ºÅÏ½º ¡ê ·Îºñ (³»ºÎ Åë½Å)
-constexpr char IS_HEARTBEAT = 10;      // ºÎÇÏ Á¤º¸ ¸®Æ÷Æ®
-constexpr char IS_REGISTER = 11;       // ÀÎ½ºÅÏ½º µî·Ï ¿äÃ»
-constexpr char IS_ROOM_NOTIFY = 12;    // ¹æ Á¤º¸ Àü´Ş (·Îºñ¡æÀÎ½ºÅÏ½º)
+// ì¸ìŠ¤í„´ìŠ¤ â†” ë¡œë¹„ (ë‚´ë¶€ í†µì‹ )
+constexpr char IS_HEARTBEAT = 10;      // ë¶€í•˜ ì •ë³´ ë¦¬í¬íŠ¸
+constexpr char IS_REGISTER = 11;       // ì¸ìŠ¤í„´ìŠ¤ ë“±ë¡ ìš”ì²­
+constexpr char IS_ROOM_NOTIFY = 12;    // ë°© ì •ë³´ ì „ë‹¬ (ë¡œë¹„â†’ì¸ìŠ¤í„´ìŠ¤)
 
 enum COMP_TYPE { OP_ACCEPT, OP_RECV, OP_SEND };
 enum S_STATE { ST_FREE, ST_ALLOC, ST_LOBBY, ST_INGAME };
@@ -64,7 +64,7 @@ struct CS_LOGOUT_PACKET {
     char    type;
 };
 
-// ÀÎ½ºÅÏ½º ¼­¹ö¿¡ ¹æ ÁøÀÔ ¿äÃ»
+// ì¸ìŠ¤í„´ìŠ¤ ì„œë²„ì— ë°© ì§„ì… ìš”ì²­
 struct CS_JOIN_ROOM_PACKET {
     unsigned char size;
     char    type;
@@ -118,7 +118,7 @@ struct SC_MATCH_SUCCESS_PACKET {
     int     player_ids[ROOM_MAX_PLAYER];
 };
 
-// Å¬¶óÀÌ¾ğÆ®¿¡°Ô ÀÎ½ºÅÏ½º ¼­¹ö ÁÖ¼Ò Àü´Ş
+// í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ì¸ìŠ¤í„´ìŠ¤ ì„œë²„ ì£¼ì†Œ ì „ë‹¬
 struct SC_REDIRECT_PACKET {
     unsigned char size;
     char    type;
@@ -128,7 +128,7 @@ struct SC_REDIRECT_PACKET {
     char    auth_token[32];
 };
 
-// ÀÎ½ºÅÏ½º ¼­¹ö ¡æ ·Îºñ ¼­¹ö ºÎÇÏ ¸®Æ÷Æ®
+// ì¸ìŠ¤í„´ìŠ¤ ì„œë²„ â†’ ë¡œë¹„ ì„œë²„ ë¶€í•˜ ë¦¬í¬íŠ¸
 struct IS_HEARTBEAT_PACKET {
     unsigned char size;
     char    type;
@@ -138,7 +138,7 @@ struct IS_HEARTBEAT_PACKET {
     float   cpu_usage;
 };
 
-// ÀÎ½ºÅÏ½º ¼­¹ö ¡æ ·Îºñ ¼­¹ö µî·Ï
+// ì¸ìŠ¤í„´ìŠ¤ ì„œë²„ â†’ ë¡œë¹„ ì„œë²„ ë“±ë¡
 struct IS_REGISTER_PACKET {
     unsigned char size;
     char    type;
@@ -147,7 +147,7 @@ struct IS_REGISTER_PACKET {
     unsigned short port;
 };
 
-// ·Îºñ ¼­¹ö ¡æ ÀÎ½ºÅÏ½º ¼­¹ö ¹æ Á¤º¸ Àü´Ş
+// ë¡œë¹„ ì„œë²„ â†’ ì¸ìŠ¤í„´ìŠ¤ ì„œë²„ ë°© ì •ë³´ ì „ë‹¬
 struct IS_ROOM_NOTIFY_PACKET {
     unsigned char size;
     char    type;

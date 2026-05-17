@@ -43,16 +43,16 @@ bool NetworkClient::ConnectWithConsole()
     std::cout << "       HelloDinner - Connect to Server\n";
     std::cout << "========================================\n\n";
 
-    // ¼­¹ö IP ÀÔ·Â
+    // ì„œë²„ IP ìž…ë ¥
     char serverIP[64] = {};
     std::cout << "Server IP: ";
     std::cin.getline(serverIP, sizeof(serverIP));
 
-    // ÀÌ¸§ ÀÔ·Â
+    // ì´ë¦„ ìž…ë ¥
     std::cout << "Name: ";
     std::cin.getline(m_szName, NAME_SIZE);
 
-    // Winsock ÃÊ±âÈ­
+    // Winsock ì´ˆê¸°í™”
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
         std::cout << "WSAStartup failed.\n";
@@ -60,7 +60,7 @@ bool NetworkClient::ConnectWithConsole()
         return false;
     }
 
-    // ¼ÒÄÏ »ý¼º
+    // ì†Œì¼“ ìƒì„±
     m_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (m_socket == INVALID_SOCKET) {
         std::cout << "Socket creation failed.\n";
@@ -68,7 +68,7 @@ bool NetworkClient::ConnectWithConsole()
         return false;
     }
 
-    // ¼­¹ö ¿¬°á
+    // ì„œë²„ ì—°ê²°
     SOCKADDR_IN serverAddr{};
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_port = htons(LOBBY_PORT);
@@ -86,7 +86,7 @@ bool NetworkClient::ConnectWithConsole()
 
     std::cout << "Connected! Sending login...\n";
 
-    // ·Î±×ÀÎ ÆÐÅ¶ Àü¼Û
+    // ë¡œê·¸ì¸ íŒ¨í‚· ì „ì†¡
     CS_LOGIN_PACKET packet{};
     packet.size = sizeof(CS_LOGIN_PACKET);
     packet.type = CS_LOGIN;
@@ -94,7 +94,7 @@ bool NetworkClient::ConnectWithConsole()
     Send(&packet, packet.size);
     m_bConnected = true;
 
-    // ¼ö½Å ½º·¹µå ½ÃÀÛ
+    // ìˆ˜ì‹  ìŠ¤ë ˆë“œ ì‹œìž‘
     m_recvThread = std::thread(&NetworkClient::RecvThread, this);
 
     std::cout << "Login sent. Waiting for response...\n";
@@ -152,7 +152,7 @@ void NetworkClient::RecvThread()
     }
 }
 
-// ¼­¹ö¿¡¼­ ¹ÞÀº ÆÐÅ¶À» Ã³¸®
+// ì„œë²„ì—ì„œ ë°›ì€ íŒ¨í‚·ì„ ì²˜ë¦¬
 void NetworkClient::ProcessPacket(char* packet)
 {
     switch (packet[1]) {
@@ -246,13 +246,13 @@ void NetworkClient::Disconnect()
     m_bMatched = false;
     m_iRoomId = -1;
     m_iQueueSize = 0;
-    // ¼ÒÄÏ ´Ý±â ¡æ RecvThreadÀÇ recv()°¡ ¿¡·¯ ¸®ÅÏÇÏ¸ç ·çÇÁ Å»Ãâ
+    // ì†Œì¼“ ë‹«ê¸° â†’ RecvThreadì˜ recv()ê°€ ì—ëŸ¬ ë¦¬í„´í•˜ë©° ë£¨í”„ íƒˆì¶œ
     if (m_socket != INVALID_SOCKET) {
         closesocket(m_socket);
         m_socket = INVALID_SOCKET;
     }
 
-    // RecvThread°¡ ¿ÏÀüÈ÷ Á¾·áµÉ ¶§±îÁö ´ë±â
+    // RecvThreadê°€ ì™„ì „ížˆ ì¢…ë£Œë  ë•Œê¹Œì§€ ëŒ€ê¸°
     if (m_recvThread.joinable())
         m_recvThread.join();
 }

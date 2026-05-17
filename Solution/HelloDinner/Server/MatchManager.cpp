@@ -13,7 +13,7 @@ void MatchManager::EnqueuePlayer(int c_id)
 	cout << "[Match] Player " << c_id << " (" << sm->GetClient(c_id).m_player.name
 		<< ") entered queue. Waiting: " << queue_size << "/" << ROOM_MAX_PLAYER << endl;
 
-	// ´ë±â ÁßÀÎ ¸ğµç ÇÃ·¹ÀÌ¾î¿¡°Ô ´ë±â »óÅÂ ¾Ë¸²
+	// ëŒ€ê¸° ì¤‘ì¸ ëª¨ë“  í”Œë ˆì´ì–´ì—ê²Œ ëŒ€ê¸° ìƒíƒœ ì•Œë¦¼
 	for (int id : m_wait_queue)
 		sm->GetClient(id).Send_Match_Wait_Packet(queue_size);
 
@@ -35,18 +35,18 @@ void MatchManager::TryMatch()
 	if (static_cast<int>(m_wait_queue.size()) < ROOM_MAX_PLAYER)
 		return;
 
-	// ÀÎ½ºÅÏ½º ¼­¹ö ¼±ÅÃ
+	// ì¸ìŠ¤í„´ìŠ¤ ì„œë²„ ì„ íƒ
 	auto* bestInst = InstanceManager::GetInstance()->SelectBestInstance();
 	if (!bestInst) {
 		cout << "[Match] No available instance server! Waiting...\n";
 		return;
 	}
 
-	// ´ë±âQUEUE¿¡¼­ ROOM_MAX_PLAYER¸í ÃßÃâ
+	// ëŒ€ê¸°QUEUEì—ì„œ ROOM_MAX_PLAYERëª… ì¶”ì¶œ
 	vector<int> matched_players(m_wait_queue.begin(), m_wait_queue.begin() + ROOM_MAX_PLAYER);
 	m_wait_queue.erase(m_wait_queue.begin(), m_wait_queue.begin() + ROOM_MAX_PLAYER);
 
-	// room_id ¹ß±Ş
+	// room_id ë°œê¸‰
 	int room_id;
 	{
 		lock_guard<mutex> ll(m_room_id_lock);
@@ -61,12 +61,12 @@ void MatchManager::TryMatch()
 		<< " (" << bestInst->ip << ":" << bestInst->port << ")" << endl;
 	cout << "  Players:";
 
-	// ÀÎÁõ ÅäÅ« »ı¼º
+	// ì¸ì¦ í† í° ìƒì„±
 	char auth_token[32] = {};
 	snprintf(auth_token, sizeof(auth_token), "TK_%d_%d", room_id,
 		static_cast<int>(steady_clock::now().time_since_epoch().count() % 100000));
 
-	// ÀÎ½ºÅÏ½º ¼­¹ö¿¡ ¹æ Á¤º¸ Àü´Ş
+	// ì¸ìŠ¤í„´ìŠ¤ ì„œë²„ì— ë°© ì •ë³´ ì „ë‹¬
 	IS_ROOM_NOTIFY_PACKET notify;
 	notify.size = sizeof(IS_ROOM_NOTIFY_PACKET);
 	notify.type = IS_ROOM_NOTIFY;
@@ -85,7 +85,7 @@ void MatchManager::TryMatch()
 
 	InstanceManager::GetInstance()->NotifyRoomToInstance(bestInst, notify);
 
-	// ¸ÅÄªµÈ ÇÃ·¹ÀÌ¾î »óÅÂ ÀüÈ¯ ¹× ¸®´ÙÀÌ·ºÆ®
+	// ë§¤ì¹­ëœ í”Œë ˆì´ì–´ ìƒíƒœ ì „í™˜ ë° ë¦¬ë‹¤ì´ë ‰íŠ¸
 	for (int i = 0; i < ROOM_MAX_PLAYER; ++i) {
 		int pid = matched_players[i];
 		auto& client = sm->GetClient(pid);

@@ -1,15 +1,15 @@
 #pragma once
 #include "pch.h"
 
-// ÀÎ½ºÅÏ½º ¼­¹ö 1°³ÀÇ »óÅÂ Á¤º¸
+// ì¸ìŠ¤í„´ìŠ¤ ì„œë²„ 1ê°œì˜ ìƒíƒœ ì •ë³´
 struct InstanceInfo
 {
     int             id = -1;
     char            ip[16] = {};
     unsigned short  port = 0;
-    SOCKET          socket = INVALID_SOCKET;  // ·Îºñ¡êÀÎ½ºÅÏ½º ³»ºÎ Åë½Å ¼ÒÄÏ
+    SOCKET          socket = INVALID_SOCKET;  // ë¡œë¹„â†”ì¸ìŠ¤í„´ìŠ¤ ë‚´ë¶€ í†µì‹  ì†Œì¼“
 
-    // ºÎÇÏ Á¤º¸ (Heartbeat·Î °»½Å)
+    // ë¶€í•˜ ì •ë³´ (Heartbeatë¡œ ê°±ì‹ )
     int             current_rooms = 0;
     int             current_players = 0;
     float           cpu_usage = 0.f;
@@ -17,10 +17,10 @@ struct InstanceInfo
 
     steady_clock::time_point last_heartbeat;
 
-    // ºÎÇÏ Á¡¼ö (³·À»¼ö·Ï ¿©À¯)
+    // ë¶€í•˜ ì ìˆ˜ (ë‚®ì„ìˆ˜ë¡ ì—¬ìœ )
     float GetLoadScore() const
     {
-        // °¡ÁßÄ¡: ÇÃ·¹ÀÌ¾î ¼ö 60%, CPU »ç¿ë·ü 40%
+        // ê°€ì¤‘ì¹˜: í”Œë ˆì´ì–´ ìˆ˜ 60%, CPU ì‚¬ìš©ë¥  40%
         float playerLoad = static_cast<float>(current_players) / MAX_USER;
         float cpuLoad = cpu_usage / 100.f;
         return playerLoad * 0.6f + cpuLoad * 0.4f;

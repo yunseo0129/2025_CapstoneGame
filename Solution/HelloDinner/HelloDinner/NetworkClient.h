@@ -7,7 +7,7 @@
 class NetworkClient
 {
 public:
-    // ºñ-ÇÃ·¹ÀÌ¾î ÀÌº¥Æ® (¸ÅÄª °ü·Ã)
+    // ë¹„-í”Œë ˆì´ì–´ ì´ë²¤íŠ¸ (ë§¤ì¹­ ê´€ë ¨)
     enum class NetEventType {
         MATCH_WAIT,
         MATCH_SUCCESS,
@@ -24,16 +24,16 @@ public:
     static NetworkClient* GetInstance();
     static void DestroyInstance();
 
-    // ÄÜ¼Ö Ã¢À» ¿­¾î IP, ÀÌ¸§À» ÀÔ·Â¹Ş¾Æ Á¢¼Ó
+    // ì½˜ì†” ì°½ì„ ì—´ì–´ IP, ì´ë¦„ì„ ì…ë ¥ë°›ì•„ ì ‘ì†
     bool ConnectWithConsole();
 
-    // ÆĞÅ¶ ¼ö½Å Ã³¸® ·çÇÁ (¼ö½Å ½º·¹µå)
+    // íŒ¨í‚· ìˆ˜ì‹  ì²˜ë¦¬ ë£¨í”„ (ìˆ˜ì‹  ìŠ¤ë ˆë“œ)
     void RecvThread();
 
-    // ÀÌµ¿ ÆĞÅ¶ Àü¼Û (Å°ÀÎÇ² + ¸¶¿ì½º È¸Àü + ¿¹Ãø ¿ùµåÇà·Ä)
+    // ì´ë™ íŒ¨í‚· ì „ì†¡ (í‚¤ì¸í’‹ + ë§ˆìš°ìŠ¤ íšŒì „ + ì˜ˆì¸¡ ì›”ë“œí–‰ë ¬)
     void Send_Move(unsigned char keyInput, float mouseYaw, const float* worldMatrix);
 
-    // Á¢¼Ó ÇØÁ¦
+    // ì ‘ì† í•´ì œ
     void Disconnect();
 
     bool IsConnected() const { return m_bConnected; }
@@ -44,14 +44,14 @@ public:
     int GetRoomId() const { return m_iRoomId; }
     int GetQueueSize() const { return m_iQueueSize; }
 
-    // ÇÃ·¹ÀÌ¾î °´Ã¼ Á÷Á¢ Á¢±Ù
+    // í”Œë ˆì´ì–´ ê°ì²´ ì§ì ‘ ì ‘ê·¼
     NetPlayer& GetPlayer(int id) { return m_players[id]; }
     const NetPlayer& GetPlayer(int id) const { return m_players[id]; }
 
-    // È°¼º ÇÃ·¹ÀÌ¾î ID¸¸ ÃßÀûÇÏ¿© PopAllPlayerEvents ÃÖÀûÈ­
+    // í™œì„± í”Œë ˆì´ì–´ IDë§Œ ì¶”ì í•˜ì—¬ PopAllPlayerEvents ìµœì í™”
     void PopAllPlayerEvents(std::vector<NetPlayer::Event>& outEvents);
 
-    // ¸ŞÀÎ ½º·¹µå¿¡¼­ È£Ãâ: ¸ÅÄª °ü·Ã ÀÌº¥Æ®¸¸ ¼öÁı
+    // ë©”ì¸ ìŠ¤ë ˆë“œì—ì„œ í˜¸ì¶œ: ë§¤ì¹­ ê´€ë ¨ ì´ë²¤íŠ¸ë§Œ ìˆ˜ì§‘
     void PopAllMatchEvents(std::vector<NetEvent>& outEvents);
 
 private:
@@ -61,7 +61,7 @@ private:
     void Send(void* packet, int size);
     void ProcessPacket(char* packet);
 
-    // ÄÜ¼Ö Ã¢ ´İ±â
+    // ì½˜ì†” ì°½ ë‹«ê¸°
     void CloseConsole();
 
 private:
@@ -82,22 +82,22 @@ private:
 
     NetPlayer   m_players[MAX_USER];
 
-    // ¸ÅÄª ÀÌº¥Æ® Å¥
+    // ë§¤ì¹­ ì´ë²¤íŠ¸ í
     std::vector<NetEvent>   m_pendingMatchEvents;
     std::mutex              m_matchEventLock;
 
-    // È°¼º ÇÃ·¹ÀÌ¾î ID ¸ñ·Ï (RecvThread¿¡¼­ °»½Å)
+    // í™œì„± í”Œë ˆì´ì–´ ID ëª©ë¡ (RecvThreadì—ì„œ ê°±ì‹ )
     std::unordered_set<int>  m_activePlayerIds;
     std::mutex               m_activePlayerLock;
 
     std::thread m_recvThread;
 
-    // Àü¼Û ÁÖ±â Á¦ÇÑ (ÃÊ ´ÜÀ§)
-    float   m_fSendInterval = 1.f / 20.f;   // ÃÊ´ç 20È¸
+    // ì „ì†¡ ì£¼ê¸° ì œí•œ (ì´ˆ ë‹¨ìœ„)
+    float   m_fSendInterval = 1.f / 20.f;   // ì´ˆë‹¹ 20íšŒ
     float   m_fSendTimer = 0.f;
 
 public:
-    // Àü¼Û °¡´É ¿©ºÎ È®ÀÎ + Å¸ÀÌ¸Ó °»½Å
+    // ì „ì†¡ ê°€ëŠ¥ ì—¬ë¶€ í™•ì¸ + íƒ€ì´ë¨¸ ê°±ì‹ 
     bool CanSendMove(float fTimeDelta) {
         m_fSendTimer += fTimeDelta;
         if (m_fSendTimer >= m_fSendInterval) {

@@ -1,7 +1,7 @@
 #include "SessionManager.h"
 #include "MatchManager.h"
 
-// »õ·Î¿î Å¬¶óÀÌ¾ğÆ®°¡ Á¢¼ÓÇßÀ» ¶§, ºó ½½·ÔÀ» Ã£¾Æ¼­ ±× ½½·ÔÀÇ ÀÎµ¦½º(id)¸¦ ¹İÈ¯
+// ìƒˆë¡œìš´ í´ë¼ì´ì–¸íŠ¸ê°€ ì ‘ì†í–ˆì„ ë•Œ, ë¹ˆ ìŠ¬ë¡¯ì„ ì°¾ì•„ì„œ ê·¸ ìŠ¬ë¡¯ì˜ ì¸ë±ìŠ¤(id)ë¥¼ ë°˜í™˜
 int SessionManager::GetNewClientId()
 {
     for (int i = 0; i < MAX_USER; ++i) {
@@ -14,11 +14,11 @@ int SessionManager::GetNewClientId()
     return -1;
 }
 
-// ·Îºñ¿¡¼­´Â ·Î±×ÀÎ/·Î±×¾Æ¿ô¸¸ Ã³¸® (°ÔÀÓ ·ÎÁ÷Àº InstanceServer¿¡¼­ Ã³¸®)
+// ë¡œë¹„ì—ì„œëŠ” ë¡œê·¸ì¸/ë¡œê·¸ì•„ì›ƒë§Œ ì²˜ë¦¬ (ê²Œì„ ë¡œì§ì€ InstanceServerì—ì„œ ì²˜ë¦¬)
 void SessionManager::ProcessPacket(int c_id, char* packet)
 {
     switch (packet[1]) {
-    // ·Î±×ÀÎ ÆĞÅ¶ Ã³¸® ¡æ ¸ÅÄª ´ë±âÅ¥¿¡ ÁøÀÔ
+    // ë¡œê·¸ì¸ íŒ¨í‚· ì²˜ë¦¬ â†’ ë§¤ì¹­ ëŒ€ê¸°íì— ì§„ì…
     case CS_LOGIN: {
         CS_LOGIN_PACKET* p = reinterpret_cast<CS_LOGIN_PACKET*>(packet);
         strcpy_s(m_clients[c_id].m_player.name, p->name);
@@ -29,19 +29,19 @@ void SessionManager::ProcessPacket(int c_id, char* packet)
             m_clients[c_id].m_state = ST_LOBBY;
         }
 
-        // ¸ÅÄª ´ë±âÅ¥¿¡ µî·Ï
+        // ë§¤ì¹­ ëŒ€ê¸°íì— ë“±ë¡
         MatchManager::GetInstance()->EnqueuePlayer(c_id);
         cout << "[Lobby] Client [" << c_id << "] logged in as " << p->name << "." << endl;
         break;
     }
-    // ·Î±×¾Æ¿ô ÆĞÅ¶ Ã³¸®
+    // ë¡œê·¸ì•„ì›ƒ íŒ¨í‚· ì²˜ë¦¬
     case CS_LOGOUT: {
         cout << "[Lobby] Client [" << c_id << "] logout requested." << endl;
         Disconnect(c_id);
         break;
     }
     default: {
-        // CS_MOVE µî °ÔÀÓ ÆĞÅ¶ÀÌ ·Îºñ¿¡ µµÂøÇÑ °æ¿ì ¹«½Ã
+        // CS_MOVE ë“± ê²Œì„ íŒ¨í‚·ì´ ë¡œë¹„ì— ë„ì°©í•œ ê²½ìš° ë¬´ì‹œ
         cout << "[Lobby] Unexpected packet type " << static_cast<int>(packet[1])
              << " from client [" << c_id << "], ignoring." << endl;
         break;
@@ -49,7 +49,7 @@ void SessionManager::ProcessPacket(int c_id, char* packet)
     }
 }
 
-// ¿¬°á ÇØÁ¦ (·Îºñ¿¡¼­´Â ¸ÅÄª Å¥ Á¦°Å¸¸ Ã³¸®)
+// ì—°ê²° í•´ì œ (ë¡œë¹„ì—ì„œëŠ” ë§¤ì¹­ í ì œê±°ë§Œ ì²˜ë¦¬)
 void SessionManager::Disconnect(int c_id)
 {
     {
@@ -57,7 +57,7 @@ void SessionManager::Disconnect(int c_id)
         if (m_clients[c_id].m_state == ST_FREE) return;
     }
 
-    // ¸ÅÄª ´ë±âÅ¥¿¡¼­ Á¦°Å
+    // ë§¤ì¹­ ëŒ€ê¸°íì—ì„œ ì œê±°
     MatchManager::GetInstance()->DequeuePlayer(c_id);
 
     closesocket(m_clients[c_id].m_socket);

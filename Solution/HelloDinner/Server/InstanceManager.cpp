@@ -41,7 +41,7 @@ void InstanceManager::InternalAcceptThread()
             continue;
         }
 
-        // Ã¹ ÆĞÅ¶À¸·Î IS_REGISTER_PACKET ¼ö½Å
+        // ì²« íŒ¨í‚·ìœ¼ë¡œ IS_REGISTER_PACKET ìˆ˜ì‹ 
         char buf[BUF_SIZE] = {};
         int received = recv(client_sock, buf, BUF_SIZE, 0);
         if (received <= 0) {
@@ -61,7 +61,7 @@ void InstanceManager::InternalAcceptThread()
         cout << "[InstanceManager] Instance #" << rp->instance_id
             << " registered (" << rp->ip << ":" << rp->port << ")" << endl;
 
-        // ÇØ´ç ÀÎ½ºÅÏ½º Àü¿ë ¼ö½Å ½º·¹µå ½ÃÀÛ
+        // í•´ë‹¹ ì¸ìŠ¤í„´ìŠ¤ ì „ìš© ìˆ˜ì‹  ìŠ¤ë ˆë“œ ì‹œì‘
         thread recv_th(&InstanceManager::InternalRecvThread, this, rp->instance_id);
         recv_th.detach();
     }
@@ -83,7 +83,7 @@ void InstanceManager::InternalRecvThread(int inst_id)
             return;
         }
 
-        // ÆĞÅ¶ Ã³¸®
+        // íŒ¨í‚· ì²˜ë¦¬
         char* p = buf;
         int remain = received;
         while (remain > 0) {
@@ -112,7 +112,7 @@ InstanceInfo* InstanceManager::SelectBestInstance()
         auto& inst = m_instances[i];
         if (!inst.alive) continue;
 
-        // Heartbeat Å¸ÀÓ¾Æ¿ô Ã¼Å© (10ÃÊ)
+        // Heartbeat íƒ€ì„ì•„ì›ƒ ì²´í¬ (10ì´ˆ)
         auto elapsed = duration_cast<seconds>(
             steady_clock::now() - inst.last_heartbeat).count();
         if (elapsed > 10) {

@@ -1,7 +1,7 @@
 #pragma once
 #include "OverllapedEXP.h"
 
-// Å¬¶óÀÌ¾ğÆ® ¼¼¼ÇÀ» °ü¸®ÇÏ´Â Å¬·¡½º (·Îºñ Àü¿ë)
+// í´ë¼ì´ì–¸íŠ¸ ì„¸ì…˜ì„ ê´€ë¦¬í•˜ëŠ” í´ë˜ìŠ¤ (ë¡œë¹„ ì „ìš©)
 class Session
 {
 	OverllapedEXP m_recv_over;
@@ -11,16 +11,16 @@ class Session
 		S_STATE		m_state;
 		SOCKET		m_socket;
 
-		// Player Á¤º¸
+		// Player ì •ë³´
 		PlayerInfo	m_player;
 		WorldMatrixInfo m_worldMatrix;
 
 		int			m_prev_remain;
 		int			m_room_id;
 
-		// Å¸ÀÓ½ºÅÆÇÁ °ü·Ã
-		unsigned int	m_lastClientTimestamp;	// ¸¶Áö¸·À¸·Î ¹ŞÀº Å¬¶óÀÌ¾ğÆ® Å¸ÀÓ½ºÅÆÇÁ (ms)
-		unsigned int	m_lastServerTimestamp;	// ÇØ´ç ÆĞÅ¶À» ¼­¹ö°¡ ¼ö½ÅÇÑ ½ÃÁ¡ÀÇ ¼­¹ö Å¸ÀÓ½ºÅÆÇÁ (ms)
+		// íƒ€ì„ìŠ¤íƒ¬í”„ ê´€ë ¨
+		unsigned int	m_lastClientTimestamp;	// ë§ˆì§€ë§‰ìœ¼ë¡œ ë°›ì€ í´ë¼ì´ì–¸íŠ¸ íƒ€ì„ìŠ¤íƒ¬í”„ (ms)
+		unsigned int	m_lastServerTimestamp;	// í•´ë‹¹ íŒ¨í‚·ì„ ì„œë²„ê°€ ìˆ˜ì‹ í•œ ì‹œì ì˜ ì„œë²„ íƒ€ì„ìŠ¤íƒ¬í”„ (ms)
 
 	public:
 		Session();
@@ -32,7 +32,7 @@ class Session
 		void Recv();
 		void Send(void* packet);
 
-		// ·Îºñ¿¡¼­ »ç¿ëÇÏ´Â ÆĞÅ¶¸¸ À¯Áö
+		// ë¡œë¹„ì—ì„œ ì‚¬ìš©í•˜ëŠ” íŒ¨í‚·ë§Œ ìœ ì§€
 		void Send_Login_Info_Packet();
 		void Send_Match_Wait_Packet(int queue_size);
 };

@@ -42,7 +42,7 @@ bool LobbyServer::Initialize()
         return false;
     }
 
-    // ÀÎ½ºÅÏ½º ¼­¹ö ³»ºÎ Åë½Å ¸®½º³Ê ½ÃÀÛ
+    // ì¸ìŠ¤í„´ìŠ¤ ì„œë²„ ë‚´ë¶€ í†µì‹  ë¦¬ìŠ¤ë„ˆ ì‹œìž‘
     if (!InstanceManager::GetInstance()->StartInternalListener()) {
         cout << "[Lobby] Internal listener failed.\n";
         return false;
@@ -56,14 +56,14 @@ bool LobbyServer::Initialize()
 
 void LobbyServer::Run()
 {
-    // ÀÎ½ºÅÏ½º ¼­¹ö Á¢¼Ó ¼ö¶ô ½º·¹µå ½ÃÀÛ
+    // ì¸ìŠ¤í„´ìŠ¤ ì„œë²„ ì ‘ì† ìˆ˜ë½ ìŠ¤ë ˆë“œ ì‹œìž‘
     thread internal_th(&InstanceManager::InternalAcceptThread, InstanceManager::GetInstance());
     internal_th.detach();
 
-    // Å¬¶óÀÌ¾ðÆ® AcceptEx ½ÃÀÛ
+    // í´ë¼ì´ì–¸íŠ¸ AcceptEx ì‹œìž‘
     AcceptClient();
 
-    // IOCP ¿öÄ¿ ½º·¹µå
+    // IOCP ì›Œì»¤ ìŠ¤ë ˆë“œ
     vector<thread> worker_threads;
     int num_threads = std::thread::hardware_concurrency();
     for (int i = 0; i < num_threads; ++i)
@@ -137,7 +137,7 @@ void LobbyServer::WorkerThread()
             break;
         }
         case OP_RECV: {
-            // ·Îºñ¿¡¼­´Â CS_LOGIN, CS_LOGOUT¸¸ Ã³¸® (CS_MOVE´Â ÀÎ½ºÅÏ½º¿¡¼­ Ã³¸®)
+            // ë¡œë¹„ì—ì„œëŠ” CS_LOGIN, CS_LOGOUTë§Œ ì²˜ë¦¬ (CS_MOVEëŠ” ì¸ìŠ¤í„´ìŠ¤ì—ì„œ ì²˜ë¦¬)
             auto& client = sm->GetClient(static_cast<int>(key));
             int remain_data = num_bytes + client.m_prev_remain;
             char* p = ex_over->m_send_buf;

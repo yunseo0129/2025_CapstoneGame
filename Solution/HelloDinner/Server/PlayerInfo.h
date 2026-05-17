@@ -3,12 +3,12 @@
 #include <cmath>
 #include <cstring>
 
-// À§Ä¡ ºñ±³ Çã¿ë ¿ÀÂ÷
+// ìœ„ì¹˜ ë¹„êµ í—ˆìš© ì˜¤ì°¨
 constexpr float POSITION_TOLERANCE = 0.01f;
 
-// ¿ùµå Çà·Ä Á¤º¸ (4x4 = float[16], Çà ¿ì¼±)
+// ì›”ë“œ í–‰ë ¬ ì •ë³´ (4x4 = float[16], í–‰ ìš°ì„ )
 // [0..3]=Right, [4..7]=Up, [8..11]=Look, [12..15]=Position
-// CTransform::STATE_RIGHT=0Çà, STATE_UP=1Çà, STATE_LOOK=2Çà, STATE_POSITION=3Çà
+// CTransform::STATE_RIGHT=0í–‰, STATE_UP=1í–‰, STATE_LOOK=2í–‰, STATE_POSITION=3í–‰
 struct WorldMatrixInfo
 {
 	float m[16] = {
@@ -24,8 +24,8 @@ struct WorldMatrixInfo
 	}
 
 	// ==========================================
-	// ¼­¹ö-Å¬¶óÀÌ¾ğÆ® À§Ä¡ ºñ±³
-	// Position(m[12], m[13], m[14])ÀÇ Â÷ÀÌ°¡ Çã¿ë ¿ÀÂ÷ ÀÌ³»ÀÎÁö È®ÀÎ
+	// ì„œë²„-í´ë¼ì´ì–¸íŠ¸ ìœ„ì¹˜ ë¹„êµ
+	// Position(m[12], m[13], m[14])ì˜ ì°¨ì´ê°€ í—ˆìš© ì˜¤ì°¨ ì´ë‚´ì¸ì§€ í™•ì¸
 	// ==========================================
 	bool IsPositionClose(const float* otherMatrix, float tolerance = POSITION_TOLERANCE) const
 	{
@@ -36,28 +36,28 @@ struct WorldMatrixInfo
 	}
 
 	// ==========================================
-	// CTransform::Turn(YÃà, angle) °ú µ¿ÀÏ
+	// CTransform::Turn(Yì¶•, angle) ê³¼ ë™ì¼
 	// XMMatrixRotationAxis({0,1,0,0}, rotationPerSec * fTimeDelta)
-	// ¡æ Right, Up, Look º¤ÅÍ 3°³¸¦ ¸ğµÎ YÃà ±âÁØÀ¸·Î È¸Àü
+	// â†’ Right, Up, Look ë²¡í„° 3ê°œë¥¼ ëª¨ë‘ Yì¶• ê¸°ì¤€ìœ¼ë¡œ íšŒì „
 	// ==========================================
 	void TurnY(float angle)
 	{
 		float cosA = cosf(angle);
 		float sinA = sinf(angle);
 
-		// Right º¤ÅÍ È¸Àü
+		// Right ë²¡í„° íšŒì „
 		float r0 = m[0], r1 = m[1], r2 = m[2];
 		m[0] =  r0 * cosA + r2 * sinA;
 		m[1] =  r1;
 		m[2] = -r0 * sinA + r2 * cosA;
 
-		// Up º¤ÅÍ È¸Àü
+		// Up ë²¡í„° íšŒì „
 		float u0 = m[4], u1 = m[5], u2 = m[6];
 		m[4] =  u0 * cosA + u2 * sinA;
 		m[5] =  u1;
 		m[6] = -u0 * sinA + u2 * cosA;
 
-		// Look º¤ÅÍ È¸Àü
+		// Look ë²¡í„° íšŒì „
 		float l0 = m[8], l1 = m[9], l2 = m[10];
 		m[8]  =  l0 * cosA + l2 * sinA;
 		m[9]  =  l1;
@@ -65,8 +65,8 @@ struct WorldMatrixInfo
 	}
 
 	// ==========================================
-	// CTransform::Go_Straight °ú µ¿ÀÏ
-	// Look º¤ÅÍ¿¡¼­ Y=0À¸·Î ¸¸µç µÚ normalize ¡æ position += dir * speed * dt
+	// CTransform::Go_Straight ê³¼ ë™ì¼
+	// Look ë²¡í„°ì—ì„œ Y=0ìœ¼ë¡œ ë§Œë“  ë’¤ normalize â†’ position += dir * speed * dt
 	// ==========================================
 	void GoStraight(float fSpeed, float fTimeDelta)
 	{
@@ -80,7 +80,7 @@ struct WorldMatrixInfo
 	}
 
 	// ==========================================
-	// CTransform::Go_Backward °ú µ¿ÀÏ
+	// CTransform::Go_Backward ê³¼ ë™ì¼
 	// ==========================================
 	void GoBackward(float fSpeed, float fTimeDelta)
 	{
@@ -94,8 +94,8 @@ struct WorldMatrixInfo
 	}
 
 	// ==========================================
-	// CTransform::Go_Left °ú µ¿ÀÏ
-	// Right º¤ÅÍ¸¦ normalize ¡æ position -= dir * speed * dt
+	// CTransform::Go_Left ê³¼ ë™ì¼
+	// Right ë²¡í„°ë¥¼ normalize â†’ position -= dir * speed * dt
 	// ==========================================
 	void GoLeft(float fSpeed, float fTimeDelta)
 	{
@@ -110,7 +110,7 @@ struct WorldMatrixInfo
 	}
 
 	// ==========================================
-	// CTransform::Go_Right °ú µ¿ÀÏ
+	// CTransform::Go_Right ê³¼ ë™ì¼
 	// ==========================================
 	void GoRight(float fSpeed, float fTimeDelta)
 	{
@@ -125,8 +125,8 @@ struct WorldMatrixInfo
 	}
 
 	// ==========================================
-	// CTransform::Go_Up °ú µ¿ÀÏ
-	// ¿ùµå Up(0,1,0) ¹æÇâÀ¸·Î position += {0,1,0} * speed * dt
+	// CTransform::Go_Up ê³¼ ë™ì¼
+	// ì›”ë“œ Up(0,1,0) ë°©í–¥ìœ¼ë¡œ position += {0,1,0} * speed * dt
 	// ==========================================
 	void GoUp(float fSpeed, float fTimeDelta)
 	{
@@ -134,17 +134,17 @@ struct WorldMatrixInfo
 	}
 
 	// ==========================================
-	// Camera_FPV::Update ÀÌµ¿ ·ÎÁ÷°ú µ¿ÀÏ
-	// keyInput ºñÆ® ÇÃ·¡±× + mouseYaw + timeDelta¸¦ ¹Ş¾Æ
-	// ¼­¹ö¿¡¼­ Å¬¶óÀÌ¾ğÆ®¿Í µ¿ÀÏÇÑ À§Ä¡¸¦ ½Ã¹Ä·¹ÀÌ¼Ç
+	// Camera_FPV::Update ì´ë™ ë¡œì§ê³¼ ë™ì¼
+	// keyInput ë¹„íŠ¸ í”Œë˜ê·¸ + mouseYaw + timeDeltaë¥¼ ë°›ì•„
+	// ì„œë²„ì—ì„œ í´ë¼ì´ì–¸íŠ¸ì™€ ë™ì¼í•œ ìœ„ì¹˜ë¥¼ ì‹œë®¬ë ˆì´ì…˜
 	// ==========================================
 	void CalculateMovement(unsigned char keyInput, float mouseYaw, float speedPerSec, float rotationPerSec, float fTimeDelta)
 	{
-		// 1) ¸¶¿ì½º Yaw È¸Àü Àû¿ë (CTransform::Turn YÃà)
+		// 1) ë§ˆìš°ìŠ¤ Yaw íšŒì „ ì ìš© (CTransform::Turn Yì¶•)
 		if (mouseYaw != 0.f)
 			TurnY(rotationPerSec * mouseYaw * fTimeDelta * 2.2f);
 
-		// 2) Å° ÀÔ·Â¿¡ µû¸¥ ÀÌµ¿ (Camera_FPV ·ÎÁ÷ ±×´ë·Î)
+		// 2) í‚¤ ì…ë ¥ì— ë”°ë¥¸ ì´ë™ (Camera_FPV ë¡œì§ ê·¸ëŒ€ë¡œ)
 		bool bW = (keyInput & KEY_W) != 0;
 		bool bS = (keyInput & KEY_S) != 0;
 		bool bA = (keyInput & KEY_A) != 0;
@@ -156,9 +156,9 @@ struct WorldMatrixInfo
 		constexpr float DIAG = 0.7071f;
 
 		if (bW && bS) {
-			// W+S »ó¼â ¡æ ÁÂ¿ì¸¸
+			// W+S ìƒì‡„ â†’ ì¢Œìš°ë§Œ
 			if (bA && bD) {
-				// ÀüºÎ »ó¼â
+				// ì „ë¶€ ìƒì‡„
 			}
 			else if (bA) {
 				GoLeft(speed, fTimeDelta);
@@ -200,7 +200,7 @@ struct WorldMatrixInfo
 			}
 		}
 		else if (bA && bD) {
-			// ÁÂ¿ì »ó¼â
+			// ì¢Œìš° ìƒì‡„
 		}
 		else if (bA) {
 			GoLeft(speed, fTimeDelta);
@@ -209,7 +209,7 @@ struct WorldMatrixInfo
 			GoRight(speed, fTimeDelta);
 		}
 
-		// 3) »óÇÏ ÀÌµ¿
+		// 3) ìƒí•˜ ì´ë™
 		if (bSpace) {
 			GoUp(speed, fTimeDelta);
 		}
@@ -219,7 +219,7 @@ struct WorldMatrixInfo
 	}
 };
 
-// ÇÃ·¹ÀÌ¾î Á¤º¸
+// í”Œë ˆì´ì–´ ì •ë³´
 struct PlayerInfo
 {
 	int				id = -1;
