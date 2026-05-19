@@ -37,14 +37,6 @@ void CLevel_Manager::Update(_float fTimeDelta)
 		m_pCurrentLevel->Update(fTimeDelta);
 }
 
-void CLevel_Manager::ShadowRender(ID3D12GraphicsCommandList* cmdList)
-{
-	if (nullptr != m_pCurrentLevel) {
-		m_pCurrentLevel->ShadowRender_Begin();
-		m_pCurrentLevel->ShadowRender(cmdList);
-	}	
-}
-
 void CLevel_Manager::Set_CurrentCamera(CAMERA_TYPE _etype)
 {
 	if (nullptr != m_pCurrentLevel)
@@ -84,6 +76,37 @@ CCamera* CLevel_Manager::Get_CurrentCamera()
     return m_pCurrentLevel->Get_CurrentCamera();
 }
 
+void CLevel_Manager::Update_Shadows(_float fTimeDelta)
+{
+    if (m_pCurrentLevel) m_pCurrentLevel->Update_Shadows(fTimeDelta);
+}
+
+void CLevel_Manager::Begin_ShadowPass(ID3D12GraphicsCommandList* cmdList)
+{
+    if (m_pCurrentLevel) m_pCurrentLevel->Begin_ShadowPass(cmdList);
+}
+
+void CLevel_Manager::End_ShadowPass(ID3D12GraphicsCommandList* cmdList)
+{
+    if (m_pCurrentLevel) m_pCurrentLevel->End_ShadowPass(cmdList);
+}
+
+_bool CLevel_Manager::IsSphereInShadowFrustum(const _float3& vCenter, _float fRadius)
+{
+    if (!m_bShadowCullingEnabled) return true;
+    if (!m_pCurrentLevel)          return true;
+    return m_pCurrentLevel->IsSphereInShadowFrustum(vCenter, fRadius);
+}
+
+void CLevel_Manager::Add_CullStat_Main(_bool b) { ++m_iCullTotal;   if (b) ++m_iCullRendered; }
+void CLevel_Manager::Add_CullStat_Shadow(_bool b) { ++m_iShadowTotal; if (b) ++m_iShadowRendered; }
+
+void CLevel_Manager::Reset_CullStats()
+{
+    m_iCullTotal = m_iCullRendered = 0;
+    m_iShadowTotal = m_iShadowRendered = 0;
+}
+
 _bool CLevel_Manager::IsSphereInFrustum(const _float3& vCenter, _float fRadius)
 {
     if (!m_bCullingEnabled)
@@ -96,12 +119,6 @@ _bool CLevel_Manager::IsSphereInFrustum(const _float3& vCenter, _float fRadius)
     return pCamera->IsSphereInFrustum(vCenter, fRadius);
 }
 
-void CLevel_Manager::Add_CullStat(_bool bRendered)
-{
-    ++m_iCullTotal;
-    if (bRendered)
-        ++m_iCullRendered;
-}
 
 CLevel_Manager* CLevel_Manager::Create()
 {

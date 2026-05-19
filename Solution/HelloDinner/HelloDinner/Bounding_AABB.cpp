@@ -145,6 +145,13 @@ _float3 CBounding_AABB::Get_CollisionNormal(CCollider::COLLIDERTYPE eTargetType,
 	return vNormal;
 }
 
+void CBounding_AABB::Get_SphereBound(_float3& outCenter, _float& outRadius) const
+{
+    outCenter = m_pBoundDesc->Center;
+    XMVECTOR vExt = XMLoadFloat3(&m_pBoundDesc->Extents);
+    XMStoreFloat(&outRadius, XMVector3Length(vExt));  // 대각선 절반 = 외접구 반지름
+}
+
 CBounding_AABB* CBounding_AABB::Create(EngineContext* pContext, const BOUND_DESC* pBoundDesc)
 {
 	CBounding_AABB* pInstance = new CBounding_AABB(pContext);

@@ -30,6 +30,8 @@ public:
 	virtual _float3 Get_CollisionNormal(CCollider::COLLIDERTYPE eTargetType, CBounding* pTargetBounding) = 0;
 	virtual _float3 Get_Center() = 0;
 
+    virtual void Get_SphereBound(_float3& outCenter, _float& outRadius) const = 0;
+
 protected:
 	EngineContext* m_pContext = { nullptr };
 

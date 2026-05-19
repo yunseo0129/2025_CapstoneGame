@@ -105,3 +105,24 @@ HRESULT CGameObject::Add_Component(_uint iPrototypeLevelIndex, const _wstring& s
 
 	return S_OK;
 }
+
+void CGameObject::Cull_And_Submit(CRenderer::RENDERGROUP eGroup)
+{
+    _bool bMain = true;
+    _bool bShadow = true;
+
+    _float3 vCenter; _float fRadius;
+    if (Get_WorldBoundingSphere(vCenter, fRadius))
+    {
+        bMain = m_pGameInstance->IsSphereInFrustum(vCenter, fRadius);
+        bShadow = m_pGameInstance->IsSphereInShadowFrustum(vCenter, fRadius);
+    }
+
+    m_pGameInstance->Add_CullStat_Main(bMain);
+    m_pGameInstance->Add_CullStat_Shadow(bShadow);
+
+    if (bMain)
+        m_pGameInstance->Add_RenderObject(eGroup, this);
+    if (bShadow)
+        m_pGameInstance->Add_ShadowRenderObject(eGroup, this);
+}

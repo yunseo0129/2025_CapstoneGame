@@ -33,26 +33,41 @@ void CLevel::Update(_float fTimeDelta)
 	}
 }
 
-void CLevel::ShadowRender_Begin()
+void CLevel::Update_Shadows(_float fTimeDelta)
 {
-	for (auto& pLight : m_pLights) {
-		if (pLight == nullptr)
-			continue;
-		if (m_pCurrentCamera == nullptr)
-			continue;
-		pLight->Render_Begin(m_pCurrentCamera);
-	}
+    if (m_pCurrentCamera == nullptr)
+        return;
+    for (auto& pLight : m_pLights) {
+        if (pLight == nullptr) continue;
+        pLight->Update_Shadow(m_pCurrentCamera);
+    }
 }
 
-void CLevel::ShadowRender(ID3D12GraphicsCommandList* cmdList)
+void CLevel::Begin_ShadowPass(ID3D12GraphicsCommandList* cmdList)
 {
-	for (auto& pLight : m_pLights) {
-		if (pLight == nullptr)
-			continue;
-		if (m_pCurrentCamera == nullptr)
-			continue;
-		pLight->Render(cmdList);
-	}
+    if (m_pCurrentCamera == nullptr) return;
+    for (auto& pLight : m_pLights) {
+        if (pLight == nullptr) continue;
+        pLight->Begin_ShadowPass(cmdList);
+    }
+}
+
+void CLevel::End_ShadowPass(ID3D12GraphicsCommandList* cmdList)
+{
+    if (m_pCurrentCamera == nullptr) return;
+    for (auto& pLight : m_pLights) {
+        if (pLight == nullptr) continue;
+        pLight->End_ShadowPass(cmdList);
+    }
+}
+
+_bool CLevel::IsSphereInShadowFrustum(const _float3& vCenter, _float fRadius) const
+{
+    for (auto& pLight : m_pLights) {
+        if (pLight && pLight->Has_Shadow())
+            return pLight->IsSphereInShadowBounds(vCenter, fRadius);
+    }
+    return true;  // 그림자 광원 없음 → 통과 (안전)
 }
 
 HRESULT CLevel::Render()

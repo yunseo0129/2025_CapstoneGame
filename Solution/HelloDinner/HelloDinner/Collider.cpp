@@ -138,6 +138,13 @@ _float3 CCollider::Get_Center()
 	return m_pBounding->Get_Center();
 }
 
+_bool CCollider::Get_SphereBound(_float3& outCenter, _float& outRadius) const
+{
+    if (!m_pBounding) return false;
+    m_pBounding->Get_SphereBound(outCenter, outRadius);
+    return true;
+}
+
 CCollider* CCollider::Create(EngineContext* pContext, COLLIDERTYPE eColliderType)
 {
 	CCollider* pInstance = new CCollider(pContext);

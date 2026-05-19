@@ -24,6 +24,7 @@ public:
 	virtual _bool Intersect_Offset(CCollider::COLLIDERTYPE eType, CBounding* pTargetBounding, const _float3& vOffset) override;
 	virtual _float3 Get_CollisionNormal(CCollider::COLLIDERTYPE eTargetType, CBounding* pTargetBounding) override;
 	virtual _float3 Get_Center() override;
+    virtual void Get_SphereBound(_float3& outCenter, _float& outRadius) const override;
 
 private:
 	BoundingSphere* m_pOriginalBoundDesc = {};

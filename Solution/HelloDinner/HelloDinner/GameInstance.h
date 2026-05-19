@@ -74,12 +74,20 @@ public: /* for.Level_Manager */
 
 public: /* for.Frustum_Culling */
     _bool IsSphereInFrustum(const _float3& vCenter, _float fRadius);
+    _bool IsSphereInShadowFrustum(const _float3& vCenter, _float fRadius);
+
     void  Set_CullingEnabled(_bool b);
     _bool Is_CullingEnabled() const;
+    void  Set_ShadowCullingEnabled(_bool b);
+    _bool Is_ShadowCullingEnabled() const;
+
     void  Reset_CullStats();
-    void  Add_CullStat(_bool bRendered);
-    _uint Get_CullStat_Total()    const;
-    _uint Get_CullStat_Rendered() const;
+    void  Add_CullStat_Main(_bool b);
+    void  Add_CullStat_Shadow(_bool b);
+    _uint Get_CullStat_MainTotal() const;
+    _uint Get_CullStat_MainRendered() const;
+    _uint Get_CullStat_ShadowTotal() const;
+    _uint Get_CullStat_ShadowRendered() const;
 
 public: /* For.Prototype_Manager */
 	HRESULT Add_Prototype(_uint iLevelIndex, const _wstring& strPrototypeTag, class CBase* pPrototype);
@@ -115,7 +123,9 @@ public: /* For.Collision_Manager */
 	bool CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide);
 
 public: /* For.Renderer */
-	HRESULT Add_RenderObject(CRenderer::RENDERGROUP eRenderGroup, class CGameObject* pRenderObject);
+    HRESULT Add_RenderObject(CRenderer::RENDERGROUP eRenderGroup, class CGameObject* pRenderObject);
+    HRESULT Add_ShadowRenderObject(CRenderer::RENDERGROUP eRenderGroup, class CGameObject* pRenderObject);
+
 #ifdef _DEBUG
 	HRESULT Add_RenderCollider(class CCollider* pColliderCom);
 #endif

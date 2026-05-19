@@ -22,17 +22,28 @@ void CLight::Update(const _float fTimeDelta)
 	//Light 업데이트 
 }
 
-void CLight::Render_Begin(CCamera* _camera)
+void CLight::Update_Shadow(CCamera* _camera)
 {
-	// Light에서 그림자 맵에 씬을 그리는 함수 호출
-	if (m_pShadow)
-		m_pShadow->Update(_camera, this);
+    if (m_pShadow && _camera)
+        m_pShadow->Update(_camera, this);
 }
 
-void CLight::Render(ID3D12GraphicsCommandList* pCmdList)
+void CLight::Begin_ShadowPass(ID3D12GraphicsCommandList* cmdList)
 {
-	if (m_pShadow)
-		m_pShadow->DrawSceneToShadowMap(pCmdList);
+    if (m_pShadow)
+        m_pShadow->Begin_Pass(cmdList);
+}
+
+void CLight::End_ShadowPass(ID3D12GraphicsCommandList* cmdList)
+{
+    if (m_pShadow)
+        m_pShadow->End_Pass(cmdList);
+}
+
+_bool CLight::IsSphereInShadowBounds(const _float3& vCenter, _float fRadius) const
+{
+    if (!m_pShadow) return true;   // 그림자 없는 라이트는 컬링 무의미
+    return m_pShadow->IsSphereInBounds(vCenter, fRadius);
 }
 
 void CLight::Bind_LightBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameterIndex _eIndex)

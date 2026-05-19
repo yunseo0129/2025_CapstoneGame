@@ -68,7 +68,8 @@ void CMainApp::Update(_float fTimeDelta)
     // culling 되는 지 확인용
     if (m_pGameInstance->Key_Down(DIK_F1))
         m_pGameInstance->Set_CullingEnabled(!m_pGameInstance->Is_CullingEnabled());
-
+    if (m_pGameInstance->Key_Down(DIK_F2))
+        m_pGameInstance->Set_ShadowCullingEnabled(!m_pGameInstance->Is_ShadowCullingEnabled());
 
 	if (acc >= 1.f)
 	{
@@ -79,12 +80,16 @@ void CMainApp::Update(_float fTimeDelta)
 		FPS = 0;
         */
         acc -= 1.f;
-        const wchar_t* szCull = m_pGameInstance->Is_CullingEnabled() ? L"ON" : L"OFF";
-        _uint iRendered = m_pGameInstance->Get_CullStat_Rendered();
-        _uint iTotal = m_pGameInstance->Get_CullStat_Total();
-        std::wstring title = TEXT("HelloDinner / FPS : ") + std::to_wstring(FPS)
-            + TEXT("  /  Cull ") + szCull
-            + TEXT("  /  Map ") + std::to_wstring(iRendered) + TEXT("/") + std::to_wstring(iTotal);
+        const wchar_t* szMain = m_pGameInstance->Is_CullingEnabled() ? L"ON" : L"OFF";
+        const wchar_t* szShadow = m_pGameInstance->Is_ShadowCullingEnabled() ? L"ON" : L"OFF";
+        _uint iMainR = m_pGameInstance->Get_CullStat_MainRendered();
+        _uint iMainT = m_pGameInstance->Get_CullStat_MainTotal();
+        _uint iShdR = m_pGameInstance->Get_CullStat_ShadowRendered();
+        _uint iShdT = m_pGameInstance->Get_CullStat_ShadowTotal();
+
+        std::wstring title = TEXT("HelloDinner / FPS:") + std::to_wstring(FPS)
+            + TEXT("  Cull[") + szMain + TEXT("] Main ") + std::to_wstring(iMainR) + TEXT("/") + std::to_wstring(iMainT)
+            + TEXT("  Shadow[") + szShadow + TEXT("] ") + std::to_wstring(iShdR) + TEXT("/") + std::to_wstring(iShdT);
         SetWindowText(g_hWnd, title.c_str());
         FPS = 0;
 	}

@@ -140,6 +140,13 @@ _float3 CBounding_OBB::Get_Center()
 	return m_pBoundDesc->Center;
 }
 
+void CBounding_OBB::Get_SphereBound(_float3& outCenter, _float& outRadius) const
+{
+    outCenter = m_pBoundDesc->Center;
+    XMVECTOR vExt = XMLoadFloat3(&m_pBoundDesc->Extents);
+    XMStoreFloat(&outRadius, XMVector3Length(vExt));  // 회전 무관 (외접구는 회전해도 동일)
+}
+
 
 _bool CBounding_OBB::Intersect_to_OBB(CBounding_OBB* pTarget)
 {

@@ -17,6 +17,14 @@ HRESULT CRenderer::Initialize()
 	return S_OK;
 }
 
+HRESULT CRenderer::Add_ShadowRenderObject(RENDERGROUP eRenderGroup, CGameObject* pRenderObject)
+{
+    if (eRenderGroup >= RG_END || !pRenderObject) return E_FAIL;
+    m_ShadowRenderObjects[eRenderGroup].push_back(pRenderObject);
+    Safe_AddRef(pRenderObject);
+    return S_OK;
+}
+
 HRESULT CRenderer::Add_RenderObject(RENDERGROUP eRenderGroup, CGameObject* pRenderObject)
 {
 	if (eRenderGroup >= RG_END ||
@@ -32,92 +40,63 @@ HRESULT CRenderer::Add_RenderObject(RENDERGROUP eRenderGroup, CGameObject* pRend
 
 HRESULT CRenderer::Draw_RenderObject(ID3D12GraphicsCommandList* _CmdList)
 {
-	if (FAILED(Render_Priority( _CmdList )))
-		return E_FAIL;
-	if (FAILED(Render_NonBlend( _CmdList )))
-		return E_FAIL;
-	if (FAILED(Render_Blend( _CmdList )))
-		return E_FAIL;
-	//if (FAILED(Render_UI()))
-		//return E_FAIL;
-
+    if (FAILED(Render_Priority(_CmdList))) return E_FAIL;
+    if (FAILED(Render_NonBlend(_CmdList))) return E_FAIL;
+    if (FAILED(Render_Blend(_CmdList))) return E_FAIL;
 #ifdef _DEBUG
-	if ( FAILED ( Render_Collider ( _CmdList ) ) )
-		return E_FAIL;
-#endif // DEBUG
-
-	return S_OK;
+    if (FAILED(Render_Collider(_CmdList))) return E_FAIL;
+#endif
+    return S_OK;
 }
 
-HRESULT CRenderer::ShadowDraw_RenderObject(ID3D12GraphicsCommandList* _CmdList)
+HRESULT CRenderer::Draw_ShadowQueue(ID3D12GraphicsCommandList* _CmdList)
 {
-	if (FAILED(Render_Priority(_CmdList, true)))
-		return E_FAIL;
-	if (FAILED(Render_NonBlend(_CmdList, true)))
-		return E_FAIL;
-	return S_OK;
+    // 그림자는 RG_PRIORITY + RG_NONBLEND만 그림
+    for (auto& pObj : m_ShadowRenderObjects[RG_PRIORITY]) {
+        if (pObj) pObj->ShadowRender(_CmdList);
+        Safe_Release(pObj);
+    }
+    m_ShadowRenderObjects[RG_PRIORITY].clear();
+
+    for (auto& pObj : m_ShadowRenderObjects[RG_NONBLEND]) {
+        if (pObj) pObj->ShadowRender(_CmdList);
+        Safe_Release(pObj);
+    }
+    m_ShadowRenderObjects[RG_NONBLEND].clear();
+
+    return S_OK;
 }
 
-HRESULT CRenderer::Render_Priority( ID3D12GraphicsCommandList* _CmdList , bool _IsShadow)
-{
-	if (_IsShadow) {
-		for (auto& pRenderObject : m_RenderObjects[RG_PRIORITY])
-		{
-			if (nullptr != pRenderObject) {
-				pRenderObject->ShadowRender(_CmdList);
-			}
-		}
-	}
-	else {
-		for (auto& pRenderObject : m_RenderObjects[RG_PRIORITY])
-		{
-			if (nullptr != pRenderObject) {
-				pRenderObject->Render(_CmdList);
-			}
-			Safe_Release(pRenderObject);
-		}
-		m_RenderObjects[RG_PRIORITY].clear();
-	}
 
-	return S_OK;
+HRESULT CRenderer::Render_Priority(ID3D12GraphicsCommandList* _CmdList)
+{
+    for (auto& pObj : m_RenderObjects[RG_PRIORITY]) {
+        if (pObj) pObj->Render(_CmdList);
+        Safe_Release(pObj);
+    }
+    m_RenderObjects[RG_PRIORITY].clear();
+    return S_OK;
 }
 
-HRESULT CRenderer::Render_NonBlend( ID3D12GraphicsCommandList* _CmdList, bool _IsShadow)
+HRESULT CRenderer::Render_NonBlend(ID3D12GraphicsCommandList* _CmdList)
 {
-	if (_IsShadow) {
-		for (auto& pRenderObject : m_RenderObjects[RG_NONBLEND])
-		{
-			if (nullptr != pRenderObject) {
-				pRenderObject->ShadowRender(_CmdList);
-			}
-		}
-	}
-	else {
-		for (auto& pRenderObject : m_RenderObjects[RG_NONBLEND])
-		{
-			if (nullptr != pRenderObject) {
-				pRenderObject->Render(_CmdList);
-			}
-			Safe_Release(pRenderObject);
-		}
-		m_RenderObjects[RG_NONBLEND].clear();
-	}
-
-	return S_OK;
+    for (auto& pObj : m_RenderObjects[RG_NONBLEND]) {
+        if (pObj) pObj->Render(_CmdList);
+        Safe_Release(pObj);
+    }
+    m_RenderObjects[RG_NONBLEND].clear();
+    return S_OK;
 }
 
-HRESULT CRenderer::Render_Blend( ID3D12GraphicsCommandList* _CmdList, bool _IsShadow)
-{
-	for (auto& pRenderObject : m_RenderObjects[RG_BLEND])
-	{
-		if ( nullptr != pRenderObject ) {
-			pRenderObject->Render(_CmdList);
-		}
-		Safe_Release(pRenderObject);
-	}
-	m_RenderObjects[RG_BLEND].clear();
 
-	return S_OK;
+HRESULT CRenderer::Render_Blend(ID3D12GraphicsCommandList* _CmdList)
+{
+    for (auto& pObj : m_RenderObjects[RG_BLEND]) {
+        if (pObj) pObj->Render(_CmdList);
+        Safe_Release(pObj);
+    }
+    m_RenderObjects[RG_BLEND].clear();
+    return S_OK;
 }
 
 #ifdef _DEBUG
@@ -183,6 +162,13 @@ void CRenderer::Free()
 
 		m_RenderObjects[i].clear();
 	}
+
+    for (size_t i = 0; i < RG_END; i++) {
+        for (auto& p : m_RenderObjects[i])       Safe_Release(p);
+        for (auto& p : m_ShadowRenderObjects[i]) Safe_Release(p);
+        m_RenderObjects[i].clear();
+        m_ShadowRenderObjects[i].clear();
+    }
 
 	m_pDevice.Reset();
 	m_pCommandlist.Reset();

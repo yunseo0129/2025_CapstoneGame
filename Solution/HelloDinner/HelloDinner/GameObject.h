@@ -1,5 +1,6 @@
 #pragma once
 #include "Transform.h"
+#include "Renderer.h"
 
 class CGameObject abstract : public CBase
 {
@@ -36,6 +37,7 @@ public:
 
 protected:
 	HRESULT				Add_Component(_uint iPrototypeLevelIndex, const _wstring& strPrototypeTag, const _wstring& strComponentTag, CComponent** ppOut, void* pArg = nullptr);
+    void                Cull_And_Submit(CRenderer::RENDERGROUP eGroup);
 
 protected:
 	class CGameInstance*						m_pGameInstance = { nullptr };

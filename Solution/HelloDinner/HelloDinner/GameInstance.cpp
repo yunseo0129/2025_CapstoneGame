@@ -90,7 +90,9 @@ void CGameInstance::Update_Engine(_float fTimeDelta)
 	m_pCollision_Manager->Update_Collision();
 	m_pObject_Manager->Update(fTimeDelta);
 	m_pCollision_Manager->Clear_CollisionGroup();
+
 	m_pLevel_Manager->Update(fTimeDelta);
+    m_pLevel_Manager->Update_Shadows(fTimeDelta);
     m_pLevel_Manager->Reset_CullStats();
     m_pObject_Manager->Late_Update(fTimeDelta);
 }
@@ -107,7 +109,11 @@ HRESULT CGameInstance::Render_Begin(const _float4& vClearColor)
 HRESULT CGameInstance::Draw()
 {
 	m_pLevel_Manager->Set_CurrentCamera(CAMERA_FPV);
-	m_pLevel_Manager->ShadowRender(m_pCommandList.Get());
+
+    m_pLevel_Manager->Begin_ShadowPass(m_pCommandList.Get());
+    m_pRenderer->Draw_ShadowQueue(m_pCommandList.Get());
+    m_pLevel_Manager->End_ShadowPass(m_pCommandList.Get());
+
 	m_pGraphic_Device->initRenderTargetAndDepthStencil(m_pCommandList.Get());
 	m_pLevel_Manager->Bind_CameraBuffer(m_pCommandList.Get(), RootParameterIndex::Camera, CAMERA_FPV);
 	m_pLevel_Manager->Bind_LightBuffer(m_pCommandList.Get(), RootParameterIndex::Light);
@@ -115,11 +121,6 @@ HRESULT CGameInstance::Draw()
 	return S_OK;
 }
 
-HRESULT CGameInstance::ShadowDrow()
-{
-	m_pRenderer->ShadowDraw_RenderObject(m_pCommandList.Get());
-	return S_OK;
-}
 
 HRESULT CGameInstance::Render_End()
 {
@@ -385,6 +386,11 @@ _bool CGameInstance::IsSphereInFrustum(const _float3& vCenter, _float fRadius)
     return m_pLevel_Manager->IsSphereInFrustum(vCenter, fRadius);
 }
 
+_bool CGameInstance::IsSphereInShadowFrustum(const _float3& c, _float r)
+{
+    return m_pLevel_Manager ? m_pLevel_Manager->IsSphereInShadowFrustum(c, r) : true;
+}
+
 void CGameInstance::Set_CullingEnabled(_bool b)
 {
     if (nullptr == m_pLevel_Manager) return;
@@ -397,29 +403,36 @@ _bool CGameInstance::Is_CullingEnabled() const
     return m_pLevel_Manager->Is_CullingEnabled();
 }
 
+void  CGameInstance::Set_ShadowCullingEnabled(_bool b)
+{
+    if (m_pLevel_Manager) m_pLevel_Manager->Set_ShadowCullingEnabled(b);
+}
+
+_bool CGameInstance::Is_ShadowCullingEnabled() const
+{
+    return m_pLevel_Manager ? m_pLevel_Manager->Is_ShadowCullingEnabled() : false;
+}
+
 void CGameInstance::Reset_CullStats()
 {
     if (nullptr == m_pLevel_Manager) return;
     m_pLevel_Manager->Reset_CullStats();
 }
 
-void CGameInstance::Add_CullStat(_bool bRendered)
+void  CGameInstance::Add_CullStat_Main(_bool b)
 {
-    if (nullptr == m_pLevel_Manager) return;
-    m_pLevel_Manager->Add_CullStat(bRendered);
+    if (m_pLevel_Manager) m_pLevel_Manager->Add_CullStat_Main(b);
 }
 
-_uint CGameInstance::Get_CullStat_Total() const
+void  CGameInstance::Add_CullStat_Shadow(_bool b)
 {
-    if (nullptr == m_pLevel_Manager) return 0;
-    return m_pLevel_Manager->Get_CullStat_Total();
+    if (m_pLevel_Manager) m_pLevel_Manager->Add_CullStat_Shadow(b);
 }
 
-_uint CGameInstance::Get_CullStat_Rendered() const
-{
-    if (nullptr == m_pLevel_Manager) return 0;
-    return m_pLevel_Manager->Get_CullStat_Rendered();
-}
+_uint CGameInstance::Get_CullStat_MainTotal()      const { return m_pLevel_Manager ? m_pLevel_Manager->Get_CullStat_MainTotal() : 0; }
+_uint CGameInstance::Get_CullStat_MainRendered()   const { return m_pLevel_Manager ? m_pLevel_Manager->Get_CullStat_MainRendered() : 0; }
+_uint CGameInstance::Get_CullStat_ShadowTotal()    const { return m_pLevel_Manager ? m_pLevel_Manager->Get_CullStat_ShadowTotal() : 0; }
+_uint CGameInstance::Get_CullStat_ShadowRendered() const { return m_pLevel_Manager ? m_pLevel_Manager->Get_CullStat_ShadowRendered() : 0; }
 
 // ------------------------------------------------------------------------
 // Prototype_Manager
@@ -593,6 +606,11 @@ HRESULT CGameInstance::Add_RenderObject(CRenderer::RENDERGROUP eRenderGroup, CGa
 		return E_FAIL;
 
 	return m_pRenderer->Add_RenderObject(eRenderGroup, pRenderObject);
+}
+
+HRESULT CGameInstance::Add_ShadowRenderObject(CRenderer::RENDERGROUP g, CGameObject* p)
+{
+    return m_pRenderer ? m_pRenderer->Add_ShadowRenderObject(g, p) : E_FAIL;
 }
 
 #ifdef _DEBUG

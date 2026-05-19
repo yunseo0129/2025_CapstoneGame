@@ -31,6 +31,7 @@ public:
 	void Set_Enable(_bool isWhat) { m_isEnable = isWhat; }
 	_float3 Get_Center();
 	class CBounding* Get_Bounding() { return m_pBounding; }
+    _bool Get_SphereBound(_float3& outCenter, _float& outRadius) const;
 
 private:
 	COLLIDERTYPE						m_eType = { TYPE_END };

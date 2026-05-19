@@ -54,34 +54,37 @@ void CShadow::Bind_ShadowMap(ID3D12GraphicsCommandList* cmdList, RootParameterIn
 	cmdList->SetGraphicsRootDescriptorTable(_eIndex, hGpuSrvHandle);
 }
 
-void CShadow::DrawSceneToShadowMap(ID3D12GraphicsCommandList* cmdList)
+void CShadow::Begin_Pass(ID3D12GraphicsCommandList* cmdList)
 {
-	cmdList->RSSetViewports(1, &m_Viewport);
-	cmdList->RSSetScissorRects(1, &m_ScissorRect);
+    cmdList->RSSetViewports(1, &m_Viewport);
+    cmdList->RSSetScissorRects(1, &m_ScissorRect);
 
-	D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-		m_pShadowMap.Get(),
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		D3D12_RESOURCE_STATE_DEPTH_WRITE);
+    D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+        m_pShadowMap.Get(),
+        D3D12_RESOURCE_STATE_GENERIC_READ,
+        D3D12_RESOURCE_STATE_DEPTH_WRITE);
+    cmdList->ResourceBarrier(1, &barrier);
 
-	cmdList->ResourceBarrier(1, &barrier);
+    cmdList->ClearDepthStencilView(m_hCpuDsvHandle,
+        D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.f, 0, 0, nullptr);
+    cmdList->OMSetRenderTargets(0, nullptr, FALSE, &m_hCpuDsvHandle);
 
-	cmdList->ClearDepthStencilView(
-		m_hCpuDsvHandle,
-		D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.f, 0, 0, nullptr);
+    Bind_ShadowBuffer(cmdList, RootParameterIndex::Camera);
+}
 
-	cmdList->OMSetRenderTargets(0, nullptr, FALSE, &m_hCpuDsvHandle);
+void CShadow::End_Pass(ID3D12GraphicsCommandList* cmdList)
+{
+    D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+        m_pShadowMap.Get(),
+        D3D12_RESOURCE_STATE_DEPTH_WRITE,
+        D3D12_RESOURCE_STATE_GENERIC_READ);
+    cmdList->ResourceBarrier(1, &barrier);
+}
 
-	Bind_ShadowBuffer(cmdList, Camera);
-
-	m_pGameInstance->ShadowDrow();
-
-	D3D12_RESOURCE_BARRIER barrier1 = CD3DX12_RESOURCE_BARRIER::Transition(
-		m_pShadowMap.Get(),
-		D3D12_RESOURCE_STATE_DEPTH_WRITE,
-		D3D12_RESOURCE_STATE_GENERIC_READ);
-
-	cmdList->ResourceBarrier(1, &barrier1);
+_bool CShadow::IsSphereInBounds(const _float3& vCenter, _float fRadius) const
+{
+    BoundingSphere sphere(vCenter, fRadius);
+    return mSceneBounds.Intersects(sphere);
 }
 
 void CShadow::UpdateMatrix(CLight* _light)
