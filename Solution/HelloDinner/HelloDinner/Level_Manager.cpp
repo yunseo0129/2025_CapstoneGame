@@ -119,6 +119,15 @@ _bool CLevel_Manager::IsSphereInFrustum(const _float3& vCenter, _float fRadius)
     return pCamera->IsSphereInFrustum(vCenter, fRadius);
 }
 
+const DirectX::BoundingFrustum* CLevel_Manager::Get_CurrentFrustum()
+{
+    return m_pCurrentLevel ? m_pCurrentLevel->Get_CurrentFrustum() : nullptr;
+}
+const DirectX::BoundingSphere* CLevel_Manager::Get_ShadowBounds()
+{
+    return m_pCurrentLevel ? m_pCurrentLevel->Get_ShadowBounds() : nullptr;
+}
+
 
 CLevel_Manager* CLevel_Manager::Create()
 {

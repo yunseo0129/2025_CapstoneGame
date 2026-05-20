@@ -1,5 +1,6 @@
 #include "Collision_Manager.h"
 #include "GameInstance.h"
+#include "GameObject.h"
 #include "Bounding_AABB.h"
 #include "Bounding_OBB.h"
 #include "Bounding_Sphere.h"
@@ -27,8 +28,10 @@ void CCollision_Manager::Update_Collision()
 
 void CCollision_Manager::Clear_CollisionGroup()
 {
-	for (auto& vec : m_Colliders)
-		vec.clear();
+    for (_int i = 0; i < GROUP_END; ++i) {
+        if (i == GROUP_MAP) continue;   // static은 보존 (BVH때문)
+        m_Colliders[i].clear();
+    }
 }
 
 void CCollision_Manager::Set_CollisionMatrix(COLLISION_GROUP _lgroup, COLLISION_GROUP _rgroup, _bool _is)
@@ -40,7 +43,8 @@ void CCollision_Manager::Set_CollisionMatrix(COLLISION_GROUP _lgroup, COLLISION_
 
 void CCollision_Manager::Add_CollisionGroup(COLLISION_GROUP _eGroup, CCollider* _pCollider)
 {
-	m_Colliders[_eGroup].push_back(_pCollider);
+    m_Colliders[_eGroup].push_back(_pCollider);
+    if (_eGroup == GROUP_MAP) m_bStaticBVHDirty = true;
 }
 
 void CCollision_Manager::Delete_CollisionGroup(COLLISION_GROUP _eGroup, CCollider* _pCollider)
@@ -75,45 +79,52 @@ bool CCollision_Manager::CollisionCheck_with_Collider(CCollider* _pMyCollider, C
 
 bool CCollision_Manager::CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide)
 {
-	bool bHit = false;
-	XMFLOAT3 finalMove = move;
+    // 첫 호출 시 자동 빌드 (또는 invalidate 후 재빌드)
+    if (m_bStaticBVHDirty && !m_Colliders[GROUP_MAP].empty())
+        Build_StaticBVH();
 
-	// 최대 반복 횟수 설정 (충돌 해결이 완전히 될 때까지 여러 번 시도)
-	const int MAX_ITER = 4;
-	for (int iter = 0; iter < MAX_ITER; ++iter)
-	{
-		bool bAnyHitThisIter = false;
+    bool bHit = false;
+    XMFLOAT3 finalMove = move;
+    const int MAX_ITER = 4;
 
-		for (CCollider* other : m_Colliders[GROUP_MAP])
-		{
-			// MAP 오브젝트의 Collider가 활성화되어있는지 확인
-			if (!other->Get_Enable()) continue;
+    // BVH 쿼리로 후보 추출 (fallback: 전체 GROUP_MAP)
+    vector<CCollider*> queryResults;
+    vector<CCollider*>* pCandidates = nullptr;
 
-			// 이동 후 충돌 해?
-			if (IsCollidingAfterMove(me, other, finalMove))
-			{
-				bHit = true;
+    if (m_bBVHEnabled && m_StaticBVH.Is_Built()) {
+        _float3 myC; _float myR;
+        if (me->Get_SphereBound(myC, myR)) {
+            XMVECTOR vMoveLen = XMVector3Length(XMLoadFloat3(&move));
+            _float fMoveDist = XMVectorGetX(vMoveLen);
+            _float fExpandR = myR + fMoveDist * (MAX_ITER + 1);   // 슬라이드 반복 흡수
+            m_StaticBVH.Query_Sphere(myC, fExpandR, queryResults);
+            pCandidates = &queryResults;
+            m_iLastQueryCandidates = (_int)queryResults.size();
+        }
+    }
+    if (!pCandidates) {
+        pCandidates = &m_Colliders[GROUP_MAP];
+        m_iLastQueryCandidates = (_int)pCandidates->size();
+    }
 
-				// 충돌한 면의 법선 벡터 구하기
-				// XMFLOAT3 normal = GetCollisionNormal(me, other);
-				XMFLOAT3 normal = me->Get_CollisionNormal(other);
-				finalMove = Slide(finalMove, normal);
-			}
-		}
+    for (int iter = 0; iter < MAX_ITER; ++iter) {
+        bool bAnyHitThisIter = false;
+        for (CCollider* other : *pCandidates) {
+            if (!other->Get_Enable()) continue;
+            if (IsCollidingAfterMove(me, other, finalMove)) {
+                bHit = true;
+                bAnyHitThisIter = true;
+                XMFLOAT3 normal = me->Get_CollisionNormal(other);
+                finalMove = Slide(finalMove, normal);
+            }
+        }
+        if (!bAnyHitThisIter) break;
 
-		// 더 이상 충돌 없으면 조기 종료
-		if (!bAnyHitThisIter) break;
-
-		// 슬라이드 결과가 거의 0이면 정지로 간주
-		XMVECTOR vLenSq = XMVector3LengthSq(XMLoadFloat3(&finalMove));
-		if (XMVectorGetX(vLenSq) < 1e-8f)
-		{
-			finalMove = {0.f, 0.f, 0.f};
-			break;
-		}
-	}
-	outSlide = finalMove;
-	return bHit;
+        XMVECTOR vLenSq = XMVector3LengthSq(XMLoadFloat3(&finalMove));
+        if (XMVectorGetX(vLenSq) < 1e-8f) { finalMove = {0, 0, 0}; break; }
+    }
+    outSlide = finalMove;
+    return bHit;
 }
 
 bool CCollision_Manager::IsCollidingAfterMove(CCollider* me, CCollider* other, const XMFLOAT3& move)
@@ -142,6 +153,67 @@ XMFLOAT3 CCollision_Manager::GetCollisionNormal(CCollider* me, CCollider* other)
 	return XMFLOAT3 {0.f, 1.f, 0.f};
 }
 
+void CCollision_Manager::Build_StaticBVH()
+{
+    m_StaticBVH.Build(m_Colliders[GROUP_MAP]);
+    m_bStaticBVHDirty = false;
+}
+
+void CCollision_Manager::Cull_StaticBVH(const BoundingFrustum* pMainFrustum, const BoundingSphere* pShadowBounds)
+{
+    if (!m_bCullingBVHEnabled) return;          // OFF: CMap이 자기 Cull_And_Submit 처리
+    if (m_Colliders[GROUP_MAP].empty()) return;
+
+    if (m_bStaticBVHDirty)
+        Build_StaticBVH();
+    if (!m_StaticBVH.Is_Built()) return;
+
+    const _int iTotal = (_int)m_Colliders[GROUP_MAP].size();
+
+    _bool bMainCullOn = m_pGameInstance->Is_CullingEnabled() && pMainFrustum;
+    _bool bShadowCullOn = m_pGameInstance->Is_ShadowCullingEnabled() && pShadowBounds;
+
+    // [Main]
+    if (bMainCullOn) {
+        vector<CCollider*> results;
+        m_StaticBVH.Query_Frustum(*pMainFrustum, results);
+        m_iLastFrustumCandidates = (_int)results.size();
+        for (CCollider* p : results) {
+            CGameObject* owner = p ? p->Get_Owner() : nullptr;
+            if (owner) m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, owner);
+        }
+        m_pGameInstance->Add_CullStat_Main_Bulk((_int)results.size(), iTotal);
+    }
+    else {
+        for (CCollider* p : m_Colliders[GROUP_MAP]) {
+            CGameObject* owner = p ? p->Get_Owner() : nullptr;
+            if (owner) m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, owner);
+        }
+        m_pGameInstance->Add_CullStat_Main_Bulk(iTotal, iTotal);
+        m_iLastFrustumCandidates = iTotal;
+    }
+
+    // [Shadow]
+    if (bShadowCullOn) {
+        vector<CCollider*> results;
+        m_StaticBVH.Query_Sphere(pShadowBounds->Center, pShadowBounds->Radius, results);
+        m_iLastShadowCandidates = (_int)results.size();
+        for (CCollider* p : results) {
+            CGameObject* owner = p ? p->Get_Owner() : nullptr;
+            if (owner) m_pGameInstance->Add_ShadowRenderObject(CRenderer::RG_NONBLEND, owner);
+        }
+        m_pGameInstance->Add_CullStat_Shadow_Bulk((_int)results.size(), iTotal);
+    }
+    else {
+        for (CCollider* p : m_Colliders[GROUP_MAP]) {
+            CGameObject* owner = p ? p->Get_Owner() : nullptr;
+            if (owner) m_pGameInstance->Add_ShadowRenderObject(CRenderer::RG_NONBLEND, owner);
+        }
+        m_pGameInstance->Add_CullStat_Shadow_Bulk(iTotal, iTotal);
+        m_iLastShadowCandidates = iTotal;
+    }
+}
+
 CCollision_Manager* CCollision_Manager::Create()
 {
 	return new CCollision_Manager();
@@ -149,5 +221,7 @@ CCollision_Manager* CCollision_Manager::Create()
 
 void CCollision_Manager::Free()
 {
-	Clear_CollisionGroup();
+    m_StaticBVH.Clear();
+    Clear_CollisionGroup();
+    m_Colliders[GROUP_MAP].clear();
 }

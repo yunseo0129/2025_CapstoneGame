@@ -94,6 +94,12 @@ void CGameInstance::Update_Engine(_float fTimeDelta)
 	m_pLevel_Manager->Update(fTimeDelta);
     m_pLevel_Manager->Update_Shadows(fTimeDelta);
     m_pLevel_Manager->Reset_CullStats();
+
+    //BVH
+    const BoundingFrustum* pFrustum = m_pLevel_Manager->Get_CurrentFrustum();
+    const BoundingSphere* pShadow = m_pLevel_Manager->Get_ShadowBounds();
+    m_pCollision_Manager->Cull_StaticBVH(pFrustum, pShadow);
+
     m_pObject_Manager->Late_Update(fTimeDelta);
 }
 
@@ -377,6 +383,15 @@ XMFLOAT4X4 CGameInstance::Get_CurrentCameraProjection()
 	return m_pLevel_Manager->Get_CurrentCameraProjection();
 }
 
+void CGameInstance::Add_CullStat_Main_Bulk(_int r, _int t)
+{
+    if (m_pLevel_Manager) m_pLevel_Manager->Add_CullStat_Main_Bulk(r, t);
+}
+void CGameInstance::Add_CullStat_Shadow_Bulk(_int r, _int t)
+{
+    if (m_pLevel_Manager) m_pLevel_Manager->Add_CullStat_Shadow_Bulk(r, t);
+}
+
 // ------------------------------------------------------------------------
 // Frustum Culling (위임만)
 // ------------------------------------------------------------------------
@@ -595,6 +610,40 @@ bool CGameInstance::CollisionCheck_with_Collider(class CCollider* _pMyCollider, 
 
 bool CGameInstance::CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide) {
 	return m_pCollision_Manager->CheckMove(me, move, outSlide);
+}
+
+//BVH
+void  CGameInstance::Build_StaticBVH() { if (m_pCollision_Manager) m_pCollision_Manager->Build_StaticBVH(); }
+void  CGameInstance::Invalidate_StaticBVH() { if (m_pCollision_Manager) m_pCollision_Manager->Invalidate_StaticBVH(); }
+void  CGameInstance::Set_BVHEnabled(_bool b) { if (m_pCollision_Manager) m_pCollision_Manager->Set_BVHEnabled(b); }
+_bool CGameInstance::Is_BVHEnabled()    const { return m_pCollision_Manager ? m_pCollision_Manager->Is_BVHEnabled() : false; }
+_int  CGameInstance::Get_BVHNodeCount() const { return m_pCollision_Manager ? m_pCollision_Manager->Get_BVHNodeCount() : 0; }
+_int  CGameInstance::Get_BVHPrimitiveCount() const { return m_pCollision_Manager ? m_pCollision_Manager->Get_BVHPrimitiveCount() : 0; }
+_int  CGameInstance::Get_BVHMaxDepth()  const { return m_pCollision_Manager ? m_pCollision_Manager->Get_BVHMaxDepth() : 0; }
+_int  CGameInstance::Get_BVHLastQueryCandidates() const { return m_pCollision_Manager ? m_pCollision_Manager->Get_LastQueryCandidates() : 0; }
+void CGameInstance::Cull_StaticBVH(const BoundingFrustum* p, const BoundingSphere* s)
+{
+    if (m_pCollision_Manager) m_pCollision_Manager->Cull_StaticBVH(p, s);
+}
+
+void  CGameInstance::Set_CullingBVHEnabled(_bool b)
+{
+    if (m_pCollision_Manager) m_pCollision_Manager->Set_CullingBVHEnabled(b);
+}
+
+_bool CGameInstance::Is_CullingBVHEnabled() const
+{
+    return m_pCollision_Manager ? m_pCollision_Manager->Is_CullingBVHEnabled() : false;
+}
+
+_int  CGameInstance::Get_LastFrustumCandidates() const
+{
+    return m_pCollision_Manager ? m_pCollision_Manager->Get_LastFrustumCandidates() : 0;
+}
+
+_int  CGameInstance::Get_LastShadowCandidates() const
+{
+    return m_pCollision_Manager ? m_pCollision_Manager->Get_LastShadowCandidates() : 0;
 }
 
 // ------------------------------------------------------------------------

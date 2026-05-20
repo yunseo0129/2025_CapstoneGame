@@ -41,6 +41,8 @@ public:
 
 	void Set_Shadow(class CShadow* pShadow) { m_pShadow = pShadow; }
 
+    const DirectX::BoundingSphere* Get_ShadowBounds() const;
+
 private:
 	HRESULT Create_LightBuffer();
 

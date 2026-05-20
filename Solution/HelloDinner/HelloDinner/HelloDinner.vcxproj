@@ -148,6 +148,7 @@
     <ClInclude Include="Bounding_AABB.h" />
     <ClInclude Include="Bounding_OBB.h" />
     <ClInclude Include="Bounding_Sphere.h" />
+    <ClInclude Include="BVH.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Camera_FPV.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
@@ -227,6 +228,7 @@
     <ClCompile Include="Bounding_AABB.cpp" />
     <ClCompile Include="Bounding_OBB.cpp" />
     <ClCompile Include="Bounding_Sphere.cpp" />
+    <ClCompile Include="BVH.cpp" />
     <ClCompile Include="Camera.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>

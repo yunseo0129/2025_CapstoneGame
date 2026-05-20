@@ -23,6 +23,8 @@ public:
 
     _bool IsSphereInBounds(const _float3& vCenter, _float fRadius) const;
 
+    const DirectX::BoundingSphere& Get_SceneBounds() const { return mSceneBounds; }
+
 private:
 	// 카메라 위치에 맞게 경계구 업데이트  - 이거 먼저 업데이트
 	void UpdateBoundingSphere(class CCamera* _camera);

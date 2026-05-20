@@ -208,6 +208,21 @@ CBounding_OBB::OBBDESC CBounding_OBB::Compute_OBB()
 	return OBBDesc;
 }
 
+void CBounding_OBB::Get_AABBBound(_float3& c, _float3& e) const {
+    // OBB의 8개 corner를 wrap하는 AABB
+    XMFLOAT3 corners[8];
+    m_pBoundDesc->GetCorners(corners);
+    XMVECTOR vMin = XMLoadFloat3(&corners[0]);
+    XMVECTOR vMax = vMin;
+    for (_int i = 1; i < 8; ++i) {
+        XMVECTOR vC = XMLoadFloat3(&corners[i]);
+        vMin = XMVectorMin(vMin, vC);
+        vMax = XMVectorMax(vMax, vC);
+    }
+    XMStoreFloat3(&c, XMVectorScale(XMVectorAdd(vMin, vMax), 0.5f));
+    XMStoreFloat3(&e, XMVectorScale(XMVectorSubtract(vMax, vMin), 0.5f));
+}
+
 CBounding_OBB* CBounding_OBB::Create(EngineContext* pContext, const BOUND_DESC* pBoundDesc)
 {
 	CBounding_OBB* pInstance = new CBounding_OBB(pContext);

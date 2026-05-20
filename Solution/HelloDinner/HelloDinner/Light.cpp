@@ -2,6 +2,7 @@
 #include "Camera.h"
 #include "Shadow.h"
 #include "GameInstance.h"
+#include "Level.h"
 
 CLight::CLight(EngineContext* pContext)
 	: m_pContext{ pContext }
@@ -70,6 +71,11 @@ void CLight::Bind_LightBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameter
 	pCmdList->SetGraphicsRootConstantBufferView(_eIndex, m_pLightbuffer[iFrameIndex]->GetGPUVirtualAddress());
 
 	m_pShadow->Bind_ShadowMap(pCmdList, RootParameterIndex::ShadowMap);
+}
+
+const DirectX::BoundingSphere* CLight::Get_ShadowBounds() const
+{
+    return m_pShadow ? &m_pShadow->Get_SceneBounds() : nullptr;
 }
 
 HRESULT CLight::Create_LightBuffer()

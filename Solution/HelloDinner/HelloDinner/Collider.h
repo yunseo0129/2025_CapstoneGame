@@ -32,6 +32,9 @@ public:
 	_float3 Get_Center();
 	class CBounding* Get_Bounding() { return m_pBounding; }
     _bool Get_SphereBound(_float3& outCenter, _float& outRadius) const;
+    _bool Get_AABBBound(_float3& outCenter, _float3& outExtents) const;
+    void  Set_Owner(class CGameObject* p) { m_pOwner = p; }
+    class CGameObject* Get_Owner() const { return m_pOwner; }
 
 private:
 	COLLIDERTYPE						m_eType = { TYPE_END };
@@ -39,6 +42,7 @@ private:
 	_bool	m_isEnable = { true };
 	const _float4x4* m_pSocketMatrix = { nullptr };		// 소켓 매트릭스 (애니메이션이 있는 모델의 경우, 본에 따라 충돌체가 움직여야하므로)
 	const _float4x4* m_pParentMatrix = { nullptr };
+	class CGameObject* m_pOwner = { nullptr };
 
 #ifdef _DEBUG
 	

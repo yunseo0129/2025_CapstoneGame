@@ -70,6 +70,18 @@ _bool CLevel::IsSphereInShadowFrustum(const _float3& vCenter, _float fRadius) co
     return true;  // 그림자 광원 없음 → 통과 (안전)
 }
 
+const DirectX::BoundingFrustum* CLevel::Get_CurrentFrustum() const
+{
+    if (!m_pCurrentCamera || !m_pCurrentCamera->Is_FrustumValid()) return nullptr;
+    return &m_pCurrentCamera->Get_FrustumWorld();
+}
+const DirectX::BoundingSphere* CLevel::Get_ShadowBounds() const
+{
+    for (auto* p : m_pLights)
+        if (p && p->Has_Shadow()) return p->Get_ShadowBounds();
+    return nullptr;
+}
+
 HRESULT CLevel::Render()
 {
 	return S_OK;

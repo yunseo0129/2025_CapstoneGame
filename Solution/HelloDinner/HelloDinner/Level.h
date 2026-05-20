@@ -29,6 +29,9 @@ public:
 
 	void Bind_LightBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameterIndex _eIndex);
 
+    const DirectX::BoundingFrustum* Get_CurrentFrustum() const;
+    const DirectX::BoundingSphere* Get_ShadowBounds() const;
+
 private:
 	void Get_CameraMatrix ( CAMERA_TYPE _eType );
 

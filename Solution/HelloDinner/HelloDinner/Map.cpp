@@ -59,6 +59,12 @@ HRESULT CMap::Initialize(void* pArg)
 	if (FAILED(Ready_Components()))
 		return E_FAIL;
 
+    m_pColliderCom->Set_Owner(this);
+
+    if (m_pColliderCom)
+        m_pGameInstance->Add_CollisionGroup(0, m_pColliderCom);  // 0 = GROUP_MAP
+
+
 	return S_OK;
 }
 
@@ -72,8 +78,8 @@ void CMap::Update(_float fTimeDelta)
 
 void CMap::Late_Update(_float fTimeDelta)
 {
-    Cull_And_Submit(CRenderer::RG_NONBLEND);
-    m_pGameInstance->Add_CollisionGroup(0, m_pColliderCom);
+    if (!m_pGameInstance->Is_CullingBVHEnabled())
+        Cull_And_Submit(CRenderer::RG_NONBLEND);
 }
 
 void CMap::Render(ID3D12GraphicsCommandList* _commandList)

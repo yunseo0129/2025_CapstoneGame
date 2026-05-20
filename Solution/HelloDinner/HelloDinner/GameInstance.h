@@ -71,6 +71,8 @@ public: /* for.Level_Manager */
 	_int    Get_CurrentLevelID();
 	XMFLOAT4X4 Get_CurrentCameraView ();
 	XMFLOAT4X4 Get_CurrentCameraProjection ();
+    void Add_CullStat_Main_Bulk(_int r, _int t);
+    void Add_CullStat_Shadow_Bulk(_int r, _int t);
 
 public: /* for.Frustum_Culling */
     _bool IsSphereInFrustum(const _float3& vCenter, _float fRadius);
@@ -121,6 +123,21 @@ public: /* For.Collision_Manager */
 	vector<class CCollider*> CollisionCheck_with_Group(class CCollider* _pCollider, int _eGroup);
 	bool CollisionCheck_with_Collider(class CCollider* _pMyCollider, class CCollider* _pOtherCollider);
 	bool CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide);
+
+    //BVH
+    void  Build_StaticBVH();
+    void  Invalidate_StaticBVH();
+    void  Set_BVHEnabled(_bool b);
+    _bool Is_BVHEnabled() const;
+    _int  Get_BVHNodeCount() const;
+    _int  Get_BVHPrimitiveCount() const;
+    _int  Get_BVHMaxDepth() const;
+    _int  Get_BVHLastQueryCandidates() const;
+    void  Cull_StaticBVH(const DirectX::BoundingFrustum* p, const DirectX::BoundingSphere* s);
+    void  Set_CullingBVHEnabled(_bool b);
+    _bool Is_CullingBVHEnabled() const;
+    _int  Get_LastFrustumCandidates() const;
+    _int  Get_LastShadowCandidates() const;
 
 public: /* For.Renderer */
     HRESULT Add_RenderObject(CRenderer::RENDERGROUP eRenderGroup, class CGameObject* pRenderObject);

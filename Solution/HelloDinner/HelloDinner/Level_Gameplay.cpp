@@ -31,6 +31,8 @@ HRESULT CLevel_GamePlay::Initialize()
     // 시작 시점에 사용할 카메라
     Set_CurrentCamera(CAMERA_FPV);
 
+    m_pGameInstance->Build_StaticBVH();
+
     return S_OK;
 }
 

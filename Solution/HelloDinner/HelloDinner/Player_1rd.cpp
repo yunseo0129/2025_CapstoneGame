@@ -59,6 +59,11 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
     if (FAILED(Ready_PartObjects()))
         return E_FAIL;
 
+    for (CCollider* p : m_vColliderComs)
+        if (p) p->Set_Owner(this);
+    for (CCollider* p : m_vMapColliderComs)
+        if (p) p->Set_Owner(this);
+
     return S_OK;
 }
 

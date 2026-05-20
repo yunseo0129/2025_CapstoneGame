@@ -47,6 +47,19 @@ public:
     _uint Get_CullStat_ShadowRendered() const { return m_iShadowRendered; }
     void  Reset_CullStats();
 
+    //BVH
+    const DirectX::BoundingFrustum* Get_CurrentFrustum();
+    const DirectX::BoundingSphere* Get_ShadowBounds();
+
+    void Add_CullStat_Main_Bulk(_int rendered, _int total)
+    {
+        m_iCullTotal += total; m_iCullRendered += rendered;
+    }
+    void Add_CullStat_Shadow_Bulk(_int rendered, _int total)
+    {
+        m_iShadowTotal += total; m_iShadowRendered += rendered;
+    }
+
 private:
 	_int					m_iCurrentLevelID = { -1 };
 	class CLevel* m_pCurrentLevel = { nullptr };

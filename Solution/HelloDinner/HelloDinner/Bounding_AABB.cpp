@@ -152,6 +152,11 @@ void CBounding_AABB::Get_SphereBound(_float3& outCenter, _float& outRadius) cons
     XMStoreFloat(&outRadius, XMVector3Length(vExt));  // 대각선 절반 = 외접구 반지름
 }
 
+void CBounding_AABB::Get_AABBBound(_float3& c, _float3& e) const {
+    c = m_pBoundDesc->Center;
+    e = m_pBoundDesc->Extents;
+}
+
 CBounding_AABB* CBounding_AABB::Create(EngineContext* pContext, const BOUND_DESC* pBoundDesc)
 {
 	CBounding_AABB* pInstance = new CBounding_AABB(pContext);

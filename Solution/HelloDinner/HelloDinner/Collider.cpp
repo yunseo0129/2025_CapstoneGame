@@ -15,6 +15,11 @@ CCollider::CCollider(EngineContext* pContext)
 CCollider::CCollider(const CCollider& Prototype)
 	: CComponent{ Prototype.m_pContext }
 	, m_eType{ Prototype.m_eType }
+    , m_pBounding(Prototype.m_pBounding)
+    , m_isEnable(Prototype.m_isEnable)
+    , m_pSocketMatrix(Prototype.m_pSocketMatrix)
+    , m_pParentMatrix(Prototype.m_pParentMatrix)
+    , m_pOwner(nullptr)
 #ifdef _DEBUG
 	, m_pEffect{ Prototype.m_pEffect }
 	, m_pBatch{ Prototype.m_pBatch }
@@ -142,6 +147,13 @@ _bool CCollider::Get_SphereBound(_float3& outCenter, _float& outRadius) const
 {
     if (!m_pBounding) return false;
     m_pBounding->Get_SphereBound(outCenter, outRadius);
+    return true;
+}
+
+_bool CCollider::Get_AABBBound(_float3& outCenter, _float3& outExtents) const
+{
+    if (!m_pBounding) return false;
+    m_pBounding->Get_AABBBound(outCenter, outExtents);
     return true;
 }
 

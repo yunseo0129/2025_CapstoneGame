@@ -27,6 +27,7 @@ public:
 	virtual _float3 Get_CollisionNormal(CCollider::COLLIDERTYPE eTargetType, CBounding* pTargetBounding) override;
 	virtual _float3 Get_Center() override;
     virtual void Get_SphereBound(_float3& outCenter, _float& outRadius) const override;
+    virtual void Get_AABBBound(_float3& outCenter, _float3& outExtents) const override;
 
 private:
 	BoundingBox* m_pOriginalBoundDesc = {};

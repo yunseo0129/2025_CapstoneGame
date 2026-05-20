@@ -52,6 +52,9 @@ HRESULT CPlayer_Pig::Initialize(void* pArg)
 	if (FAILED(Ready_PartObjects()))
 		return E_FAIL;
 
+    for (CCollider* p : m_vColliderComs)
+        if (p) p->Set_Owner(this);
+
 	return S_OK;
 }
 
