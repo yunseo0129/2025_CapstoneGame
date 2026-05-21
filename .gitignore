@@ -51,3 +51,4 @@
 *.ipch
 *.VC.opendb
 *.VC.db
+/Solution/HelloDinner/.claude
