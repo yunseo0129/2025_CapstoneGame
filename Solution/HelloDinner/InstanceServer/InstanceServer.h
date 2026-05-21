@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "GameSessionManager.h"
 
 class InstanceServer
@@ -15,11 +15,11 @@ private:
     void AcceptClient();
     void PrintServerIP();
 
-    // ·Îºñ ¼­¹ö¿¡ µî·Ï + Heartbeat Àü¼Û
+    // ë¡œë¹„ ì„œë²„ì— ë“±ë¡ + Heartbeat ì „ì†¡
     bool ConnectToLobby(const char* lobby_ip);
     void HeartbeatThread();
 
-    // ·Îºñ·ÎºÎÅÍ ¹æ Á¤º¸ ¼ö½Å
+    // ë¡œë¹„ë¡œë¶€í„° ë°© ì •ë³´ ìˆ˜ì‹ 
     void LobbyRecvThread();
 
     int             m_instance_id = -1;
@@ -27,7 +27,7 @@ private:
 
     SOCKET          m_listen_socket = INVALID_SOCKET;
     SOCKET          m_client_socket = INVALID_SOCKET;
-    SOCKET          m_lobby_socket = INVALID_SOCKET;   // ·Îºñ¿ÍÀÇ ³»ºÎ Åë½Å
+    SOCKET          m_lobby_socket = INVALID_SOCKET;   // ë¡œë¹„ì™€ì˜ ë‚´ë¶€ í†µì‹ 
     HANDLE          m_h_iocp = nullptr;
     OverllapedEXP   m_accept_over;
 

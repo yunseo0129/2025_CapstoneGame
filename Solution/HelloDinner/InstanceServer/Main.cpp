@@ -1,6 +1,6 @@
-#include "InstanceServer.h"
+ï»¿#include "InstanceServer.h"
 
-// ·ÎÄÃ ¸Ó½ÅÀÇ ½ÇÁ¦ IPv4 ÁÖ¼Ò¸¦ Á¶È¸ÇÏ¿© buf¿¡ ÀúÀå
+// ë¡œì»¬ ë¨¸ì‹ ì˜ ì‹¤ì œ IPv4 ì£¼ì†Œë¥¼ ì¡°íšŒí•˜ì—¬ bufì— ì €ì¥
 bool GetLocalIP(char* buf, int buf_size)
 {
     WSADATA wsa;
@@ -31,13 +31,13 @@ bool GetLocalIP(char* buf, int buf_size)
 
 int main(int argc, char* argv[])
 {
-    // »ç¿ë¹ı: InstanceServer.exe <instance_id> <port> <lobby_ip>
+    // ì‚¬ìš©ë²•: InstanceServer.exe <instance_id> <port> <lobby_ip>
 
-	// ÀÎ½ºÅÏ½º ID, Æ÷Æ®, ·Îºñ IP´Â ¸í·ÉÇà ÀÎÀÚ·Î Àü´Ş¹ŞÀ½ (±âº»°ª Á¸Àç)
+	// ì¸ìŠ¤í„´ìŠ¤ ID, í¬íŠ¸, ë¡œë¹„ IPëŠ” ëª…ë ¹í–‰ ì¸ìë¡œ ì „ë‹¬ë°›ìŒ (ê¸°ë³¸ê°’ ì¡´ì¬)
     int instance_id = 0;
     unsigned short port = INSTANCE_PORT_BASE;
 
-    // ±âº» ·Îºñ IP: °°Àº ¸Ó½ÅÀÇ ½ÇÁ¦ IP¸¦ ÀÚµ¿ Å½Áö
+    // ê¸°ë³¸ ë¡œë¹„ IP: ê°™ì€ ë¨¸ì‹ ì˜ ì‹¤ì œ IPë¥¼ ìë™ íƒì§€
     char default_lobby_ip[16] = "127.0.0.1";
     GetLocalIP(default_lobby_ip, sizeof(default_lobby_ip));
     const char* lobby_ip = default_lobby_ip;

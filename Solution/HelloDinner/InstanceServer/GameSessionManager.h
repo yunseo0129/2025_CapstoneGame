@@ -1,8 +1,8 @@
-#pragma once
+ï»¿#pragma once
 #include "GameSession.h"
 #include "../Server/Room.h"
 
-// ÀÎ½ºÅÏ½º ¼­¹ö¿¡¼­ »ç¿ëÇÒ ¼¼¼Ç+·ë °ü¸®ÀÚ
+// ì¸ìŠ¤í„´ìŠ¤ ì„œë²„ì—ì„œ ì‚¬ìš©í•  ì„¸ì…˜+ë£¸ ê´€ë¦¬ì
 class GameSessionManager
 {
 public:
@@ -18,15 +18,15 @@ public:
     void ProcessPacket(int c_id, char* packet);
     void Disconnect(int c_id);
 
-    // ·Îºñ¿¡¼­ Àü´Ş¹ŞÀº ¹æ Á¤º¸¸¦ µî·Ï (ÀÎÁõ ÅäÅ« Æ÷ÇÔ)
+    // ë¡œë¹„ì—ì„œ ì „ë‹¬ë°›ì€ ë°© ì •ë³´ë¥¼ ë“±ë¡ (ì¸ì¦ í† í° í¬í•¨)
     void RegisterPendingRoom(const IS_ROOM_NOTIFY_PACKET& pkt);
 
-    // CS_JOIN_ROOM ½Ã ÀÎÁõ È®ÀÎ
+    // CS_JOIN_ROOM ì‹œ ì¸ì¦ í™•ì¸
     bool AuthenticateJoin(int room_id, const char* auth_token);
 
     Room* GetRoom(int room_id);
 
-    // ÇöÀç È°¼º ¹æ ¼ö¿Í ÇÃ·¹ÀÌ¾î ¼ö Áı°è
+    // í˜„ì¬ í™œì„± ë°© ìˆ˜ì™€ í”Œë ˆì´ì–´ ìˆ˜ ì§‘ê³„
     int GetActiveRoomCount() const;
     int GetActivePlayerCount() const;
 
@@ -41,7 +41,7 @@ private:
     mutex m_room_lock;
     array<Room, MAX_ROOM> m_rooms;
 
-    // ¹æº° ÀÎÁõ ÅäÅ« (room_id ¡æ auth_token)
+    // ë°©ë³„ ì¸ì¦ í† í° (room_id â†’ auth_token)
     mutex m_pending_lock;
     unordered_map<int, string> m_pending_tokens;
 };

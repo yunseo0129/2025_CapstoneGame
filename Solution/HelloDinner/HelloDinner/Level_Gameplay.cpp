@@ -20,6 +20,8 @@ CLevel_GamePlay::CLevel_GamePlay(EngineContext* pContext)
 
 HRESULT CLevel_GamePlay::Initialize()
 {
+    NetworkClient::GetInstance()->EnableOfflineMode();
+
     Add_Camera();
 
     if (FAILED(Ready_Light()))
@@ -42,28 +44,28 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 
     // 네트워크 이벤트 처리: 플레이어 추가/제거/이동
     NetworkClient* pNetwork = NetworkClient::GetInstance();
-    if (!pNetwork->IsConnected())
+    if (!pNetwork->IsConnected() && !pNetwork->IsOfflineMode())
         return;
 
     std::vector<NetworkClient::NetEvent> events;
-    pNetwork->PopAllEvents(events);
+    //pNetwork->PopAllEvents(events);
 
-    for (auto& evt : events) {
-        switch (evt.type) {
-        case NetworkClient::NetEventType::PLAYER_ADD: {
-            // TODO: evt.id 플레이어 생성 + evt.cameraPos 위치에 배치 + evt.name 이름 설정
-            break;
-        }
-        case NetworkClient::NetEventType::PLAYER_REMOVE: {
-            // TODO: evt.id 플레이어 제거
-            break;
-        }
-        case NetworkClient::NetEventType::PLAYER_MOVE: {
-            // TODO: 해당 id 플레이어의 Transform 갱신
-            break;
-        }
-        }
-    }
+    //for (auto& evt : events) {
+    //    switch (evt.type) {
+    //    case NetworkClient::NetEventType::PLAYER_ADD: {
+    //        // TODO: evt.id 플레이어 생성 + evt.cameraPos 위치에 배치 + evt.name 이름 설정
+    //        break;
+    //    }
+    //    case NetworkClient::NetEventType::PLAYER_REMOVE: {
+    //        // TODO: evt.id 플레이어 제거
+    //        break;
+    //    }
+    //    case NetworkClient::NetEventType::PLAYER_MOVE: {
+    //        // TODO: 해당 id 플레이어의 Transform 갱신
+    //        break;
+    //    }
+    //    }
+    //}
 }
 
 HRESULT CLevel_GamePlay::Render()

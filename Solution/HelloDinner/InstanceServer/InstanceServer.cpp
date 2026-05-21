@@ -1,4 +1,4 @@
-#include "InstanceServer.h"
+ï»¿#include "InstanceServer.h"
 
 InstanceServer::~InstanceServer()
 {
@@ -17,7 +17,7 @@ bool InstanceServer::Initialize(int instance_id, unsigned short port, const char
     WSADATA WSAData;
     WSAStartup(MAKEWORD(2, 2), &WSAData);
 
-    // ÀÚ½ÅÀÇ IP Á¶È¸
+    // ìì‹ ì˜ IP ì¡°íšŒ
     char hostname[256];
     gethostname(hostname, sizeof(hostname));
     struct addrinfo hints{}, * info = nullptr;
@@ -32,7 +32,7 @@ bool InstanceServer::Initialize(int instance_id, unsigned short port, const char
         strcpy_s(m_my_ip, "127.0.0.1");
     }
 
-    // Å¬¶óÀÌ¾ğÆ®¿ë ¸®½º´× ¼ÒÄÏ
+    // í´ë¼ì´ì–¸íŠ¸ìš© ë¦¬ìŠ¤ë‹ ì†Œì¼“
     m_listen_socket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
     if (m_listen_socket == INVALID_SOCKET) {
         cout << "[Instance #" << m_instance_id << "] Socket creation failed.\n";
@@ -63,7 +63,7 @@ bool InstanceServer::Initialize(int instance_id, unsigned short port, const char
         return false;
     }
 
-    // ·Îºñ ¼­¹ö¿¡ Á¢¼Ó ¹× µî·Ï
+    // ë¡œë¹„ ì„œë²„ì— ì ‘ì† ë° ë“±ë¡
     if (!ConnectToLobby(lobby_ip)) {
         cout << "[Instance #" << m_instance_id << "] Failed to connect to Lobby.\n";
         return false;
@@ -93,7 +93,7 @@ bool InstanceServer::ConnectToLobby(const char* lobby_ip)
         return false;
     }
 
-    // IS_REGISTER ÆĞÅ¶ Àü¼Û
+    // IS_REGISTER íŒ¨í‚· ì „ì†¡
     IS_REGISTER_PACKET rp;
     rp.size = sizeof(IS_REGISTER_PACKET);
     rp.type = IS_REGISTER;
@@ -110,18 +110,18 @@ bool InstanceServer::ConnectToLobby(const char* lobby_ip)
 
 void InstanceServer::Run()
 {
-    // Heartbeat ½º·¹µå
+    // Heartbeat ìŠ¤ë ˆë“œ
     thread hb_th(&InstanceServer::HeartbeatThread, this);
     hb_th.detach();
 
-    // ·Îºñ ¼ö½Å ½º·¹µå (¹æ Á¤º¸ ¼ö½Å)
+    // ë¡œë¹„ ìˆ˜ì‹  ìŠ¤ë ˆë“œ (ë°© ì •ë³´ ìˆ˜ì‹ )
     thread lobby_recv_th(&InstanceServer::LobbyRecvThread, this);
     lobby_recv_th.detach();
 
-    // Å¬¶óÀÌ¾ğÆ® AcceptEx ½ÃÀÛ
+    // í´ë¼ì´ì–¸íŠ¸ AcceptEx ì‹œì‘
     AcceptClient();
 
-    // IOCP ¿öÄ¿ ½º·¹µå
+    // IOCP ì›Œì»¤ ìŠ¤ë ˆë“œ
     vector<thread> worker_threads;
     int num_threads = std::thread::hardware_concurrency();
     for (int i = 0; i < num_threads; ++i)
@@ -145,7 +145,7 @@ void InstanceServer::HeartbeatThread()
         hb.instance_id = m_instance_id;
         hb.current_rooms = gsm->GetActiveRoomCount();
         hb.current_players = gsm->GetActivePlayerCount();
-        hb.cpu_usage = 0.f;  // TODO: ½ÇÁ¦ CPU »ç¿ë·ü ÃøÁ¤
+        hb.cpu_usage = 0.f;  // TODO: ì‹¤ì œ CPU ì‚¬ìš©ë¥  ì¸¡ì •
 
         int sent = send(m_lobby_socket, reinterpret_cast<char*>(&hb), hb.size, 0);
         if (sent == SOCKET_ERROR) {

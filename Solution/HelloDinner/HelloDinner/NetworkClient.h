@@ -7,7 +7,6 @@
 class NetworkClient
 {
 public:
-    // 비-플레이어 이벤트 (매칭 관련)
     enum class NetEventType {
         MATCH_WAIT,
         MATCH_SUCCESS,
@@ -24,34 +23,31 @@ public:
     static NetworkClient* GetInstance();
     static void DestroyInstance();
 
-    // 콘솔 창을 열어 IP, 이름을 입력받아 접속
     bool ConnectWithConsole();
 
-    // 패킷 수신 처리 루프 (수신 스레드)
-    void RecvThread();
+    void RecvThread();          // 로비 수신 스레드
+    void InstanceRecvThread();  // 인스턴스 서버 수신 스레드
 
-    // 이동 패킷 전송 (키인풋 + 마우스 회전 + 예측 월드행렬)
+    // 이동 패킷 전송 → 인스턴스 서버로 전송
     void Send_Move(unsigned char keyInput, float mouseYaw, const float* worldMatrix);
 
-    // 접속 해제
     void Disconnect();
 
-    bool IsConnected() const { return m_bConnected; }
-    bool IsLoggedIn() const { return m_bLoggedIn; }
-    bool IsMatched() const { return m_bMatched; }
+    bool IsConnected()   const { return m_bConnected; }
+    bool IsLoggedIn()    const { return m_bLoggedIn; }
+    bool IsMatched()     const { return m_bMatched; }
+    bool IsInGame()      const { return m_bInGame || m_bOfflineMode; }
+    bool IsOfflineMode() const { return m_bOfflineMode; }
+    void EnableOfflineMode()   { m_bOfflineMode = true; }
 
-    int GetMyId() const { return m_iMyId; }
-    int GetRoomId() const { return m_iRoomId; }
-    int GetQueueSize() const { return m_iQueueSize; }
+    int GetMyId()       const { return m_iMyId; }
+    int GetRoomId()     const { return m_iRoomId; }
+    int GetQueueSize()  const { return m_iQueueSize; }
 
-    // 플레이어 객체 직접 접근
-    NetPlayer& GetPlayer(int id) { return m_players[id]; }
-    const NetPlayer& GetPlayer(int id) const { return m_players[id]; }
+    NetPlayer& GetPlayer(int id)            { return m_players[id]; }
+    const NetPlayer& GetPlayer(int id) const{ return m_players[id]; }
 
-    // 활성 플레이어 ID만 추적하여 PopAllPlayerEvents 최적화
     void PopAllPlayerEvents(std::vector<NetPlayer::Event>& outEvents);
-
-    // 메인 스레드에서 호출: 매칭 관련 이벤트만 수집
     void PopAllMatchEvents(std::vector<NetEvent>& outEvents);
 
 private:
@@ -59,45 +55,52 @@ private:
     ~NetworkClient();
 
     void Send(void* packet, int size);
-    void ProcessPacket(char* packet);
+    void SendToInstance(void* packet, int size);    // ← 추가
+    void ProcessLobbyPacket(char* packet);          // 로비 패킷 처리
+    void ProcessInstancePacket(char* packet);       // 인스턴스 패킷 처리
 
-    // 콘솔 창 닫기
+    bool ConnectToInstance(const char* ip, unsigned short port,
+                           int room_id, const char* auth_token); // ← 추가
+
     void CloseConsole();
 
 private:
     static NetworkClient* s_pInstance;
 
-    SOCKET      m_socket = INVALID_SOCKET;
-    bool        m_bConnected = false;
-    bool        m_bLoggedIn = false;
-    bool        m_bMatched = false;
+    // 로비 TCP 소켓
+    SOCKET  m_socket         = INVALID_SOCKET;
+    bool    m_bConnected     = false;
+    bool    m_bLoggedIn      = false;
+    bool    m_bMatched       = false;
 
-    int         m_iMyId = -1;
-    int         m_iRoomId = -1;
-    int         m_iQueueSize = 0;
+    // 인스턴스 서버 TCP 소켓
+    SOCKET  m_instanceSocket = INVALID_SOCKET;
+    bool    m_bInGame        = false;
+    bool    m_bOfflineMode   = false;
+    char    m_szAuthToken[32] = {};
 
-    float       m_worldMatrix[16] = {};
+    int     m_iMyId      = -1;
+    int     m_iRoomId    = -1;
+    int     m_iQueueSize = 0;
 
-    char        m_szName[NAME_SIZE] = {};
+    float   m_worldMatrix[16] = {};
+    char    m_szName[NAME_SIZE] = {};
 
-    NetPlayer   m_players[MAX_USER];
+    NetPlayer m_players[MAX_USER];
 
-    // 매칭 이벤트 큐
-    std::vector<NetEvent>   m_pendingMatchEvents;
-    std::mutex              m_matchEventLock;
+    std::vector<NetEvent>       m_pendingMatchEvents;
+    std::mutex                  m_matchEventLock;
 
-    // 활성 플레이어 ID 목록 (RecvThread에서 갱신)
-    std::unordered_set<int>  m_activePlayerIds;
-    std::mutex               m_activePlayerLock;
+    std::unordered_set<int>     m_activePlayerIds;
+    std::mutex                  m_activePlayerLock;
 
     std::thread m_recvThread;
+    std::thread m_instanceRecvThread;  // ← 추가
 
-    // 전송 주기 제한 (초 단위)
-    float   m_fSendInterval = 1.f / 20.f;   // 초당 20회
-    float   m_fSendTimer = 0.f;
+    float m_fSendInterval = 1.f / 20.f;
+    float m_fSendTimer    = 0.f;
 
 public:
-    // 전송 가능 여부 확인 + 타이머 갱신
     bool CanSendMove(float fTimeDelta) {
         m_fSendTimer += fTimeDelta;
         if (m_fSendTimer >= m_fSendInterval) {

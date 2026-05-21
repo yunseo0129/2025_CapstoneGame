@@ -18,7 +18,7 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
     case CS_JOIN_ROOM: {
         CS_JOIN_ROOM_PACKET* p = reinterpret_cast<CS_JOIN_ROOM_PACKET*>(packet);
 
-        // ÀÎÁõ ÅäÅ« È®ÀÎ
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å« È®ï¿½ï¿½
         if (!AuthenticateJoin(p->room_id, p->auth_token)) {
             cout << "[Instance] Auth failed for client " << c_id
                  << " room " << p->room_id << endl;
@@ -35,21 +35,24 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
             session.m_state = ST_INGAME;
         }
 
-        // ¹æ¿¡ ÇÃ·¹ÀÌ¾î Ãß°¡
+        // ï¿½æ¿¡ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ß°ï¿½
         auto* room = GetRoom(p->room_id);
         if (room && room->IsActive()) {
-            // ±âÁ¸ ¹æ ÇÃ·¹ÀÌ¾î¿¡°Ô ½Å±Ô ÇÃ·¹ÀÌ¾î ¾Ë¸²
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î¿¡ï¿½ï¿½ ï¿½Å±ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½Ë¸ï¿½
             for (int pid : room->GetPlayerIds()) {
                 if (m_clients[pid].m_state != ST_INGAME) continue;
                 m_clients[pid].Send_Add_Player_Packet(c_id, this);
-                // ½Å±Ô ÇÃ·¹ÀÌ¾î¿¡°Ô ±âÁ¸ ÇÃ·¹ÀÌ¾î ¾Ë¸²
+                // ï¿½Å±ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î¿¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½Ë¸ï¿½
                 session.Send_Add_Player_Packet(pid, this);
             }
-            // ¹æÀÇ ÇÃ·¹ÀÌ¾î ¸ñ·Ï¿¡ Ãß°¡
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½Ï¿ï¿½ ï¿½ß°ï¿½
             vector<int> ids = room->GetPlayerIds();
             ids.push_back(c_id);
             room->Initialize(p->room_id, ids);
         }
+
+        // ë³¸ì¸ì—ê²Œ ì´ˆê¸° ìœ„ì¹˜ ì „ì†¡ (í´ë¼ì´ì–¸íŠ¸ê°€ ì²« snapì— ì‚¬ìš©)
+        session.Send_Move_Packet(c_id, this);
 
         cout << "[Instance] Client [" << c_id << "] joined room " << p->room_id
              << " as " << p->name << endl;
@@ -116,7 +119,7 @@ void GameSessionManager::Disconnect(int c_id)
             for (int pid : room->GetPlayerIds()) {
                 if (pid == c_id) continue;
                 if (m_clients[pid].m_state != ST_INGAME) continue;
-                m_clients[pid].Send_Remove_Player_Packet(c_id);
+                m_clients[pid].Send_Remove_Player_Packet(c_id, this);
             }
             room->RemovePlayer(c_id);
         }
@@ -131,14 +134,14 @@ void GameSessionManager::Disconnect(int c_id)
 
 void GameSessionManager::RegisterPendingRoom(const IS_ROOM_NOTIFY_PACKET& pkt)
 {
-    // ¹æ »ı¼º (ºó ÇÃ·¹ÀÌ¾î ¸ñ·ÏÀ¸·Î, ½ÇÁ¦ Á¢¼Ó ½Ã Ãß°¡)
+    // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ß°ï¿½)
     vector<int> empty_ids;
     {
         lock_guard<mutex> ll(m_room_lock);
         m_rooms[pkt.room_id].Initialize(pkt.room_id, empty_ids);
     }
 
-    // ÀÎÁõ ÅäÅ« ÀúÀå
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å« ï¿½ï¿½ï¿½ï¿½
     {
         lock_guard<mutex> ll(m_pending_lock);
         m_pending_tokens[pkt.room_id] = string(pkt.auth_token);

@@ -3,7 +3,7 @@
 
 class GameSessionManager;
 
-// ÀÎ½ºÅÏ½º ¼­¹öÀÇ Å¬¶óÀÌ¾ðÆ® ¼¼¼Ç
+// ï¿½Î½ï¿½ï¿½Ï½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ® ï¿½ï¿½ï¿½ï¿½
 class GameSession
 {
     OverllapedEXP m_recv_over;
@@ -18,7 +18,7 @@ public:
 
     int         m_prev_remain;
     int         m_room_id;
-    int         m_lobby_player_id;  // ·Îºñ¿¡¼­ ºÎ¿©¹ÞÀº ¿ø·¡ id
+    int         m_lobby_player_id;  // ï¿½Îºñ¿¡¼ï¿½ ï¿½Î¿ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ id
 
     unsigned int    m_lastClientTimestamp;
     unsigned int    m_lastServerTimestamp;
@@ -33,6 +33,6 @@ public:
     void Recv();
     void Send(void* packet);
     void Send_Add_Player_Packet(int c_id, GameSessionManager* gsm);
-    void Send_Remove_Player_Packet(int c_id);
+    void Send_Remove_Player_Packet(int c_id, GameSessionManager* gsm);
     void Send_Move_Packet(int c_id, GameSessionManager* gsm);
 };

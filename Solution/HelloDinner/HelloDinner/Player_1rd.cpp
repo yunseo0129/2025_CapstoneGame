@@ -46,6 +46,7 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
         XMVectorSet(pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z, 1.f));
 
     XMStoreFloat4x4(&m_matFPSModel, m_pTransformCom->Get_WorldMatrix());
+    memcpy(m_PredictedState.m, &m_matFPSModel, sizeof(float) * 16);
 
     m_pCamera->Set_WorldMatrix(m_matFPSModel);
 
@@ -64,44 +65,6 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
 
 void CPlayer_1rd::Priority_Update(_float fTimeDelta)
 {
-    //  프리 카메라 전용 키인풋입니다. 충돌처리 후 사라질 코드입니다.
-    if (m_pGameInstance->Key_Pressing(DIK_SPACE))
-    {
-        m_pTransformCom->Go_Up(fTimeDelta);
-    }
-    else if (m_pGameInstance->Key_Pressing(DIK_LCONTROL))
-    {
-        // 바닥 충돌 테스트
-        // m_pTransformCom->Go_Up(-fTimeDelta);
-        _vector vDir = XMVectorSet(0.f, -1.f, 0.f, 0.f);
-
-        _float fFrameDist = m_pTransformCom->Get_SpeedPerSec() * fTimeDelta;
-        if (fFrameDist >= 1e-6f)
-        {
-            _vector vMove = vDir * fFrameDist;
-
-            // Move()와 동일 패턴: 각 collider마다 슬라이드 누적
-            for (CCollider* pCollider : m_vMapColliderComs)
-            {
-                if (pCollider == nullptr) continue;
-
-                _float3 vOffset;
-                XMStoreFloat3(&vOffset, vMove);
-
-                _float3 vSlide;
-                if (m_pGameInstance->CheckMove(pCollider, vOffset, vSlide))
-                {
-                    vMove = XMLoadFloat3(&vSlide);   // 슬라이드된 값으로 다음 검사
-                }
-            }
-
-            // 최종 결정된 vMove로 한 번만 이동
-            _vector vPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
-            vPos = XMVectorAdd(vPos, vMove);
-            m_pTransformCom->Set_State(CTransform::STATE_POSITION, vPos);
-        }
-    }
-
     // 1인칭 모델 동기화
     XMMATRIX matFps = m_pTransformCom->Get_WorldMatrix();
     _vector		vRight = matFps.r[0];
@@ -208,57 +171,69 @@ void CPlayer_1rd::ShadowRender(ID3D12GraphicsCommandList* _commandList)
 
 }
 
-void CPlayer_1rd::Move(_float _fLook, _float _fRight, _float _val)
+void CPlayer_1rd::PredictMove(unsigned char keyInput, float mouseYawDelta, float fTimeDelta)
 {
-    _vector vLook = m_pTransformCom->Get_State(CTransform::STATE_LOOK);
-    vLook.m128_f32[1] = 0.f;
-    vLook = XMVector3Normalize(vLook) * _fLook;
-    _vector vRight = m_pTransformCom->Get_State(CTransform::STATE_RIGHT);
-    vRight.m128_f32[1] = 0.f;
-    vRight = XMVector3Normalize(vRight) * _fRight;
+    m_PredictedState.CalculateMovement(keyInput, mouseYawDelta, m_fPredictSpeed, m_fPredictRotation, fTimeDelta);
 
-    // 최종 이동 할 방향벡터(크기가 거리)
-    _vector vDir = vLook + vRight;
-
-    if (XMVectorGetX(XMVector3LengthSq(vDir)) < 1e-6f)
-        return;
-
-    vDir = XMVector3Normalize(vDir);
-
-    _float fFrameDist = m_pTransformCom->Get_SpeedPerSec() * _val;
-    if (fFrameDist < 1e-6f) return;
-    _vector vMove = vDir * fFrameDist;
-
-    // 여기서 충돌체크를 해주는게 좋을 것 같소
-    
-    for (CCollider* pCollider : m_vMapColliderComs)
-    {
-        if (pCollider == nullptr) continue;
-
-        _float3 vOffset;
-        XMStoreFloat3(&vOffset, vMove);
-
-        _float3 vSlide;
-        if (m_pGameInstance->CheckMove(pCollider, vOffset, vSlide))
-        {
-            vMove = XMLoadFloat3(&vSlide);
-        }
-	}
-
-    // 충돌하지 않는다면
-    _vector vPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
-    vPos = XMVectorAdd(vPos, vMove);
-    m_pTransformCom->Set_State(CTransform::STATE_POSITION, vPos);
+    _float4x4 mat;
+    memcpy(&mat, m_PredictedState.m, sizeof(_float4x4));
+    m_pTransformCom->Set_WorldMatrix(mat);
 }
 
-void CPlayer_1rd::TurnYaw(_float _val)
+void CPlayer_1rd::Apply_ServerCorrection(const float* pServerMatrix, float fTimeDelta)
 {
-    m_pTransformCom->Turn(XMVectorSet(0.f, 1.f, 0.f, 0.f), _val);
+    if (!m_bPredictionInit)
+    {
+        memcpy(m_PredictedState.m, pServerMatrix, sizeof(float) * 16);
+        _float4x4 mat;
+        memcpy(&mat, m_PredictedState.m, sizeof(_float4x4));
+        m_pTransformCom->Set_WorldMatrix(mat);
+        m_bPredictionInit = true;
+        return;
+    }
+
+    float dx = m_PredictedState.m[12] - pServerMatrix[12];
+    float dy = m_PredictedState.m[13] - pServerMatrix[13];
+    float dz = m_PredictedState.m[14] - pServerMatrix[14];
+    float distSq = dx * dx + dy * dy + dz * dz;
+
+    if (distSq <= SOFT_TOLERANCE * SOFT_TOLERANCE)
+    {
+#ifdef _DEBUG
+        OutputDebugStringA("[Correction] ignore\n");
+#endif
+        return;
+    }
+
+    if (distSq <= HARD_TOLERANCE * HARD_TOLERANCE)
+    {
+        float t = 1.f - expf(-LERP_RATE * fTimeDelta);
+        m_PredictedState.m[12] += (pServerMatrix[12] - m_PredictedState.m[12]) * t;
+        m_PredictedState.m[13] += (pServerMatrix[13] - m_PredictedState.m[13]) * t;
+        m_PredictedState.m[14] += (pServerMatrix[14] - m_PredictedState.m[14]) * t;
+#ifdef _DEBUG
+        OutputDebugStringA("[Correction] lerp\n");
+#endif
+    }
+    else
+    {
+        memcpy(m_PredictedState.m, pServerMatrix, sizeof(float) * 16);
+#ifdef _DEBUG
+        OutputDebugStringA("[Correction] snap\n");
+#endif
+    }
+
+    _float4x4 mat;
+    memcpy(&mat, m_PredictedState.m, sizeof(_float4x4));
+    m_pTransformCom->Set_WorldMatrix(mat);
 }
 
 void CPlayer_1rd::TurnPitch(_float _val)
 {
     m_fPitchRot += _val;
+    constexpr float MAX_PITCH = XM_PIDIV2 * 0.95f;
+    if (m_fPitchRot >  MAX_PITCH) m_fPitchRot =  MAX_PITCH;
+    if (m_fPitchRot < -MAX_PITCH) m_fPitchRot = -MAX_PITCH;
 }
 
 void CPlayer_1rd::Jump(_float _val)
@@ -535,3 +510,4 @@ void CPlayer_1rd::Free()
             Safe_Release(pCollider);
     }
 }
+
