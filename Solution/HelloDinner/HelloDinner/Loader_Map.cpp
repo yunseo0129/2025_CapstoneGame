@@ -106,6 +106,7 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 	for (auto& entry : mapJson["mapData"])
 	{
 		string fbxName = entry["fbxName"].get<string>();
+        OutputDebugStringA(("[LoadMap] fbxName: " + fbxName + "\n").c_str());
 		_wstring strModelTag = Get_ModelTag(fbxName);
 
 		// materialNames 배열 읽기 (유니티에서 뽑은 MatIdx별 텍스처 파일명)
