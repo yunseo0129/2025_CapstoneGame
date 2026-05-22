@@ -4,6 +4,8 @@
 #include "Bounding_AABB.h"
 #include "Bounding_OBB.h"
 #include "Bounding_Sphere.h"
+#include "Map.h"
+
 
 IMPLEMENT_SINGLETON(CCollision_Manager)
 
@@ -180,14 +182,32 @@ void CCollision_Manager::Cull_StaticBVH(const BoundingFrustum* pMainFrustum, con
         m_iLastFrustumCandidates = (_int)results.size();
         for (CCollider* p : results) {
             CGameObject* owner = p ? p->Get_Owner() : nullptr;
-            if (owner) m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, owner);
+            if (owner) {
+                if (m_pGameInstance->Is_InstancingEnabled()) {
+                    CMap* pMap = dynamic_cast<CMap*>(owner);
+                    if (pMap) m_pGameInstance->Add_InstancedRenderObject(pMap->Get_ModelTag(), owner);
+                    else      m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, owner);
+                }
+                else {
+                    m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, owner);
+                }
+            }
         }
         m_pGameInstance->Add_CullStat_Main_Bulk((_int)results.size(), iTotal);
     }
     else {
         for (CCollider* p : m_Colliders[GROUP_MAP]) {
             CGameObject* owner = p ? p->Get_Owner() : nullptr;
-            if (owner) m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, owner);
+            if (owner) {
+                if (m_pGameInstance->Is_InstancingEnabled()) {
+                    CMap* pMap = dynamic_cast<CMap*>(owner);
+                    if (pMap) m_pGameInstance->Add_InstancedRenderObject(pMap->Get_ModelTag(), owner);
+                    else      m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, owner);
+                }
+                else {
+                    m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, owner);
+                }
+            }
         }
         m_pGameInstance->Add_CullStat_Main_Bulk(iTotal, iTotal);
         m_iLastFrustumCandidates = iTotal;

@@ -74,6 +74,8 @@ void CMainApp::Update(_float fTimeDelta)
         m_pGameInstance->Set_BVHEnabled(!m_pGameInstance->Is_BVHEnabled());
     if (m_pGameInstance->Key_Down(DIK_F4))
         m_pGameInstance->Set_CullingBVHEnabled(!m_pGameInstance->Is_CullingBVHEnabled());
+    if (m_pGameInstance->Key_Down(DIK_F5))
+        m_pGameInstance->Set_InstancingEnabled(!m_pGameInstance->Is_InstancingEnabled());
 
 
 	if (acc >= 1.f)
@@ -86,26 +88,29 @@ void CMainApp::Update(_float fTimeDelta)
         */
         acc -= 1.f;
         const wchar_t* szMain = m_pGameInstance->Is_CullingEnabled() ? L"ON" : L"OFF";
-        const wchar_t* szShadow = m_pGameInstance->Is_ShadowCullingEnabled() ? L"ON" : L"OFF";
-        const wchar_t* szBVH = m_pGameInstance->Is_BVHEnabled() ? L"ON" : L"OFF";
-        const wchar_t* szCBVH = m_pGameInstance->Is_CullingBVHEnabled() ? L"ON" : L"OFF";
         _uint iMainR = m_pGameInstance->Get_CullStat_MainRendered();
         _uint iMainT = m_pGameInstance->Get_CullStat_MainTotal();
+        const wchar_t* szShadow = m_pGameInstance->Is_ShadowCullingEnabled() ? L"ON" : L"OFF";
         _uint iShdR = m_pGameInstance->Get_CullStat_ShadowRendered();
         _uint iShdT = m_pGameInstance->Get_CullStat_ShadowTotal();
+        const wchar_t* szBVH = m_pGameInstance->Is_BVHEnabled() ? L"ON" : L"OFF";
         _int iNodes = m_pGameInstance->Get_BVHNodeCount();
         _int iDepth = m_pGameInstance->Get_BVHMaxDepth();
         _int iQ = m_pGameInstance->Get_BVHLastQueryCandidates();
         _int iPrim = m_pGameInstance->Get_BVHPrimitiveCount();
+        const wchar_t* szCBVH = m_pGameInstance->Is_CullingBVHEnabled() ? L"ON" : L"OFF";
         _int iFC = m_pGameInstance->Get_LastFrustumCandidates();
         _int iSC = m_pGameInstance->Get_LastShadowCandidates();
+        const wchar_t* szInst = m_pGameInstance->Is_InstancingEnabled() ? L"ON" : L"OFF";
+        _int iDC = m_pGameInstance->Get_DrawCallCount();
+        _int iGr = m_pGameInstance->Get_InstancedGroupCount();
 
         std::wstring title = TEXT("HelloDinner / FPS:") + std::to_wstring(FPS)
             + TEXT("  Cull[") + szMain + TEXT("] ") + std::to_wstring(iMainR) + TEXT("/") + std::to_wstring(iMainT)
             + TEXT("  Shadow[") + szShadow + TEXT("] ") + std::to_wstring(iShdR) + TEXT("/") + std::to_wstring(iShdT)
             + TEXT("  BVH[") + szBVH + TEXT("] N=") + std::to_wstring(iNodes) + TEXT(" D=") + std::to_wstring(iDepth)
-            + TEXT(" Q=") + std::to_wstring(iQ) + TEXT("/") + std::to_wstring(iPrim)
-            + TEXT("  CBVH[") + szCBVH + TEXT("] F=") + std::to_wstring(iFC) + TEXT(" S=") + std::to_wstring(iSC);
+            + TEXT("  CBVH[") + szCBVH + TEXT("] F=") + std::to_wstring(iFC) + TEXT(" S=") + std::to_wstring(iSC)
+            + TEXT("  Inst[") + szInst + TEXT("] DC=") + std::to_wstring(iDC) + TEXT(" G=") + std::to_wstring(iGr);
         SetWindowText(g_hWnd, title.c_str());
         FPS = 0;
 	}

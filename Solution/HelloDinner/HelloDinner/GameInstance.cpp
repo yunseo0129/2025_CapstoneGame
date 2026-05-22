@@ -662,6 +662,31 @@ HRESULT CGameInstance::Add_ShadowRenderObject(CRenderer::RENDERGROUP g, CGameObj
     return m_pRenderer ? m_pRenderer->Add_ShadowRenderObject(g, p) : E_FAIL;
 }
 
+HRESULT CGameInstance::Add_InstancedRenderObject(const _wstring& tag, CGameObject* p)
+{
+    return m_pRenderer ? m_pRenderer->Add_InstancedRenderObject(tag, p) : E_FAIL;
+}
+
+void CGameInstance::Set_InstancingEnabled(bool b)
+{ 
+    if (m_pRenderer) m_pRenderer->Set_InstancingEnabled(b);
+}
+
+bool CGameInstance::Is_InstancingEnabled() const
+{
+    return m_pRenderer ? m_pRenderer->Is_InstancingEnabled() : false;
+}
+
+_int CGameInstance::Get_DrawCallCount() const
+{
+    return m_pRenderer ? m_pRenderer->Get_DrawCallCount() : 0;
+}
+
+_int CGameInstance::Get_InstancedGroupCount() const
+{
+    return m_pRenderer ? m_pRenderer->Get_InstancedGroupCount() : 0;
+}
+
 #ifdef _DEBUG
 HRESULT CGameInstance::Add_RenderCollider(CCollider* pColliderCom)
 {

@@ -114,6 +114,30 @@ HRESULT CModel::Render(ID3D12GraphicsCommandList* _commandList, _uint iMeshIndex
 	return S_OK;
 }
 
+HRESULT CModel::Render_Instanced(ID3D12GraphicsCommandList* cmdList,
+    _uint iMeshIndex,
+    _uint instanceCount,
+    const D3D12_VERTEX_BUFFER_VIEW& instanceVBV,
+    bool IsShadow)
+{
+    if (iMeshIndex >= m_iNumMeshes) return E_FAIL;
+
+    // 머티리얼 바인딩
+    if (!IsShadow)
+    {
+        _uint iMaterialIndex = m_Meshes[iMeshIndex]->Get_MaterialIndex();
+        if (iMaterialIndex < m_iNumMaterials)
+        {
+            if (m_Materials[iMaterialIndex]->Get_Texture((TextureType)TextureType_DIFFUSE, 0))
+                Bind_Material(iMaterialIndex, (TextureType)TextureType_DIFFUSE, 0, cmdList);
+            if (m_Materials[iMaterialIndex]->Get_Texture((TextureType)TextureType_NORMALS, 0))
+                Bind_Material(iMaterialIndex, (TextureType)TextureType_NORMALS, 0, cmdList);
+        }
+    }
+
+    return m_Meshes[iMeshIndex]->Render_Instanced(cmdList, instanceCount, instanceVBV);
+}
+
 HRESULT CModel::Create_BoneBuffer()
 {
 	_uint ncbElementBytes = ((sizeof(CB_BONE_MATRICES) + 255) & ~255);

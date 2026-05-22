@@ -59,6 +59,8 @@ HRESULT CMap::Initialize(void* pArg)
 	if (FAILED(Ready_Components()))
 		return E_FAIL;
 
+    XMStoreFloat4x4(&m_xmf4x4CachedWorld, m_pTransformCom->Get_WorldMatrix());
+
     m_pColliderCom->Set_Owner(this);
 
     if (m_pColliderCom)
@@ -84,32 +86,21 @@ void CMap::Late_Update(_float fTimeDelta)
 
 void CMap::Render(ID3D12GraphicsCommandList* _commandList)
 {
-	// Transform 컴포넌트의 월드 행렬을 RootConstantBuffer에 넘겨준다.
-	XMFLOAT4X4 WorldMatrix;
-	XMStoreFloat4x4(&WorldMatrix, m_pTransformCom->Get_WorldMatrix());
-	_commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &WorldMatrix, 0);
+    _commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &m_xmf4x4CachedWorld, 0);
+    m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::DEFAULT);
 
-	// 2. PSO 설정
-	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::DEFAULT);
-
-	// 3. 메쉬별 렌더링 (머티리얼 바인딩 + DrawIndexedInstanced)
-	_uint iNumMeshes = m_pModelCom->Get_NumMeshes();
-	for (_uint i = 0; i < iNumMeshes; ++i)
-	{
-		m_pModelCom->Render(_commandList, i);
-	}
+    _uint iNumMeshes = m_pModelCom->Get_NumMeshes();
+    for (_uint i = 0; i < iNumMeshes; ++i)
+        m_pModelCom->Render(_commandList, i);
 
 #ifdef _DEBUG
-		m_pGameInstance->Add_RenderCollider(m_pColliderCom);
+    m_pGameInstance->Add_RenderCollider(m_pColliderCom);
 #endif
 }
 
 void CMap::ShadowRender(ID3D12GraphicsCommandList* _commandList)
 {
-	// Transform 컴포넌트의 월드 행렬을 RootConstantBuffer에 넘겨준다.
-	XMFLOAT4X4 WorldMatrix;
-	XMStoreFloat4x4(&WorldMatrix, m_pTransformCom->Get_WorldMatrix());
-	_commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &WorldMatrix, 0);
+	_commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &m_xmf4x4CachedWorld, 0);
 
 	// 2. PSO 설정
 	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::SHADOW_STATIC);

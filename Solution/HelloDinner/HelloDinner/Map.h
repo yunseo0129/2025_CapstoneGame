@@ -39,6 +39,11 @@ public:
 	// Frustum Culling
 	virtual bool Get_WorldBoundingSphere(_float3& pOutCenter, _float& pOutRadius) const override;
 
+    // Instance
+    const _wstring& Get_ModelTag() const { return m_strModelTag; }
+    class CModel* Get_Model() const { return m_pModelCom; }
+    const _float4x4& Get_CachedWorldMatrix() const { return m_xmf4x4CachedWorld; }
+
 private:
 	HRESULT Ready_Components();
 
@@ -48,6 +53,7 @@ private:
 
 	_wstring	m_strModelTag = L"";
 	_uint		m_iModelLevelIndex = 0;
+    _float4x4   m_xmf4x4CachedWorld;
 
 	CCollider::COLLIDERTYPE m_eColliderType = CCollider::TYPE_END;
 	_float3    m_vCenterCollider = {};

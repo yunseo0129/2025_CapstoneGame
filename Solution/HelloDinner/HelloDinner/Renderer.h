@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base.h"
+#include "Graphic_Device.h"
 
 class CRenderer final : public CBase
 {
@@ -18,6 +19,13 @@ public:
     HRESULT Draw_RenderObject(ID3D12GraphicsCommandList* _CmdList);
     HRESULT Draw_ShadowQueue(ID3D12GraphicsCommandList* _CmdList);
 
+    // Insatanced
+    HRESULT Add_InstancedRenderObject(const _wstring& modelTag, class CGameObject* pObj);
+    void    Set_InstancingEnabled(bool b) { m_bInstancingEnabled = b; }
+    bool    Is_InstancingEnabled() const { return m_bInstancingEnabled; }
+    _int    Get_DrawCallCount() const { return m_iDrawCallCount; }
+    _int    Get_InstancedGroupCount() const { return m_iInstancedGroupCount; }
+
 private:
 	ComPtr<ID3D12Device> m_pDevice = { nullptr };
 	ComPtr<ID3D12GraphicsCommandList> m_pCommandlist = { nullptr };
@@ -27,10 +35,37 @@ private:
 	list<class CCollider*>				m_RenderColliders;
 
 private:
+    // instance queue
+    unordered_map<_wstring, vector<class CGameObject*>> m_InstancedQueue;
+    bool m_bInstancingEnabled = true;
+    _int m_iDrawCallCount = 0;
+    _int m_iInstancedGroupCount = 0;
+    
+    // instance buffer
+    static const _int FRAME_COUNT = CGraphic_Device::SWAP_CHAIN_BUFFER_COUNT;
+    static const _int MAX_INSTANCES_PER_GROUP = 1024;
+
+    struct InstanceBufferSlot
+    {
+        ComPtr<ID3D12Resource> pUploadBuffer;
+        XMFLOAT4X4* pMapped = nullptr;
+        D3D12_VERTEX_BUFFER_VIEW vbv = {};
+    };
+    // [frameIdx][group instance buffer index]
+    vector<InstanceBufferSlot> m_InstanceBufferPool[FRAME_COUNT];
+    _int m_iPoolCursor[FRAME_COUNT] = {0};   // 매 프레임 0부터 사용
+
+private:
     HRESULT Render_Priority(ID3D12GraphicsCommandList* _CmdList);
     HRESULT Render_NonBlend(ID3D12GraphicsCommandList* _CmdList);
     HRESULT Render_Blend(ID3D12GraphicsCommandList* _CmdList);
 	//HRESULT Render_UI();
+
+    // instanced rendering
+    HRESULT Create_InstanceBufferSlot(InstanceBufferSlot& outSlot);
+    InstanceBufferSlot* Acquire_InstanceBufferSlot(_int frameIdx);
+
+    HRESULT Render_InstancedQueue(ID3D12GraphicsCommandList* cmd, bool bShadow);
 
 #ifdef _DEBUG
 public:

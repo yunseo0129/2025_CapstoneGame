@@ -143,6 +143,13 @@ public: /* For.Renderer */
     HRESULT Add_RenderObject(CRenderer::RENDERGROUP eRenderGroup, class CGameObject* pRenderObject);
     HRESULT Add_ShadowRenderObject(CRenderer::RENDERGROUP eRenderGroup, class CGameObject* pRenderObject);
 
+    // instanced rendering
+    HRESULT Add_InstancedRenderObject(const _wstring& modelTag, class CGameObject* pObj);
+    void    Set_InstancingEnabled(bool b);
+    bool    Is_InstancingEnabled() const;
+    _int    Get_DrawCallCount() const;
+    _int    Get_InstancedGroupCount() const;
+
 #ifdef _DEBUG
 	HRESULT Add_RenderCollider(class CCollider* pColliderCom);
 #endif
