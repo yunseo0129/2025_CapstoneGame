@@ -667,6 +667,11 @@ HRESULT CGameInstance::Add_InstancedRenderObject(const _wstring& tag, CGameObjec
     return m_pRenderer ? m_pRenderer->Add_InstancedRenderObject(tag, p) : E_FAIL;
 }
 
+HRESULT CGameInstance::Add_ShadowInstancedRenderObject(const _wstring& tag, CGameObject* p)
+{
+    return m_pRenderer ? m_pRenderer->Add_ShadowInstancedRenderObject(tag, p) : E_FAIL;
+}
+
 void CGameInstance::Set_InstancingEnabled(bool b)
 { 
     if (m_pRenderer) m_pRenderer->Set_InstancingEnabled(b);

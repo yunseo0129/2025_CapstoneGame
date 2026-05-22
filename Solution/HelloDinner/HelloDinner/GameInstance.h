@@ -14,7 +14,6 @@ public: /* For.GameInstance */
 	void Update_Engine(_float fTimeDelta);
 	HRESULT Render_Begin(const _float4& vClearColor = _float4(0.f, 1.f, 0.f, 0.f));
 	HRESULT Draw();
-	HRESULT ShadowDrow();
 	HRESULT Render_End();
 	void Clear(_int iLevelID);
 
@@ -145,6 +144,7 @@ public: /* For.Renderer */
 
     // instanced rendering
     HRESULT Add_InstancedRenderObject(const _wstring& modelTag, class CGameObject* pObj);
+    HRESULT Add_ShadowInstancedRenderObject(const _wstring& modelTag, class CGameObject* pObj);
     void    Set_InstancingEnabled(bool b);
     bool    Is_InstancingEnabled() const;
     _int    Get_DrawCallCount() const;

@@ -8,6 +8,9 @@ class CRenderer final : public CBase
 public:
 	enum RENDERGROUP { RG_PRIORITY, RG_NONBLEND, RG_BLEND, RG_UI, RG_END };
 
+public:
+    enum INSTANCE_PASS { PASS_MAIN, PASS_SHADOW, PASS_END };
+
 private:
 	CRenderer(ID3D12Device* pDevice, ID3D12GraphicsCommandList* _pCommandlist);
 	virtual ~CRenderer() = default;
@@ -21,6 +24,8 @@ public:
 
     // Insatanced
     HRESULT Add_InstancedRenderObject(const _wstring& modelTag, class CGameObject* pObj);
+    HRESULT Add_ShadowInstancedRenderObject(const _wstring& modelTag, class CGameObject* pObj);
+
     void    Set_InstancingEnabled(bool b) { m_bInstancingEnabled = b; }
     bool    Is_InstancingEnabled() const { return m_bInstancingEnabled; }
     _int    Get_DrawCallCount() const { return m_iDrawCallCount; }
@@ -37,6 +42,8 @@ private:
 private:
     // instance queue
     unordered_map<_wstring, vector<class CGameObject*>> m_InstancedQueue;
+    unordered_map<_wstring, vector<class CGameObject*>> m_ShadowInstancedQueue;
+    
     bool m_bInstancingEnabled = true;
     _int m_iDrawCallCount = 0;
     _int m_iInstancedGroupCount = 0;
@@ -51,9 +58,10 @@ private:
         XMFLOAT4X4* pMapped = nullptr;
         D3D12_VERTEX_BUFFER_VIEW vbv = {};
     };
-    // [frameIdx][group instance buffer index]
-    vector<InstanceBufferSlot> m_InstanceBufferPool[FRAME_COUNT];
-    _int m_iPoolCursor[FRAME_COUNT] = {0};   // 매 프레임 0부터 사용
+    // [frameIdx][passIdx] 2차원 풀
+    vector<InstanceBufferSlot> m_InstanceBufferPool[FRAME_COUNT][PASS_END];
+    _int                       m_iPoolCursor[FRAME_COUNT][PASS_END] = {0};
+
 
 private:
     HRESULT Render_Priority(ID3D12GraphicsCommandList* _CmdList);
@@ -63,9 +71,9 @@ private:
 
     // instanced rendering
     HRESULT Create_InstanceBufferSlot(InstanceBufferSlot& outSlot);
-    InstanceBufferSlot* Acquire_InstanceBufferSlot(_int frameIdx);
+    InstanceBufferSlot* Acquire_InstanceBufferSlot(_int frameIdx, INSTANCE_PASS ePass);
 
-    HRESULT Render_InstancedQueue(ID3D12GraphicsCommandList* cmd, bool bShadow);
+    HRESULT Render_InstancedQueue(ID3D12GraphicsCommandList* cmd, INSTANCE_PASS ePass);
 
 #ifdef _DEBUG
 public:

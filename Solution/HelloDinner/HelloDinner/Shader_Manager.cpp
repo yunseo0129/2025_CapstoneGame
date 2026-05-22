@@ -190,10 +190,10 @@ HRESULT CShader_Manager::Create_PSO ()
 
 	ComPtr<ID3DBlob> vsShadowStatic = Compile_Shader(L"Shader_Static.hlsl", "VS_Main_Shadow", "vs_5_1");
 	ComPtr<ID3DBlob> vsShadowAnim = Compile_Shader(L"Shader_Anim.hlsl", "VS_Main_Shadow", "vs_5_1");
+    ComPtr<ID3DBlob> vsShadowStatic_Instanced = Compile_Shader(L"Shader_Static_Instanced.hlsl", "VS_Main_Shadow_Instanced", "vs_5_1");
 
 	// Pixel Shader (재질별)
 	ComPtr<ID3DBlob> psLit = Compile_Shader ( L"Shader_Static.hlsl" , "PS_Main_Lit" , "ps_5_1" ); // 조명 O
-    ComPtr<ID3DBlob> psInstanced = Compile_Shader(L"Shader_Static_Instanced.hlsl", "PS_Main_Insatanced", "ps_5_1"); // instanced
 	ComPtr<ID3DBlob> psSkybox = Compile_Shader ( L"Shader_Skybox.hlsl" , "PS_Main_Skybox" , "ps_5_1" ); // Skybox
 	// ComPtr<ID3DBlob> psUI = Compile_Shader ( L"Shader_UI.hlsl" , "PS_Main_UI" , "ps_5_1" ); // 조명 X
 
@@ -221,6 +221,17 @@ HRESULT CShader_Manager::Create_PSO ()
 	psoDesc.PS = { psLit->GetBufferPointer (), psLit->GetBufferSize () };
 
 	m_pDevice->CreateGraphicsPipelineState ( &psoDesc , IID_PPV_ARGS ( &m_pPSOs[( UINT )PSO_TYPE::DEFAULT] ) );
+
+    // ================================================================
+    // DEFAULT_INSTANCED
+    // ================================================================
+    psoDesc = baseDesc;
+    psoDesc.InputLayout = {m_LayoutStaticInstanced.data(), (UINT)m_LayoutStaticInstanced.size()};
+    psoDesc.VS = {vsStatic_Insatanced->GetBufferPointer(), vsStatic_Insatanced->GetBufferSize()};
+    psoDesc.PS = {psLit->GetBufferPointer(), psLit->GetBufferSize()};
+
+    m_pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pPSOs[(UINT)PSO_TYPE::DEFAULT_INSTANCED]));
+
 
 	// ================================================================
 	// SKYBOX (Static Mesh / TextureCube / DepthFunc LessEqual)
@@ -334,14 +345,22 @@ HRESULT CShader_Manager::Create_PSO ()
     m_pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pPSOs[(UINT)PSO_TYPE::SHADOW_ANIM]));
 
     // ================================================================
-    // DEFAULT_INSTANCED
-    // ================================================================
+// SHADOW_STATIC_INSTANCED
+// ================================================================
     psoDesc = baseDesc;
     psoDesc.InputLayout = {m_LayoutStaticInstanced.data(), (UINT)m_LayoutStaticInstanced.size()};
-    psoDesc.VS = {vsStatic_Insatanced->GetBufferPointer(), vsStatic_Insatanced->GetBufferSize()};
-    psoDesc.PS = {psInstanced->GetBufferPointer(), psInstanced->GetBufferSize()};
+    psoDesc.VS = {vsShadowStatic_Instanced->GetBufferPointer(), vsShadowStatic_Instanced->GetBufferSize()};
+    psoDesc.PS = {nullptr, 0};
 
-    m_pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pPSOs[(UINT)PSO_TYPE::DEFAULT_INSTANCED]));
+    psoDesc.NumRenderTargets = 0;
+    psoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
+
+    psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;  // SHADOW_STATIC과 동일
+    psoDesc.RasterizerState.DepthBias = 0;
+    psoDesc.RasterizerState.DepthBiasClamp = 0.0f;
+    psoDesc.RasterizerState.SlopeScaledDepthBias = 0.0f;
+
+    m_pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pPSOs[(UINT)PSO_TYPE::SHADOW_STATIC_INSTANCED]));
 
 	return S_OK;
 }

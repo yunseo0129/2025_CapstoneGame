@@ -17,10 +17,12 @@ CRenderer::CRenderer(ID3D12Device* pDevice, ID3D12GraphicsCommandList* _pCommand
 HRESULT CRenderer::Initialize()
 {
     for (_int f = 0; f < FRAME_COUNT; ++f) {
-        m_InstanceBufferPool[f].reserve(8);
-        InstanceBufferSlot slot;
-        if (FAILED(Create_InstanceBufferSlot(slot))) return E_FAIL;
-        m_InstanceBufferPool[f].push_back(slot);
+        for (_int p = 0; p < PASS_END; ++p) {
+            m_InstanceBufferPool[f][p].reserve(8);
+            InstanceBufferSlot slot;
+            if (FAILED(Create_InstanceBufferSlot(slot))) return E_FAIL;
+            m_InstanceBufferPool[f][p].push_back(slot);
+        }
     }
 	return S_OK;
 }
@@ -54,15 +56,14 @@ HRESULT CRenderer::Create_InstanceBufferSlot(InstanceBufferSlot& outSlot)
     return S_OK;
 }
 
-CRenderer::InstanceBufferSlot* CRenderer::Acquire_InstanceBufferSlot(_int frameIdx)
+CRenderer::InstanceBufferSlot* CRenderer::Acquire_InstanceBufferSlot(_int frameIdx, INSTANCE_PASS ePass)
 {
-    // 현재 프레임에서 사용 가능한 슬롯이 부족하면 새로 생성
-    if (m_iPoolCursor[frameIdx] >= (_int)m_InstanceBufferPool[frameIdx].size()) {
+    if (m_iPoolCursor[frameIdx][ePass] >= (_int)m_InstanceBufferPool[frameIdx][ePass].size()) {
         InstanceBufferSlot slot;
         if (FAILED(Create_InstanceBufferSlot(slot))) return nullptr;
-        m_InstanceBufferPool[frameIdx].push_back(slot);
+        m_InstanceBufferPool[frameIdx][ePass].push_back(slot);
     }
-    return &m_InstanceBufferPool[frameIdx][m_iPoolCursor[frameIdx]++];
+    return &m_InstanceBufferPool[frameIdx][ePass][m_iPoolCursor[frameIdx][ePass]++];
 }
 
 HRESULT CRenderer::Add_ShadowRenderObject(RENDERGROUP eRenderGroup, CGameObject* pRenderObject)
@@ -94,6 +95,14 @@ HRESULT CRenderer::Add_InstancedRenderObject(const _wstring& modelTag, CGameObje
     return S_OK;
 }
 
+HRESULT CRenderer::Add_ShadowInstancedRenderObject(const _wstring& modelTag, CGameObject* pObj)
+{
+    if (!pObj) return E_FAIL;
+    m_ShadowInstancedQueue[modelTag].push_back(pObj);
+    Safe_AddRef(pObj);
+    return S_OK;
+}
+
 HRESULT CRenderer::Draw_RenderObject(ID3D12GraphicsCommandList* _CmdList)
 {
     m_iDrawCallCount = 0;
@@ -101,7 +110,7 @@ HRESULT CRenderer::Draw_RenderObject(ID3D12GraphicsCommandList* _CmdList)
     if (FAILED(Render_Priority(_CmdList))) return E_FAIL;
     if (FAILED(Render_NonBlend(_CmdList))) return E_FAIL;
     if (m_bInstancingEnabled)
-        Render_InstancedQueue(_CmdList, false);
+        Render_InstancedQueue(_CmdList, PASS_MAIN);
     if (FAILED(Render_Blend(_CmdList))) return E_FAIL;
 #ifdef _DEBUG
     if (FAILED(Render_Collider(_CmdList))) return E_FAIL;
@@ -111,7 +120,7 @@ HRESULT CRenderer::Draw_RenderObject(ID3D12GraphicsCommandList* _CmdList)
 
 HRESULT CRenderer::Draw_ShadowQueue(ID3D12GraphicsCommandList* _CmdList)
 {
-    // 그림자는 RG_PRIORITY + RG_NONBLEND만 그림
+    // 기존: 일반 ShadowRender 큐
     for (auto& pObj : m_ShadowRenderObjects[RG_PRIORITY]) {
         if (pObj) pObj->ShadowRender(_CmdList);
         Safe_Release(pObj);
@@ -124,8 +133,13 @@ HRESULT CRenderer::Draw_ShadowQueue(ID3D12GraphicsCommandList* _CmdList)
     }
     m_ShadowRenderObjects[RG_NONBLEND].clear();
 
+    // 추가: instancing shadow 큐
+    if (m_bInstancingEnabled)
+        Render_InstancedQueue(_CmdList, PASS_SHADOW);
+
     return S_OK;
 }
+
 
 
 HRESULT CRenderer::Render_Priority(ID3D12GraphicsCommandList* _CmdList)
@@ -159,14 +173,21 @@ HRESULT CRenderer::Render_Blend(ID3D12GraphicsCommandList* _CmdList)
     return S_OK;
 }
 
-HRESULT CRenderer::Render_InstancedQueue(ID3D12GraphicsCommandList* cmd, bool bShadow)
+HRESULT CRenderer::Render_InstancedQueue(ID3D12GraphicsCommandList* cmd, INSTANCE_PASS ePass)
 {
     _int frameIdx = m_pGameInstance->GetCurrentFrameIndex();
-    m_iPoolCursor[frameIdx] = 0;   // 프레임 시작 시 풀 커서 리셋
+    m_iPoolCursor[frameIdx][ePass] = 0;
 
-    m_iInstancedGroupCount = (_int)m_InstancedQueue.size();
+    // 큐 선택
+    auto& queue = (ePass == PASS_MAIN) ? m_InstancedQueue : m_ShadowInstancedQueue;
+    PSO_TYPE pso = (ePass == PASS_MAIN) ? PSO_TYPE::DEFAULT_INSTANCED : PSO_TYPE::SHADOW_STATIC_INSTANCED;
+    bool bShadow = (ePass == PASS_SHADOW);
 
-    for (auto& kv : m_InstancedQueue)
+    // 통계는 메인만
+    if (ePass == PASS_MAIN)
+        m_iInstancedGroupCount = (_int)queue.size();
+
+    for (auto& kv : queue)
     {
         auto& objs = kv.second;
         if (objs.empty()) continue;
@@ -184,8 +205,7 @@ HRESULT CRenderer::Render_InstancedQueue(ID3D12GraphicsCommandList* cmd, bool bS
             continue;
         }
 
-        // 인스턴스 버퍼 슬롯 확보 + world matrix 채우기
-        InstanceBufferSlot* pSlot = Acquire_InstanceBufferSlot(frameIdx);
+        InstanceBufferSlot* pSlot = Acquire_InstanceBufferSlot(frameIdx, ePass);
         if (!pSlot) {
             for (auto* p : objs) Safe_Release(p);
             objs.clear();
@@ -196,27 +216,22 @@ HRESULT CRenderer::Render_InstancedQueue(ID3D12GraphicsCommandList* cmd, bool bS
         for (CGameObject* p : objs) {
             if (instanceCount >= MAX_INSTANCES_PER_GROUP) break;
             CMap* pMap = static_cast<CMap*>(p);
-            pSlot->pMapped[instanceCount++] = pMap->Get_CachedWorldMatrix();
+            pSlot->pMapped[instanceCount] = pMap->Get_CachedWorldMatrix();
+            ++instanceCount;
         }
 
-        // PSO 설정 (인스턴싱 셰이더로)
-        if (!bShadow)
-            m_pGameInstance->Set_PipelineState(cmd, PSO_TYPE::DEFAULT_INSTANCED);
-        else
-            m_pGameInstance->Set_PipelineState(cmd, PSO_TYPE::SHADOW_STATIC);  // 이후 SHADOW_STATIC_INSTANCED로 교체
+        m_pGameInstance->Set_PipelineState(cmd, pso);
 
-        // 메쉬별 인스턴스 그리기
         _uint iNumMeshes = pModel->Get_NumMeshes();
         for (_uint m = 0; m < iNumMeshes; ++m) {
             pModel->Render_Instanced(cmd, m, instanceCount, pSlot->vbv, bShadow);
             ++m_iDrawCallCount;
         }
 
-        // 큐 비우기 + AddRef 해제
         for (auto* p : objs) Safe_Release(p);
         objs.clear();
     }
-    m_InstancedQueue.clear();   // 다음 프레임을 위해
+    queue.clear();
     return S_OK;
 }
 
@@ -243,6 +258,7 @@ HRESULT CRenderer::Render_Collider ( ID3D12GraphicsCommandList* _CmdList )
 	return S_OK;
 }
 #endif
+
 
 //HRESULT CRenderer::Render_UI()
 //{
@@ -276,14 +292,6 @@ CRenderer* CRenderer::Create(ID3D12Device* pDevice, ID3D12GraphicsCommandList* _
 
 void CRenderer::Free()
 {
-	for (size_t i = 0; i < RG_END; i++)
-	{
-		for (auto& pRenderObject : m_RenderObjects[i])
-			Safe_Release(pRenderObject);
-
-		m_RenderObjects[i].clear();
-	}
-
     for (size_t i = 0; i < RG_END; i++) {
         for (auto& p : m_RenderObjects[i])       Safe_Release(p);
         for (auto& p : m_ShadowRenderObjects[i]) Safe_Release(p);
@@ -292,17 +300,24 @@ void CRenderer::Free()
     }
 
     for (_int f = 0; f < FRAME_COUNT; ++f) {
-        for (auto& slot : m_InstanceBufferPool[f]) {
-            if (slot.pUploadBuffer && slot.pMapped) {
-                slot.pUploadBuffer->Unmap(0, nullptr);
-                slot.pMapped = nullptr;
+        for (_int p = 0; p < PASS_END; ++p) {
+            for (auto& slot : m_InstanceBufferPool[f][p]) {
+                if (slot.pUploadBuffer && slot.pMapped) {
+                    slot.pUploadBuffer->Unmap(0, nullptr);
+                    slot.pMapped = nullptr;
+                }
             }
+            m_InstanceBufferPool[f][p].clear();
         }
-        m_InstanceBufferPool[f].clear();
     }
+
     for (auto& kv : m_InstancedQueue)
         for (auto* p : kv.second) Safe_Release(p);
     m_InstancedQueue.clear();
+
+    for (auto& kv : m_ShadowInstancedQueue)
+        for (auto* p : kv.second) Safe_Release(p);
+    m_ShadowInstancedQueue.clear();
 
 	m_pDevice.Reset();
 	m_pCommandlist.Reset();

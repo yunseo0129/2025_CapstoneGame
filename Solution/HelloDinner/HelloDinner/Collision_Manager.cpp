@@ -220,14 +220,32 @@ void CCollision_Manager::Cull_StaticBVH(const BoundingFrustum* pMainFrustum, con
         m_iLastShadowCandidates = (_int)results.size();
         for (CCollider* p : results) {
             CGameObject* owner = p ? p->Get_Owner() : nullptr;
-            if (owner) m_pGameInstance->Add_ShadowRenderObject(CRenderer::RG_NONBLEND, owner);
+            if (owner) {
+                if (m_pGameInstance->Is_InstancingEnabled()) {
+                    CMap* pMap = dynamic_cast<CMap*>(owner);
+                    if (pMap) m_pGameInstance->Add_ShadowInstancedRenderObject(pMap->Get_ModelTag(), owner);
+                    else      m_pGameInstance->Add_ShadowRenderObject(CRenderer::RG_NONBLEND, owner);
+                }
+                else {
+                    m_pGameInstance->Add_ShadowRenderObject(CRenderer::RG_NONBLEND, owner);
+                }
+            }
         }
         m_pGameInstance->Add_CullStat_Shadow_Bulk((_int)results.size(), iTotal);
     }
     else {
         for (CCollider* p : m_Colliders[GROUP_MAP]) {
             CGameObject* owner = p ? p->Get_Owner() : nullptr;
-            if (owner) m_pGameInstance->Add_ShadowRenderObject(CRenderer::RG_NONBLEND, owner);
+            if (owner) {
+                if (m_pGameInstance->Is_InstancingEnabled()) {
+                    CMap* pMap = dynamic_cast<CMap*>(owner);
+                    if (pMap) m_pGameInstance->Add_ShadowInstancedRenderObject(pMap->Get_ModelTag(), owner);
+                    else      m_pGameInstance->Add_ShadowRenderObject(CRenderer::RG_NONBLEND, owner);
+                }
+                else {
+                    m_pGameInstance->Add_ShadowRenderObject(CRenderer::RG_NONBLEND, owner);
+                }
+            }
         }
         m_pGameInstance->Add_CullStat_Shadow_Bulk(iTotal, iTotal);
         m_iLastShadowCandidates = iTotal;

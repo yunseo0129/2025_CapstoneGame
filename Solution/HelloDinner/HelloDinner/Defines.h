@@ -78,6 +78,7 @@ enum PSO_TYPE
 	SHADOW_STATIC ,  // 그림자 생성용 (Static Mesh / Depth Only)
 	SHADOW_ANIM ,    // 그림자 생성용 (Skeletal Mesh / Depth Only)
     DEFAULT_INSTANCED, // 인스턴싱용
+    SHADOW_STATIC_INSTANCED,
 	END
 };
 
