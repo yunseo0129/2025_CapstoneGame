@@ -52,6 +52,9 @@ HRESULT CPlayer_Pig::Initialize(void* pArg)
 	if (FAILED(Ready_PartObjects()))
 		return E_FAIL;
 
+    for (CCollider* p : m_vColliderComs)
+        if (p) p->Set_Owner(this);
+
 	return S_OK;
 }
 
@@ -92,8 +95,8 @@ void CPlayer_Pig::Update(_float fTimeDelta)
 
 void CPlayer_Pig::Late_Update(_float fTimeDelta)
 {
-	m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, this);
-	__super::Late_Update(fTimeDelta);
+    Cull_And_Submit(CRenderer::RG_NONBLEND);
+    __super::Late_Update(fTimeDelta);
 }
 
 void CPlayer_Pig::Render(ID3D12GraphicsCommandList* _commandList)
@@ -365,6 +368,13 @@ HRESULT CPlayer_Pig::Ready_Components()
 	}
 
 	return S_OK;
+}
+
+bool CPlayer_Pig::Get_WorldBoundingSphere(_float3& outCenter, _float& outRadius) const
+{
+    if (m_vColliderComs.empty() || !m_vColliderComs[COLLIDER_MAIN])
+        return false;
+    return m_vColliderComs[COLLIDER_MAIN]->Get_SphereBound(outCenter, outRadius);
 }
 
 CPlayer_Pig* CPlayer_Pig::Create(EngineContext* _pcontext)

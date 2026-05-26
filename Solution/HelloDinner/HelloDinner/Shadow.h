@@ -10,18 +10,20 @@ private:
 
 public:
 	HRESULT Initialize();
-	
 	void Update(class CCamera* _camera, class CLight* _light);
 
 	// Light에서 경계구를 바라보는 매트릭스 바인딩
 	void Bind_ShadowBuffer(ID3D12GraphicsCommandList* cmdList, RootParameterIndex _eIndex);
-	
 	void Bind_ShadowMap(ID3D12GraphicsCommandList* cmdList, RootParameterIndex _eIndex);
 
 	XMFLOAT4X4 Get_LightTransform() const { return m_ShadowTransform; }
 
-	// 그림자 맵에 씬을 그리는 함수
-	void DrawSceneToShadowMap(ID3D12GraphicsCommandList* cmdList);
+    void Begin_Pass(ID3D12GraphicsCommandList* cmdList);
+    void End_Pass(ID3D12GraphicsCommandList* cmdList);
+
+    _bool IsSphereInBounds(const _float3& vCenter, _float fRadius) const;
+
+    const DirectX::BoundingSphere& Get_SceneBounds() const { return mSceneBounds; }
 
 private:
 	// 카메라 위치에 맞게 경계구 업데이트  - 이거 먼저 업데이트

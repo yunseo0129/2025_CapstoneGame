@@ -51,7 +51,7 @@ void CKetchup_Gun::Update(_float fTimeDelta)
 
 void CKetchup_Gun::Late_Update(_float fTimeDelta)
 {
-	m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, this);
+    Cull_And_Submit(CRenderer::RG_NONBLEND);
 }
 
 void CKetchup_Gun::Render(ID3D12GraphicsCommandList* _commandList)

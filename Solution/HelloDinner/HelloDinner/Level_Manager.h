@@ -26,14 +26,39 @@ public:
 	_int Get_CurrentLevelID() const { return m_iCurrentLevelID; }
     class CCamera* Get_CurrentCamera();
 
+    void  Update_Shadows(_float fTimeDelta);
+    void  Begin_ShadowPass(ID3D12GraphicsCommandList* cmdList);
+    void  End_ShadowPass(ID3D12GraphicsCommandList* cmdList);
+    _bool IsSphereInShadowFrustum(const _float3& vCenter, _float fRadius);
+
+    void  Set_ShadowCullingEnabled(_bool b) { m_bShadowCullingEnabled = b; }
+    _bool Is_ShadowCullingEnabled() const { return m_bShadowCullingEnabled; }
+
     // [Frustum Culling]
     _bool IsSphereInFrustum(const _float3& vCenter, _float fRadius);
     void  Set_CullingEnabled(_bool b) { m_bCullingEnabled = b; }
     _bool Is_CullingEnabled() const { return m_bCullingEnabled; }
-    void  Reset_CullStats() { m_iCullTotal = 0; m_iCullRendered = 0; }
-    void  Add_CullStat(_bool bRendered);
-    _uint Get_CullStat_Total()    const { return m_iCullTotal; }
-    _uint Get_CullStat_Rendered() const { return m_iCullRendered; }
+    
+    void  Add_CullStat_Main(_bool b);
+    void  Add_CullStat_Shadow(_bool b);
+    _uint Get_CullStat_MainTotal()      const { return m_iCullTotal; }
+    _uint Get_CullStat_MainRendered()   const { return m_iCullRendered; }
+    _uint Get_CullStat_ShadowTotal()    const { return m_iShadowTotal; }
+    _uint Get_CullStat_ShadowRendered() const { return m_iShadowRendered; }
+    void  Reset_CullStats();
+
+    //BVH
+    const DirectX::BoundingFrustum* Get_CurrentFrustum();
+    const DirectX::BoundingSphere* Get_ShadowBounds();
+
+    void Add_CullStat_Main_Bulk(_int rendered, _int total)
+    {
+        m_iCullTotal += total; m_iCullRendered += rendered;
+    }
+    void Add_CullStat_Shadow_Bulk(_int rendered, _int total)
+    {
+        m_iShadowTotal += total; m_iShadowRendered += rendered;
+    }
 
 private:
 	_int					m_iCurrentLevelID = { -1 };
@@ -45,6 +70,12 @@ private:
     // Culling 통계 Debug용
     _uint m_iCullTotal = 0;
     _uint m_iCullRendered = 0;
+
+    _bool m_bShadowCullingEnabled = true;
+    _uint m_iShadowTotal = 0;
+    _uint m_iShadowRendered = 0;
+
+
 public:
 	static CLevel_Manager* Create();
 	virtual void Free() override;

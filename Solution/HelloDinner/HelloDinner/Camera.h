@@ -47,6 +47,10 @@ public:
     void  Update_ViewProjection();
     _bool IsSphereInFrustum(const _float3& vCenter, _float fRadius) const;
 
+    //BVH
+    const DirectX::BoundingFrustum& Get_FrustumWorld() const { return m_FrustumWorld; }
+    _bool Is_FrustumValid() const { return m_bFrustumValid; }
+
     // DebugRendering을 위한 디버그 출력 함수
 	static void DebugPrintMatrix ( const char* name , const XMFLOAT4X4& m );
 	static void DebugPrintFloat3 ( const char* name , const XMFLOAT3& v );

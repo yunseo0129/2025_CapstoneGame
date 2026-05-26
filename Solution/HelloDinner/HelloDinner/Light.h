@@ -27,8 +27,12 @@ public:
 	HRESULT Initialize(const LIGHT_DESC& LightDesc);
 
 	void Update(const _float fTimeDelta);
-	void Render_Begin(class CCamera* _camera);
-	void Render(ID3D12GraphicsCommandList* pCmdList);
+
+    void  Update_Shadow(class CCamera* _camera);
+    void  Begin_ShadowPass(ID3D12GraphicsCommandList* cmdList);
+    void  End_ShadowPass(ID3D12GraphicsCommandList* cmdList);
+    _bool IsSphereInShadowBounds(const _float3& vCenter, _float fRadius) const;
+    _bool Has_Shadow() const { return m_pShadow != nullptr; }
 
 	void Bind_LightBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameterIndex _eIndex);
 
@@ -36,6 +40,8 @@ public:
 	XMVECTOR Get_Position() const { return XMLoadFloat4(&m_LightDesc.vPosition); }
 
 	void Set_Shadow(class CShadow* pShadow) { m_pShadow = pShadow; }
+
+    const DirectX::BoundingSphere* Get_ShadowBounds() const;
 
 private:
 	HRESULT Create_LightBuffer();

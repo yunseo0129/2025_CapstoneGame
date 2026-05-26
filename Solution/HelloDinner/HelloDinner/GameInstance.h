@@ -14,7 +14,6 @@ public: /* For.GameInstance */
 	void Update_Engine(_float fTimeDelta);
 	HRESULT Render_Begin(const _float4& vClearColor = _float4(0.f, 1.f, 0.f, 0.f));
 	HRESULT Draw();
-	HRESULT ShadowDrow();
 	HRESULT Render_End();
 	void Clear(_int iLevelID);
 
@@ -71,15 +70,25 @@ public: /* for.Level_Manager */
 	_int    Get_CurrentLevelID();
 	XMFLOAT4X4 Get_CurrentCameraView ();
 	XMFLOAT4X4 Get_CurrentCameraProjection ();
+    void Add_CullStat_Main_Bulk(_int r, _int t);
+    void Add_CullStat_Shadow_Bulk(_int r, _int t);
 
 public: /* for.Frustum_Culling */
     _bool IsSphereInFrustum(const _float3& vCenter, _float fRadius);
+    _bool IsSphereInShadowFrustum(const _float3& vCenter, _float fRadius);
+
     void  Set_CullingEnabled(_bool b);
     _bool Is_CullingEnabled() const;
+    void  Set_ShadowCullingEnabled(_bool b);
+    _bool Is_ShadowCullingEnabled() const;
+
     void  Reset_CullStats();
-    void  Add_CullStat(_bool bRendered);
-    _uint Get_CullStat_Total()    const;
-    _uint Get_CullStat_Rendered() const;
+    void  Add_CullStat_Main(_bool b);
+    void  Add_CullStat_Shadow(_bool b);
+    _uint Get_CullStat_MainTotal() const;
+    _uint Get_CullStat_MainRendered() const;
+    _uint Get_CullStat_ShadowTotal() const;
+    _uint Get_CullStat_ShadowRendered() const;
 
 public: /* For.Prototype_Manager */
 	HRESULT Add_Prototype(_uint iLevelIndex, const _wstring& strPrototypeTag, class CBase* pPrototype);
@@ -114,8 +123,33 @@ public: /* For.Collision_Manager */
 	bool CollisionCheck_with_Collider(class CCollider* _pMyCollider, class CCollider* _pOtherCollider);
 	bool CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide);
 
+    //BVH
+    void  Build_StaticBVH();
+    void  Invalidate_StaticBVH();
+    void  Set_BVHEnabled(_bool b);
+    _bool Is_BVHEnabled() const;
+    _int  Get_BVHNodeCount() const;
+    _int  Get_BVHPrimitiveCount() const;
+    _int  Get_BVHMaxDepth() const;
+    _int  Get_BVHLastQueryCandidates() const;
+    void  Cull_StaticBVH(const DirectX::BoundingFrustum* p, const DirectX::BoundingSphere* s);
+    void  Set_CullingBVHEnabled(_bool b);
+    _bool Is_CullingBVHEnabled() const;
+    _int  Get_LastFrustumCandidates() const;
+    _int  Get_LastShadowCandidates() const;
+
 public: /* For.Renderer */
-	HRESULT Add_RenderObject(CRenderer::RENDERGROUP eRenderGroup, class CGameObject* pRenderObject);
+    HRESULT Add_RenderObject(CRenderer::RENDERGROUP eRenderGroup, class CGameObject* pRenderObject);
+    HRESULT Add_ShadowRenderObject(CRenderer::RENDERGROUP eRenderGroup, class CGameObject* pRenderObject);
+
+    // instanced rendering
+    HRESULT Add_InstancedRenderObject(const _wstring& modelTag, class CGameObject* pObj);
+    HRESULT Add_ShadowInstancedRenderObject(const _wstring& modelTag, class CGameObject* pObj);
+    void    Set_InstancingEnabled(bool b);
+    bool    Is_InstancingEnabled() const;
+    _int    Get_DrawCallCount() const;
+    _int    Get_InstancedGroupCount() const;
+
 #ifdef _DEBUG
 	HRESULT Add_RenderCollider(class CCollider* pColliderCom);
 #endif

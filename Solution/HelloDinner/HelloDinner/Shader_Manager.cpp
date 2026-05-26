@@ -183,12 +183,14 @@ HRESULT CShader_Manager::Create_PSO ()
 	// ----------------------------------------------------------------
 	// Vertex Shader (Input Layout별)
 	ComPtr<ID3DBlob> vsStatic = Compile_Shader ( L"Shader_Static.hlsl" , "VS_Main_Static" , "vs_5_1" );
-	ComPtr<ID3DBlob> vsSkybox = Compile_Shader ( L"Shader_Skybox.hlsl" , "VS_Main_Skybox" , "vs_5_1" );
+    ComPtr<ID3DBlob> vsStatic_Insatanced = Compile_Shader(L"Shader_Static_Instanced.hlsl", "VS_Main_Instanced", "vs_5_1");
+    ComPtr<ID3DBlob> vsSkybox = Compile_Shader ( L"Shader_Skybox.hlsl" , "VS_Main_Skybox" , "vs_5_1" );
 	ComPtr<ID3DBlob> vsAnim = Compile_Shader ( L"Shader_Anim.hlsl" , "VS_Main_Anim" , "vs_5_1" );
 	// ComPtr<ID3DBlob> vsUI = Compile_Shader ( L"Shader_UI.hlsl" , "VS_Main_UI" , "vs_5_1" );
 
 	ComPtr<ID3DBlob> vsShadowStatic = Compile_Shader(L"Shader_Static.hlsl", "VS_Main_Shadow", "vs_5_1");
 	ComPtr<ID3DBlob> vsShadowAnim = Compile_Shader(L"Shader_Anim.hlsl", "VS_Main_Shadow", "vs_5_1");
+    ComPtr<ID3DBlob> vsShadowStatic_Instanced = Compile_Shader(L"Shader_Static_Instanced.hlsl", "VS_Main_Shadow_Instanced", "vs_5_1");
 
 	// Pixel Shader (재질별)
 	ComPtr<ID3DBlob> psLit = Compile_Shader ( L"Shader_Static.hlsl" , "PS_Main_Lit" , "ps_5_1" ); // 조명 O
@@ -219,6 +221,17 @@ HRESULT CShader_Manager::Create_PSO ()
 	psoDesc.PS = { psLit->GetBufferPointer (), psLit->GetBufferSize () };
 
 	m_pDevice->CreateGraphicsPipelineState ( &psoDesc , IID_PPV_ARGS ( &m_pPSOs[( UINT )PSO_TYPE::DEFAULT] ) );
+
+    // ================================================================
+    // DEFAULT_INSTANCED
+    // ================================================================
+    psoDesc = baseDesc;
+    psoDesc.InputLayout = {m_LayoutStaticInstanced.data(), (UINT)m_LayoutStaticInstanced.size()};
+    psoDesc.VS = {vsStatic_Insatanced->GetBufferPointer(), vsStatic_Insatanced->GetBufferSize()};
+    psoDesc.PS = {psLit->GetBufferPointer(), psLit->GetBufferSize()};
+
+    m_pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pPSOs[(UINT)PSO_TYPE::DEFAULT_INSTANCED]));
+
 
 	// ================================================================
 	// SKYBOX (Static Mesh / TextureCube / DepthFunc LessEqual)
@@ -329,7 +342,25 @@ HRESULT CShader_Manager::Create_PSO ()
 	psoDesc.RasterizerState.DepthBiasClamp = 0.0f;
 	psoDesc.RasterizerState.SlopeScaledDepthBias = 1.0f;
 
-	m_pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pPSOs[(UINT)PSO_TYPE::SHADOW_ANIM]));
+    m_pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pPSOs[(UINT)PSO_TYPE::SHADOW_ANIM]));
+
+    // ================================================================
+// SHADOW_STATIC_INSTANCED
+// ================================================================
+    psoDesc = baseDesc;
+    psoDesc.InputLayout = {m_LayoutStaticInstanced.data(), (UINT)m_LayoutStaticInstanced.size()};
+    psoDesc.VS = {vsShadowStatic_Instanced->GetBufferPointer(), vsShadowStatic_Instanced->GetBufferSize()};
+    psoDesc.PS = {nullptr, 0};
+
+    psoDesc.NumRenderTargets = 0;
+    psoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
+
+    psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;  // SHADOW_STATIC과 동일
+    psoDesc.RasterizerState.DepthBias = 0;
+    psoDesc.RasterizerState.DepthBiasClamp = 0.0f;
+    psoDesc.RasterizerState.SlopeScaledDepthBias = 0.0f;
+
+    m_pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pPSOs[(UINT)PSO_TYPE::SHADOW_STATIC_INSTANCED]));
 
 	return S_OK;
 }
@@ -380,6 +411,20 @@ void CShader_Manager::Create_InputLayouts ()
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
+
+    m_LayoutStaticInstanced = {
+        // slot 0: per-vertex (기존 Static과 동일)
+        {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+        {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+        {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+        {"TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+
+        // slot 1: per-instance (4 × float4 = world matrix)
+        {"INSTWORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1},
+        {"INSTWORLD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1},
+        {"INSTWORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1},
+        {"INSTWORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1},
+    };
 }
 
 CShader_Manager* CShader_Manager::Create(const ComPtr<ID3D12Device>& pDevice)

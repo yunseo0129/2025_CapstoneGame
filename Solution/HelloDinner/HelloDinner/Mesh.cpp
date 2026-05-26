@@ -76,6 +76,19 @@ HRESULT CMesh::Initialize(void* pArg)
 	return S_OK;
 }
 
+HRESULT CMesh::Render_Instanced(ID3D12GraphicsCommandList* cmdList,
+    _uint instanceCount,
+    const D3D12_VERTEX_BUFFER_VIEW& instanceVBV)
+{
+    cmdList->IASetPrimitiveTopology(m_ePrimitiveTopology);
+
+    D3D12_VERTEX_BUFFER_VIEW vbViews[2] = {m_vertexBufferView, instanceVBV};
+    cmdList->IASetVertexBuffers(0, 2, vbViews);
+    cmdList->IASetIndexBuffer(&m_indexBufferView);
+    cmdList->DrawIndexedInstanced(m_iIndices, instanceCount, 0, 0, 0);
+    return S_OK;
+}
+
 HRESULT CMesh::Ready_VertexBuffer_For_NonAnim(_fmatrix PreTransformMatrix)
 {
 	// 바이너리 저장 순서: Position[] → Normal[] → TexCoord[] → Tangent[]

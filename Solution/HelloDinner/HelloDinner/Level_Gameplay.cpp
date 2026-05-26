@@ -33,6 +33,8 @@ HRESULT CLevel_GamePlay::Initialize()
     // 시작 시점에 사용할 카메라
     Set_CurrentCamera(CAMERA_FPV);
 
+    m_pGameInstance->Build_StaticBVH();
+
     return S_OK;
 }
 
@@ -141,7 +143,7 @@ HRESULT CLevel_GamePlay::Ready_Layer()
         cdesc.fSpeedPerSec = 1.f;
         cdesc.vRotation = _float3(0.f, 0.f, 0.f);
         cdesc.iModelLevelIndex = LEVEL_GAMEPLAY;
-        cdesc.vPos = _float3(0.f, 0.f, -5.f);
+        cdesc.vPos = _float3(0.f, 0.f, 0.f);
         cdesc.pCamera = static_cast<CCamera_FPV*>(m_pCamera[CAMERA_FPV]);
         CGameObject* pPlayer = m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_1rd"),
             LEVEL_GAMEPLAY, TEXT("Layer_Player"), &cdesc);

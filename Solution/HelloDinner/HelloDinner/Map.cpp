@@ -59,6 +59,14 @@ HRESULT CMap::Initialize(void* pArg)
 	if (FAILED(Ready_Components()))
 		return E_FAIL;
 
+    XMStoreFloat4x4(&m_xmf4x4CachedWorld, m_pTransformCom->Get_WorldMatrix());
+
+    m_pColliderCom->Set_Owner(this);
+
+    if (m_pColliderCom)
+        m_pGameInstance->Add_CollisionGroup(0, m_pColliderCom);  // 0 = GROUP_MAP
+
+
 	return S_OK;
 }
 
@@ -72,51 +80,27 @@ void CMap::Update(_float fTimeDelta)
 
 void CMap::Late_Update(_float fTimeDelta)
 {
-    _bool bRender = true;
-
-    _float3 vCenter; _float fRadius;
-    if (Get_WorldBoundingSphere(vCenter, fRadius))
-    {
-        bRender = m_pGameInstance->IsSphereInFrustum(vCenter, fRadius);
-    }
-
-    // 디버그 통계
-    m_pGameInstance->Add_CullStat(bRender);
-
-    if (bRender)
-        m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, this);
-
-    m_pGameInstance->Add_CollisionGroup(0, m_pColliderCom);
+    if (!m_pGameInstance->Is_CullingBVHEnabled())
+        Cull_And_Submit(CRenderer::RG_NONBLEND);
 }
 
 void CMap::Render(ID3D12GraphicsCommandList* _commandList)
 {
-	// Transform 컴포넌트의 월드 행렬을 RootConstantBuffer에 넘겨준다.
-	XMFLOAT4X4 WorldMatrix;
-	XMStoreFloat4x4(&WorldMatrix, m_pTransformCom->Get_WorldMatrix());
-	_commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &WorldMatrix, 0);
+    _commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &m_xmf4x4CachedWorld, 0);
+    m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::DEFAULT);
 
-	// 2. PSO 설정
-	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::DEFAULT);
-
-	// 3. 메쉬별 렌더링 (머티리얼 바인딩 + DrawIndexedInstanced)
-	_uint iNumMeshes = m_pModelCom->Get_NumMeshes();
-	for (_uint i = 0; i < iNumMeshes; ++i)
-	{
-		m_pModelCom->Render(_commandList, i);
-	}
+    _uint iNumMeshes = m_pModelCom->Get_NumMeshes();
+    for (_uint i = 0; i < iNumMeshes; ++i)
+        m_pModelCom->Render(_commandList, i);
 
 #ifdef _DEBUG
-		m_pGameInstance->Add_RenderCollider(m_pColliderCom);
+    m_pGameInstance->Add_RenderCollider(m_pColliderCom);
 #endif
 }
 
 void CMap::ShadowRender(ID3D12GraphicsCommandList* _commandList)
 {
-	// Transform 컴포넌트의 월드 행렬을 RootConstantBuffer에 넘겨준다.
-	XMFLOAT4X4 WorldMatrix;
-	XMStoreFloat4x4(&WorldMatrix, m_pTransformCom->Get_WorldMatrix());
-	_commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &WorldMatrix, 0);
+	_commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &m_xmf4x4CachedWorld, 0);
 
 	// 2. PSO 설정
 	m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::SHADOW_STATIC);
@@ -132,25 +116,8 @@ void CMap::ShadowRender(ID3D12GraphicsCommandList* _commandList)
 
 bool CMap::Get_WorldBoundingSphere(_float3& outCenter, _float& outRadius) const
 {
-	// collider 정보가 세팅 안 된 맵은 컬링 패스 (false positive 안전)
-	if (m_eColliderType == CCollider::TYPE_END)
-		return false;
-
-	// 1. center: 이미 world 좌표 → 그대로 반환
-	outCenter = m_vCenterCollider;
-
-	// 2. radius: extents도 이미 world 크기 → 회전과 무관하게 외접구 반지름은 대각선 절반
-	if (m_eColliderType == CCollider::TYPE_SPHERE)
-	{
-		outRadius = m_fRadius;
-	}
-	else // AABB / OBB
-	{
-		XMVECTOR vExtents = XMLoadFloat3(&m_vExtentsCollider);
-		XMStoreFloat(&outRadius, XMVector3Length(vExtents));
-	}
-
-	return true;
+    if (!m_pColliderCom) return false;
+    return m_pColliderCom->Get_SphereBound(outCenter, outRadius);
 }
 
 HRESULT CMap::Ready_Components()

@@ -18,6 +18,8 @@ public:
 	virtual HRESULT Initialize_Prototype(CModel::TYPE eModelType, class CModel* pModel, _fmatrix PreTransformMatrix);
 	virtual HRESULT Initialize(void* pArg);
 
+    HRESULT Render_Instanced(ID3D12GraphicsCommandList* cmdList, _uint instanceCount, const D3D12_VERTEX_BUFFER_VIEW& instanceVBV);
+
 public:
 	// 애님모델과 논애님모델은 정점버퍼를 따로 사용한다
 	// 바이너리화 해야할 것 있음

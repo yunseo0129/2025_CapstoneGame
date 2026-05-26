@@ -60,6 +60,11 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
     if (FAILED(Ready_PartObjects()))
         return E_FAIL;
 
+    for (CCollider* p : m_vColliderComs)
+        if (p) p->Set_Owner(this);
+    for (CCollider* p : m_vMapColliderComs)
+        if (p) p->Set_Owner(this);
+
     return S_OK;
 }
 
@@ -117,7 +122,7 @@ void CPlayer_1rd::Update(_float fTimeDelta)
 
 void CPlayer_1rd::Late_Update(_float fTimeDelta)
 {
-    m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, this);
+    Cull_And_Submit(CRenderer::RG_NONBLEND);
     __super::Late_Update(fTimeDelta);
 }
 
@@ -472,6 +477,14 @@ HRESULT CPlayer_1rd::Ready_Components()
 
     return S_OK;
 }
+
+bool CPlayer_1rd::Get_WorldBoundingSphere(_float3& outCenter, _float& outRadius) const
+{
+    if (m_vColliderComs.empty() || !m_vColliderComs[0])
+        return false;
+    return m_vColliderComs[0]->Get_SphereBound(outCenter, outRadius);
+}
+
 
 CPlayer_1rd* CPlayer_1rd::Create(EngineContext* _pcontext)
 {

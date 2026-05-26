@@ -166,6 +166,18 @@ _float3 CBounding_Sphere::Get_CollisionNormal(CCollider::COLLIDERTYPE eTargetTyp
 	return result;
 }
 
+void CBounding_Sphere::Get_SphereBound(_float3& outCenter, _float& outRadius) const
+{
+    outCenter = m_pBoundDesc->Center;
+    outRadius = m_pBoundDesc->Radius;
+}
+
+void CBounding_Sphere::Get_AABBBound(_float3& c, _float3& e) const {
+    c = m_pBoundDesc->Center;
+    _float r = m_pBoundDesc->Radius;
+    e = {r, r, r};
+}
+
 _float3 CBounding_Sphere::Get_Center()
 {
 	return m_pBoundDesc->Center;

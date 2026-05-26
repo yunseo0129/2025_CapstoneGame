@@ -11,9 +11,13 @@ protected:
 public:
 	virtual HRESULT Initialize();
 	virtual void Update(_float fTimeDelta);
-	virtual void ShadowRender_Begin();
-	virtual void ShadowRender(ID3D12GraphicsCommandList* cmdList);
 	virtual HRESULT Render();
+
+    virtual void Update_Shadows(_float fTimeDelta);
+    virtual void Begin_ShadowPass(ID3D12GraphicsCommandList* cmdList);
+    virtual void End_ShadowPass(ID3D12GraphicsCommandList* cmdList);
+    _bool IsSphereInShadowFrustum(const _float3& vCenter, _float fRadius) const;
+
 
 	virtual void Add_Camera();
 
@@ -24,6 +28,9 @@ public:
 	XMFLOAT4X4 Get_CurrentCameraProjection () { return m_xmf4x4CurrentProjection; }
 
 	void Bind_LightBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameterIndex _eIndex);
+
+    const DirectX::BoundingFrustum* Get_CurrentFrustum() const;
+    const DirectX::BoundingSphere* Get_ShadowBounds() const;
 
 private:
 	void Get_CameraMatrix ( CAMERA_TYPE _eType );
