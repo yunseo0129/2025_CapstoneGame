@@ -43,7 +43,7 @@ public:					// 플레이어 조종에 관련한 함수 구현
 private:
 	virtual HRESULT				Ready_PartObjects();
 	virtual HRESULT				Ready_Components();
-    void Apply_Gravity(_float fTimeDelta);
+    void Resolve_Movement(_float fTimeDelta);
 
 private:
 	class CModel*		m_pModelCom = { nullptr };
@@ -59,8 +59,10 @@ private:
 	_float				m_fPitchRot = 0;
 
     // 중력
-    _float				m_fVerticalVelocity = 0;
-    _bool                m_bIsGrounded = false;
+    _float              m_fMoveLook = 0.f;
+    _float              m_fMoveRight = 0.f;
+    _float              m_fVerticalVelocity = 0.f;
+    _bool               m_bIsGrounded = false;
 
 public:
 	static CPlayer_1rd* Create(EngineContext* pContext);

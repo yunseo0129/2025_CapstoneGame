@@ -75,7 +75,7 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
 
 void CPlayer_1rd::Priority_Update(_float fTimeDelta)
 {
-    Apply_Gravity(fTimeDelta);
+    Resolve_Movement(fTimeDelta);
 
     // 1인칭 모델 동기화
     XMMATRIX matFps = m_pTransformCom->Get_WorldMatrix();
@@ -185,60 +185,41 @@ void CPlayer_1rd::ShadowRender(ID3D12GraphicsCommandList* _commandList)
 
 void CPlayer_1rd::Move(_float _fLook, _float _fRight, _float _val)
 {
-    _vector vLook = m_pTransformCom->Get_State(CTransform::STATE_LOOK);
-    vLook.m128_f32[1] = 0.f;
-    vLook = XMVector3Normalize(vLook) * _fLook;
-    _vector vRight = m_pTransformCom->Get_State(CTransform::STATE_RIGHT);
-    vRight.m128_f32[1] = 0.f;
-    vRight = XMVector3Normalize(vRight) * _fRight;
-
-    // 최종 이동 할 방향벡터(크기가 거리)
-    _vector vDir = vLook + vRight;
-
-    if (XMVectorGetX(XMVector3LengthSq(vDir)) < 1e-6f)
-        return;
-
-    vDir = XMVector3Normalize(vDir);
-
-    _float fFrameDist = m_pTransformCom->Get_SpeedPerSec() * _val;
-    if (fFrameDist < 1e-6f) return;
-    _vector vMove = vDir * fFrameDist;
-
-    // 여기서 충돌체크를 해주는게 좋을 것 같소
-    
-    for (CCollider* pCollider : m_vMapColliderComs)
-    {
-        if (pCollider == nullptr) continue;
-
-        _float3 vOffset;
-        XMStoreFloat3(&vOffset, vMove);
-
-        _float3 vSlide;
-        if (m_pGameInstance->CheckMove(pCollider, vOffset, vSlide))
-        {
-            vMove = XMLoadFloat3(&vSlide);
-        }
-	}
-
-    // 충돌하지 않는다면
-    _vector vPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
-    vPos = XMVectorAdd(vPos, vMove);
-    m_pTransformCom->Set_State(CTransform::STATE_POSITION, vPos);
+    // 실제 이동/충돌은 Resolve_Movement()에서 한 번에 처리.
+    // 여기서는 이번 프레임 입력만 누적한다.
+    m_fMoveLook = _fLook;
+    m_fMoveRight = _fRight;
 }
 
-void CPlayer_1rd::Apply_Gravity(_float fTimeDelta)
+void CPlayer_1rd::Resolve_Movement(_float fTimeDelta)
 {
-    // 1) 중력 가속
+    // ---- 1) 수평 이동 벡터 (입력 기반) ----
+    _vector vHorizontal = XMVectorZero();
+    {
+        _vector vLook = XMVectorSetY(m_pTransformCom->Get_State(CTransform::STATE_LOOK), 0.f);
+        _vector vRight = XMVectorSetY(m_pTransformCom->Get_State(CTransform::STATE_RIGHT), 0.f);
+
+        _vector vDir = XMVector3Normalize(vLook) * m_fMoveLook
+            + XMVector3Normalize(vRight) * m_fMoveRight;
+
+        if (XMVectorGetX(XMVector3LengthSq(vDir)) > 1e-6f)
+        {
+            vDir = XMVector3Normalize(vDir);
+            _float fDist = m_pTransformCom->Get_SpeedPerSec() * fTimeDelta;
+            vHorizontal = vDir * fDist;
+        }
+    }
+
+    // ---- 2) 수직 이동 벡터 (중력) ----
     m_fVerticalVelocity += GRAVITY * fTimeDelta;
     if (m_fVerticalVelocity < -TERMINAL_VEL)
         m_fVerticalVelocity = -TERMINAL_VEL;
+    _float fDeltaY = m_fVerticalVelocity * fTimeDelta;
 
-    // 2) 이번 프레임 수직 이동량
-    _float  fDeltaY = m_fVerticalVelocity * fTimeDelta;
-    _vector vMove = XMVectorSet(0.f, fDeltaY, 0.f, 0.f);
+    // ---- 3) 합성: 수평 + 수직 ----
+    _vector vMove = vHorizontal + XMVectorSet(0.f, fDeltaY, 0.f, 0.f);
 
-    // 3) 맵 충돌 + 슬라이드 (Move()와 동일 패턴)
-    bool bHit = false;
+    // ---- 4) 콜라이더당 CheckMove 한 번씩 (슬라이드 누적) ----
     for (CCollider* pCollider : m_vMapColliderComs)
     {
         if (pCollider == nullptr) continue;
@@ -246,29 +227,33 @@ void CPlayer_1rd::Apply_Gravity(_float fTimeDelta)
         _float3 vOffset; XMStoreFloat3(&vOffset, vMove);
         _float3 vSlide;
         if (m_pGameInstance->CheckMove(pCollider, vOffset, vSlide))
-        {
             vMove = XMLoadFloat3(&vSlide);
-            bHit = true;
-        }
     }
 
-    // 4) 접지 판정
-    if (bHit)
+    // ---- 5) 수직 충돌 판정 (합성 결과의 Y 성분으로) ----
+    _float fResolvedY = XMVectorGetY(vMove);
+    m_bIsGrounded = false;
+
+    if (fDeltaY < -1e-5f && fResolvedY > fDeltaY + 1e-4f)
     {
-        // 하강 중 막혔으면 바닥 착지로 본다(상승 중이면 천장)
-        if (m_fVerticalVelocity < 0.f)
-            m_bIsGrounded = true;
-        m_fVerticalVelocity = 0.f;   // 충돌 시 수직 속도 제거
+        // 내려가려 했는데 막힘 → 바닥 착지
+        m_bIsGrounded = true;
+        m_fVerticalVelocity = 0.f;
     }
-    else
+    else if (fDeltaY > 1e-5f && fResolvedY < fDeltaY - 1e-4f)
     {
-        m_bIsGrounded = false;
+        // 올라가려 했는데 막힘 → 천장
+        m_fVerticalVelocity = 0.f;
     }
 
-    // 5) 위치 적용
+    // ---- 6) 위치 적용 (한 번) ----
     _vector vPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
     vPos = XMVectorAdd(vPos, vMove);
     m_pTransformCom->Set_State(CTransform::STATE_POSITION, vPos);
+
+    // ---- 7) 입력 소비 ----
+    m_fMoveLook = 0.f;
+    m_fMoveRight = 0.f;
 }
 
 void CPlayer_1rd::TurnYaw(_float _val)
