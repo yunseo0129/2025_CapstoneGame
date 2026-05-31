@@ -7,6 +7,12 @@
 #include "Bounding_OBB.h"
 #include "Camera_FPV.h"
 
+namespace {
+    constexpr float GRAVITY = -9.8f;  // 중력 가속도 (units/s^2)
+    constexpr float JUMP_SPEED = 4.5f;   // 점프 초기 수직 속도
+    constexpr float TERMINAL_VEL = 20.f;   // 최대 낙하 속도(터널링 방지)
+}
+
 CPlayer_1rd::CPlayer_1rd(EngineContext* _pcontext)
     : CContainerObj{ _pcontext }
 {
@@ -69,43 +75,7 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
 
 void CPlayer_1rd::Priority_Update(_float fTimeDelta)
 {
-    //  프리 카메라 전용 키인풋입니다. 충돌처리 후 사라질 코드입니다.
-    if (m_pGameInstance->Key_Pressing(DIK_SPACE))
-    {
-        m_pTransformCom->Go_Up(fTimeDelta);
-    }
-    else if (m_pGameInstance->Key_Pressing(DIK_LCONTROL))
-    {
-        // 바닥 충돌 테스트
-        // m_pTransformCom->Go_Up(-fTimeDelta);
-        _vector vDir = XMVectorSet(0.f, -1.f, 0.f, 0.f);
-
-        _float fFrameDist = m_pTransformCom->Get_SpeedPerSec() * fTimeDelta;
-        if (fFrameDist >= 1e-6f)
-        {
-            _vector vMove = vDir * fFrameDist;
-
-            // Move()와 동일 패턴: 각 collider마다 슬라이드 누적
-            for (CCollider* pCollider : m_vMapColliderComs)
-            {
-                if (pCollider == nullptr) continue;
-
-                _float3 vOffset;
-                XMStoreFloat3(&vOffset, vMove);
-
-                _float3 vSlide;
-                if (m_pGameInstance->CheckMove(pCollider, vOffset, vSlide))
-                {
-                    vMove = XMLoadFloat3(&vSlide);   // 슬라이드된 값으로 다음 검사
-                }
-            }
-
-            // 최종 결정된 vMove로 한 번만 이동
-            _vector vPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
-            vPos = XMVectorAdd(vPos, vMove);
-            m_pTransformCom->Set_State(CTransform::STATE_POSITION, vPos);
-        }
-    }
+    Apply_Gravity(fTimeDelta);
 
     // 1인칭 모델 동기화
     XMMATRIX matFps = m_pTransformCom->Get_WorldMatrix();
@@ -256,6 +226,51 @@ void CPlayer_1rd::Move(_float _fLook, _float _fRight, _float _val)
     m_pTransformCom->Set_State(CTransform::STATE_POSITION, vPos);
 }
 
+void CPlayer_1rd::Apply_Gravity(_float fTimeDelta)
+{
+    // 1) 중력 가속
+    m_fVerticalVelocity += GRAVITY * fTimeDelta;
+    if (m_fVerticalVelocity < -TERMINAL_VEL)
+        m_fVerticalVelocity = -TERMINAL_VEL;
+
+    // 2) 이번 프레임 수직 이동량
+    _float  fDeltaY = m_fVerticalVelocity * fTimeDelta;
+    _vector vMove = XMVectorSet(0.f, fDeltaY, 0.f, 0.f);
+
+    // 3) 맵 충돌 + 슬라이드 (Move()와 동일 패턴)
+    bool bHit = false;
+    for (CCollider* pCollider : m_vMapColliderComs)
+    {
+        if (pCollider == nullptr) continue;
+
+        _float3 vOffset; XMStoreFloat3(&vOffset, vMove);
+        _float3 vSlide;
+        if (m_pGameInstance->CheckMove(pCollider, vOffset, vSlide))
+        {
+            vMove = XMLoadFloat3(&vSlide);
+            bHit = true;
+        }
+    }
+
+    // 4) 접지 판정
+    if (bHit)
+    {
+        // 하강 중 막혔으면 바닥 착지로 본다(상승 중이면 천장)
+        if (m_fVerticalVelocity < 0.f)
+            m_bIsGrounded = true;
+        m_fVerticalVelocity = 0.f;   // 충돌 시 수직 속도 제거
+    }
+    else
+    {
+        m_bIsGrounded = false;
+    }
+
+    // 5) 위치 적용
+    _vector vPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+    vPos = XMVectorAdd(vPos, vMove);
+    m_pTransformCom->Set_State(CTransform::STATE_POSITION, vPos);
+}
+
 void CPlayer_1rd::TurnYaw(_float _val)
 {
     m_pTransformCom->Turn(XMVectorSet(0.f, 1.f, 0.f, 0.f), _val);
@@ -268,7 +283,11 @@ void CPlayer_1rd::TurnPitch(_float _val)
 
 void CPlayer_1rd::Jump(_float _val)
 {
-    // _val은 점프의 힘 강도 배수입니다.
+    if (m_bIsGrounded)
+    {
+        m_fVerticalVelocity = JUMP_SPEED;
+        m_bIsGrounded = false;
+    }
 }
 
 void CPlayer_1rd::Crouch(_float _val)

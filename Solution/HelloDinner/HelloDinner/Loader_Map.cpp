@@ -203,9 +203,9 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
 				desc.eColliderType = CCollider::TYPE_END; // "NONE" 이거나 알 수 없는 타입
 
 			// 2. 중심 좌표 (position이랑 정확하게 맞춰야됨)
-			desc.vCenterCollider.x = colliderNode["center"]["x"].get<float>();
+			desc.vCenterCollider.x = colliderNode["center"]["x"].get<float>() - 80.f;
 			desc.vCenterCollider.y = colliderNode["center"]["y"].get<float>() - 1.5f;
-			desc.vCenterCollider.z = colliderNode["center"]["z"].get<float>();
+			desc.vCenterCollider.z = colliderNode["center"]["z"].get<float>() - 80.f;
 
 			// 3. 사이즈
 			desc.vExtentsCollider.x = colliderNode["extents"]["x"].get<float>();
