@@ -612,6 +612,10 @@ bool CGameInstance::CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& out
 	return m_pCollision_Manager->CheckMove(me, move, outSlide);
 }
 
+bool CGameInstance::CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide, vector<CCollider*>* outHits) {
+    return m_pCollision_Manager->CheckMove(me, move, outSlide, outHits);
+}
+
 //BVH
 void  CGameInstance::Build_StaticBVH() { if (m_pCollision_Manager) m_pCollision_Manager->Build_StaticBVH(); }
 void  CGameInstance::Invalidate_StaticBVH() { if (m_pCollision_Manager) m_pCollision_Manager->Invalidate_StaticBVH(); }

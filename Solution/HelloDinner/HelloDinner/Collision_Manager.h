@@ -28,6 +28,8 @@ public:
 	vector<class CCollider*> CollisionCheck_with_Group(class CCollider* _pCollider, COLLISION_GROUP _eGroup);
 	bool CollisionCheck_with_Collider(class CCollider* _pMyCollider, class CCollider* _pOtherCollider);
 	bool CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide);
+    bool CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide, vector<class CCollider*>* outHits);
+
 
     //BVH
     void Build_StaticBVH();

@@ -81,6 +81,11 @@ bool CCollision_Manager::CollisionCheck_with_Collider(CCollider* _pMyCollider, C
 
 bool CCollision_Manager::CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide)
 {
+    return CheckMove(me, move, outSlide, nullptr);
+}
+
+bool CCollision_Manager::CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide, vector<CCollider*>* outHits)
+{
     // 첫 호출 시 자동 빌드 (또는 invalidate 후 재빌드)
     if (m_bStaticBVHDirty && !m_Colliders[GROUP_MAP].empty())
         Build_StaticBVH();
@@ -116,6 +121,13 @@ bool CCollision_Manager::CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3
             if (IsCollidingAfterMove(me, other, finalMove)) {
                 bHit = true;
                 bAnyHitThisIter = true;
+
+                if (outHits) {
+                    bool bDup = false;
+                    for (CCollider* h : *outHits) { if (h == other) { bDup = true; break; } }
+                    if (!bDup) outHits->push_back(other);
+                }
+
                 XMFLOAT3 normal = me->Get_CollisionNormal(other);
                 finalMove = Slide(finalMove, normal);
             }

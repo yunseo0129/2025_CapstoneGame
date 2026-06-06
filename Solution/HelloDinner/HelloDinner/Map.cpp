@@ -55,6 +55,7 @@ HRESULT CMap::Initialize(void* pArg)
 	m_vExtentsCollider = pDesc->vExtentsCollider;
 	m_vRotationCollider = pDesc->vRotationCollider;
 	m_fRadius = pDesc->fRadius;
+    m_bBreakable = pDesc->bBreakable;
 
 	if (FAILED(Ready_Components()))
 		return E_FAIL;
@@ -80,12 +81,16 @@ void CMap::Update(_float fTimeDelta)
 
 void CMap::Late_Update(_float fTimeDelta)
 {
+    if (m_bDead) return;
+
     if (!m_pGameInstance->Is_CullingBVHEnabled())
         Cull_And_Submit(CRenderer::RG_NONBLEND);
 }
 
 void CMap::Render(ID3D12GraphicsCommandList* _commandList)
 {
+    if (m_bDead) return;
+
     _commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &m_xmf4x4CachedWorld, 0);
     m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::DEFAULT);
 
@@ -169,6 +174,20 @@ HRESULT CMap::Ready_Components()
 	}
 
 	return S_OK;
+}
+
+void CMap::Break()
+{
+    if (m_bDead) return;
+
+    if (m_pColliderCom)
+    {
+        m_pGameInstance->Delete_CollisionGroup(0, m_pColliderCom);
+        m_pColliderCom->Set_Enable(false);
+    }
+    m_pGameInstance->Invalidate_StaticBVH();
+
+    SetDead();
 }
 
 CMap* CMap::Create(EngineContext* pContext)

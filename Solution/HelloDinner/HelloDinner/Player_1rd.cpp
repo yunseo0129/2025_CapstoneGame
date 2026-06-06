@@ -6,6 +6,8 @@
 #include "Bounding_Sphere.h"
 #include "Bounding_OBB.h"
 #include "Camera_FPV.h"
+#include "Map.h"
+#include "Collider.h"
 
 namespace {
     constexpr float GRAVITY = -9.8f;  // 중력 가속도 (units/s^2)
@@ -220,14 +222,23 @@ void CPlayer_1rd::Resolve_Movement(_float fTimeDelta)
     _vector vMove = vHorizontal + XMVectorSet(0.f, fDeltaY, 0.f, 0.f);
 
     // ---- 4) 콜라이더당 CheckMove 한 번씩 (슬라이드 누적) ----
+    vector<CCollider*> vHitColliders;
     for (CCollider* pCollider : m_vMapColliderComs)
     {
         if (pCollider == nullptr) continue;
 
         _float3 vOffset; XMStoreFloat3(&vOffset, vMove);
         _float3 vSlide;
-        if (m_pGameInstance->CheckMove(pCollider, vOffset, vSlide))
+        if (m_pGameInstance->CheckMove(pCollider, vOffset, vSlide, &vHitColliders))
             vMove = XMLoadFloat3(&vSlide);
+    }
+
+    for (CCollider* pHit : vHitColliders)
+    {
+        if (pHit == nullptr) continue;
+        CMap* pMap = dynamic_cast<CMap*>(pHit->Get_Owner());
+        if (pMap && pMap->Is_Breakable())
+            pMap->Break();
     }
 
     // ---- 5) 수직 충돌 판정 (합성 결과의 Y 성분으로) ----

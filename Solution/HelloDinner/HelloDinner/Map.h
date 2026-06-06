@@ -19,6 +19,8 @@ public:
 		_float3    vExtentsCollider = {};
 		_float3    vRotationCollider = {};
 		_float	   fRadius = 0.f;
+
+        _bool bBreakable = false;   // 부서지는 맵인지 확인
 	};
 
 private:
@@ -44,6 +46,10 @@ public:
     class CModel* Get_Model() const { return m_pModelCom; }
     const _float4x4& Get_CachedWorldMatrix() const { return m_xmf4x4CachedWorld; }
 
+    // 부서지는 벽인지 확인
+    _bool Is_Breakable() const { return m_bBreakable; }
+    void  Break();
+
 private:
 	HRESULT Ready_Components();
 
@@ -60,6 +66,8 @@ private:
 	_float3    m_vExtentsCollider = {};
 	_float3    m_vRotationCollider = {};
 	_float	   m_fRadius = 0.f;
+
+    _bool m_bBreakable = false;
 
 public:
 	static CMap* Create(EngineContext* _pcontext);
