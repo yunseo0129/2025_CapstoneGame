@@ -180,6 +180,14 @@ void CMap::Break()
 {
     if (m_bDead) return;
 
+    // 이웃에게 내가 사라졌다는 정보 전달
+    if (m_pLeftNeighbor)
+        m_pLeftNeighbor->Expose_Right();
+    if (m_pRightNeighbor)
+        m_pRightNeighbor->Expose_Left();
+    m_pLeftNeighbor = nullptr;
+    m_pRightNeighbor = nullptr;
+
     if (m_pColliderCom)
     {
         m_pGameInstance->Delete_CollisionGroup(0, m_pColliderCom);
@@ -188,6 +196,28 @@ void CMap::Break()
     m_pGameInstance->Invalidate_StaticBVH();
 
     SetDead();
+}
+
+void CMap::Expose_Left()
+{
+    m_bLeftExposed = true;
+    m_pLeftNeighbor = nullptr;
+#ifdef _DEBUG
+    _float3 vP; XMStoreFloat3(&vP, m_pTransformCom->Get_State(CTransform::STATE_POSITION));
+    char buf[128]; sprintf_s(buf, "[Wall x=%.1f] LEFT exposed\n", vP.x);
+    OutputDebugStringA(buf);
+#endif
+}
+
+void CMap::Expose_Right()
+{
+    m_bRightExposed = true;
+    m_pRightNeighbor = nullptr;
+#ifdef _DEBUG
+    _float3 vP; XMStoreFloat3(&vP, m_pTransformCom->Get_State(CTransform::STATE_POSITION));
+    char buf[128]; sprintf_s(buf, "[Wall x=%.1f] RIGHT exposed\n", vP.x);
+    OutputDebugStringA(buf);
+#endif
 }
 
 CMap* CMap::Create(EngineContext* pContext)

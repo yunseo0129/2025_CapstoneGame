@@ -46,9 +46,17 @@ public:
     class CModel* Get_Model() const { return m_pModelCom; }
     const _float4x4& Get_CachedWorldMatrix() const { return m_xmf4x4CachedWorld; }
 
+    // 부서지는 벽
     // 부서지는 벽인지 확인
     _bool Is_Breakable() const { return m_bBreakable; }
     void  Break();
+    // 이웃 벽이 사라졌을 때 면 노출 구현
+    void  Set_Neighbors(CMap* pLeft, CMap* pRight) { m_pLeftNeighbor = pLeft; m_pRightNeighbor = pRight; }
+    void  Expose_Left();
+    void  Expose_Right();
+    _bool Is_LeftExposed()  const { return m_bLeftExposed; }
+    _bool Is_RightExposed() const { return m_bRightExposed; }
+
 
 private:
 	HRESULT Ready_Components();
@@ -67,7 +75,12 @@ private:
 	_float3    m_vRotationCollider = {};
 	_float	   m_fRadius = 0.f;
 
+    // 부서지는 벽 관련
     _bool m_bBreakable = false;
+    CMap* m_pLeftNeighbor = nullptr;
+    CMap* m_pRightNeighbor = nullptr;
+    _bool m_bLeftExposed = false;
+    _bool m_bRightExposed = false;
 
 public:
 	static CMap* Create(EngineContext* _pcontext);
