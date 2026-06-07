@@ -51,4 +51,7 @@
 *.ipch
 *.VC.opendb
 *.VC.db
+
+# Suhyeon
 /Solution/HelloDinner/.claude
+**/x64/
