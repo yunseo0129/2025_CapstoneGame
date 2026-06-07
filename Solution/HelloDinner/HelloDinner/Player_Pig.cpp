@@ -159,7 +159,7 @@ HRESULT CPlayer_Pig::Ready_PartObjects()
 		cdesc.strModelTag = L"Prototype_Component_ketchupGun";
 		cdesc.iModelLevelIndex = m_iModelLevelIndex;
 		cdesc.pParentMatrix = m_pTransformCom->Get_WorldFloat4x4_Ptr();
-		cdesc.pSocketMatrix = m_pModelCom->Get_BoneMatrix("weapon");
+		cdesc.pSocketMatrix = m_pModelCom->Get_BoneMatrix("weapon.R");
 		cdesc.vScale = _float3(1.f, 1.f, 1.f);
 		m_PartObjects[0] = static_cast<CPartObj*>(m_pGameInstance->Clone_Prototype(Engine::PROTOTYPE::PROTO_GAMEOBJ, m_iModelLevelIndex, TEXT("Prototype_GameObject_Ketchup_Gun"), &cdesc));
 		if (nullptr == m_PartObjects[0])
