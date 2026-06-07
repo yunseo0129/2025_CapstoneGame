@@ -1,7 +1,9 @@
 #include "Controller.h"
 #include "Player_1rd.h"
+#include "Player_Pig.h"
 #include "GameInstance.h"
 #include "NetworkClient.h"
+#include "Defines.h"
 
 IMPLEMENT_SINGLETON(CController)
 
@@ -77,7 +79,19 @@ void CController::Predict_Local(_float fTimeDelta)
     if (!pNet->IsInGame()) return;
     if (m_pPlayer == nullptr || m_pPlayer->IsDead()) return;
 
-    m_pPlayer->PredictMove(Build_KeyBitFlags(), m_fMouseYawThisFrame, fTimeDelta);
+    unsigned char keyFlags = Build_KeyBitFlags();
+
+    float fLook  = 0.f;
+    float fRight = 0.f;
+    if (keyFlags & KEY_W) fLook  += 1.f;
+    if (keyFlags & KEY_S) fLook  -= 1.f;
+    if (keyFlags & KEY_A) fRight -= 1.f;
+    if (keyFlags & KEY_D) fRight += 1.f;
+    m_pPlayer->Move(fLook, fRight, 0.f);
+
+    if (m_fMouseYawThisFrame != 0.f)
+        m_pPlayer->TurnYaw(m_fMouseYawThisFrame * fTimeDelta * 2.2f);
+
     m_pPlayer->TurnPitch(m_fMousePitchThisFrame * fTimeDelta * 2.2f);
 }
 
@@ -102,8 +116,6 @@ void CController::Send_InputPacket(_float fTimeDelta)
 
 void CController::Apply_ServerEvents(_float fTimeDelta)
 {
-    if (m_pPlayer == nullptr || m_pPlayer->IsDead()) return;
-
     auto* pNet = NetworkClient::GetInstance();
     if (!pNet->IsInGame()) return;
 
@@ -114,14 +126,71 @@ void CController::Apply_ServerEvents(_float fTimeDelta)
 
     for (auto& evt : events)
     {
-        if (evt.type != NetPlayer::EventType::MOVED) continue;
-
         if (evt.id == myId)
         {
-            m_pPlayer->Apply_ServerCorrection(evt.worldMatrix, fTimeDelta);
+            if (evt.type == NetPlayer::EventType::MOVED && m_pPlayer && !m_pPlayer->IsDead())
+                m_pPlayer->Apply_ServerCorrection(evt.worldMatrix, fTimeDelta);
+            continue;
         }
-        // 다른 플레이어의 MOVED는 후속 작업에서 처리
+
+        switch (evt.type)
+        {
+        case NetPlayer::EventType::ADDED:
+            Spawn_OtherPlayer(evt.id, evt.worldMatrix);
+            break;
+        case NetPlayer::EventType::MOVED:
+            Move_OtherPlayer(evt.id, evt.worldMatrix);
+            break;
+        case NetPlayer::EventType::REMOVED:
+            Remove_OtherPlayer(evt.id);
+            break;
+        }
     }
+}
+
+void CController::Spawn_OtherPlayer(int id, const float* worldMatrix)
+{
+    if (m_otherPlayers.count(id)) return;
+
+    CPlayer_Pig::PLAYER_PIG_DESC desc;
+    desc.strModelTag     = L"Prototype_Component_Pig_3rd";
+    desc.iModelLevelIndex = LEVEL_GAMEPLAY;
+    desc.fSpeedPerSec    = 1.f;
+    desc.fRotationPerSec = 1.f;
+    desc.vRotation       = _float3(0.f, 0.f, 0.f);
+    desc.vPos            = _float3(worldMatrix[12], worldMatrix[13], worldMatrix[14]);
+
+    CGameObject* pObj = m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
+        LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_Pig"),
+        LEVEL_GAMEPLAY, TEXT("Layer_Other_Player"), &desc);
+
+    if (!pObj) return;
+
+    CPlayer_Pig* pPig = static_cast<CPlayer_Pig*>(pObj);
+    pPig->Apply_NetworkMatrix(worldMatrix);
+    m_otherPlayers[id] = pPig;
+}
+
+void CController::Remove_OtherPlayer(int id)
+{
+    auto it = m_otherPlayers.find(id);
+    if (it == m_otherPlayers.end()) return;
+    it->second->SetDead();
+    m_otherPlayers.erase(it);
+}
+
+void CController::Move_OtherPlayer(int id, const float* worldMatrix)
+{
+    auto it = m_otherPlayers.find(id);
+    if (it == m_otherPlayers.end()) return;
+    it->second->Apply_NetworkMatrix(worldMatrix);
+}
+
+void CController::Clear_OtherPlayers()
+{
+    for (auto& pair : m_otherPlayers)
+        pair.second->SetDead();
+    m_otherPlayers.clear();
 }
 
 void CController::Input_UI(_float fTimeDelta)
@@ -137,4 +206,6 @@ void CController::Free()
 {
     if (m_pPlayer != nullptr)
         Safe_Release(m_pPlayer);
+    // m_otherPlayers의 CPlayer_Pig*는 Layer가 소유하므로 해제하지 않는다
+    m_otherPlayers.clear();
 }

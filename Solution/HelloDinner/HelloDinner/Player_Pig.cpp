@@ -392,6 +392,13 @@ bool CPlayer_Pig::Get_WorldBoundingSphere(_float3& outCenter, _float& outRadius)
     return m_vColliderComs[COLLIDER_MAIN]->Get_SphereBound(outCenter, outRadius);
 }
 
+void CPlayer_Pig::Apply_NetworkMatrix(const float* pMatrix)
+{
+    XMFLOAT4X4 mat;
+    memcpy(&mat, pMatrix, sizeof(float) * 16);
+    m_pTransformCom->Set_WorldMatrix(mat);
+}
+
 CPlayer_Pig* CPlayer_Pig::Create(EngineContext* _pcontext)
 {
 	CPlayer_Pig* pInstance = new CPlayer_Pig(_pcontext);

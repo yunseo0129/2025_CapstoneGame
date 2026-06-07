@@ -80,6 +80,11 @@ void CPlayer_1rd::Priority_Update(_float fTimeDelta)
 {
     Resolve_Movement(fTimeDelta);
 
+    // 매 프레임 예측 상태를 현재 트랜스폼으로 갱신 (다음 프레임 Move()가 올바른 위치를 복원하도록)
+    XMFLOAT4X4 worldMat;
+    XMStoreFloat4x4(&worldMat, m_pTransformCom->Get_WorldMatrix());
+    memcpy(m_PredictedState.m, &worldMat, sizeof(float) * 16);
+
     // 1인칭 모델 동기화
     XMMATRIX matFps = m_pTransformCom->Get_WorldMatrix();
     _vector		vRight = matFps.r[0];
@@ -186,15 +191,8 @@ void CPlayer_1rd::ShadowRender(ID3D12GraphicsCommandList* _commandList)
 
 }
 
-void CPlayer_1rd::PredictMove(unsigned char keyInput, float mouseYawDelta, float fTimeDelta)
+void CPlayer_1rd::Move(_float _fLook, _float _fRight, _float _val)
 {
-    m_PredictedState.CalculateMovement(keyInput, mouseYawDelta, m_fPredictSpeed, m_fPredictRotation, fTimeDelta);
-
-    _float4x4 mat;
-    memcpy(&mat, m_PredictedState.m, sizeof(_float4x4));
-    m_pTransformCom->Set_WorldMatrix(mat);
-    // 실제 이동/충돌은 Resolve_Movement()에서 한 번에 처리.
-    // 여기서는 이번 프레임 입력만 누적한다.
     m_fMoveLook = _fLook;
     m_fMoveRight = _fRight;
 }
@@ -266,6 +264,18 @@ void CPlayer_1rd::Resolve_Movement(_float fTimeDelta)
     // ---- 6) 위치 적용 (한 번) ----
     _vector vPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
     vPos = XMVectorAdd(vPos, vMove);
+
+    // Y=0 최소 바닥 (맵에 floor 오브젝트가 없을 때 대비)
+    if (XMVectorGetY(vPos) < 0.f)
+    {
+        vPos = XMVectorSetY(vPos, 0.f);
+        if (m_fVerticalVelocity < 0.f)
+        {
+            m_fVerticalVelocity = 0.f;
+            m_bIsGrounded = true;
+        }
+    }
+
     m_pTransformCom->Set_State(CTransform::STATE_POSITION, vPos);
 
     // ---- 7) 입력 소비 ----
@@ -277,48 +287,42 @@ void CPlayer_1rd::Apply_ServerCorrection(const float* pServerMatrix, float fTime
 {
     if (!m_bPredictionInit)
     {
-        memcpy(m_PredictedState.m, pServerMatrix, sizeof(float) * 16);
-        _float4x4 mat;
-        memcpy(&mat, m_PredictedState.m, sizeof(_float4x4));
-        m_pTransformCom->Set_WorldMatrix(mat);
+        // 서버 스폰 위치로 초기화 (회전은 클라이언트 유지)
+        m_pTransformCom->Set_State(CTransform::STATE_POSITION,
+            XMVectorSet(pServerMatrix[12], pServerMatrix[13], pServerMatrix[14], 1.f));
         m_bPredictionInit = true;
         return;
     }
 
-    float dx = m_PredictedState.m[12] - pServerMatrix[12];
-    float dy = m_PredictedState.m[13] - pServerMatrix[13];
-    float dz = m_PredictedState.m[14] - pServerMatrix[14];
-    float distSq = dx * dx + dy * dy + dz * dz;
+    // 현재 위치 가져오기 (회전은 건드리지 않음)
+    _vector vPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+    XMFLOAT3 pos;
+    XMStoreFloat3(&pos, vPos);
+
+    // XZ 거리만 비교 (Y는 클라이언트 중력이 담당)
+    float dx = pos.x - pServerMatrix[12];
+    float dz = pos.z - pServerMatrix[14];
+    float distSq = dx * dx + dz * dz;
 
     if (distSq <= SOFT_TOLERANCE * SOFT_TOLERANCE)
-    {
-#ifdef _DEBUG
-        OutputDebugStringA("[Correction] ignore\n");
-#endif
         return;
-    }
 
     if (distSq <= HARD_TOLERANCE * HARD_TOLERANCE)
     {
         float t = 1.f - expf(-LERP_RATE * fTimeDelta);
-        m_PredictedState.m[12] += (pServerMatrix[12] - m_PredictedState.m[12]) * t;
-        m_PredictedState.m[13] += (pServerMatrix[13] - m_PredictedState.m[13]) * t;
-        m_PredictedState.m[14] += (pServerMatrix[14] - m_PredictedState.m[14]) * t;
-#ifdef _DEBUG
-        OutputDebugStringA("[Correction] lerp\n");
-#endif
+        pos.x += (pServerMatrix[12] - pos.x) * t;
+        pos.z += (pServerMatrix[14] - pos.z) * t;
     }
     else
     {
-        memcpy(m_PredictedState.m, pServerMatrix, sizeof(float) * 16);
-#ifdef _DEBUG
-        OutputDebugStringA("[Correction] snap\n");
-#endif
+        pos.x = pServerMatrix[12];
+        pos.z = pServerMatrix[14];
+        m_fVerticalVelocity = 0.f;
     }
 
-    _float4x4 mat;
-    memcpy(&mat, m_PredictedState.m, sizeof(_float4x4));
-    m_pTransformCom->Set_WorldMatrix(mat);
+    // 회전은 건드리지 않고 XZ 위치만 수정
+    m_pTransformCom->Set_State(CTransform::STATE_POSITION,
+        XMVectorSet(pos.x, pos.y, pos.z, 1.f));
 }
 
 void CPlayer_1rd::TurnPitch(_float _val)
@@ -327,6 +331,11 @@ void CPlayer_1rd::TurnPitch(_float _val)
     constexpr float MAX_PITCH = XM_PIDIV2 * 0.95f;
     if (m_fPitchRot >  MAX_PITCH) m_fPitchRot =  MAX_PITCH;
     if (m_fPitchRot < -MAX_PITCH) m_fPitchRot = -MAX_PITCH;
+}
+
+void CPlayer_1rd::TurnYaw(_float _val)
+{
+    m_pTransformCom->Turn(XMVectorSet(0.f, 1.f, 0.f, 0.f), _val);
 }
 
 void CPlayer_1rd::Jump(_float _val)

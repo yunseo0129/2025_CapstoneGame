@@ -32,7 +32,9 @@ void MatchManager::DequeuePlayer(int c_id)
 
 void MatchManager::TryMatch()
 {
-	if (static_cast<int>(m_wait_queue.size()) < ROOM_MAX_PLAYER)
+	constexpr int MIN_MATCH_PLAYERS = 2;
+	int queueSize = static_cast<int>(m_wait_queue.size());
+	if (queueSize < MIN_MATCH_PLAYERS)
 		return;
 
 	// 인스턴스 서버 선택
@@ -42,9 +44,10 @@ void MatchManager::TryMatch()
 		return;
 	}
 
-	// 대기QUEUE에서 ROOM_MAX_PLAYER명 추출
-	vector<int> matched_players(m_wait_queue.begin(), m_wait_queue.begin() + ROOM_MAX_PLAYER);
-	m_wait_queue.erase(m_wait_queue.begin(), m_wait_queue.begin() + ROOM_MAX_PLAYER);
+	// 대기QUEUE에서 최대 ROOM_MAX_PLAYER명 추출
+	int matchCount = min(queueSize, ROOM_MAX_PLAYER);
+	vector<int> matched_players(m_wait_queue.begin(), m_wait_queue.begin() + matchCount);
+	m_wait_queue.erase(m_wait_queue.begin(), m_wait_queue.begin() + matchCount);
 
 	// room_id 발급
 	int room_id;
@@ -71,12 +74,12 @@ void MatchManager::TryMatch()
 	notify.size = sizeof(IS_ROOM_NOTIFY_PACKET);
 	notify.type = IS_ROOM_NOTIFY;
 	notify.room_id = room_id;
-	notify.player_count = ROOM_MAX_PLAYER;
+	notify.player_count = matchCount;
 	strcpy_s(notify.auth_token, sizeof(notify.auth_token), auth_token);
 	memset(notify.player_ids, -1, sizeof(notify.player_ids));
 	memset(notify.player_names, 0, sizeof(notify.player_names));
 
-	for (int i = 0; i < ROOM_MAX_PLAYER; ++i) {
+	for (int i = 0; i < matchCount; ++i) {
 		int pid = matched_players[i];
 		notify.player_ids[i] = pid;
 		strcpy_s(notify.player_names[i], sizeof(notify.player_names[i]),
@@ -86,7 +89,7 @@ void MatchManager::TryMatch()
 	InstanceManager::GetInstance()->NotifyRoomToInstance(bestInst, notify);
 
 	// 매칭된 플레이어 상태 전환 및 리다이렉트
-	for (int i = 0; i < ROOM_MAX_PLAYER; ++i) {
+	for (int i = 0; i < matchCount; ++i) {
 		int pid = matched_players[i];
 		auto& client = sm->GetClient(pid);
 		{

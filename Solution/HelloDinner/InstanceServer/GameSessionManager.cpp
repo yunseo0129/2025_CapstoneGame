@@ -72,9 +72,13 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
         }
         session.UpdateTimestamp(p->timestamp);
 
+        // 클라이언트 rotation(Right/Up/Look) 동기화 — 서버가 독립적으로 회전을 누적하면
+        // 클라이언트와 Look 방향이 어긋나 이동 방향이 틀어지므로 클라이언트 값을 신뢰한다
+        memcpy(session.m_worldMatrix.m, p->worldMatrix, sizeof(float) * 12);
+
         session.m_worldMatrix.CalculateMovement(
             p->keyInput,
-            p->mouseYaw,
+            0.f,          // rotation은 위에서 이미 동기화, TurnY 불필요
             session.m_player.speedPerSec,
             session.m_player.rotationPerSec,
             fTimeDelta

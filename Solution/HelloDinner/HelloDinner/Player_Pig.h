@@ -46,6 +46,9 @@ private:
 	_uint				m_iModelLevelIndex = 0;
 
 public:
+	void Apply_NetworkMatrix(const float* pMatrix);
+
+public:
 	static CPlayer_Pig* Create(EngineContext* pContext);
 	virtual CGameObject* Clone(void* pArg);
 	virtual void Free() override;
