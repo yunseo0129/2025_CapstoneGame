@@ -6,6 +6,14 @@
 #include "Bounding_Sphere.h"
 #include "Bounding_OBB.h"
 #include "Camera_FPV.h"
+#include "Map.h"
+#include "Collider.h"
+
+namespace {
+    constexpr float GRAVITY = -9.8f;  // 중력 가속도 (units/s^2)
+    constexpr float JUMP_SPEED = 4.5f;   // 점프 초기 수직 속도
+    constexpr float TERMINAL_VEL = 20.f;   // 최대 낙하 속도(터널링 방지)
+}
 
 CPlayer_1rd::CPlayer_1rd(EngineContext* _pcontext)
     : CContainerObj{ _pcontext }
@@ -70,6 +78,8 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
 
 void CPlayer_1rd::Priority_Update(_float fTimeDelta)
 {
+    Resolve_Movement(fTimeDelta);
+
     // 1인칭 모델 동기화
     XMMATRIX matFps = m_pTransformCom->Get_WorldMatrix();
     _vector		vRight = matFps.r[0];
@@ -183,6 +193,84 @@ void CPlayer_1rd::PredictMove(unsigned char keyInput, float mouseYawDelta, float
     _float4x4 mat;
     memcpy(&mat, m_PredictedState.m, sizeof(_float4x4));
     m_pTransformCom->Set_WorldMatrix(mat);
+    // 실제 이동/충돌은 Resolve_Movement()에서 한 번에 처리.
+    // 여기서는 이번 프레임 입력만 누적한다.
+    m_fMoveLook = _fLook;
+    m_fMoveRight = _fRight;
+}
+
+void CPlayer_1rd::Resolve_Movement(_float fTimeDelta)
+{
+    // ---- 1) 수평 이동 벡터 (입력 기반) ----
+    _vector vHorizontal = XMVectorZero();
+    {
+        _vector vLook = XMVectorSetY(m_pTransformCom->Get_State(CTransform::STATE_LOOK), 0.f);
+        _vector vRight = XMVectorSetY(m_pTransformCom->Get_State(CTransform::STATE_RIGHT), 0.f);
+
+        _vector vDir = XMVector3Normalize(vLook) * m_fMoveLook
+            + XMVector3Normalize(vRight) * m_fMoveRight;
+
+        if (XMVectorGetX(XMVector3LengthSq(vDir)) > 1e-6f)
+        {
+            vDir = XMVector3Normalize(vDir);
+            _float fDist = m_pTransformCom->Get_SpeedPerSec() * fTimeDelta;
+            vHorizontal = vDir * fDist;
+        }
+    }
+
+    // ---- 2) 수직 이동 벡터 (중력) ----
+    m_fVerticalVelocity += GRAVITY * fTimeDelta;
+    if (m_fVerticalVelocity < -TERMINAL_VEL)
+        m_fVerticalVelocity = -TERMINAL_VEL;
+    _float fDeltaY = m_fVerticalVelocity * fTimeDelta;
+
+    // ---- 3) 합성: 수평 + 수직 ----
+    _vector vMove = vHorizontal + XMVectorSet(0.f, fDeltaY, 0.f, 0.f);
+
+    // ---- 4) 콜라이더당 CheckMove 한 번씩 (슬라이드 누적) ----
+    vector<CCollider*> vHitColliders;
+    for (CCollider* pCollider : m_vMapColliderComs)
+    {
+        if (pCollider == nullptr) continue;
+
+        _float3 vOffset; XMStoreFloat3(&vOffset, vMove);
+        _float3 vSlide;
+        if (m_pGameInstance->CheckMove(pCollider, vOffset, vSlide, &vHitColliders))
+            vMove = XMLoadFloat3(&vSlide);
+    }
+
+    for (CCollider* pHit : vHitColliders)
+    {
+        if (pHit == nullptr) continue;
+        CMap* pMap = dynamic_cast<CMap*>(pHit->Get_Owner());
+        if (pMap && pMap->Is_Breakable())
+            pMap->Break();
+    }
+
+    // ---- 5) 수직 충돌 판정 (합성 결과의 Y 성분으로) ----
+    _float fResolvedY = XMVectorGetY(vMove);
+    m_bIsGrounded = false;
+
+    if (fDeltaY < -1e-5f && fResolvedY > fDeltaY + 1e-4f)
+    {
+        // 내려가려 했는데 막힘 → 바닥 착지
+        m_bIsGrounded = true;
+        m_fVerticalVelocity = 0.f;
+    }
+    else if (fDeltaY > 1e-5f && fResolvedY < fDeltaY - 1e-4f)
+    {
+        // 올라가려 했는데 막힘 → 천장
+        m_fVerticalVelocity = 0.f;
+    }
+
+    // ---- 6) 위치 적용 (한 번) ----
+    _vector vPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+    vPos = XMVectorAdd(vPos, vMove);
+    m_pTransformCom->Set_State(CTransform::STATE_POSITION, vPos);
+
+    // ---- 7) 입력 소비 ----
+    m_fMoveLook = 0.f;
+    m_fMoveRight = 0.f;
 }
 
 void CPlayer_1rd::Apply_ServerCorrection(const float* pServerMatrix, float fTimeDelta)
@@ -243,7 +331,11 @@ void CPlayer_1rd::TurnPitch(_float _val)
 
 void CPlayer_1rd::Jump(_float _val)
 {
-    // _val은 점프의 힘 강도 배수입니다.
+    if (m_bIsGrounded)
+    {
+        m_fVerticalVelocity = JUMP_SPEED;
+        m_bIsGrounded = false;
+    }
 }
 
 void CPlayer_1rd::Crouch(_float _val)
@@ -259,11 +351,26 @@ HRESULT CPlayer_1rd::Ready_PartObjects()
         cdesc.strModelTag = L"Prototype_Component_ketchupGun";
         cdesc.iModelLevelIndex = m_iModelLevelIndex;
         cdesc.pParentMatrix = &m_matFPSModel;
-        cdesc.pSocketMatrix = m_pFPSModelCom->Get_BoneMatrix("weapon");
+        cdesc.pSocketMatrix = m_pFPSModelCom->Get_BoneMatrix("weapon.R");
         cdesc.vScale = _float3(1.f, 1.f, 1.f);
         m_PartObjects[0] = static_cast<CPartObj*>(m_pGameInstance->Clone_Prototype(Engine::PROTOTYPE::PROTO_GAMEOBJ, m_iModelLevelIndex, TEXT("Prototype_GameObject_Ketchup_Gun"), &cdesc));
         if (nullptr == m_PartObjects[0])
             return E_FAIL;
+    }
+
+    // 마요네즈건
+    {
+        CKetchup_Gun::KETCHUP_GUN_DESC cdesc;
+        cdesc.strModelTag = L"Prototype_Component_MayonaiseGun";
+        cdesc.iModelLevelIndex = m_iModelLevelIndex;
+        cdesc.pParentMatrix = &m_matFPSModel;
+        cdesc.pSocketMatrix = m_pFPSModelCom->Get_BoneMatrix("weapon.R");
+        cdesc.vScale = _float3(1.f, 1.f, 1.f);
+        m_PartObjects.push_back(static_cast<CPartObj*>(m_pGameInstance->Clone_Prototype(Engine::PROTOTYPE::PROTO_GAMEOBJ, m_iModelLevelIndex, TEXT("Prototype_GameObject_Ketchup_Gun"), &cdesc)));
+        if (nullptr == m_PartObjects[1])
+            return E_FAIL;
+
+        m_PartObjects[1]->SetOnOff(false);
     }
     return S_OK;
 }

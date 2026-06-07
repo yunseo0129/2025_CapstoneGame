@@ -13,6 +13,11 @@
 #include "Player_1rd.h"
 #include "Player_Pig.h"
 
+// 테스트용
+#include "Collider.h"
+#include "Map.h"
+//
+
 CLevel_GamePlay::CLevel_GamePlay(EngineContext* pContext)
     : CLevel {pContext}
 {
@@ -184,6 +189,36 @@ HRESULT CLevel_GamePlay::Ready_Layer()
         m_pGameInstance->Add_GameObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_Pig"),
             LEVEL_GAMEPLAY, TEXT("Layer_Other_Player"), &eState);
     }
+
+    // 충돌 파괴 테스트
+    {
+        const int   N = 7;
+        const float segW = 1.f;                         // 세그먼트 간격(폭)
+        const _float3 vStart = _float3(-3.f, 0.f, 4.f);  // 위치
+
+        for (int i = 0; i < N; ++i)
+        {
+            CMap::MAP_DESC desc {};
+            
+            desc.strModelTag = L"Prototype_Component_Model_WallFence_A_4x";
+            desc.iModelLevelIndex = LEVEL_GAMEPLAY;
+
+            desc.vPosition = _float3(vStart.x + i * segW, vStart.y, vStart.z);
+            desc.vScale = _float3(1.f, 1.f, 1.f);
+
+            // 콜라이더는 월드 좌표 기준(정적). 1×5×1 박스 → extents=(0.5,2.5,0.5)
+            desc.eColliderType = CCollider::TYPE_AABB;
+            desc.vExtentsCollider = _float3(0.5f, 2.5f, 0.5f);
+            desc.vCenterCollider = _float3(vStart.x + i * segW, vStart.y + 2.5f, vStart.z);
+
+            desc.bBreakable = true; 
+
+            m_pGameInstance->Add_GameObject_ToLayer(
+                LEVEL_GAMEPLAY, L"Prototype_GameObject_Map",
+                LEVEL_GAMEPLAY, L"Layer_Map", &desc);
+        }
+    }
+
     return S_OK;
 } 
 

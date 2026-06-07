@@ -20,9 +20,9 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
     m_eNextLevelID = eNextLevelID;
 
     // 메인 위에 윈도우 
-    m_pLoadingWindow = CLoadingWindow::Create(g_hInst, g_hWnd);
-    if (nullptr == m_pLoadingWindow)
-        return E_FAIL;
+    //m_pLoadingWindow = CLoadingWindow::Create(g_hInst, g_hWnd);
+    //if (nullptr == m_pLoadingWindow)
+        //return E_FAIL;
 
    // 로딩
     m_pLoader = CLoader::Create(m_pContext, eNextLevelID);

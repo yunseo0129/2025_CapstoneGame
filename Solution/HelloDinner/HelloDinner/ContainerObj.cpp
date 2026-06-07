@@ -32,7 +32,7 @@ void CContainerObj::Priority_Update(_float fTimeDelta)
 {
 	for (auto& pPartObj : m_PartObjects)
 	{
-		if (nullptr != pPartObj)
+		if (nullptr != pPartObj && pPartObj->GetOnOff())
 			pPartObj->Priority_Update(fTimeDelta);
 	}
 
@@ -42,7 +42,7 @@ void CContainerObj::Update(_float fTimeDelta)
 {
 	for (auto& pPartObj : m_PartObjects)
 	{
-		if (nullptr != pPartObj)
+		if (nullptr != pPartObj && pPartObj->GetOnOff())
 			pPartObj->Update(fTimeDelta);
 	}
 }
@@ -51,7 +51,7 @@ void CContainerObj::Late_Update(_float fTimeDelta)
 {
 	for (auto& pPartObj : m_PartObjects)
 	{
-		if (nullptr != pPartObj)
+		if (nullptr != pPartObj && pPartObj->GetOnOff())
 			pPartObj->Late_Update(fTimeDelta);
 	}
 }

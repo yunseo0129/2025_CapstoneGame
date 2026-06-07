@@ -34,6 +34,8 @@ public:
 	const _float4x4* Get_WorldMatrix4x4Ptr();		//RootConstantBuffer에 WorldMatrix를 넘겨줄 때 사용
 	bool			IsDead() { return m_bDead; }
 	void			SetDead() { m_bDead = true; }
+    bool			GetOnOff() { return m_bOnOff; }
+    void            SetOnOff(bool _is) { m_bOnOff = _is; }
 
 protected:
 	HRESULT				Add_Component(_uint iPrototypeLevelIndex, const _wstring& strPrototypeTag, const _wstring& strComponentTag, CComponent** ppOut, void* pArg = nullptr);
