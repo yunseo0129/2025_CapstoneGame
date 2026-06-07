@@ -2,6 +2,7 @@
 #include "Transform.h"
 #include "GameInstance.h"
 #include "Model.h"
+#include "Particle_System.h"
 #include "Bounding_AABB.h"
 #include "Bounding_OBB.h"
 #include "Bounding_Sphere.h"
@@ -179,6 +180,13 @@ HRESULT CMap::Ready_Components()
 void CMap::Break()
 {
     if (m_bDead) return;
+
+    if (CParticle_System* pPS = m_pGameInstance->Get_ParticleSystem())
+    {
+        _float3 vCenter = {m_xmf4x4CachedWorld._41, m_xmf4x4CachedWorld._42, m_xmf4x4CachedWorld._43};
+        _float3 vExtents = m_vExtentsCollider;   // 콜라이더 범위(0이면 Emit 내부 기본값)
+        pPS->Emit(vCenter, vExtents, 800);
+    }
 
     // 이웃에게 내가 사라졌다는 정보 전달
     if (m_pLeftNeighbor)

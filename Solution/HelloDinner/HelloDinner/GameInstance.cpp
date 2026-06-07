@@ -13,6 +13,7 @@
 #include "Camera.h"
 #include "Controller.h"
 #include "Collision_Manager.h"
+#include "Particle_System.h"
 //#include "Player_1rd.h"
 
 IMPLEMENT_SINGLETON(CGameInstance)
@@ -69,6 +70,10 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineCo
 	if (nullptr == m_pRenderer)
 		return E_FAIL;
 
+    m_pParticle_System = CParticle_System::Create(_pcontext->device);
+    if (nullptr == m_pParticle_System)  
+        return E_FAIL;
+
 	m_pLoad_Manager = CLoad_Manager::Create();
 	if (nullptr == m_pLoad_Manager)
 		return E_FAIL;
@@ -101,6 +106,7 @@ void CGameInstance::Update_Engine(_float fTimeDelta)
     m_pCollision_Manager->Cull_StaticBVH(pFrustum, pShadow);
 
     m_pObject_Manager->Late_Update(fTimeDelta);
+    if (m_pParticle_System) m_pParticle_System->Set_TimeDelta(fTimeDelta);
 }
 
 HRESULT CGameInstance::Render_Begin(const _float4& vClearColor)
@@ -115,6 +121,7 @@ HRESULT CGameInstance::Render_Begin(const _float4& vClearColor)
 HRESULT CGameInstance::Draw()
 {
 	m_pLevel_Manager->Set_CurrentCamera(CAMERA_FPV);
+    if (m_pParticle_System) m_pParticle_System->Compute(m_pCommandList.Get());
 
     m_pLevel_Manager->Begin_ShadowPass(m_pCommandList.Get());
     m_pRenderer->Draw_ShadowQueue(m_pCommandList.Get());
@@ -124,6 +131,7 @@ HRESULT CGameInstance::Draw()
 	m_pLevel_Manager->Bind_CameraBuffer(m_pCommandList.Get(), RootParameterIndex::Camera, CAMERA_FPV);
 	m_pLevel_Manager->Bind_LightBuffer(m_pCommandList.Get(), RootParameterIndex::Light);
 	m_pRenderer->Draw_RenderObject ( m_pCommandList.Get () );
+    if (m_pParticle_System) m_pParticle_System->Render(m_pCommandList.Get());
 	return S_OK;
 }
 
@@ -723,6 +731,7 @@ void CGameInstance::Free()
 
 	// 3. 렌더러 해제 (Device, CmdList를 Safe_AddRef로 보유 중)
 	Safe_Release ( m_pRenderer );
+    Safe_Release(m_pParticle_System);
 
 	// 4. 게임 오브젝트 해제 (컴포넌트 → 텍스처/버퍼의 ComPtr 해제)
 	Safe_Release( m_pCollision_Manager );

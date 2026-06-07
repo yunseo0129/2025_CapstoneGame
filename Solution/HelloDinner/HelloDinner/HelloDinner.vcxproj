@@ -162,6 +162,7 @@
     <ClInclude Include="Light.h" />
     <ClInclude Include="Loader.h" />
     <ClInclude Include="LoadingWindow.h" />
+    <ClInclude Include="Particle_System.h" />
     <ClInclude Include="Shadow.h" />
     <ClInclude Include="Texture_Manager.h" />
     <ClInclude Include="Obj_CollisionTest.h" />
@@ -242,6 +243,7 @@
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Loader.cpp" />
     <ClCompile Include="LoadingWindow.cpp" />
+    <ClCompile Include="Particle_System.cpp" />
     <ClCompile Include="Shadow.cpp" />
     <ClCompile Include="Texture_Manager.cpp" />
     <ClCompile Include="Obj_CollisionTest.cpp" />
@@ -303,6 +305,10 @@
     <Image Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Shader_Particle.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="Shader_Static_Instanced.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
