@@ -165,6 +165,21 @@ HRESULT CPlayer_Pig::Ready_PartObjects()
 		if (nullptr == m_PartObjects[0])
 			return E_FAIL;
 	}
+
+    // 마요네즈건
+    {
+        CKetchup_Gun::KETCHUP_GUN_DESC cdesc;
+        cdesc.strModelTag = L"Prototype_Component_MayonaiseGun";
+        cdesc.iModelLevelIndex = m_iModelLevelIndex;
+        cdesc.pParentMatrix = m_pTransformCom->Get_WorldFloat4x4_Ptr();;
+        cdesc.pSocketMatrix = m_pModelCom->Get_BoneMatrix("weapon.R");
+        cdesc.vScale = _float3(1.f, 1.f, 1.f);
+        m_PartObjects.push_back(static_cast<CPartObj*>(m_pGameInstance->Clone_Prototype(Engine::PROTOTYPE::PROTO_GAMEOBJ, m_iModelLevelIndex, TEXT("Prototype_GameObject_Ketchup_Gun"), &cdesc)));
+        if (nullptr == m_PartObjects[1])
+            return E_FAIL;
+
+        m_PartObjects[1]->SetOnOff(false);
+    }
 	return S_OK;
 }
 

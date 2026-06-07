@@ -37,7 +37,7 @@ void CLayer::Priority_Update(_float fTimeDelta)
 			Safe_Release(*it);
 			it = m_GameObjects.erase(it);  // 'erase'는 지운 요소 다음 요소의 반복자를 반환
 		}
-		else
+		else if ((*it)->GetOnOff())
 		{
 			(*it)->Priority_Update(fTimeDelta);
 			++it;  // 죽지 않은 오브젝트의 경우만 반복자 증가
@@ -48,13 +48,15 @@ void CLayer::Priority_Update(_float fTimeDelta)
 void CLayer::Update(_float fTimeDelta)
 {
 	for (auto& pGameObject : m_GameObjects)
-		pGameObject->Update(fTimeDelta);
+        if (pGameObject->GetOnOff())
+		    pGameObject->Update(fTimeDelta);
 }
 
 void CLayer::Late_Update(_float fTimeDelta)
 {
 	for (auto& pGameObject : m_GameObjects)
-		pGameObject->Late_Update(fTimeDelta);
+        if (pGameObject->GetOnOff())
+		    pGameObject->Late_Update(fTimeDelta);
 }
 
 CLayer* CLayer::Create()

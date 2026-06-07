@@ -156,13 +156,13 @@ HRESULT CLoader::Loading_Level_GamePlay()
             return E_FAIL;
     }
 
-    //// Prototype_Component_ketchupGun
-    //{
-    //    _matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(1.f, 1.f, 1.f);
-    //    if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_ketchupGun"),
-    //        CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Gun2/Prototype_Component_MayonaiseGun.txt", PreTransformMatrix))))
-    //        return E_FAIL;
-    //}
+    // Prototype_Component_MayonaiseGun
+    {
+        _matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(1.f, 1.f, 1.f);
+        if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_MayonaiseGun"),
+            CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Gun2/Prototype_Component_MayonaiseGun.txt", PreTransformMatrix))))
+            return E_FAIL;
+    }
 
     // Prototype_Component_ketchupGun
     {
