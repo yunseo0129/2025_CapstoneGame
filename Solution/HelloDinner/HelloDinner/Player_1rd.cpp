@@ -113,17 +113,17 @@ void CPlayer_1rd::Update(_float fTimeDelta)
     }
 
 #ifdef _DEBUG
-    {
-        XMFLOAT3 vP; XMStoreFloat3(&vP, m_pTransformCom->Get_State(CTransform::STATE_POSITION));
-        auto* pS0 = m_vMapColliderComs[0] ? static_cast<const CBounding_Sphere*>(m_vMapColliderComs[0]->Get_Bounding())->Get_Desc() : nullptr;
-        auto* pS1 = m_vMapColliderComs[1] ? static_cast<const CBounding_Sphere*>(m_vMapColliderComs[1]->Get_Bounding())->Get_Desc() : nullptr;
-        char buf[256];
-        sprintf_s(buf, "Player y=%.2f | Foot center=(%.2f, %.2f, %.2f) | Body center=(%.2f, %.2f, %.2f)\n",
-            vP.y,
-            pS0 ? pS0->Center.x : 0, pS0 ? pS0->Center.y : 0, pS0 ? pS0->Center.z : 0,
-            pS1 ? pS1->Center.x : 0, pS1 ? pS1->Center.y : 0, pS1 ? pS1->Center.z : 0);
-        OutputDebugStringA(buf);
-    }
+    //{
+    //    XMFLOAT3 vP; XMStoreFloat3(&vP, m_pTransformCom->Get_State(CTransform::STATE_POSITION));
+    //    auto* pS0 = m_vMapColliderComs[0] ? static_cast<const CBounding_Sphere*>(m_vMapColliderComs[0]->Get_Bounding())->Get_Desc() : nullptr;
+    //    auto* pS1 = m_vMapColliderComs[1] ? static_cast<const CBounding_Sphere*>(m_vMapColliderComs[1]->Get_Bounding())->Get_Desc() : nullptr;
+    //    char buf[256];
+    //    sprintf_s(buf, "Player y=%.2f | Foot center=(%.2f, %.2f, %.2f) | Body center=(%.2f, %.2f, %.2f)\n",
+    //        vP.y,
+    //        pS0 ? pS0->Center.x : 0, pS0 ? pS0->Center.y : 0, pS0 ? pS0->Center.z : 0,
+    //        pS1 ? pS1->Center.x : 0, pS1 ? pS1->Center.y : 0, pS1 ? pS1->Center.z : 0);
+    //    OutputDebugStringA(buf);
+    //}
 #endif
 
     __super::Update(fTimeDelta);

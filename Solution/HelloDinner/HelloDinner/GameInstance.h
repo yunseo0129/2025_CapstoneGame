@@ -155,6 +155,9 @@ public: /* For.Renderer */
 	HRESULT Add_RenderCollider(class CCollider* pColliderCom);
 #endif
 
+public: /* For.Particle_System*/
+    class CParticle_System* Get_ParticleSystem() const { return m_pParticle_System; }
+
 private:
 	class CGraphic_Device*		m_pGraphic_Device = { nullptr };
 	class CInput_Device*		m_pInput_Device = { nullptr };
@@ -170,6 +173,7 @@ private:
 	class CTexture_Manager*		m_pTexture_Manager = { nullptr };
 	class CController*			m_pController = { nullptr };
 	class CCollision_Manager* m_pCollision_Manager = { nullptr };
+    class CParticle_System* m_pParticle_System = {nullptr};
 
 	ComPtr<ID3D12GraphicsCommandList> m_pCommandList = { nullptr };
 
