@@ -14,6 +14,7 @@
 #include "Obj_CollisionTest.h"
 #include "Ketchup_Gun.h"
 #include "Player_Pig.h"
+#include "Particle_System.h"
 
 CLoader::CLoader(EngineContext* pContext)
     : m_pContext {pContext}
@@ -107,6 +108,12 @@ HRESULT CLoader::Loading_Level_GamePlay()
         if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, L"Prototype_Component_Texture_Skybox",
             CTexture::Create(m_pContext, L"Resources/Textures/SkyBox_Cube.dds", 1, TEX_CUBE))))
             return E_FAIL;
+
+        if (CParticle_System* pPS = m_pGameInstance->Get_ParticleSystem())
+        {
+            if (FAILED(pPS->Load_ParticleTexture()))
+                return E_FAIL;
+        }
     }
 
     Set_LoadingText(TEXT("폰트를 로딩중입니다."));

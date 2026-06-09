@@ -21,6 +21,7 @@ public:
 		_float	   fRadius = 0.f;
 
         _bool bBreakable = false;   // 부서지는 맵인지 확인
+        _uint iBreakPreset = 0;
 	};
 
 private:
@@ -77,6 +78,7 @@ private:
 
     // 부서지는 벽 관련
     _bool m_bBreakable = false;
+    _uint m_iBreakPreset = 0;
     CMap* m_pLeftNeighbor = nullptr;
     CMap* m_pRightNeighbor = nullptr;
     _bool m_bLeftExposed = false;

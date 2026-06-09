@@ -57,6 +57,7 @@ HRESULT CMap::Initialize(void* pArg)
 	m_vRotationCollider = pDesc->vRotationCollider;
 	m_fRadius = pDesc->fRadius;
     m_bBreakable = pDesc->bBreakable;
+    m_iBreakPreset = pDesc->iBreakPreset;
 
 	if (FAILED(Ready_Components()))
 		return E_FAIL;
@@ -183,9 +184,19 @@ void CMap::Break()
 
     if (CParticle_System* pPS = m_pGameInstance->Get_ParticleSystem())
     {
-        _float3 vCenter = {m_xmf4x4CachedWorld._41, m_xmf4x4CachedWorld._42, m_xmf4x4CachedWorld._43};
-        _float3 vExtents = m_vExtentsCollider;   // 콜라이더 범위(0이면 Emit 내부 기본값)
-        pPS->Emit(vCenter, vExtents, 800);
+        const _float3 vBreakPos = {m_xmf4x4CachedWorld._41, m_xmf4x4CachedWorld._42, m_xmf4x4CachedWorld._43};
+
+        CParticle_System::EMIT_DESC dust;     // 흙먼지(절차적, 많고 부풀어 천천히)
+        dust.eType = CParticle_System::WALL_DEBRIS;
+        dust.vCenter = vBreakPos;
+        dust.vExtents = m_vExtentsCollider;
+        pPS->Emit(dust);
+
+        CParticle_System::EMIT_DESC debris;   // 파편(텍스처, 적고 무겁게 빠르게)
+        debris.eType = CParticle_System::WALL_DEBRIS_2;
+        debris.vCenter = vBreakPos;
+        debris.vExtents = m_vExtentsCollider;
+        pPS->Emit(debris);
     }
 
     // 이웃에게 내가 사라졌다는 정보 전달

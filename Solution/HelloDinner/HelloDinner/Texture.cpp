@@ -248,8 +248,12 @@ HRESULT CTexture::CreateShaderResourceView(CD3DX12_CPU_DESCRIPTOR_HANDLE _descri
         break;
     case TEXTURE_TYPE::TEX_ARRAY:
         srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
-        srvDesc.Texture2DArray.ArraySize = m_iArraySize;
-        break;
+        srvDesc.Texture2DArray.MostDetailedMip = 0;
+        srvDesc.Texture2DArray.MipLevels = m_Textures[_iIndex]->GetDesc().MipLevels; // 0 금지
+        srvDesc.Texture2DArray.FirstArraySlice = 0;
+        srvDesc.Texture2DArray.ArraySize = m_iArraySize; // DDS DepthOrArraySize (=6)
+        srvDesc.Texture2DArray.PlaneSlice = 0;
+        srvDesc.Texture2DArray.ResourceMinLODClamp = 0.0f;
         break;
         // 필요시 계속 추가
     default:

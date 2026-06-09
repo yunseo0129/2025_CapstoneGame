@@ -70,7 +70,7 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineCo
 	if (nullptr == m_pRenderer)
 		return E_FAIL;
 
-    m_pParticle_System = CParticle_System::Create(_pcontext->device);
+    m_pParticle_System = CParticle_System::Create(_pcontext);
     if (nullptr == m_pParticle_System)  
         return E_FAIL;
 
