@@ -47,7 +47,7 @@ HRESULT CPlayer_Pig::Initialize(void* pArg)
 		return E_FAIL;
 
 	m_iState = 0;
-	m_pModelCom->SetUp_Animation(5, true);
+	m_pModelCom->SetUp_Animation(0, true);
 
 	if (FAILED(Ready_PartObjects()))
 		return E_FAIL;
@@ -65,19 +65,15 @@ void CPlayer_Pig::Priority_Update(_float fTimeDelta)
 
 void CPlayer_Pig::Update(_float fTimeDelta)
 {
-	static bool d = false;
-	if (!d)
+	if (!m_isBlending)
 		m_pModelCom->Play_Animation(fTimeDelta);
 	else
 	{
 		if (m_pModelCom->Blend_Animation(fTimeDelta))
-			d = false;
+            m_isBlending = false;
 	}
-	if (m_pGameInstance->Key_Pressing(DIK_1))
-	{
-		m_pModelCom->Change_Animation(4, 10.f, true);
-		d = true;
-	}
+
+    Anim_Test();
 
 	for (CCollider* pCollider : m_vColliderComs)
 	{
@@ -383,6 +379,66 @@ HRESULT CPlayer_Pig::Ready_Components()
 	}
 
 	return S_OK;
+}
+
+void CPlayer_Pig::Anim_Test()
+{
+    if (m_pGameInstance->Key_Pressing(DIK_1))
+    {
+        // 대기 모션 
+        // 풀
+        m_pModelCom->Change_Animation(1, 5.f, false);
+        m_isBlending = true;
+    }
+    else if (m_pGameInstance->Key_Pressing(DIK_2))
+    {
+        // 사격
+        // 상체
+        m_pModelCom->Change_Animation(2, 0.f, false);
+        m_isBlending = true;
+    }
+    else if (m_pGameInstance->Key_Pressing(DIK_3))
+    {
+        // 앉기 대기
+        // 하체
+        m_pModelCom->Change_Animation(3, 5.f, false);
+        m_isBlending = true;
+    }
+    else if (m_pGameInstance->Key_Pressing(DIK_4))
+    {
+        // 앉기 걷기
+        // 하체
+        m_pModelCom->Change_Animation(4, 1.f, true);
+        m_isBlending = true;
+    }
+    else if (m_pGameInstance->Key_Pressing(DIK_5))
+    {
+        // 걷기
+        // 하체
+        m_pModelCom->Change_Animation(8, 1.f, true);
+        m_isBlending = true;
+    }
+    else if (m_pGameInstance->Key_Pressing(DIK_6))
+    {
+        // 죽기
+        // 풀
+        m_pModelCom->Change_Animation(9, 5.f, false);
+        m_isBlending = true;
+    }
+    else if (m_pGameInstance->Key_Pressing(DIK_7))
+    {
+        // 뛰기
+        // 하체
+        m_pModelCom->Change_Animation(10, 0.f, true);
+        m_isBlending = true;
+    }
+    else if (m_pGameInstance->Key_Pressing(DIK_8))
+    {
+        // 장전
+        // 상체
+        m_pModelCom->Change_Animation(12, 3.f, false);
+        m_isBlending = true;
+    }
 }
 
 bool CPlayer_Pig::Get_WorldBoundingSphere(_float3& outCenter, _float& outRadius) const

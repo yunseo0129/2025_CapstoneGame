@@ -383,6 +383,7 @@ _uint CModel::Get_BoneIndex(const _char* pBoneName) const
 	return iBoneIndex;
 }
 
+// 애니메이션을 변경함 인자는 순서대로 (변경할 애니메이션 번호, 보간에 쓸 시간, 루프여부)
 void CModel::Change_Animation(_uint iAnimIndex, _float fLinearDurationTime, _bool isLoop)
 {
 	vector<_uint> before = m_Animations[m_iCurrentAnimIndex]->Get_VecBones();
