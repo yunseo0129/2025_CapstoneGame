@@ -46,6 +46,16 @@ public:
 	_bool Play_Animation(_float fTimeDelta);
 	// 보간할때 사용하는 애니메이션
 	_bool Blend_Animation(_float fTimeDelta);
+
+    // 상하체 보간용
+    void Change_Animation(_uint iAnimIndex, _float fLinearDurationTime, _bool isLoop, bool _isUpper);
+    // 상하체 보간용
+    _bool Play_Animation(_float fTimeDelta, bool _isUpper);
+    // 상하체 보간용
+    _bool Blend_Animation(_float fTimeDelta, bool _isUpper);
+    // 상하체 보간용
+    void Merge_UpperLower();
+
 	const _float4x4* Get_BoneMatrix(const _char* pBoneName) const;
 
 	// 랜더 때마다 호출 셰이더에 바인딩해줌
@@ -67,8 +77,12 @@ private:
 	_uint						m_iNumMeshes = { 0 };
 	// 매쉬정보들을 저장하는 벡터
 	vector<class CMesh*>		m_Meshes;
-	// 뼈 정보들을 저장하는 벡터
+	// 뼈 정보들을 저장하는 벡터 (베이스)
 	vector<class CBone*>		m_Bones;
+    // 뼈 정보들을 저장하는 벡터 (상체)
+    vector<class CBone*>        m_BonesUpper;
+    // 뼈 정보들을 저장하는 벡터 (하체)
+    vector<class CBone*>        m_BonesLower;
 	// 애니메이션의 총 갯수를 저장
 	_uint						m_iNumAnimations = {};
 	// 애니메이션들을 저장하는 벡터
@@ -77,14 +91,24 @@ private:
 private:
 	// 현재 재생되고있는 애니메이션 번호를 저장
 	_uint						m_iCurrentAnimIndex = {};
+    _uint                       m_iCurrentUpperAnimIndex = {};
+    _uint                       m_iCurrentLowerAnimIndex = {};
 	// 현재 재생되고있는 애니메이션의 루프 유무를 저장
 	_bool						m_isLoop = { false };
+    _bool                       m_isUpperLoop = { false };
+    _bool                       m_isLowerLoop = { false };
 	// 재생되고 있는 논루프 애니메이션이 끝났는지를 저장
 	_bool						m_isFinished = { false };
+    _bool						m_isUpperFinished = { false };
+    _bool						m_isLowerFinished = { false };
 	// 보간 중일때 true
 	_bool						m_isBlend = { false };
+    _bool                       m_isUpperBlend = { false };
+    _bool                       m_isLowerBlend = { false };
 	// 보간 시간
 	_float						m_fBlendTime = 0;
+    _float                      m_fUpperBlendTime = 0;
+    _float                      m_fLowerBlendTime = 0;
 
 private:
 	// 메테리얼 총 갯수

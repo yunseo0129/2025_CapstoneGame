@@ -31,6 +31,10 @@ public:
 		XMStoreFloat4x4(&m_TransformationMatrix, TransformationMatrix);
 	}
 
+    _int Get_ParentBoneIndex() {
+        return m_iParentBoneIndex;
+    }
+
 public:
 	HRESULT Initialize(_char* Name, _float4x4 TransformMatrix, _int ParentIndex, _float4x4 CombindTransformationMatrix);
 	// 매 프레임 불림

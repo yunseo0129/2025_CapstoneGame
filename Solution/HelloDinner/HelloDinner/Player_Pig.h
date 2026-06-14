@@ -47,6 +47,7 @@ private:
 	_uint				m_iModelLevelIndex = 0;
     bool                m_isBlending = false;
 
+
 public:
 	static CPlayer_Pig* Create(EngineContext* pContext);
 	virtual CGameObject* Clone(void* pArg);
