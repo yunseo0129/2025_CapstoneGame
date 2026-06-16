@@ -2,6 +2,7 @@
 #include "Transform.h"
 #include "GameInstance.h"
 #include "Model.h"
+#include "Particle_System.h"
 #include "Bounding_AABB.h"
 #include "Bounding_OBB.h"
 #include "Bounding_Sphere.h"
@@ -56,6 +57,7 @@ HRESULT CMap::Initialize(void* pArg)
 	m_vRotationCollider = pDesc->vRotationCollider;
 	m_fRadius = pDesc->fRadius;
     m_bBreakable = pDesc->bBreakable;
+    m_iBreakPreset = pDesc->iBreakPreset;
 
 	if (FAILED(Ready_Components()))
 		return E_FAIL;
@@ -180,6 +182,31 @@ void CMap::Break()
 {
     if (m_bDead) return;
 
+    if (CParticle_System* pPS = m_pGameInstance->Get_ParticleSystem())
+    {
+        const _float3 vBreakPos = {m_xmf4x4CachedWorld._41, m_xmf4x4CachedWorld._42, m_xmf4x4CachedWorld._43};
+
+        CParticle_System::EMIT_DESC dust;     // 흙먼지(절차적, 많고 부풀어 천천히)
+        dust.eType = CParticle_System::WALL_DEBRIS;
+        dust.vCenter = vBreakPos;
+        dust.vExtents = m_vExtentsCollider;
+        pPS->Emit(dust);
+
+        CParticle_System::EMIT_DESC debris;   // 파편(텍스처, 적고 무겁게 빠르게)
+        debris.eType = CParticle_System::WALL_DEBRIS_2;
+        debris.vCenter = vBreakPos;
+        debris.vExtents = m_vExtentsCollider;
+        pPS->Emit(debris);
+    }
+
+    // 이웃에게 내가 사라졌다는 정보 전달
+    if (m_pLeftNeighbor)
+        m_pLeftNeighbor->Expose_Right();
+    if (m_pRightNeighbor)
+        m_pRightNeighbor->Expose_Left();
+    m_pLeftNeighbor = nullptr;
+    m_pRightNeighbor = nullptr;
+
     if (m_pColliderCom)
     {
         m_pGameInstance->Delete_CollisionGroup(0, m_pColliderCom);
@@ -188,6 +215,28 @@ void CMap::Break()
     m_pGameInstance->Invalidate_StaticBVH();
 
     SetDead();
+}
+
+void CMap::Expose_Left()
+{
+    m_bLeftExposed = true;
+    m_pLeftNeighbor = nullptr;
+#ifdef _DEBUG
+    _float3 vP; XMStoreFloat3(&vP, m_pTransformCom->Get_State(CTransform::STATE_POSITION));
+    char buf[128]; sprintf_s(buf, "[Wall x=%.1f] LEFT exposed\n", vP.x);
+    OutputDebugStringA(buf);
+#endif
+}
+
+void CMap::Expose_Right()
+{
+    m_bRightExposed = true;
+    m_pRightNeighbor = nullptr;
+#ifdef _DEBUG
+    _float3 vP; XMStoreFloat3(&vP, m_pTransformCom->Get_State(CTransform::STATE_POSITION));
+    char buf[128]; sprintf_s(buf, "[Wall x=%.1f] RIGHT exposed\n", vP.x);
+    OutputDebugStringA(buf);
+#endif
 }
 
 CMap* CMap::Create(EngineContext* pContext)

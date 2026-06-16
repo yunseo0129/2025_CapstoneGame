@@ -231,6 +231,9 @@
     <Filter Include="소스 파일\01. Engine\11. BVH">
       <UniqueIdentifier>{05f9d683-b3b1-4eeb-a3d1-29fe92b6424e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\01. Engine\12. Particle">
+      <UniqueIdentifier>{8f4aaa2a-80e7-4334-a962-8646db06c60c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -433,6 +436,9 @@
     <ClInclude Include="BVH.h">
       <Filter>소스 파일\01. Engine\11. BVH</Filter>
     </ClInclude>
+    <ClInclude Include="Particle_System.h">
+      <Filter>소스 파일\01. Engine\12. Particle</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -633,6 +639,9 @@
     <ClCompile Include="BVH.cpp">
       <Filter>소스 파일\01. Engine\11. BVH</Filter>
     </ClCompile>
+    <ClCompile Include="Particle_System.cpp">
+      <Filter>소스 파일\01. Engine\12. Particle</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="HelloDinner.rc">
@@ -661,6 +670,9 @@
       <Filter>셰이더 파일</Filter>
     </FxCompile>
     <FxCompile Include="Shader_Static_Instanced.hlsl">
+      <Filter>셰이더 파일</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader_Particle.hlsl">
       <Filter>셰이더 파일</Filter>
     </FxCompile>
   </ItemGroup>

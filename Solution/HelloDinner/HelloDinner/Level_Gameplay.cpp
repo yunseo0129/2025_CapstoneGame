@@ -162,6 +162,7 @@ HRESULT CLevel_GamePlay::Ready_Layer()
         const float segW = 1.f;                         // 세그먼트 간격(폭)
         const _float3 vStart = _float3(-3.f, 0.f, 4.f);  // 위치
 
+        CMap* segs[N] = {};
         for (int i = 0; i < N; ++i)
         {
             CMap::MAP_DESC desc {};
@@ -179,9 +180,19 @@ HRESULT CLevel_GamePlay::Ready_Layer()
 
             desc.bBreakable = true; 
 
-            m_pGameInstance->Add_GameObject_ToLayer(
+            segs[i] = static_cast<CMap*>(
+            m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
                 LEVEL_GAMEPLAY, L"Prototype_GameObject_Map",
-                LEVEL_GAMEPLAY, L"Layer_Map", &desc);
+                LEVEL_GAMEPLAY, L"Layer_Map", &desc));
+        }
+
+        // 이웃 연결
+        for (int i = 0; i < N; ++i)
+        {
+            if (!segs[i]) continue;
+            CMap* left = (i > 0) ? segs[i - 1] : nullptr;
+            CMap* right = (i < N - 1) ? segs[i + 1] : nullptr;
+            segs[i]->Set_Neighbors(left, right);
         }
     }
 
