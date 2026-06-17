@@ -108,6 +108,7 @@ void CS_Fracture(uint3 dtid : SV_DispatchThreadID)
         //   바닥은 이제 OBB 콜라이더(바닥 패널)로 처리되어 아래 충돌 루프가 담당한다.
 
         // [A-2b] 월드 오브젝트(모델 공간 OBB) 충돌 — sphere(c.pos, c.radius) vs 각 OBB
+        bool contact = false;
         [loop]
         for (uint k = 0; k < g_colliderCount; ++k)
         {
@@ -153,6 +154,7 @@ void CS_Fracture(uint3 dtid : SV_DispatchThreadID)
 
             // 위치 밀어내기(관통 해소)
             c.pos += nrm * depth;
+            contact = true;
 
             // 속도/회전 응답 (표면으로 들어가는 경우만)
             float vn = dot(c.linVel, nrm);
@@ -161,9 +163,18 @@ void CS_Fracture(uint3 dtid : SV_DispatchThreadID)
                 float3 vt = c.linVel - vn * nrm; // 접선(슬라이딩) 속도
                 c.linVel = vt * g_friction + (-c.restitution * vn) * nrm; // 접선 마찰 + 법선 반발
                 c.angVel += cross(nrm, vt) * (1.0f / max(c.radius, 1e-3f)); // 슬라이딩 → 텀블링
-                c.angVel = clamp(c.angVel, -30.0f, 30.0f); // 폭주 방지
             }
         }
+
+        // [문제1] 접촉 시: 구름 마찰로 회전 감쇠(바닥에서 영원히 도는 것 방지) + 잔여 회전 안착(sleep).
+        //   floor 블록 제거 때 사라진 각감쇠를 OBB 접촉 기준으로 복원. dt 기반이라 프레임레이트 무관.
+        if (contact)
+        {
+            c.angVel *= saturate(1.0f - 8.0f * dt); // 구름 마찰(접지)
+            if (dot(c.angVel, c.angVel) < 0.25f)
+                c.angVel = float3(0, 0, 0); // sleep(<0.5 rad/s)
+        }
+        c.angVel = clamp(c.angVel, -30.0f, 30.0f);
 
         g_Chunks[i] = c;
     }

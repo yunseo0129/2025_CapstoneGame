@@ -69,6 +69,7 @@ public: /* for.Level_Manager */
     HRESULT Open_Level(_int iLevelIndex, class CLevel* pNewLevel);
     _int    Get_CurrentLevelID();
     XMFLOAT4X4 Get_CurrentCameraView();
+    _bool      Get_ShadowLightVP(_float4x4& outView, _float4x4& outProj);   // [파편 그림자]
     XMFLOAT4X4 Get_CurrentCameraProjection();
     void Add_CullStat_Main_Bulk(_int r, _int t);
     void Add_CullStat_Shadow_Bulk(_int r, _int t);

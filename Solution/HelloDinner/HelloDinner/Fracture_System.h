@@ -83,6 +83,7 @@ public:
 
     void    Compute(ID3D12GraphicsCommandList* pCmd);   // 활성 슬롯 전체: 물리 적분 + 매트릭스 합성
     void    Render(ID3D12GraphicsCommandList* pCmd);    // 활성 슬롯 전체: 조각 메시 드로우
+    void    Render_Shadow(ID3D12GraphicsCommandList* pCmd);  // [그림자] 라이트 시점 깊이만
 
 private:
     static const _int FRAME_COUNT = 3; // = SWAP_CHAIN_BUFFER_COUNT
@@ -121,6 +122,7 @@ private:
     ComPtr<ID3D12PipelineState> m_pComputePSO;
     ComPtr<ID3D12RootSignature> m_pGraphicRS;
     ComPtr<ID3D12PipelineState> m_pGraphicPSO;
+    ComPtr<ID3D12PipelineState> m_pShadowPSO;   // [그림자] 깊이 전용(VS_Fracture 재사용)
 
     // 렌더 per-frame CB (Shader_Fracture.hlsl 의 FractureFrameCB). 슬롯마다 world 가 달라
     //  프레임 내 여러 인스턴스를 그리므로 [FRAME_COUNT] x [MAX_FRACTURE_WALLS] 링 버퍼.
@@ -162,6 +164,7 @@ private:
     void    Apply_Impulse(CHUNK* pChunks, _uint iCount, const BREAK_PARAM& param, _float fModelRadius);
     void    Collect_Colliders(INSTANCE& inst);   // [A] 근처 정적 콜라이더 수집(브로드페이즈→모델 OBB)
     void    Update_FrameCB(_uint iFrame, _uint iRingSlot, const _float4x4& matWorld);
+    void    Update_FrameCB_Shadow(_uint iFrame, _uint iRingSlot, const _float4x4& matWorld, const _float4x4& view, const _float4x4& proj);
 
     // 튜닝
     _float  m_fDeltaTime = 0.f;

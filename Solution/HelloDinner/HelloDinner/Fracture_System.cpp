@@ -222,13 +222,22 @@ HRESULT CFracture_System::Create_GraphicRS_PSO()
     d.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
     d.SampleDesc.Count = 1;
 
-    return m_pDevice->CreateGraphicsPipelineState(&d, IID_PPV_ARGS(&m_pGraphicPSO));
+    if (FAILED(m_pDevice->CreateGraphicsPipelineState(&d, IID_PPV_ARGS(&m_pGraphicPSO)))) return E_FAIL;
+
+    // [그림자] 깊이 전용 PSO: VS_Fracture 재사용, PS 없음, RTV 없음, DSV=그림자맵 포맷, FRONT 컬링.
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC ds = d;
+    ds.PS = {nullptr, 0};
+    ds.NumRenderTargets = 0;
+    ds.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
+    ds.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;   // SHADOW_STATIC 과 동일
+    ds.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;          // 그림자맵 포맷
+    return m_pDevice->CreateGraphicsPipelineState(&ds, IID_PPV_ARGS(&m_pShadowPSO));
 }
 
 HRESULT CFracture_System::Create_FrameCB()
 {
     m_iFrameCBStride = (sizeof(FRAME_CB) + 255) & ~255u;
-    const UINT64 ringBytes = (UINT64)m_iFrameCBStride * MAX_FRACTURE_WALLS;
+    const UINT64 ringBytes = (UINT64)m_iFrameCBStride * (MAX_FRACTURE_WALLS * 2);  // [그림자] 메인+그림자 2배
 
     D3D12_HEAP_PROPERTIES heapUpload = {}; heapUpload.Type = D3D12_HEAP_TYPE_UPLOAD;
     D3D12_RESOURCE_DESC d = {};
@@ -636,6 +645,58 @@ void CFracture_System::Update_FrameCB(_uint iFrame, _uint iRingSlot, const _floa
     cb.fAmbient = 0.35f;
     memcpy(m_pFrameCBMapped[iFrame] + (size_t)iRingSlot * m_iFrameCBStride, &cb, sizeof(FRAME_CB));
 }
+
+void CFracture_System::Update_FrameCB_Shadow(_uint iFrame, _uint iRingSlot, const _float4x4& matWorld, const _float4x4& view, const _float4x4& proj)
+{
+    FRAME_CB cb;
+    cb.matWorld = matWorld;
+    cb.matView = view;     // 라이트 시점
+    cb.matProj = proj;
+    cb.vLightDir = {0.f, -1.f, 0.f};   // 그림자 패스엔 PS 없음 → 미사용
+    cb.fAmbient = 0.f;
+    memcpy(m_pFrameCBMapped[iFrame] + (size_t)iRingSlot * m_iFrameCBStride, &cb, sizeof(FRAME_CB));
+}
+
+// [그림자] 라이트 시점에서 조각 깊이만 그린다(Render 와 같은 루프, 깊이 전용 PSO + 라이트 행렬).
+//  FRAME_CB 링은 후반 절반([MAX, 2*MAX)) 사용 → 메인 패스 슬롯과 안 겹침.
+void CFracture_System::Render_Shadow(ID3D12GraphicsCommandList* pCmd)
+{
+    if (nullptr == pCmd || nullptr == m_pShadowPSO || nullptr == m_pGameInstance) return;
+
+    _float4x4 lightView, lightProj;
+    if (!m_pGameInstance->Get_ShadowLightVP(lightView, lightProj)) return;   // 그림자 라이트 없음
+
+    _uint iFrame = (_uint)m_pGameInstance->GetCurrentFrameIndex();
+    if (iFrame >= (_uint)FRAME_COUNT) iFrame = 0;
+
+    _bool bSet = false;
+    _uint iRing = MAX_FRACTURE_WALLS;   // 메인 패스와 슬롯 분리
+
+    for (_uint i = 0; i < MAX_FRACTURE_WALLS; ++i)
+    {
+        INSTANCE& inst = m_Instances[i];
+        if (!inst.bUsed || nullptr == inst.pModel) continue;
+
+        if (!bSet)
+        {
+            pCmd->SetGraphicsRootSignature(m_pGraphicRS.Get());
+            pCmd->SetPipelineState(m_pShadowPSO.Get());
+            bSet = true;
+        }
+
+        Update_FrameCB_Shadow(iFrame, iRing, inst.matWorld, lightView, lightProj);
+
+        D3D12_GPU_VIRTUAL_ADDRESS cbAddr =
+            m_pFrameCB[iFrame]->GetGPUVirtualAddress() + (UINT64)iRing * m_iFrameCBStride;
+        pCmd->SetGraphicsRootConstantBufferView(0, cbAddr);
+        pCmd->SetGraphicsRootDescriptorTable(1, m_pGameInstance->Get_GPUHandle(inst.iMatrixSrvIndex));
+        // 깊이만 → 디퓨즈(t1) 바인딩 불필요(PS 없음).
+
+        inst.pModel->Render_Raw(pCmd, inst.iMeshIndex);
+        ++iRing;
+    }
+}
+
 
 CFracture_System* CFracture_System::Create(EngineContext* pContext)
 {

@@ -132,9 +132,11 @@ HRESULT CGameInstance::Draw()
 
     m_pLevel_Manager->Begin_ShadowPass(m_pCommandList.Get());
     m_pRenderer->Draw_ShadowQueue(m_pCommandList.Get());
+    if (m_pFracture_System) m_pFracture_System->Render_Shadow(m_pCommandList.Get());  // [그림자] 파편 조각
     m_pLevel_Manager->End_ShadowPass(m_pCommandList.Get());
 
     m_pGraphic_Device->initRenderTargetAndDepthStencil(m_pCommandList.Get());
+    Set_RootSignature(m_pCommandList.Get());   // [그림자] Render_Shadow 가 파편 RS 로 바꿔놨으므로 전역 RS 복원
     m_pLevel_Manager->Bind_CameraBuffer(m_pCommandList.Get(), RootParameterIndex::Camera, CAMERA_FPV);
     m_pLevel_Manager->Bind_LightBuffer(m_pCommandList.Get(), RootParameterIndex::Light);
     m_pRenderer->Draw_RenderObject(m_pCommandList.Get());
@@ -390,6 +392,11 @@ XMFLOAT4X4 CGameInstance::Get_CurrentCameraView()
     if (nullptr == m_pLevel_Manager)
         return XMFLOAT4X4();
     return m_pLevel_Manager->Get_CurrentCameraView();
+}
+
+_bool CGameInstance::Get_ShadowLightVP(_float4x4& outView, _float4x4& outProj)
+{
+    return m_pLevel_Manager ? m_pLevel_Manager->Get_ShadowLightVP(outView, outProj) : false;
 }
 
 XMFLOAT4X4 CGameInstance::Get_CurrentCameraProjection()

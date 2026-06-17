@@ -5,68 +5,68 @@
 #include "GameInstance.h"
 
 CLevel_Manager::CLevel_Manager()
-	: m_pGameInstance{ CGameInstance::GetInstance() }
+    : m_pGameInstance {CGameInstance::GetInstance()}
 {
-	Safe_AddRef(m_pGameInstance);
+    Safe_AddRef(m_pGameInstance);
 }
 
 HRESULT CLevel_Manager::Open_Level(_int iLevelIndex, CLevel* pNewLevel)
 {
-	/* 오브젝트 매니져에 추가 해놓은 기존 레벨용 객체들을 삭제한다. */
-	/* 컴포넌트 매니져에 추가 해놓은 기존 레벨용 객체들을 삭제한다. */
+    /* 오브젝트 매니져에 추가 해놓은 기존 레벨용 객체들을 삭제한다. */
+    /* 컴포넌트 매니져에 추가 해놓은 기존 레벨용 객체들을 삭제한다. */
 
-	if (nullptr != m_pCurrentLevel)
-	{
+    if (nullptr != m_pCurrentLevel)
+    {
 
 
-		//m_pGameInstance->Clear(m_iCurrentLevelID);
-	}
+        //m_pGameInstance->Clear(m_iCurrentLevelID);
+    }
 
-	Safe_Release(m_pCurrentLevel);
+    Safe_Release(m_pCurrentLevel);
 
-	m_pCurrentLevel = pNewLevel;
+    m_pCurrentLevel = pNewLevel;
 
-	m_iCurrentLevelID = iLevelIndex;
+    m_iCurrentLevelID = iLevelIndex;
 
-	return S_OK;
+    return S_OK;
 }
 
 void CLevel_Manager::Update(_float fTimeDelta)
 {
-	if (nullptr != m_pCurrentLevel)
-		m_pCurrentLevel->Update(fTimeDelta);
+    if (nullptr != m_pCurrentLevel)
+        m_pCurrentLevel->Update(fTimeDelta);
 }
 
 void CLevel_Manager::Set_CurrentCamera(CAMERA_TYPE _etype)
 {
-	if (nullptr != m_pCurrentLevel)
-		m_pCurrentLevel->Set_CurrentCamera(_etype);
+    if (nullptr != m_pCurrentLevel)
+        m_pCurrentLevel->Set_CurrentCamera(_etype);
 }
 
 void CLevel_Manager::Bind_CameraBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameterIndex _eIndex, CAMERA_TYPE _eType)
 {
-	if (nullptr != m_pCurrentLevel)
-		m_pCurrentLevel->Bind_CameraBuffer(pCmdList, _eIndex, _eType);
+    if (nullptr != m_pCurrentLevel)
+        m_pCurrentLevel->Bind_CameraBuffer(pCmdList, _eIndex, _eType);
 }
 
 void CLevel_Manager::Bind_LightBuffer(ID3D12GraphicsCommandList* pCmdList, RootParameterIndex _eIndex)
 {
-	if (nullptr != m_pCurrentLevel)
-		m_pCurrentLevel->Bind_LightBuffer(pCmdList, _eIndex);
+    if (nullptr != m_pCurrentLevel)
+        m_pCurrentLevel->Bind_LightBuffer(pCmdList, _eIndex);
 }
 
-XMFLOAT4X4 CLevel_Manager::Get_CurrentCameraView ()
+XMFLOAT4X4 CLevel_Manager::Get_CurrentCameraView()
 {
-	if (nullptr != m_pCurrentLevel)
-		return m_pCurrentLevel->Get_CurrentCameraView();
-	return XMFLOAT4X4 ();
+    if (nullptr != m_pCurrentLevel)
+        return m_pCurrentLevel->Get_CurrentCameraView();
+    return XMFLOAT4X4();
 }
 
-XMFLOAT4X4 CLevel_Manager::Get_CurrentCameraProjection ()
+XMFLOAT4X4 CLevel_Manager::Get_CurrentCameraProjection()
 {
-	if (nullptr != m_pCurrentLevel)
-		return m_pCurrentLevel->Get_CurrentCameraProjection();
-	return XMFLOAT4X4 ();
+    if (nullptr != m_pCurrentLevel)
+        return m_pCurrentLevel->Get_CurrentCameraProjection();
+    return XMFLOAT4X4();
 }
 
 CCamera* CLevel_Manager::Get_CurrentCamera()
@@ -89,6 +89,11 @@ void CLevel_Manager::Begin_ShadowPass(ID3D12GraphicsCommandList* cmdList)
 void CLevel_Manager::End_ShadowPass(ID3D12GraphicsCommandList* cmdList)
 {
     if (m_pCurrentLevel) m_pCurrentLevel->End_ShadowPass(cmdList);
+}
+
+_bool CLevel_Manager::Get_ShadowLightVP(_float4x4& outView, _float4x4& outProj) const
+{
+    return m_pCurrentLevel ? m_pCurrentLevel->Get_ShadowLightVP(outView, outProj) : false;
 }
 
 _bool CLevel_Manager::IsSphereInShadowFrustum(const _float3& vCenter, _float fRadius)
@@ -131,15 +136,15 @@ const DirectX::BoundingSphere* CLevel_Manager::Get_ShadowBounds()
 
 CLevel_Manager* CLevel_Manager::Create()
 {
-	return new CLevel_Manager();
+    return new CLevel_Manager();
 
 }
 
 
 void CLevel_Manager::Free()
 {
-	Safe_Release(m_pGameInstance);
-	Safe_Release(m_pCurrentLevel);
+    Safe_Release(m_pGameInstance);
+    Safe_Release(m_pCurrentLevel);
 
-	__super::Free();
+    __super::Free();
 }
