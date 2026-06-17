@@ -26,9 +26,21 @@ CModel::CModel(const CModel& Prototype)
     for (auto& pBone : Prototype.m_Bones)
         m_Bones.push_back(pBone->Clone());
 
+<<<<<<< HEAD
     // Animation도 깊은 복사
     for (auto& pAnim : Prototype.m_Animations)
         m_Animations.push_back(pAnim->Clone());
+=======
+    for (auto& pBone : Prototype.m_Bones)
+        m_BonesUpper.push_back(pBone->Clone());
+
+    for (auto& pBone : Prototype.m_Bones)
+        m_BonesLower.push_back(pBone->Clone());
+
+	// Animation도 깊은 복사
+	for (auto& pAnim : Prototype.m_Animations)
+		m_Animations.push_back(pAnim->Clone());
+>>>>>>> main2
 
     // 애님 모델이면 본 매트릭스 업로드 버퍼 생성
     if (TYPE_ANIM == m_eModelType)
@@ -209,7 +221,17 @@ HRESULT CModel::Ready_Bones()
         m_Bones.push_back(pBone);
     }
 
+<<<<<<< HEAD
     return S_OK;
+=======
+    for (auto pBone : m_Bones)
+    {
+        m_BonesUpper.push_back(pBone->Clone());
+        m_BonesLower.push_back(pBone->Clone());
+    }
+
+	return S_OK;
+>>>>>>> main2
 }
 
 HRESULT CModel::Ready_Animations()
@@ -383,6 +405,7 @@ _uint CModel::Get_BoneIndex(const _char* pBoneName) const
     return iBoneIndex;
 }
 
+// 애니메이션을 변경함 인자는 순서대로 (변경할 애니메이션 번호, 보간에 쓸 시간, 루프여부)
 void CModel::Change_Animation(_uint iAnimIndex, _float fLinearDurationTime, _bool isLoop)
 {
     vector<_uint> before = m_Animations[m_iCurrentAnimIndex]->Get_VecBones();
@@ -419,7 +442,167 @@ _bool CModel::Blend_Animation(_float fTimeDelta)
         pBone->Update_CombinedTransformationMatrix(m_Bones, XMLoadFloat4x4(&m_PreTransformMatrix));
     }
 
+<<<<<<< HEAD
     return m_isFinished;
+=======
+    if (m_isFinished)
+        m_isBlend = false;
+	return m_isFinished;
+>>>>>>> main2
+}
+
+void CModel::Change_Animation(_uint iAnimIndex, _float fLinearDurationTime, _bool isLoop, bool _isUpper)
+{
+    if (_isUpper)
+    {
+        vector<_uint> before =
+            m_Animations[m_iCurrentUpperAnimIndex]->Get_VecBones();
+
+        m_Animations[m_iCurrentUpperAnimIndex]->Anim_Init();
+
+        m_Animations[iAnimIndex]->Change_Anim(
+            m_BonesUpper,
+            before);
+
+        m_iCurrentUpperAnimIndex = iAnimIndex;
+        m_isUpperLoop = isLoop;
+        m_fUpperBlendTime = fLinearDurationTime;
+        m_isUpperBlend = true;
+    }
+    else
+    {
+        vector<_uint> before =
+            m_Animations[m_iCurrentLowerAnimIndex]->Get_VecBones();
+
+        m_Animations[m_iCurrentLowerAnimIndex]->Anim_Init();
+
+        m_Animations[iAnimIndex]->Change_Anim(
+            m_BonesLower,
+            before);
+
+        m_iCurrentLowerAnimIndex = iAnimIndex;
+        m_isLowerLoop = isLoop;
+        m_fLowerBlendTime = fLinearDurationTime;
+        m_isLowerBlend = true;
+    }
+}
+
+_bool CModel::Play_Animation(_float fTimeDelta, bool _isUpper)
+{
+    if (_isUpper)
+    {
+        m_isUpperFinished =
+            m_Animations[m_iCurrentUpperAnimIndex]
+            ->Update_TransformationMatrices(
+                m_BonesUpper,
+                m_isUpperLoop,
+                fTimeDelta);
+
+        for (auto& pBone : m_BonesUpper)
+        {
+            pBone->Update_CombinedTransformationMatrix(
+                m_BonesUpper,
+                XMLoadFloat4x4(&m_PreTransformMatrix));
+        }
+
+        return m_isUpperFinished;
+    }
+    else
+    {
+        m_isLowerFinished =
+            m_Animations[m_iCurrentLowerAnimIndex]
+            ->Update_TransformationMatrices(
+                m_BonesLower,
+                m_isLowerLoop,
+                fTimeDelta);
+
+        for (auto& pBone : m_BonesLower)
+        {
+            pBone->Update_CombinedTransformationMatrix(
+                m_BonesLower,
+                XMLoadFloat4x4(&m_PreTransformMatrix));
+        }
+
+        return m_isLowerFinished;
+    }
+}
+
+_bool CModel::Blend_Animation(_float fTimeDelta, bool _isUpper)
+{
+    if (_isUpper)
+    {
+        m_isUpperBlend =
+            !m_Animations[m_iCurrentUpperAnimIndex]
+            ->Update_TransformationMatrices(
+                m_BonesUpper,
+                m_fUpperBlendTime,
+                fTimeDelta);
+
+        for (auto& pBone : m_BonesUpper)
+        {
+            pBone->Update_CombinedTransformationMatrix(
+                m_BonesUpper,
+                XMLoadFloat4x4(&m_PreTransformMatrix));
+        }
+
+        return m_isUpperBlend;
+    }
+    else
+    {
+        m_isLowerBlend =
+            !m_Animations[m_iCurrentLowerAnimIndex]
+            ->Update_TransformationMatrices(
+                m_BonesLower,
+                m_fLowerBlendTime,
+                fTimeDelta);
+
+        for (auto& pBone : m_BonesLower)
+        {
+            pBone->Update_CombinedTransformationMatrix(
+                m_BonesLower,
+                XMLoadFloat4x4(&m_PreTransformMatrix));
+        }
+
+        return m_isLowerBlend;
+    }
+}
+
+bool CModel::Is_UpperBone(_uint boneIndex)
+{
+    while (boneIndex != -1)
+    {
+        if (boneIndex == m_iSpineBoneIndex)
+            return true;
+
+        boneIndex =
+            m_Bones[boneIndex]->Get_ParentBoneIndex();
+    }
+
+    return false;
+}
+
+void CModel::Merge_UpperLower()
+{
+    for (_uint i = 0; i < m_Bones.size(); ++i)
+    {
+        if (Is_UpperBone(i))
+        {
+            m_Bones[i]->Set_TransformationMatrix(
+                m_BonesUpper[i]->Get_TransformationMatrix());
+        }
+        else
+        {
+            m_Bones[i]->Set_TransformationMatrix(
+                m_BonesLower[i]->Get_TransformationMatrix());
+        }
+    }
+
+    for (auto& pBone : m_Bones)
+    {
+        pBone->Update_CombinedTransformationMatrix(
+            m_Bones,
+            XMLoadFloat4x4(&m_PreTransformMatrix));
+    }
 }
 
 const _float4x4* CModel::Get_BoneMatrix(const _char* pBoneName) const

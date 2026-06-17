@@ -35,6 +35,7 @@ public:
 private:
 	virtual HRESULT				Ready_PartObjects();
 	virtual HRESULT				Ready_Components();
+    void                        Anim_Test();
 
 private:
 	class CModel* m_pModelCom = { nullptr };
@@ -44,6 +45,8 @@ private:
 	_int				m_iHealth = 0;
 	_wstring			m_strModelTag = L"";
 	_uint				m_iModelLevelIndex = 0;
+    bool                m_isBlending = false;
+
 
 public:
 	static CPlayer_Pig* Create(EngineContext* pContext);
