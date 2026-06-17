@@ -30,6 +30,8 @@ public:
 		return m_iNumMaterials;
 	}
 	_bool Get_Blend() const { return m_isBlend; }
+    _bool Get_UpperBlend() const { return m_isUpperBlend; }
+    _bool Get_LowerBlend() const { return m_isLowerBlend; }
 	void  Off_Blend();
 	// 가지고있는 모든 뼈 순회해서 이름에 맞는 뼈 인덱스를 찾아줌
 	_uint Get_BoneIndex(const _char* pBoneName) const;
@@ -39,6 +41,18 @@ public:
 		m_iCurrentAnimIndex = iAnimIndex;
 		m_isLoop = isLoop;
 	}
+    void SetUp_Animation(_uint iAnimIndex, _bool isLoop, _bool _isUpper) {
+        if (_isUpper)
+        {
+            m_iCurrentUpperAnimIndex = iAnimIndex;
+            m_isUpperLoop = isLoop;
+        }
+        else
+        {
+            m_iCurrentLowerAnimIndex = iAnimIndex;
+            m_isLowerLoop = isLoop;
+        }
+    }
 
 	void Change_Animation(_uint iAnimIndex, _float fLinearDurationTime, _bool isLoop);
 	// 현 애니메이션속 함수에 뼈 다 넘겨서 뼈들 트랜스폼 바꿔주고 랜더하기 위한 최종 컴바인드 행렬 만듦
@@ -54,6 +68,11 @@ public:
     // 상하체 보간용
     _bool Blend_Animation(_float fTimeDelta, bool _isUpper);
     // 상하체 보간용
+    void Set_SpineBoneIndex(_uint _index)
+    {
+        m_iSpineBoneIndex = _index;
+    }
+    bool Is_UpperBone(_uint boneIndex);
     void Merge_UpperLower();
 
 	const _float4x4* Get_BoneMatrix(const _char* pBoneName) const;
@@ -79,6 +98,8 @@ private:
 	vector<class CMesh*>		m_Meshes;
 	// 뼈 정보들을 저장하는 벡터 (베이스)
 	vector<class CBone*>		m_Bones;
+    // 상체시작 뼈 번호
+    _uint                       m_iSpineBoneIndex;
     // 뼈 정보들을 저장하는 벡터 (상체)
     vector<class CBone*>        m_BonesUpper;
     // 뼈 정보들을 저장하는 벡터 (하체)

@@ -26,6 +26,12 @@ CModel::CModel(const CModel& Prototype)
 	for (auto& pBone : Prototype.m_Bones)
 		m_Bones.push_back(pBone->Clone());
 
+    for (auto& pBone : Prototype.m_Bones)
+        m_BonesUpper.push_back(pBone->Clone());
+
+    for (auto& pBone : Prototype.m_Bones)
+        m_BonesLower.push_back(pBone->Clone());
+
 	// Animation도 깊은 복사
 	for (auto& pAnim : Prototype.m_Animations)
 		m_Animations.push_back(pAnim->Clone());
@@ -426,6 +432,8 @@ _bool CModel::Blend_Animation(_float fTimeDelta)
 		pBone->Update_CombinedTransformationMatrix(m_Bones, XMLoadFloat4x4(&m_PreTransformMatrix));
 	}
 
+    if (m_isFinished)
+        m_isBlend = false;
 	return m_isFinished;
 }
 
@@ -522,7 +530,8 @@ _bool CModel::Blend_Animation(_float fTimeDelta, bool _isUpper)
                 m_BonesUpper,
                 XMLoadFloat4x4(&m_PreTransformMatrix));
         }
-
+        if (m_isUpperFinished)
+            m_isUpperBlend = false;
         return m_isUpperFinished;
     }
     else
@@ -540,13 +549,48 @@ _bool CModel::Blend_Animation(_float fTimeDelta, bool _isUpper)
                 m_BonesLower,
                 XMLoadFloat4x4(&m_PreTransformMatrix));
         }
-
+        if (m_isLowerFinished)
+            m_isLowerBlend = false;
         return m_isLowerFinished;
     }
 }
 
+bool CModel::Is_UpperBone(_uint boneIndex)
+{
+    while (boneIndex != -1)
+    {
+        if (boneIndex == m_iSpineBoneIndex)
+            return true;
+
+        boneIndex =
+            m_Bones[boneIndex]->Get_ParentBoneIndex();
+    }
+
+    return false;
+}
+
 void CModel::Merge_UpperLower()
 {
+    for (_uint i = 0; i < m_Bones.size(); ++i)
+    {
+        if (Is_UpperBone(i))
+        {
+            m_Bones[i]->Set_TransformationMatrix(
+                m_BonesUpper[i]->Get_TransformationMatrix());
+        }
+        else
+        {
+            m_Bones[i]->Set_TransformationMatrix(
+                m_BonesLower[i]->Get_TransformationMatrix());
+        }
+    }
+
+    for (auto& pBone : m_Bones)
+    {
+        pBone->Update_CombinedTransformationMatrix(
+            m_Bones,
+            XMLoadFloat4x4(&m_PreTransformMatrix));
+    }
 }
 
 const _float4x4* CModel::Get_BoneMatrix(const _char* pBoneName) const
