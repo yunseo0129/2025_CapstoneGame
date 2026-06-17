@@ -20,35 +20,6 @@ private:
     virtual ~CModel() = default;
 
 public:
-<<<<<<< HEAD
-    // Material 슬롯에 텍스쳐를 세팅하는 함수
-    HRESULT Set_MaterialTexture(_uint iMaterialIndex, TextureType eType, class CTexture* pTexture);
-    // 매쉬 개수를 반환해줌
-    _uint Get_NumMeshes() const {
-        return m_iNumMeshes;
-    }
-    _uint Get_NumMaterials() const {
-        return m_iNumMaterials;
-    }
-    _bool Get_Blend() const { return m_isBlend; }
-    void  Off_Blend();
-    // 가지고있는 모든 뼈 순회해서 이름에 맞는 뼈 인덱스를 찾아줌
-    _uint Get_BoneIndex(const _char* pBoneName) const;
-
-    // 현재 애니메이션 번호와 루프유무를 설정해줌
-    void SetUp_Animation(_uint iAnimIndex, _bool isLoop) {
-        m_iCurrentAnimIndex = iAnimIndex;
-        m_isLoop = isLoop;
-    }
-
-    void Change_Animation(_uint iAnimIndex, _float fLinearDurationTime, _bool isLoop);
-    // 현 애니메이션속 함수에 뼈 다 넘겨서 뼈들 트랜스폼 바꿔주고 랜더하기 위한 최종 컴바인드 행렬 만듦
-    // 매 프레임 불러준다
-    _bool Play_Animation(_float fTimeDelta);
-    // 보간할때 사용하는 애니메이션
-    _bool Blend_Animation(_float fTimeDelta);
-    const _float4x4* Get_BoneMatrix(const _char* pBoneName) const;
-=======
 	// Material 슬롯에 텍스쳐를 세팅하는 함수
 	HRESULT Set_MaterialTexture(_uint iMaterialIndex, TextureType eType, class CTexture* pTexture);
 	// 매쉬 개수를 반환해줌
@@ -110,7 +81,6 @@ public:
     }
 
 	const _float4x4* Get_BoneMatrix(const _char* pBoneName) const;
->>>>>>> main2
 
     // 랜더 때마다 호출 셰이더에 바인딩해줌
     HRESULT Bind_BoneMatrices(ID3D12GraphicsCommandList* _cmdList, _uint iMeshIndex);
@@ -133,30 +103,6 @@ private:
     MATERIAL_LOAD_MODE m_eMatLoadMode = {MATLOAD_FROM_BINARY};
 
 private:
-<<<<<<< HEAD
-    // 매쉬의 총 갯수를 저장
-    _uint						m_iNumMeshes = {0};
-    // 매쉬정보들을 저장하는 벡터
-    vector<class CMesh*>		m_Meshes;
-    // 뼈 정보들을 저장하는 벡터
-    vector<class CBone*>		m_Bones;
-    // 애니메이션의 총 갯수를 저장
-    _uint						m_iNumAnimations = {};
-    // 애니메이션들을 저장하는 벡터
-    vector<class CAnimation*>	m_Animations;
-
-private:
-    // 현재 재생되고있는 애니메이션 번호를 저장
-    _uint						m_iCurrentAnimIndex = {};
-    // 현재 재생되고있는 애니메이션의 루프 유무를 저장
-    _bool						m_isLoop = {false};
-    // 재생되고 있는 논루프 애니메이션이 끝났는지를 저장
-    _bool						m_isFinished = {false};
-    // 보간 중일때 true
-    _bool						m_isBlend = {false};
-    // 보간 시간
-    _float						m_fBlendTime = 0;
-=======
 	// 매쉬의 총 갯수를 저장
 	_uint						m_iNumMeshes = { 0 };
 	// 매쉬정보들을 저장하는 벡터
@@ -195,7 +141,6 @@ private:
 	_float						m_fBlendTime = 0;
     _float                      m_fUpperBlendTime = 0;
     _float                      m_fLowerBlendTime = 0;
->>>>>>> main2
 
 private:
     // 메테리얼 총 갯수

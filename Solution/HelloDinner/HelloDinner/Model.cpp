@@ -26,11 +26,6 @@ CModel::CModel(const CModel& Prototype)
     for (auto& pBone : Prototype.m_Bones)
         m_Bones.push_back(pBone->Clone());
 
-<<<<<<< HEAD
-    // Animation도 깊은 복사
-    for (auto& pAnim : Prototype.m_Animations)
-        m_Animations.push_back(pAnim->Clone());
-=======
     for (auto& pBone : Prototype.m_Bones)
         m_BonesUpper.push_back(pBone->Clone());
 
@@ -40,7 +35,6 @@ CModel::CModel(const CModel& Prototype)
 	// Animation도 깊은 복사
 	for (auto& pAnim : Prototype.m_Animations)
 		m_Animations.push_back(pAnim->Clone());
->>>>>>> main2
 
     // 애님 모델이면 본 매트릭스 업로드 버퍼 생성
     if (TYPE_ANIM == m_eModelType)
@@ -221,9 +215,6 @@ HRESULT CModel::Ready_Bones()
         m_Bones.push_back(pBone);
     }
 
-<<<<<<< HEAD
-    return S_OK;
-=======
     for (auto pBone : m_Bones)
     {
         m_BonesUpper.push_back(pBone->Clone());
@@ -231,7 +222,6 @@ HRESULT CModel::Ready_Bones()
     }
 
 	return S_OK;
->>>>>>> main2
 }
 
 HRESULT CModel::Ready_Animations()
@@ -442,13 +432,9 @@ _bool CModel::Blend_Animation(_float fTimeDelta)
         pBone->Update_CombinedTransformationMatrix(m_Bones, XMLoadFloat4x4(&m_PreTransformMatrix));
     }
 
-<<<<<<< HEAD
-    return m_isFinished;
-=======
     if (m_isFinished)
         m_isBlend = false;
 	return m_isFinished;
->>>>>>> main2
 }
 
 void CModel::Change_Animation(_uint iAnimIndex, _float fLinearDurationTime, _bool isLoop, bool _isUpper)
