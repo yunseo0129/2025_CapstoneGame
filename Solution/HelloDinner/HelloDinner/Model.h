@@ -74,6 +74,11 @@ public:
     }
     bool Is_UpperBone(_uint boneIndex);
     void Merge_UpperLower();
+    // 장전 총 손 스왑용
+    _uint Get_UpperAnimNum()
+    {
+        return m_iCurrentUpperAnimIndex;
+    }
 
 	const _float4x4* Get_BoneMatrix(const _char* pBoneName) const;
 

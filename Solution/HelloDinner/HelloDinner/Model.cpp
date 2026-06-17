@@ -517,8 +517,8 @@ _bool CModel::Blend_Animation(_float fTimeDelta, bool _isUpper)
 {
     if (_isUpper)
     {
-        m_isUpperFinished =
-            m_Animations[m_iCurrentUpperAnimIndex]
+        m_isUpperBlend =
+            !m_Animations[m_iCurrentUpperAnimIndex]
             ->Update_TransformationMatrices(
                 m_BonesUpper,
                 m_fUpperBlendTime,
@@ -530,14 +530,13 @@ _bool CModel::Blend_Animation(_float fTimeDelta, bool _isUpper)
                 m_BonesUpper,
                 XMLoadFloat4x4(&m_PreTransformMatrix));
         }
-        if (m_isUpperFinished)
-            m_isUpperBlend = false;
-        return m_isUpperFinished;
+
+        return m_isUpperBlend;
     }
     else
     {
-        m_isLowerFinished =
-            m_Animations[m_iCurrentLowerAnimIndex]
+        m_isLowerBlend =
+            !m_Animations[m_iCurrentLowerAnimIndex]
             ->Update_TransformationMatrices(
                 m_BonesLower,
                 m_fLowerBlendTime,
@@ -549,9 +548,8 @@ _bool CModel::Blend_Animation(_float fTimeDelta, bool _isUpper)
                 m_BonesLower,
                 XMLoadFloat4x4(&m_PreTransformMatrix));
         }
-        if (m_isLowerFinished)
-            m_isLowerBlend = false;
-        return m_isLowerFinished;
+
+        return m_isLowerBlend;
     }
 }
 

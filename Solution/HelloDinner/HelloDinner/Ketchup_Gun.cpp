@@ -37,7 +37,7 @@ HRESULT CKetchup_Gun::Initialize(void* pArg)
 
 	m_pTransformCom->RotationQuaternion(XM_PI / 2, 0.f, 0.f);
 
-    m_pModelCom->SetUp_Animation(1, true);
+    m_pModelCom->SetUp_Animation(2, true);
 	return S_OK;
 }
 
@@ -47,7 +47,12 @@ void CKetchup_Gun::Priority_Update(_float fTimeDelta)
 
 void CKetchup_Gun::Update(_float fTimeDelta)
 {
-    m_pModelCom->Play_Animation(fTimeDelta);
+    if (!m_pModelCom->Get_Blend())
+        m_pModelCom->Play_Animation(fTimeDelta);
+    else
+        m_pModelCom->Blend_Animation(fTimeDelta);
+
+
 	XMStoreFloat4x4(&m_WorldMatrix, m_pTransformCom->Get_WorldMatrix() * XMLoadFloat4x4(m_pSocketMatrix) * XMLoadFloat4x4(m_pParentMatrix));
 }
 

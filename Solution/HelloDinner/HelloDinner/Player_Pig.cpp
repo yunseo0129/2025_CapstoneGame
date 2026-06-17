@@ -67,7 +67,16 @@ void CPlayer_Pig::Priority_Update(_float fTimeDelta)
 void CPlayer_Pig::Update(_float fTimeDelta)
 {
     if (!m_pModelCom->Get_UpperBlend())
-        m_pModelCom->Play_Animation(fTimeDelta, true);
+    {
+        if (m_pModelCom->Play_Animation(fTimeDelta, true))
+        {
+            if (11 == m_pModelCom->Get_UpperAnimNum())
+            {
+                m_pModelCom->Change_Animation(0, 5.f, true, true);
+                m_pModelCom->Change_Animation(0, 5.f, true, false);
+            }
+        }
+    }
     else
         m_pModelCom->Blend_Animation(fTimeDelta, true);
 
@@ -76,6 +85,7 @@ void CPlayer_Pig::Update(_float fTimeDelta)
     else
         m_pModelCom->Blend_Animation(fTimeDelta, false);
 
+    // 상하체 보간 없는 모델들만 사용
 	/*if (!m_pModelCom->Get_Blend())
 		m_pModelCom->Play_Animation(fTimeDelta);
 	else
@@ -395,6 +405,13 @@ HRESULT CPlayer_Pig::Ready_Components()
 
 void CPlayer_Pig::Anim_Test()
 {
+    if (m_pGameInstance->Key_Pressing(DIK_0))
+    {
+        // 대기 모션 
+        // 풀
+        m_pModelCom->Change_Animation(0, 5.f, false, true);
+        m_pModelCom->Change_Animation(0, 5.f, false, false);
+    }
     if (m_pGameInstance->Key_Pressing(DIK_1))
     {
         // 대기 모션 
@@ -444,6 +461,13 @@ void CPlayer_Pig::Anim_Test()
         // 장전
         // 상체
         m_pModelCom->Change_Animation(12, 3.f, false, true);
+    }
+    else if (m_pGameInstance->Key_Pressing(DIK_9))
+    {
+        // 점프
+        // 풀
+        m_pModelCom->Change_Animation(11, 5.f, false, true);
+        m_pModelCom->Change_Animation(11, 5.f, false, false);
     }
 }
 
