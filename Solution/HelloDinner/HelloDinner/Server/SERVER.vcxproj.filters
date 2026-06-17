@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="소스 파일\Session">
+      <UniqueIdentifier>{5ae3a116-8ee8-4f0d-b342-e56e3bf43de9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\OverlappedEXP">
+      <UniqueIdentifier>{af9c0784-295e-4fee-ac58-b242acc26ead}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Session\SessionManager">
+      <UniqueIdentifier>{875d49e2-ce19-4692-84ef-3bf827bb1f93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\IOCPServer">
+      <UniqueIdentifier>{a6499801-2110-405f-b453-0789741e438e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Room">
+      <UniqueIdentifier>{39f4e390-70ed-4aa1-b4c3-0d6043837393}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Room\MatchManager">
+      <UniqueIdentifier>{124f6481-73bf-4014-8942-a5a2cdd3b8b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Defines">
+      <UniqueIdentifier>{ffa8f014-92e3-45c4-b1f4-42aab59a3fd2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Session.cpp">
+      <Filter>소스 파일\Session</Filter>
+    </ClCompile>
+    <ClCompile Include="OverllapedEXP.cpp">
+      <Filter>소스 파일\OverlappedEXP</Filter>
+    </ClCompile>
+    <ClCompile Include="SessionManager.cpp">
+      <Filter>소스 파일\Session\SessionManager</Filter>
+    </ClCompile>
+    <ClCompile Include="IOCPServer.cpp">
+      <Filter>소스 파일\IOCPServer</Filter>
+    </ClCompile>
+    <ClCompile Include="MatchManager.cpp">
+      <Filter>소스 파일\Room\MatchManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Room.cpp">
+      <Filter>소스 파일\Room</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Session.h">
+      <Filter>소스 파일\Session</Filter>
+    </ClInclude>
+    <ClInclude Include="OverllapedEXP.h">
+      <Filter>소스 파일\OverlappedEXP</Filter>
+    </ClInclude>
+    <ClInclude Include="SessionManager.h">
+      <Filter>소스 파일\Session\SessionManager</Filter>
+    </ClInclude>
+    <ClInclude Include="IOCPServer.h">
+      <Filter>소스 파일\IOCPServer</Filter>
+    </ClInclude>
+    <ClInclude Include="protocol.h">
+      <Filter>소스 파일\Defines</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>소스 파일\Defines</Filter>
+    </ClInclude>
+    <ClInclude Include="MatchManager.h">
+      <Filter>소스 파일\Room\MatchManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Room.h">
+      <Filter>소스 파일\Room</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerInfo.h">
+      <Filter>소스 파일\Defines</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="NetworkClient_Architecture.md" />
+  </ItemGroup>
+</Project>

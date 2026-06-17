@@ -1,1 +1,2 @@
 S:\CapstoneGame\Solution\HelloDinner\HelloDinner\x64\Debug\HelloDinner.exe
+C:\Users\USER-PC\Desktop\LetsGoGym\2025_CapstoneGame\Solution\HelloDinner\HelloDinner\x64\Debug\HelloDinner.exe
