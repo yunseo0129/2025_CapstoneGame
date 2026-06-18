@@ -240,6 +240,9 @@
     <Filter Include="소스 파일\01. Engine\12. Fracture">
       <UniqueIdentifier>{828bb122-a2ef-4c26-9b2a-a0a52507e9f8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\02. Game\01. Levels\00. Lobby">
+      <UniqueIdentifier>{d93e0ef8-18c4-4d64-833b-8866a1e3e9b8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -449,6 +452,12 @@
     <ClInclude Include="Fracture_System.h">
       <Filter>소스 파일\01. Engine\12. Fracture</Filter>
     </ClInclude>
+    <ClInclude Include="LobbyWindow.h">
+      <Filter>소스 파일\02. Game\01. Levels\00. Lobby</Filter>
+    </ClInclude>
+    <ClInclude Include="RoomWindow.h">
+      <Filter>소스 파일\02. Game\01. Levels\00. Lobby</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -651,6 +660,12 @@
     </ClCompile>
     <ClCompile Include="Fracture_System.cpp">
       <Filter>소스 파일\01. Engine\12. Fracture</Filter>
+    </ClCompile>
+    <ClCompile Include="RoomWindow.cpp">
+      <Filter>소스 파일\02. Game\01. Levels\00. Lobby</Filter>
+    </ClCompile>
+    <ClCompile Include="LobbyWindow.cpp">
+      <Filter>소스 파일\02. Game\01. Levels\00. Lobby</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

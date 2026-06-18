@@ -18,6 +18,12 @@
 #include <comdef.h> // _com_error 사용
 using namespace Microsoft::WRL;
 
+// GDI+ (로비/대기방 그리기용)
+// ※ std::byte 충돌 회피 위해 반드시 'using namespace std;' 보다 위에 둘 것
+#include <objidl.h>
+#include <gdiplus.h>
+#pragma comment(lib, "gdiplus.lib")
+
 #include <d3d12.h>
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>

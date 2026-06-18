@@ -8,6 +8,13 @@
 #include "GameInstance.h"
 #include "NetworkClient.h"
 
+// 로비 / 대기방 (Win32 + GDI+)
+#include "LobbyWindow.h"
+#include "RoomWindow.h"
+
+#include <gdiplus.h>
+#pragma comment(lib, "gdiplus.lib")
+
 #define MAX_LOADSTRING 100
 
 // 전역 변수:
@@ -22,10 +29,48 @@ BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
+// ---------------------------------------------------------------------
+//  로비 → (대기방) → 게임 흐름.
+//  반환값 true  : 게임을 시작해야 함 (이후 엔진/게임플레이 진입)
+//  반환값 false : 사용자가 종료를 선택함
+// ---------------------------------------------------------------------
+static bool RunFrontend(HINSTANCE hInstance)
+{
+    while (true)
+    {
+        // ---- 로비 창 ----
+        CLobbyWindow* pLobby = CLobbyWindow::Create(hInstance);
+        if (nullptr == pLobby)
+            return false;
+
+        LOBBY_RESULT eLobby = pLobby->DoModal();
+        Safe_Release(pLobby);
+
+        if (LOBBY_EXIT == eLobby)
+            return false;                         // 프로그램 종료
+        if (LOBBY_START_GAME == eLobby)
+            return true;                          // 곧바로 게임 시작
+
+        // [방 만들기] / [방 들어가기] → 대기방
+        bool bIsHost = (LOBBY_CREATE_ROOM == eLobby);
+
+        CRoomWindow* pRoom = CRoomWindow::Create(hInstance, bIsHost);
+        if (nullptr == pRoom)
+            return false;
+
+        ROOM_RESULT eRoom = pRoom->DoModal();
+        Safe_Release(pRoom);
+
+        if (ROOM_START_GAME == eRoom)
+            return true;                          // 대기방에서 게임 시작
+        // ROOM_LEAVE → 로비로 돌아가서 반복
+    }
+}
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-                     _In_opt_ HINSTANCE hPrevInstance,
-                     _In_ LPWSTR    lpCmdLine,
-                     _In_ int       nCmdShow)
+    _In_opt_ HINSTANCE hPrevInstance,
+    _In_ LPWSTR    lpCmdLine,
+    _In_ int       nCmdShow)
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
@@ -35,6 +80,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
 
     // 서버 접속 (콘솔 창)
+    // ※ 로비/대기방 UI만 테스트하려면 아래 블록을 잠시 주석 처리하세요.
     NetworkClient* pNetwork = NetworkClient::GetInstance();
     if (!pNetwork->ConnectWithConsole()) {
         MessageBox(nullptr, L"서버 접속에 실패했습니다.", L"Error", MB_OK);
@@ -42,7 +88,29 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    MSG msg;
+    g_hInst = hInstance;
+
+    // GDI+ 시작 (로비/대기방 그리기에 사용)
+    ULONG_PTR gdiplusToken = 0;
+    Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+    Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, nullptr);
+
+    // ================= 로비 / 대기방 =================
+    bool bStartGame = RunFrontend(hInstance);
+
+    // 프론트엔드 종료 후 GDI+ 해제
+    Gdiplus::GdiplusShutdown(gdiplusToken);
+
+    if (!bStartGame)
+    {
+        // 게임을 시작하지 않고 종료
+        NetworkClient::DestroyInstance();
+        CoUninitialize();
+        return 0;
+    }
+    // ================================================
+
+    MSG msg = {};
     HACCEL hAccelTable;
 
     // 전역 문자열을 초기화합니다.
@@ -50,13 +118,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     LoadStringW(hInstance, IDC_HELLODINNER, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
 
-    // 애플리케이션 초기화를 수행합니다:
-    if (!InitInstance (hInstance, nCmdShow))
+    // 애플리케이션 초기화를 수행합니다 (DirectX 메인 윈도우 생성):
+    if (!InitInstance(hInstance, nCmdShow))
     {
-
         return FALSE;
     }
-    CMainApp* pMainApp = { nullptr };
+
+    CMainApp* pMainApp = {nullptr};
 
     pMainApp = CMainApp::Create();
     if (nullptr == pMainApp)
@@ -73,7 +141,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     if (FAILED(pGameInstance->Add_Timer(TEXT("Timer_60"))))
         return E_FAIL;
 
-    _float		fTimeAcc = { 0.f };
+    _float		fTimeAcc = {0.f};
 
     hAccelTable = ::LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_HELLODINNER));
 
@@ -91,9 +159,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             }
         }
         else {
-            pGameInstance->Update_TimeDelta ( TEXT ( "Timer_60" ) );
-            pMainApp->Update ( pGameInstance->Get_TimeDelta ( TEXT ( "Timer_60" ) ) );
-            pMainApp->Render ();
+            pGameInstance->Update_TimeDelta(TEXT("Timer_60"));
+            pMainApp->Update(pGameInstance->Get_TimeDelta(TEXT("Timer_60")));
+            pMainApp->Render();
         }
     }
 
@@ -106,7 +174,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     //gGameFramework.OnDestroy();
 
-    return (int) msg.wParam;
+    return (int)msg.wParam;
 }
 
 
@@ -122,17 +190,17 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 
     wcex.cbSize = sizeof(WNDCLASSEX);
 
-    wcex.style          = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc    = WndProc;
-    wcex.cbClsExtra     = 0;
-    wcex.cbWndExtra     = 0;
-    wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_HELLODINNER));
-    wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = 0;
-    wcex.lpszClassName  = szWindowClass;
-    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc = WndProc;
+    wcex.cbClsExtra = 0;
+    wcex.cbWndExtra = 0;
+    wcex.hInstance = hInstance;
+    wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_HELLODINNER));
+    wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.lpszMenuName = 0;
+    wcex.lpszClassName = szWindowClass;
+    wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
     return RegisterClassExW(&wcex);
 }
@@ -149,22 +217,22 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-   g_hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
+    g_hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
 
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+    HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
 
-   if (!hWnd)
-   {
-      return FALSE;
-   }
+    if (!hWnd)
+    {
+        return FALSE;
+    }
 
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
+    ShowWindow(hWnd, nCmdShow);
+    UpdateWindow(hWnd);
 
-   g_hWnd = hWnd;
+    g_hWnd = hWnd;
 
-   return TRUE;
+    return TRUE;
 }
 
 //

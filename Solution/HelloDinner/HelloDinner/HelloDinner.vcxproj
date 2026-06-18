@@ -163,7 +163,9 @@
     <ClInclude Include="Light.h" />
     <ClInclude Include="Loader.h" />
     <ClInclude Include="LoadingWindow.h" />
+    <ClInclude Include="LobbyWindow.h" />
     <ClInclude Include="Particle_System.h" />
+    <ClInclude Include="RoomWindow.h" />
     <ClInclude Include="Shadow.h" />
     <ClInclude Include="Texture_Manager.h" />
     <ClInclude Include="Obj_CollisionTest.h" />
@@ -245,7 +247,9 @@
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Loader.cpp" />
     <ClCompile Include="LoadingWindow.cpp" />
+    <ClCompile Include="LobbyWindow.cpp" />
     <ClCompile Include="Particle_System.cpp" />
+    <ClCompile Include="RoomWindow.cpp" />
     <ClCompile Include="Shadow.cpp" />
     <ClCompile Include="Texture_Manager.cpp" />
     <ClCompile Include="Obj_CollisionTest.cpp" />
