@@ -57,7 +57,6 @@ HRESULT CShader_Manager::Create_GlobalRootSignature ()
 	rangesShadow[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0);	//t2
 
 
-
 	// Material용으로 추가
 
 	// [Parameter 0] : CBV (Camera)
@@ -84,6 +83,10 @@ HRESULT CShader_Manager::Create_GlobalRootSignature ()
 	// [Parameter 4] : CBV (Light)
 	//  cbLight : register(b3)
 	parameters[RootParameterIndex::Light].InitAsConstantBufferView(3, 0);
+
+    // [Parameter] : CBV/Constants (UI Color, b4)
+//  cbUIColor : register(b4)  — color rgba(4) + param(4) = 8 float
+    parameters[RootParameterIndex::UIColor].InitAsConstants(8, 4);  // num32Bit=8, shaderRegister=4
 
 	//----------------------------------------------------------------------
 	// Static Sampler s0 ~ s4
@@ -186,7 +189,7 @@ HRESULT CShader_Manager::Create_PSO ()
     ComPtr<ID3DBlob> vsStatic_Insatanced = Compile_Shader(L"Shader_Static_Instanced.hlsl", "VS_Main_Instanced", "vs_5_1");
     ComPtr<ID3DBlob> vsSkybox = Compile_Shader ( L"Shader_Skybox.hlsl" , "VS_Main_Skybox" , "vs_5_1" );
 	ComPtr<ID3DBlob> vsAnim = Compile_Shader ( L"Shader_Anim.hlsl" , "VS_Main_Anim" , "vs_5_1" );
-	// ComPtr<ID3DBlob> vsUI = Compile_Shader ( L"Shader_UI.hlsl" , "VS_Main_UI" , "vs_5_1" );
+	ComPtr<ID3DBlob> vsUI = Compile_Shader ( L"Shader_UI.hlsl" , "VS_Main_UI" , "vs_5_1" );
 
 	ComPtr<ID3DBlob> vsShadowStatic = Compile_Shader(L"Shader_Static.hlsl", "VS_Main_Shadow", "vs_5_1");
 	ComPtr<ID3DBlob> vsShadowAnim = Compile_Shader(L"Shader_Anim.hlsl", "VS_Main_Shadow", "vs_5_1");
@@ -195,7 +198,7 @@ HRESULT CShader_Manager::Create_PSO ()
 	// Pixel Shader (재질별)
 	ComPtr<ID3DBlob> psLit = Compile_Shader ( L"Shader_Static.hlsl" , "PS_Main_Lit" , "ps_5_1" ); // 조명 O
 	ComPtr<ID3DBlob> psSkybox = Compile_Shader ( L"Shader_Skybox.hlsl" , "PS_Main_Skybox" , "ps_5_1" ); // Skybox
-	// ComPtr<ID3DBlob> psUI = Compile_Shader ( L"Shader_UI.hlsl" , "PS_Main_UI" , "ps_5_1" ); // 조명 X
+	ComPtr<ID3DBlob> psUI = Compile_Shader ( L"Shader_UI.hlsl" , "PS_Main_UI" , "ps_5_1" ); // 조명 X
 
 	// ----------------------------------------------------------------
 	// 2. 기본 PSO Desc 작성 (공통 설정)
@@ -283,28 +286,24 @@ HRESULT CShader_Manager::Create_PSO ()
 
 	m_pDevice->CreateGraphicsPipelineState ( &psoDesc , IID_PPV_ARGS ( &m_pPSOs[( UINT )PSO_TYPE::ALPHA_BLEND] ) );
 
-
+    */
 	// ================================================================
 	// UI (UI Mesh / Transparent / Unlit)
 	// ================================================================
-	psoDesc = baseDesc; // 리셋
-	// 변경점: UI 레이아웃, UI 쉐이더(조명X), 깊이 검사 끄기
-	psoDesc.InputLayout = { m_LayoutUI.data (), ( UINT )m_LayoutUI.size () };
-	psoDesc.VS = { vsUI->GetBufferPointer (), vsUI->GetBufferSize () };
-	psoDesc.PS = { psUI->GetBufferPointer (), psUI->GetBufferSize () };
+    {
+        D3D12_GRAPHICS_PIPELINE_STATE_DESC uiDesc = baseDesc;
+        uiDesc.InputLayout = {m_LayoutUI.data(), (UINT)m_LayoutUI.size()};
+        uiDesc.VS = {vsUI->GetBufferPointer(), vsUI->GetBufferSize()};
+        uiDesc.PS = {psUI->GetBufferPointer(), psUI->GetBufferSize()};
+        uiDesc.BlendState.RenderTarget[0].BlendEnable = TRUE;
+        uiDesc.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+        uiDesc.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+        uiDesc.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+        uiDesc.DepthStencilState.DepthEnable = FALSE;
+        uiDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+        m_pDevice->CreateGraphicsPipelineState(&uiDesc, IID_PPV_ARGS(&m_pPSOs[(UINT)PSO_TYPE::UI]));
+    }
 
-	// 블렌드 켜기
-	psoDesc.BlendState.RenderTarget[0].BlendEnable = TRUE;
-	psoDesc.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	psoDesc.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-
-	// 깊이 검사 아예 끄기 (항상 그림)
-	psoDesc.DepthStencilState.DepthEnable = FALSE;
-	psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE; // 양면 다 그림
-
-	m_pDevice->CreateGraphicsPipelineState ( &psoDesc , IID_PPV_ARGS ( &m_pPSOs[( UINT )PSO_TYPE::UI] ) );
-
-	*/
 	// ================================================================
 	// SHADOW (Static Mesh / No Color / Depth Only)
 	// ================================================================

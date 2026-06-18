@@ -15,6 +15,8 @@
 #include "Ketchup_Gun.h"
 #include "Player_Pig.h"
 #include "Particle_System.h"
+#include "VIBuffer_Rect.h"
+#include "UI_Panel.h"
 
 CLoader::CLoader(EngineContext* pContext)
     : m_pContext {pContext}
@@ -153,6 +155,9 @@ HRESULT CLoader::Loading_Level_GamePlay()
         if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, L"Prototype_Component_VIBuffer_Skybox",
             CVIBuffer_Skybox::Create(m_pContext))))
             return E_FAIL;
+        if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_Component_VIBuffer_Rect",
+            CVIBuffer_Rect::Create(m_pContext))))
+            return E_FAIL;
     }
 
     // Prototype_Component_Pig_3rd
@@ -210,6 +215,10 @@ HRESULT CLoader::Loading_Level_GamePlay()
     // Prototype_GameObject_Skybox
     if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, L"Prototype_GameObject_Skybox",
         CSkybox::Create(m_pContext))))
+        return E_FAIL;
+
+    if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_GameObject_UI_Panel",
+        CUI_Panel::Create(m_pContext))) )
         return E_FAIL;
 
     // Prototype_GameObject_Ketchup_Gun

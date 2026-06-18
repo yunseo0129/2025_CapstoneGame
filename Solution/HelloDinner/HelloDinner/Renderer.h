@@ -67,7 +67,7 @@ private:
     HRESULT Render_Priority(ID3D12GraphicsCommandList* _CmdList);
     HRESULT Render_NonBlend(ID3D12GraphicsCommandList* _CmdList);
     HRESULT Render_Blend(ID3D12GraphicsCommandList* _CmdList);
-	//HRESULT Render_UI();
+	HRESULT Render_UI(ID3D12GraphicsCommandList* _CmdList);
 
     // instanced rendering
     HRESULT Create_InstanceBufferSlot(InstanceBufferSlot& outSlot);

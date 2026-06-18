@@ -63,6 +63,7 @@ enum RootParameterIndex
 	BoneMatrix,
 	Light,
 	ShadowMap,
+    UIColor,
 	// 후에 Material, BoneMatrix 등등 추가할 수 있음
 	End
 };

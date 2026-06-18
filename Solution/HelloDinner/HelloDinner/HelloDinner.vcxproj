@@ -159,6 +159,7 @@
     <ClInclude Include="Collision_Manager.h" />
     <ClInclude Include="Controller.h" />
     <ClInclude Include="Fracture_System.h" />
+    <ClInclude Include="Game_Manager.h" />
     <ClInclude Include="Level_Gameplay.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Loader.h" />
@@ -211,6 +212,9 @@
     <ClInclude Include="Transform.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="UIObject.h" />
+    <ClInclude Include="UI_Panel.h" />
+    <ClInclude Include="UI_Texture.h" />
     <ClInclude Include="Utiles.h" />
     <ClInclude Include="HelloDinner.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
@@ -222,6 +226,7 @@
     <ClInclude Include="Timer.h" />
     <ClInclude Include="VIBuffer.h" />
     <ClInclude Include="VIBuffer_Cube.h" />
+    <ClInclude Include="VIBuffer_Rect.h" />
     <ClInclude Include="VIBuffer_Skybox.h" />
   </ItemGroup>
   <ItemGroup>
@@ -243,6 +248,7 @@
     <ClCompile Include="Collision_Manager.cpp" />
     <ClCompile Include="Controller.cpp" />
     <ClCompile Include="Fracture_System.cpp" />
+    <ClCompile Include="Game_Manager.cpp" />
     <ClCompile Include="Level_Gameplay.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Loader.cpp" />
@@ -299,8 +305,12 @@
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Timer_Manager.cpp" />
     <ClCompile Include="Transform.cpp" />
+    <ClCompile Include="UIObject.cpp" />
+    <ClCompile Include="UI_Panel.cpp" />
+    <ClCompile Include="UI_Texture.cpp" />
     <ClCompile Include="VIBuffer.cpp" />
     <ClCompile Include="VIBuffer_Cube.cpp" />
+    <ClCompile Include="VIBuffer_Rect.cpp" />
     <ClCompile Include="VIBuffer_Skybox.cpp" />
   </ItemGroup>
   <ItemGroup>

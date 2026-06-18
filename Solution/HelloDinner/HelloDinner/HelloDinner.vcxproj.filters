@@ -66,9 +66,6 @@
     <Filter Include="소스 파일\01. Engine\03. Objects\PartObject">
       <UniqueIdentifier>{fbc1e36d-915e-43d1-b4eb-8e1e409e1110}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\01. Engine\03. Objects\UIObject">
-      <UniqueIdentifier>{b17a40e4-1ba2-417a-a7f9-78395ca9b593}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\01. Engine\04. Components">
       <UniqueIdentifier>{2d9a3835-ccad-4ad8-90a2-27b2a3c63e61}</UniqueIdentifier>
     </Filter>
@@ -242,6 +239,15 @@
     </Filter>
     <Filter Include="소스 파일\02. Game\01. Levels\00. Lobby">
       <UniqueIdentifier>{d93e0ef8-18c4-4d64-833b-8866a1e3e9b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\GameManager">
+      <UniqueIdentifier>{af87ea06-5d04-4451-b275-f9614c617c3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\13.UI">
+      <UniqueIdentifier>{3503137d-b4cc-41cb-be20-36551a518793}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\13.UI\UIObject">
+      <UniqueIdentifier>{b17a40e4-1ba2-417a-a7f9-78395ca9b593}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -458,6 +464,21 @@
     <ClInclude Include="RoomWindow.h">
       <Filter>소스 파일\02. Game\01. Levels\00. Lobby</Filter>
     </ClInclude>
+    <ClInclude Include="Game_Manager.h">
+      <Filter>소스 파일\02. Game\GameManager</Filter>
+    </ClInclude>
+    <ClInclude Include="UIObject.h">
+      <Filter>소스 파일\01. Engine\13.UI\UIObject</Filter>
+    </ClInclude>
+    <ClInclude Include="VIBuffer_Rect.h">
+      <Filter>소스 파일\01. Engine\04. Components\04. VIbuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="UI_Texture.h">
+      <Filter>소스 파일\01. Engine\13.UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI_Panel.h">
+      <Filter>소스 파일\01. Engine\13.UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -666,6 +687,21 @@
     </ClCompile>
     <ClCompile Include="LobbyWindow.cpp">
       <Filter>소스 파일\02. Game\01. Levels\00. Lobby</Filter>
+    </ClCompile>
+    <ClCompile Include="Game_Manager.cpp">
+      <Filter>소스 파일\02. Game\GameManager</Filter>
+    </ClCompile>
+    <ClCompile Include="UIObject.cpp">
+      <Filter>소스 파일\01. Engine\13.UI\UIObject</Filter>
+    </ClCompile>
+    <ClCompile Include="VIBuffer_Rect.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\04. VIbuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="UI_Texture.cpp">
+      <Filter>소스 파일\01. Engine\13.UI</Filter>
+    </ClCompile>
+    <ClCompile Include="UI_Panel.cpp">
+      <Filter>소스 파일\01. Engine\13.UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -21,6 +21,10 @@ private:
     // 네트워크 이벤트 처리 (PLAYER_ADD/REMOVE/MOVE 등)
     void    Process_NetworkEvents();
 
+private:
+    class CGame_Manager* m_pGameManager = nullptr;
+    HRESULT Ready_UI();
+
 public:
     static CLevel_GamePlay* Create(EngineContext* pContext);
     virtual void Free() override;

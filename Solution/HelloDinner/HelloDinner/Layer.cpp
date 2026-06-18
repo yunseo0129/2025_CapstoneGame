@@ -11,7 +11,7 @@ HRESULT CLayer::Add_GameObject(CGameObject* pGameObject)
 		return E_FAIL;
 
 	m_GameObjects.push_back(pGameObject);
-	//Safe_AddRef(pGameObject);
+	Safe_AddRef(pGameObject);
 	return S_OK;
 }
 
@@ -30,19 +30,20 @@ CGameObject* CLayer::Get_GameObject(_uint iNum)
 
 void CLayer::Priority_Update(_float fTimeDelta)
 {
-	for (auto it = m_GameObjects.begin(); it != m_GameObjects.end();)
-	{
-		if ((*it)->IsDead())
-		{
-			Safe_Release(*it);
-			it = m_GameObjects.erase(it);  // 'erase'는 지운 요소 다음 요소의 반복자를 반환
-		}
-		else if ((*it)->GetOnOff())
-		{
-			(*it)->Priority_Update(fTimeDelta);
-			++it;  // 죽지 않은 오브젝트의 경우만 반복자 증가
-		}
-	}
+    for (auto it = m_GameObjects.begin(); it != m_GameObjects.end();)
+    {
+        if ((*it)->IsDead())
+        {
+            Safe_Release(*it);
+            it = m_GameObjects.erase(it);
+        }
+        else
+        {
+            if ((*it)->GetOnOff())
+                (*it)->Priority_Update(fTimeDelta);
+            ++it;
+        }
+    }
 }
 
 void CLayer::Update(_float fTimeDelta)
