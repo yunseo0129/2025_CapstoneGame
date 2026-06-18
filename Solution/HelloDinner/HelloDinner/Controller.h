@@ -8,7 +8,7 @@ private:
 	CController();
 	virtual ~CController() = default;
 
-	enum KEYS { KEYS_A, KEYS_S, KEYS_D, KEYS_W, KEYS_SPACE, KEYS_CTRL, KEYS_END };
+	enum KEYS { KEYS_A, KEYS_S, KEYS_D, KEYS_W, KEYS_SPACE, KEYS_CTRL, KEYS_R, KEYS_END };
 
 public:
 	void Update_Controller(_float fTimeDelta);

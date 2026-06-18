@@ -407,35 +407,35 @@ void CPlayer_Pig::Anim_Test()
 {
     if (m_pGameInstance->Key_Pressing(DIK_0))
     {
-        // 대기 모션 
+        // 정지 
         // 풀
-        m_pModelCom->Change_Animation(0, 5.f, false, true);
-        m_pModelCom->Change_Animation(0, 5.f, false, false);
+        m_pModelCom->Change_Animation(0, 5.f, true, true);
+        m_pModelCom->Change_Animation(0, 5.f, true, false);
     }
     if (m_pGameInstance->Key_Pressing(DIK_1))
     {
-        // 대기 모션 
+        // 대기
         // 풀
-        m_pModelCom->Change_Animation(1, 5.f, false , true);
-        m_pModelCom->Change_Animation(1, 5.f, false , false);
+        m_pModelCom->Change_Animation(1, 5.f, true, true);
+        m_pModelCom->Change_Animation(2, 5.f, true, false);
     }
     else if (m_pGameInstance->Key_Pressing(DIK_2))
     {
         // 사격
         // 상체
-        m_pModelCom->Change_Animation(2, 0.f, false , true);
+        m_pModelCom->Change_Animation(3, 0.f, false , true);
     }
     else if (m_pGameInstance->Key_Pressing(DIK_3))
     {
-        // 앉기 대기
+        // 앉기 정지
         // 하체
-        m_pModelCom->Change_Animation(3, 5.f, false, false);
+        m_pModelCom->Change_Animation(4, 5.f, true, false);
     }
     else if (m_pGameInstance->Key_Pressing(DIK_4))
     {
         // 앉기 걷기
         // 하체
-        m_pModelCom->Change_Animation(4, 1.f, true, false);
+        m_pModelCom->Change_Animation(5, 1.f, true, false);
     }
     else if (m_pGameInstance->Key_Pressing(DIK_5))
     {
@@ -445,22 +445,23 @@ void CPlayer_Pig::Anim_Test()
     }
     else if (m_pGameInstance->Key_Pressing(DIK_6))
     {
-        // 죽기
-        // 풀
-        m_pModelCom->Change_Animation(9, 5.f, false, true);
-        m_pModelCom->Change_Animation(9, 5.f, false, false);
+        // 달리기
+        // 하체
+        m_pModelCom->Change_Animation(10, 1.f, true, false);
     }
     else if (m_pGameInstance->Key_Pressing(DIK_7))
     {
-        // 뛰기
-        // 하체
-        m_pModelCom->Change_Animation(10, 0.f, true, false);
+        // 죽기
+        // 풀 
+        m_pModelCom->Change_Animation(9, 5.f, false, true);
+        m_pModelCom->Change_Animation(9, 5.f, false, false);
     }
     else if (m_pGameInstance->Key_Pressing(DIK_8))
     {
         // 장전
         // 상체
         m_pModelCom->Change_Animation(12, 3.f, false, true);
+        static_cast<CKetchup_Gun*>(m_PartObjects[0])->Get_Model()->Change_Animation(2, 3.f, false);
     }
     else if (m_pGameInstance->Key_Pressing(DIK_9))
     {

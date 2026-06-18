@@ -14,7 +14,8 @@ public:
 		class CCamera_FPV*	pCamera = nullptr;
 	};
 	enum PLAYER_1RD_COLLIDER_TYPE { COLLIDER_MAIN, COLLIDER_HEAD, COLLIDER_ARM_UP_L, COLLIDER_ARM_UP_R, COLLIDER_ARM_LOW_L, COLLIDER_ARM_LOW_R, COLLIDER_THIGH_L, COLLIDER_THIGH_R, COLLIDER_SHIN_L, COLLIDER_SHIN_R , COLLIDER_BODY, COLLIDER_END };
-
+    enum PLAYER_1RD_ANIMATION_UPPER { UPPER_DEFAULT, UPPER_IDLE, UPPER_SHOOT, UPPER_RELOAD, UPPER_JUMP, UPPER_DIE, UPPER_END };
+    enum PLAYER_1RD_ANIMATION_LOWER { LOWER_DEFAULT, LOWER_IDLE, LOWER_WALK, LOWER_RUN, LOWER_SIT, LOWER_SITWALK, LOWER_JUMP, LOWER_DIE, LOWER_END };
 private:
 	CPlayer_1rd(EngineContext* pContext);
 	CPlayer_1rd(const CPlayer_1rd& Prototype);
@@ -38,6 +39,7 @@ public:					// 플레이어 조종에 관련한 함수 구현
 	void TurnPitch(_float _val);
 	void Jump(_float _val);
 	void Crouch(_float _val);
+    void Reload(_float _val);
 
 
 private:
@@ -63,6 +65,10 @@ private:
     _float              m_fMoveRight = 0.f;
     _float              m_fVerticalVelocity = 0.f;
     _bool               m_bIsGrounded = false;
+
+
+    _bool               m_isReloading = false;
+    _uint               m_iAmmo = 30;
 
 public:
 	static CPlayer_1rd* Create(EngineContext* pContext);

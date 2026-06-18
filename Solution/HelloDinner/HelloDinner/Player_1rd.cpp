@@ -98,7 +98,29 @@ void CPlayer_1rd::Priority_Update(_float fTimeDelta)
 
 void CPlayer_1rd::Update(_float fTimeDelta)
 {
-    m_pModelCom->Play_Animation(fTimeDelta);
+    if (!m_pModelCom->Get_UpperBlend())
+    {
+        if (m_pModelCom->Play_Animation(fTimeDelta, true))
+        {
+            if (11 == m_pModelCom->Get_UpperAnimNum())
+            {
+                m_pModelCom->Change_Animation(0, 5.f, true, true);
+                m_pModelCom->Change_Animation(0, 5.f, true, false);
+            }
+            else if (12 == m_pModelCom->Get_UpperAnimNum())
+            {
+                m_isReloading = false;
+                m_iAmmo = 30;
+                m_pModelCom->Change_Animation(0, 0.f, true, true);
+                m_pFPSModelCom->Change_Animation(0, 0.f, true);
+            }
+        }
+    }
+    else
+        m_pModelCom->Blend_Animation(fTimeDelta, true);
+
+    m_pModelCom->Merge_UpperLower();
+
     m_pFPSModelCom->Play_Animation(fTimeDelta);
 
     for (CCollider* pCollider : m_vColliderComs)
@@ -289,6 +311,18 @@ void CPlayer_1rd::Jump(_float _val)
 void CPlayer_1rd::Crouch(_float _val)
 {
     // 웅크리기
+}
+
+void CPlayer_1rd::Reload(_float _val)
+{
+    if (!m_isReloading)
+    {
+        m_isReloading = true;
+        m_pModelCom->Change_Animation(12, 3.f, false, true);
+        m_pFPSModelCom->Change_Animation(7, 3.f, false);
+        static_cast<CKetchup_Gun*>(m_PartObjects[0])->Get_Model()->Change_Animation(2, 3.f, false);
+        static_cast<CKetchup_Gun*>(m_PartObjects[1])->Get_Model()->Change_Animation(2, 3.f, false);
+    }
 }
 
 HRESULT CPlayer_1rd::Ready_PartObjects()

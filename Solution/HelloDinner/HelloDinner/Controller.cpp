@@ -53,6 +53,10 @@ void CController::Input_Player(_float fTimeDelta)
         {
             m_pPlayer->Crouch(fTimeDelta);
         }
+        if (m_isKeyboardInput[KEYS_R])
+        {
+            m_pPlayer->Reload(fTimeDelta);
+        }
 	}
 }
 
@@ -77,6 +81,8 @@ void CController::Update_Input()
         m_isKeyboardInput[KEYS_SPACE] = true;
     if (m_pGameInstance->Key_Pressing(DIK_LCONTROL))
         m_isKeyboardInput[KEYS_CTRL] = true;
+    if (m_pGameInstance->Key_Pressing(DIK_R))
+        m_isKeyboardInput[KEYS_R] = true;
 }
 
 CController* CController::Create()
