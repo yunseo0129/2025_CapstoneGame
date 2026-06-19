@@ -42,6 +42,8 @@ public:					// 플레이어 조종에 관련한 함수 구현
     void Run(_float _val);
     void Reload(_float _val);
     void Shoot(_float _val);
+    void Die(_float _val);
+    _bool Get_Die() { return m_isDie; }
 
 
     // 무기 교체
@@ -52,6 +54,7 @@ private:
 	virtual HRESULT				Ready_PartObjects();
 	virtual HRESULT				Ready_Components();
     void Resolve_Movement(_float fTimeDelta);
+    void Anima();
 
 private:
 	class CModel*		m_pModelCom = { nullptr };
@@ -77,6 +80,8 @@ private:
     _uint               m_iAmmo = 30;
     _bool               m_isCrouch = false;
     _bool               m_isRun = false;
+    _bool               m_isMove = false;
+    _bool               m_isDie = false;
 
     // 현재 무기 인덱스 (0: 케첩건, 1: 마요건)
     _int                m_iWeapon = 0;
