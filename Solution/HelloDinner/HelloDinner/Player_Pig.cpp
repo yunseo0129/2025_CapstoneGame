@@ -429,7 +429,7 @@ void CPlayer_Pig::Anim_Test()
     {
         // 앉기 정지
         // 하체
-        m_pModelCom->Change_Animation(4, 5.f, true, false);
+        m_pModelCom->Change_Animation(4, 2.f, true, false);
     }
     else if (m_pGameInstance->Key_Pressing(DIK_4))
     {
@@ -447,7 +447,7 @@ void CPlayer_Pig::Anim_Test()
     {
         // 달리기
         // 하체
-        m_pModelCom->Change_Animation(10, 1.f, true, false);
+        m_pModelCom->Change_Animation(10, 0.f, true, false);
     }
     else if (m_pGameInstance->Key_Pressing(DIK_7))
     {

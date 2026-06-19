@@ -53,9 +53,17 @@ void CController::Input_Player(_float fTimeDelta)
         {
             m_pPlayer->Crouch(fTimeDelta);
         }
+        if (m_isKeyboardInput[KEYS_SHIFT])
+        {
+            m_pPlayer->Run(fTimeDelta);
+        }
         if (m_isKeyboardInput[KEYS_R])
         {
             m_pPlayer->Reload(fTimeDelta);
+        }
+        if (m_isMouseInput[MOUSE_LB] && !m_isPreMouseInput[MOUSE_LB])
+        {
+            m_pPlayer->Shoot(fTimeDelta);
         }
 	}
 }
@@ -66,8 +74,14 @@ void CController::Input_UI(_float fTimeDelta)
 
 void CController::Update_Input()
 {
+    for (int i = 0; i < MOUSE_END; ++i)
+        m_isPreMouseInput[i] = m_isMouseInput[i];
+
     for (int i = 0; i < KEYS_END; ++i)
         m_isKeyboardInput[i] = false;
+
+    for (int i = 0; i < MOUSE_END; ++i)
+        m_isMouseInput[i] = false;
 
     if (m_pGameInstance->Key_Pressing(DIK_A))
         m_isKeyboardInput[KEYS_A] = true;
@@ -81,8 +95,12 @@ void CController::Update_Input()
         m_isKeyboardInput[KEYS_SPACE] = true;
     if (m_pGameInstance->Key_Pressing(DIK_LCONTROL))
         m_isKeyboardInput[KEYS_CTRL] = true;
+    if (m_pGameInstance->Key_Pressing(DIK_LSHIFT))
+        m_isKeyboardInput[KEYS_SHIFT] = true;
     if (m_pGameInstance->Key_Pressing(DIK_R))
         m_isKeyboardInput[KEYS_R] = true;
+    if (m_pGameInstance->Get_DIMouseState(Engine::DIM_LB))
+        m_isMouseInput[MOUSE_LB] = true;
 }
 
 CController* CController::Create()

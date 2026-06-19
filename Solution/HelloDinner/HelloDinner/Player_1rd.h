@@ -39,7 +39,9 @@ public:					// 플레이어 조종에 관련한 함수 구현
 	void TurnPitch(_float _val);
 	void Jump(_float _val);
 	void Crouch(_float _val);
+    void Run(_float _val);
     void Reload(_float _val);
+    void Shoot(_float _val);
 
 
 private:
@@ -69,6 +71,8 @@ private:
 
     _bool               m_isReloading = false;
     _uint               m_iAmmo = 30;
+    _bool               m_isCrouch = false;
+    _bool               m_isRun = false;
 
 public:
 	static CPlayer_1rd* Create(EngineContext* pContext);

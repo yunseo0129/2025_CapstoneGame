@@ -72,6 +72,10 @@ public:
     {
         m_iSpineBoneIndex = _index;
     }
+    _uint Get_AnimNum()
+    {
+        return m_iCurrentAnimIndex;
+    }
     bool Is_UpperBone(_uint boneIndex);
     void Merge_UpperLower();
     // 장전 총 손 스왑용
