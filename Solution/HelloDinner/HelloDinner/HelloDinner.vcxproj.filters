@@ -237,9 +237,6 @@
     <Filter Include="소스 파일\01. Engine\12. Fracture">
       <UniqueIdentifier>{828bb122-a2ef-4c26-9b2a-a0a52507e9f8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\02. Game\01. Levels\00. Lobby">
-      <UniqueIdentifier>{d93e0ef8-18c4-4d64-833b-8866a1e3e9b8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\02. Game\GameManager">
       <UniqueIdentifier>{af87ea06-5d04-4451-b275-f9614c617c3a}</UniqueIdentifier>
     </Filter>
@@ -248,6 +245,12 @@
     </Filter>
     <Filter Include="소스 파일\01. Engine\13.UI\UIObject">
       <UniqueIdentifier>{b17a40e4-1ba2-417a-a7f9-78395ca9b593}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\Font">
+      <UniqueIdentifier>{51d3331a-8275-4de4-9478-6831336846a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\99. GameInstance\00. Lobby">
+      <UniqueIdentifier>{d93e0ef8-18c4-4d64-833b-8866a1e3e9b8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -459,10 +462,10 @@
       <Filter>소스 파일\01. Engine\12. Fracture</Filter>
     </ClInclude>
     <ClInclude Include="LobbyWindow.h">
-      <Filter>소스 파일\02. Game\01. Levels\00. Lobby</Filter>
+      <Filter>소스 파일\01. Engine\99. GameInstance\00. Lobby</Filter>
     </ClInclude>
     <ClInclude Include="RoomWindow.h">
-      <Filter>소스 파일\02. Game\01. Levels\00. Lobby</Filter>
+      <Filter>소스 파일\01. Engine\99. GameInstance\00. Lobby</Filter>
     </ClInclude>
     <ClInclude Include="Game_Manager.h">
       <Filter>소스 파일\02. Game\GameManager</Filter>
@@ -477,6 +480,12 @@
       <Filter>소스 파일\01. Engine\13.UI</Filter>
     </ClInclude>
     <ClInclude Include="UI_Panel.h">
+      <Filter>소스 파일\01. Engine\13.UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Font_Manager.h">
+      <Filter>소스 파일\02. Game\Font</Filter>
+    </ClInclude>
+    <ClInclude Include="UI_Text.h">
       <Filter>소스 파일\01. Engine\13.UI</Filter>
     </ClInclude>
   </ItemGroup>
@@ -683,10 +692,10 @@
       <Filter>소스 파일\01. Engine\12. Fracture</Filter>
     </ClCompile>
     <ClCompile Include="RoomWindow.cpp">
-      <Filter>소스 파일\02. Game\01. Levels\00. Lobby</Filter>
+      <Filter>소스 파일\01. Engine\99. GameInstance\00. Lobby</Filter>
     </ClCompile>
     <ClCompile Include="LobbyWindow.cpp">
-      <Filter>소스 파일\02. Game\01. Levels\00. Lobby</Filter>
+      <Filter>소스 파일\01. Engine\99. GameInstance\00. Lobby</Filter>
     </ClCompile>
     <ClCompile Include="Game_Manager.cpp">
       <Filter>소스 파일\02. Game\GameManager</Filter>
@@ -701,6 +710,12 @@
       <Filter>소스 파일\01. Engine\13.UI</Filter>
     </ClCompile>
     <ClCompile Include="UI_Panel.cpp">
+      <Filter>소스 파일\01. Engine\13.UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Font_Manager.cpp">
+      <Filter>소스 파일\02. Game\Font</Filter>
+    </ClCompile>
+    <ClCompile Include="UI_Text.cpp">
       <Filter>소스 파일\01. Engine\13.UI</Filter>
     </ClCompile>
   </ItemGroup>

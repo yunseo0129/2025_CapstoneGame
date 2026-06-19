@@ -15,6 +15,7 @@
 #include "Collision_Manager.h"
 #include "Particle_System.h"
 #include "Fracture_System.h"
+#include "Font_Manager.h"
 //#include "Player_1rd.h"
 
 IMPLEMENT_SINGLETON(CGameInstance)
@@ -43,6 +44,10 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineCo
 
     m_pTexture_Manager = CTexture_Manager::Create(_pcontext);
     if (nullptr == m_pTexture_Manager)
+        return E_FAIL;
+
+    m_pFont_Manager = CFont_Manager::Create(_pcontext);
+    if (nullptr == m_pFont_Manager)
         return E_FAIL;
 
     m_pTimer_Manager = CTimer_Manager::Create();
@@ -600,6 +605,50 @@ void CGameInstance::Offset_DescriptorHandle(_uint _iOffset)
     m_pTexture_Manager->Offset_DescriptorHandle(_iOffset);
 }
 
+void CGameInstance::Bind_GlobalHeap(ID3D12GraphicsCommandList* _pCmdList)
+{
+    if (m_pTexture_Manager)
+        m_pTexture_Manager->Bind_GlobalHeap(_pCmdList);
+}
+
+// ------------------------------------------------------------------------
+// Font_Manager
+// ------------------------------------------------------------------------
+
+HRESULT CGameInstance::Add_Font(const _wstring& strFontTag, const _wstring& strFilePath)
+{
+    if (nullptr == m_pFont_Manager)
+        return E_FAIL;
+    return m_pFont_Manager->Add_Font(strFontTag, strFilePath);
+}
+
+void CGameInstance::Font_Begin(ID3D12GraphicsCommandList* _pCmdList)
+{
+    if (m_pFont_Manager)
+        m_pFont_Manager->Begin(_pCmdList);
+}
+
+void CGameInstance::Draw_Text(const _wstring& strFontTag, const _wstring& strText,
+    const _float2& vPos, const _float4& vColor, _float fScale, _float fLayerDepth)
+{
+    if (m_pFont_Manager)
+        m_pFont_Manager->Draw_Text(strFontTag, strText, vPos, vColor, fScale, fLayerDepth);
+}
+
+void CGameInstance::Draw_Text_Centered(const _wstring& strFontTag, const _wstring& strText,
+    const _float2& vPos, const _float4& vColor, _float fScale, _float fLayerDepth)
+{
+    if (m_pFont_Manager)
+        m_pFont_Manager->Draw_Text_Centered(strFontTag, strText, vPos, vColor, fScale, fLayerDepth);
+}
+
+void CGameInstance::Font_End()
+{
+    if (m_pFont_Manager)
+        m_pFont_Manager->End();
+}
+
+
 // ------------------------------------------------------------------------
 // Collision_Manager
 // ------------------------------------------------------------------------
@@ -768,6 +817,7 @@ void CGameInstance::Free()
     // 8. 셰이더 매니저 해제 (PSO, RootSignature 해제)
     Safe_Release(m_pShader_Manager);
     Safe_Release(m_pTexture_Manager);
+    Safe_Release(m_pFont_Manager);
 
     // 9. 나머지 매니저 해제
     Safe_Release(m_pLoad_Manager);

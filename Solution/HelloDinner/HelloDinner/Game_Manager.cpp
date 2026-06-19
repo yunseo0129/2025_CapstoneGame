@@ -2,6 +2,7 @@
 #include "Game_Manager.h"
 #include "GameInstance.h"
 #include "GameObject.h"
+#include "UI_Text.h"
 
 IMPLEMENT_SINGLETON(CGame_Manager)
 
@@ -47,6 +48,9 @@ void CGame_Manager::Start_Match()
     m_fScoreboardTimer = 0.f;
 
     Setup_DummyPlayers();
+
+    // 더미 데이터가 준비된 뒤 스코어보드 텍스트 생성 (포인터 보관)
+    Ready_ScoreboardText();
 
     // 첫 라운드는 스코어보드 화면부터 시작
     m_ePhase = GAME_PHASE::PHASE_END; // Enter_Phase가 동작하도록 다른 값으로
@@ -108,6 +112,9 @@ void CGame_Manager::OnEnter_Scoreboard()
     // 스코어보드 UI ON, 나머지 OFF
     Set_LayerVisible(L"Layer_UI_Scoreboard", true);
     Set_LayerVisible(L"Layer_UI_Shop", false);
+
+    // 최신 상태를 텍스트에 반영
+    Refresh_Scoreboard();
 }
 
 void CGame_Manager::OnEnter_Shop()
@@ -303,6 +310,95 @@ void CGame_Manager::Set_LayerVisible(const _wstring& strLayerTag, _bool bVisible
 }
 
 // =====================================================================
+//  UI 텍스트 (스코어보드)
+// =====================================================================
+HRESULT CGame_Manager::Ready_ScoreboardText()
+{
+    const _uint PROTO = LEVEL_STATIC;
+    const _uint LV = LEVEL_GAMEPLAY;
+    const _wstring SB = L"Layer_UI_Scoreboard";
+
+    // ---- 상단 점수판 텍스트 (중앙 정렬) ----
+    {
+        CUI_Text::UI_TEXT_DESC d;
+        d.fX = 640.f; d.fY = 62.f;
+        d.fDepth = 0.3f;                       // 패널보다 앞
+        d.strText = Make_ScoreString();
+        d.strFontTag = L"Font_Default";
+        d.vColor = _float4(1.f, 1.f, 1.f, 1.f);
+        d.fTextScale = 0.7f;
+        d.bCentered = true;
+        m_pScoreText = static_cast<CUI_Text*>(
+            m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
+                PROTO, L"Prototype_GameObject_UI_Text", LV, SB, &d));
+    }
+
+    // ---- 플레이어 행 텍스트 6명 (슬롯 인덱스 = 배열 인덱스) ----
+    //  팀 A(슬롯 0~2)는 왼쪽 패널, 팀 B(슬롯 3~5)는 오른쪽 패널 안쪽 좌표.
+    for (_int i = 0; i < MAX_PLAYER && i < (_int)m_vStats.size(); ++i)
+    {
+        const PLAYER_STAT& stat = m_vStats[i];
+
+        CUI_Text::UI_TEXT_DESC d;
+        d.fDepth = 0.3f;
+        d.strFontTag = L"Font_Default";
+        d.fTextScale = 0.6f;
+        d.bCentered = false;
+        d.strText = Make_RowString(stat);
+
+        if (stat.iTeam == 0) // 팀 A: 왼쪽
+        {
+            d.fX = 160.f;
+            d.fY = 230.f + i * 64.f;
+            d.vColor = _float4(0.85f, 0.92f, 1.f, 1.f);
+        }
+        else // 팀 B: 오른쪽 (슬롯 3,4,5 → 0,1,2 행)
+        {
+            d.fX = 704.f;
+            d.fY = 230.f + (i - 3) * 64.f;
+            d.vColor = _float4(1.f, 0.88f, 0.88f, 1.f);
+        }
+
+        m_pPlayerRowText[i] = static_cast<CUI_Text*>(
+            m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
+                PROTO, L"Prototype_GameObject_UI_Text", LV, SB, &d));
+    }
+
+    return S_OK;
+}
+
+void CGame_Manager::Refresh_Scoreboard()
+{
+    // 데이터 → 텍스트로 push. (데이터가 바뀐 시점에만 호출)
+    if (m_pScoreText != nullptr)
+        m_pScoreText->Set_Text(Make_ScoreString());
+
+    for (_int i = 0; i < MAX_PLAYER && i < (_int)m_vStats.size(); ++i)
+    {
+        if (m_pPlayerRowText[i] != nullptr)
+            m_pPlayerRowText[i]->Set_Text(Make_RowString(m_vStats[i]));
+    }
+}
+
+_wstring CGame_Manager::Make_RowString(const PLAYER_STAT& stat) const
+{
+    // "이름    K / D / A    $돈"
+    wchar_t buf[128];
+    swprintf_s(buf, _countof(buf), L"%s    %d / %d / %d    $%d",
+        stat.strName.c_str(), stat.iKill, stat.iDeath, stat.iAssist, stat.iMoney);
+    return buf;
+}
+
+_wstring CGame_Manager::Make_ScoreString() const
+{
+    // "TEAM A   n : n   TEAM B      ROUND r/10"
+    wchar_t buf[128];
+    swprintf_s(buf, _countof(buf), L"TEAM A   %d : %d   TEAM B      ROUND %d/%d",
+        m_iTeamScore[0], m_iTeamScore[1], m_iRound, MAX_ROUND);
+    return buf;
+}
+
+// =====================================================================
 CGame_Manager* CGame_Manager::Create()
 {
     CGame_Manager* pInstance = new CGame_Manager();
@@ -316,6 +412,12 @@ CGame_Manager* CGame_Manager::Create()
 
 void CGame_Manager::Free()
 {
+    // UI_Text 들은 레이어가 소유(Return_Obj 가 AddRef 안 함).
+    // 여기선 Release 하지 않고 참조만 끊는다. (레벨 해제 시 레이어가 실제 해제)
+    m_pScoreText = nullptr;
+    for (_int i = 0; i < MAX_PLAYER; ++i)
+        m_pPlayerRowText[i] = nullptr;
+
     m_vStats.clear();
     Safe_Release(m_pGameInstance);
     __super::Free();

@@ -6,6 +6,7 @@
 #include "Model.h"
 #include "Map.h"
 #include "UIObject.h"
+#include "Font_Manager.h"
 
 CRenderer::CRenderer(ID3D12Device* pDevice, ID3D12GraphicsCommandList* _pCommandlist)
 	: m_pDevice{ pDevice }
@@ -114,6 +115,7 @@ HRESULT CRenderer::Draw_RenderObject(ID3D12GraphicsCommandList* _CmdList)
         Render_InstancedQueue(_CmdList, PASS_MAIN);
     if (FAILED(Render_Blend(_CmdList))) return E_FAIL;
     if (FAILED(Render_UI(_CmdList))) return E_FAIL;
+    if (FAILED(Render_Text(_CmdList))) return E_FAIL;
 #ifdef _DEBUG
     if (FAILED(Render_Collider(_CmdList))) return E_FAIL;
 #endif
@@ -277,6 +279,33 @@ HRESULT CRenderer::Render_UI(ID3D12GraphicsCommandList* _CmdList)
     }
     m_RenderObjects[RG_UI].clear();
 
+    return S_OK;
+}
+
+HRESULT CRenderer::Render_Text(ID3D12GraphicsCommandList* _CmdList)
+{
+    CFont_Manager* pFont = m_pGameInstance->Get_Font_Manager();
+    if (nullptr == pFont)
+    {
+        for (auto& p : m_RenderObjects[RG_TEXT]) Safe_Release(p);
+        m_RenderObjects[RG_TEXT].clear();
+        return S_OK;
+    }
+
+    m_RenderObjects[RG_TEXT].sort([](CGameObject* a, CGameObject* b) {
+        return static_cast<CUIObject*>(a)->Get_Depth()
+         > static_cast<CUIObject*>(b)->Get_Depth();
+        });
+
+    m_pGameInstance->Font_Begin(_CmdList);
+    for (auto& pRenderObject : m_RenderObjects[RG_TEXT]) {
+        if (nullptr != pRenderObject) pRenderObject->Render(_CmdList);
+        Safe_Release(pRenderObject);
+    }
+    m_pGameInstance->Font_End();
+    m_pGameInstance->Bind_GlobalHeap(_CmdList);
+
+    m_RenderObjects[RG_TEXT].clear();
     return S_OK;
 }
 

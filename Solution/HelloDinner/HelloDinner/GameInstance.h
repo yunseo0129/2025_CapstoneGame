@@ -113,6 +113,7 @@ public: /* For.Texture_Manager */
     CD3DX12_CPU_DESCRIPTOR_HANDLE Get_CPUHandle();
     _uint Get_CurrentIndex() const;
     void Offset_DescriptorHandle(_uint _iOffset);
+    void Bind_GlobalHeap(ID3D12GraphicsCommandList* _pCmdList);
 
 public: /* For.Collision_Manager */
     void Update_Collision();
@@ -162,6 +163,22 @@ public: /* For.Renderer */
 public: /* For.Particle_System*/
     class CParticle_System* Get_ParticleSystem() const { return m_pParticle_System; }
 
+public: /* For.Font_Manager */
+    class CFont_Manager* Get_Font_Manager() const { return m_pFont_Manager; }
+
+    // 폰트 로드
+    HRESULT Add_Font(const _wstring& strFontTag, const _wstring& strFilePath);
+
+    // 텍스트 렌더 (Renderer 텍스트 패스에서 사용)
+    void Font_Begin(ID3D12GraphicsCommandList* _pCmdList);
+    void Draw_Text(const _wstring& strFontTag, const _wstring& strText,
+        const _float2& vPos, const _float4& vColor = _float4(1.f, 1.f, 1.f, 1.f),
+        _float fScale = 1.f, _float fLayerDepth = 0.f);
+    void Draw_Text_Centered(const _wstring& strFontTag, const _wstring& strText,
+        const _float2& vPos, const _float4& vColor = _float4(1.f, 1.f, 1.f, 1.f),
+        _float fScale = 1.f, _float fLayerDepth = 0.f);
+    void Font_End();
+
 public: /* For.Fracture_System*/
     class CFracture_System* Get_FractureSystem() const { return m_pFracture_System; }
 
@@ -182,7 +199,7 @@ private:
     class CCollision_Manager* m_pCollision_Manager = {nullptr};
     class CParticle_System* m_pParticle_System = {nullptr};
     class CFracture_System* m_pFracture_System = {nullptr};
-
+    class CFont_Manager* m_pFont_Manager = {nullptr};
     ComPtr<ID3D12GraphicsCommandList> m_pCommandList = {nullptr};
 
 public:

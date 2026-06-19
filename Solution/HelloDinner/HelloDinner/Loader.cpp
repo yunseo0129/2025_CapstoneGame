@@ -17,6 +17,8 @@
 #include "Particle_System.h"
 #include "VIBuffer_Rect.h"
 #include "UI_Panel.h"
+#include "Font_Manager.h"
+#include "UI_Text.h"
 
 CLoader::CLoader(EngineContext* pContext)
     : m_pContext {pContext}
@@ -120,6 +122,9 @@ HRESULT CLoader::Loading_Level_GamePlay()
 
     Set_LoadingText(TEXT("폰트를 로딩중입니다."));
 
+    if (FAILED(m_pGameInstance->Add_Font(L"Font_Default", L"Resources/Font/font_default.spritefont")))
+        return E_FAIL;
+
     Set_LoadingText(TEXT("콜라이더를 로딩중입니다."));
     // CCollider
     {
@@ -219,6 +224,10 @@ HRESULT CLoader::Loading_Level_GamePlay()
 
     if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_GameObject_UI_Panel",
         CUI_Panel::Create(m_pContext))) )
+        return E_FAIL;
+    
+    if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_GameObject_UI_Text",
+        CUI_Text::Create(m_pContext))) )
         return E_FAIL;
 
     // Prototype_GameObject_Ketchup_Gun

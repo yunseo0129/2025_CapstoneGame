@@ -99,6 +99,12 @@ private:
     // 레이어의 모든 UI 오브젝트를 켜고/끈다 (SetOnOff)
     void    Set_LayerVisible(const _wstring& strLayerTag, _bool bVisible);
 
+    // ---- UI 텍스트 (스코어보드) ----
+    HRESULT Ready_ScoreboardText();         // 점수판/플레이어 행 텍스트 생성 + 포인터 보관
+    void    Refresh_Scoreboard();           // 현재 상태를 텍스트에 push (Set_Text)
+    _wstring Make_RowString(const PLAYER_STAT& stat) const; // "이름  K/D/A  $돈" 포맷
+    _wstring Make_ScoreString() const;      // "TEAM A  n : n  TEAM B   ROUND r/10"
+
 private:
     class CGameInstance* m_pGameInstance = nullptr;
 
@@ -117,6 +123,12 @@ private:
 
     // 더미 플레이어 스탯
     vector<PLAYER_STAT> m_vStats;
+
+    // ---- UI 텍스트 포인터 (push 갱신 대상) ----
+    //  데이터 주인(Game_Manager)이 자신의 UI 도 직접 보관한다.
+    class CUI_Text* m_pScoreText = nullptr;            // 상단 점수판
+    class CUI_Text* m_pPlayerRowText[6] = {nullptr}; // 플레이어 6명 행 (슬롯 인덱스 = 배열 인덱스)
+    static constexpr _int MAX_PLAYER = 6;
 
     // ---- 상수 ----
     static constexpr _int   MAX_ROUND = 10;

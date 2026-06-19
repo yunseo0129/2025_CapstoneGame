@@ -158,6 +158,7 @@
     <ClInclude Include="Collider.h" />
     <ClInclude Include="Collision_Manager.h" />
     <ClInclude Include="Controller.h" />
+    <ClInclude Include="Font_Manager.h" />
     <ClInclude Include="Fracture_System.h" />
     <ClInclude Include="Game_Manager.h" />
     <ClInclude Include="Level_Gameplay.h" />
@@ -214,6 +215,7 @@
     </ClInclude>
     <ClInclude Include="UIObject.h" />
     <ClInclude Include="UI_Panel.h" />
+    <ClInclude Include="UI_Text.h" />
     <ClInclude Include="UI_Texture.h" />
     <ClInclude Include="Utiles.h" />
     <ClInclude Include="HelloDinner.h">
@@ -247,6 +249,7 @@
     </ClCompile>
     <ClCompile Include="Collision_Manager.cpp" />
     <ClCompile Include="Controller.cpp" />
+    <ClCompile Include="Font_Manager.cpp" />
     <ClCompile Include="Fracture_System.cpp" />
     <ClCompile Include="Game_Manager.cpp" />
     <ClCompile Include="Level_Gameplay.cpp" />
@@ -307,6 +310,7 @@
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="UIObject.cpp" />
     <ClCompile Include="UI_Panel.cpp" />
+    <ClCompile Include="UI_Text.cpp" />
     <ClCompile Include="UI_Texture.cpp" />
     <ClCompile Include="VIBuffer.cpp" />
     <ClCompile Include="VIBuffer_Cube.cpp" />
