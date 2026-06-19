@@ -5,6 +5,8 @@
 #include "Collider.h"
 #include "Model.h"
 #include "Map.h"
+#include "UIObject.h"
+#include "Font_Manager.h"
 
 CRenderer::CRenderer(ID3D12Device* pDevice, ID3D12GraphicsCommandList* _pCommandlist)
 	: m_pDevice{ pDevice }
@@ -115,6 +117,13 @@ HRESULT CRenderer::Draw_RenderObject(ID3D12GraphicsCommandList* _CmdList)
 #ifdef _DEBUG
     if (FAILED(Render_Collider(_CmdList))) return E_FAIL;
 #endif
+    return S_OK;
+}
+
+HRESULT CRenderer::Draw_UI(ID3D12GraphicsCommandList* _CmdList)
+{
+    if (FAILED(Render_UI(_CmdList))) return E_FAIL;
+    if (FAILED(Render_Text(_CmdList))) return E_FAIL;
     return S_OK;
 }
 
@@ -260,22 +269,50 @@ HRESULT CRenderer::Render_Collider ( ID3D12GraphicsCommandList* _CmdList )
 #endif
 
 
-//HRESULT CRenderer::Render_UI()
-//{
-//
-//	stable_sort(m_RenderObjects[RG_UI].begin(), m_RenderObjects[RG_UI].end(), [&](CGameObject* a, CGameObject* b) {return static_cast<CUIObject*>(a)->Get_Depth() > static_cast<CUIObject*>(b)->Get_Depth(); });
-//
-//	for (auto& pRenderObject : m_RenderObjects[RG_UI])
-//	{
-//		if (nullptr != pRenderObject)
-//			pRenderObject->Render(m_pCommandlist);
-//
-//		Safe_Release(pRenderObject);
-//	}
-//	m_RenderObjects[RG_UI].clear();
-//
-//	return S_OK;
-//}
+HRESULT CRenderer::Render_UI(ID3D12GraphicsCommandList* _CmdList)
+{
+    m_RenderObjects[RG_UI].sort([](CGameObject* a, CGameObject* b) {
+        return static_cast<CUIObject*>(a)->Get_Depth()
+        > static_cast<CUIObject*>(b)->Get_Depth();
+        });
+
+    for (auto& pRenderObject : m_RenderObjects[RG_UI])
+    {
+        if (nullptr != pRenderObject)
+            pRenderObject->Render(_CmdList);
+        Safe_Release(pRenderObject);
+    }
+    m_RenderObjects[RG_UI].clear();
+
+    return S_OK;
+}
+
+HRESULT CRenderer::Render_Text(ID3D12GraphicsCommandList* _CmdList)
+{
+    CFont_Manager* pFont = m_pGameInstance->Get_Font_Manager();
+    if (nullptr == pFont)
+    {
+        for (auto& p : m_RenderObjects[RG_TEXT]) Safe_Release(p);
+        m_RenderObjects[RG_TEXT].clear();
+        return S_OK;
+    }
+
+    m_RenderObjects[RG_TEXT].sort([](CGameObject* a, CGameObject* b) {
+        return static_cast<CUIObject*>(a)->Get_Depth()
+         > static_cast<CUIObject*>(b)->Get_Depth();
+        });
+
+    m_pGameInstance->Font_Begin(_CmdList);
+    for (auto& pRenderObject : m_RenderObjects[RG_TEXT]) {
+        if (nullptr != pRenderObject) pRenderObject->Render(_CmdList);
+        Safe_Release(pRenderObject);
+    }
+    m_pGameInstance->Font_End();
+    m_pGameInstance->Bind_GlobalHeap(_CmdList);
+
+    m_RenderObjects[RG_TEXT].clear();
+    return S_OK;
+}
 
 CRenderer* CRenderer::Create(ID3D12Device* pDevice, ID3D12GraphicsCommandList* _commandList)
 {

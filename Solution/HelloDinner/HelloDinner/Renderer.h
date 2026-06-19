@@ -6,7 +6,7 @@
 class CRenderer final : public CBase
 {
 public:
-	enum RENDERGROUP { RG_PRIORITY, RG_NONBLEND, RG_BLEND, RG_UI, RG_END };
+    enum RENDERGROUP { RG_PRIORITY, RG_NONBLEND, RG_BLEND, RG_UI, RG_TEXT, RG_END };
 
 public:
     enum INSTANCE_PASS { PASS_MAIN, PASS_SHADOW, PASS_END };
@@ -21,6 +21,7 @@ public:
     HRESULT Add_ShadowRenderObject(RENDERGROUP eRenderGroup, class CGameObject* pRenderObject);
     HRESULT Draw_RenderObject(ID3D12GraphicsCommandList* _CmdList);
     HRESULT Draw_ShadowQueue(ID3D12GraphicsCommandList* _CmdList);
+    HRESULT Draw_UI(ID3D12GraphicsCommandList* _CmdList);
 
     // Insatanced
     HRESULT Add_InstancedRenderObject(const _wstring& modelTag, class CGameObject* pObj);
@@ -67,8 +68,8 @@ private:
     HRESULT Render_Priority(ID3D12GraphicsCommandList* _CmdList);
     HRESULT Render_NonBlend(ID3D12GraphicsCommandList* _CmdList);
     HRESULT Render_Blend(ID3D12GraphicsCommandList* _CmdList);
-	//HRESULT Render_UI();
-
+	HRESULT Render_UI(ID3D12GraphicsCommandList* _CmdList);
+    HRESULT Render_Text(ID3D12GraphicsCommandList* _CmdList);
     // instanced rendering
     HRESULT Create_InstanceBufferSlot(InstanceBufferSlot& outSlot);
     InstanceBufferSlot* Acquire_InstanceBufferSlot(_int frameIdx, INSTANCE_PASS ePass);

@@ -4,20 +4,20 @@
 #include "Graphic_Device.h"
 
 //		컴포넌트 상속
-class CModel final : public CComponent
+class CModel final: public CComponent
 {
 public:
-	enum TYPE { TYPE_NONANIM, TYPE_ANIM, TYPE_END };
-	
-	// 머티리얼 로드 모드
-	enum MATERIAL_LOAD_MODE {
-		MATLOAD_FROM_BINARY,     // 바이너리 경로에서 텍스처 로드 (캐릭터용)
-		MATLOAD_DDS_FILE		// 바이너리는 읽되 텍스처 파일을 dds로 읽음
-	};
+    enum TYPE { TYPE_NONANIM, TYPE_ANIM, TYPE_END };
+
+    // 머티리얼 로드 모드
+    enum MATERIAL_LOAD_MODE {
+        MATLOAD_FROM_BINARY,     // 바이너리 경로에서 텍스처 로드 (캐릭터용)
+        MATLOAD_DDS_FILE		// 바이너리는 읽되 텍스처 파일을 dds로 읽음
+    };
 private:
-	CModel(EngineContext* pContext);
-	CModel(const CModel& Prototype);
-	virtual ~CModel() = default;
+    CModel(EngineContext* pContext);
+    CModel(const CModel& Prototype);
+    virtual ~CModel() = default;
 
 public:
 	// Material 슬롯에 텍스쳐를 세팅하는 함수
@@ -30,6 +30,8 @@ public:
 		return m_iNumMaterials;
 	}
 	_bool Get_Blend() const { return m_isBlend; }
+    _bool Get_UpperBlend() const { return m_isUpperBlend; }
+    _bool Get_LowerBlend() const { return m_isLowerBlend; }
 	void  Off_Blend();
 	// 가지고있는 모든 뼈 순회해서 이름에 맞는 뼈 인덱스를 찾아줌
 	_uint Get_BoneIndex(const _char* pBoneName) const;
@@ -39,6 +41,18 @@ public:
 		m_iCurrentAnimIndex = iAnimIndex;
 		m_isLoop = isLoop;
 	}
+    void SetUp_Animation(_uint iAnimIndex, _bool isLoop, _bool _isUpper) {
+        if (_isUpper)
+        {
+            m_iCurrentUpperAnimIndex = iAnimIndex;
+            m_isUpperLoop = isLoop;
+        }
+        else
+        {
+            m_iCurrentLowerAnimIndex = iAnimIndex;
+            m_isLowerLoop = isLoop;
+        }
+    }
 
 	void Change_Animation(_uint iAnimIndex, _float fLinearDurationTime, _bool isLoop);
 	// 현 애니메이션속 함수에 뼈 다 넘겨서 뼈들 트랜스폼 바꿔주고 랜더하기 위한 최종 컴바인드 행렬 만듦
@@ -54,23 +68,43 @@ public:
     // 상하체 보간용
     _bool Blend_Animation(_float fTimeDelta, bool _isUpper);
     // 상하체 보간용
+    void Set_SpineBoneIndex(_uint _index)
+    {
+        m_iSpineBoneIndex = _index;
+    }
+    _uint Get_AnimNum()
+    {
+        return m_iCurrentAnimIndex;
+    }
+    bool Is_UpperBone(_uint boneIndex);
     void Merge_UpperLower();
+    // 장전 총 손 스왑용
+    _uint Get_UpperAnimNum()
+    {
+        return m_iCurrentUpperAnimIndex;
+    }
 
 	const _float4x4* Get_BoneMatrix(const _char* pBoneName) const;
 
-	// 랜더 때마다 호출 셰이더에 바인딩해줌
-	HRESULT Bind_BoneMatrices(ID3D12GraphicsCommandList* _cmdList, _uint iMeshIndex);
+    // 랜더 때마다 호출 셰이더에 바인딩해줌
+    HRESULT Bind_BoneMatrices(ID3D12GraphicsCommandList* _cmdList, _uint iMeshIndex);
 
-	HRESULT Ready_MapMaterial(const wchar_t* pModelFilePath, int _nMaterial, TextureType _eType);
+    HRESULT Ready_MapMaterial(const wchar_t* pModelFilePath, int _nMaterial, TextureType _eType);
 public:
-// 인자값으로 넘어온 매쉬번호에 맞는 매쉬를 그려줌 (상위 클래스의 랜더에서 매쉬개수만큼 부를거임)
-	virtual HRESULT Render(ID3D12GraphicsCommandList* _commandList, _uint iMeshIndex, bool IsShadow = false);
+    // 인자값으로 넘어온 매쉬번호에 맞는 매쉬를 그려줌 (상위 클래스의 랜더에서 매쉬개수만큼 부를거임)
+    virtual HRESULT Render(ID3D12GraphicsCommandList* _commandList, _uint iMeshIndex, bool IsShadow = false);
 
     HRESULT Render_Instanced(ID3D12GraphicsCommandList* cmdList, _uint iMeshIndex, _uint instanceCount, const D3D12_VERTEX_BUFFER_VIEW& instanceVBV, bool IsShadow = false);
+
+    // [Fracture] 전담 렌더용 게터 (Fracture_System 이 메시/본/텍스처에 직접 접근)
+    _uint            Get_MeshNumBones(_uint iMeshIndex) const;
+    const _float4x4* Get_MeshOffsetMatrices(_uint iMeshIndex) const;
+    HRESULT          Render_Raw(ID3D12GraphicsCommandList* _commandList, _uint iMeshIndex);
+    class CTexture* Get_DiffuseTexture(_uint iMeshIndex) const;
 private:
-	// 애님과 논애님을 구별하기 위함
-	TYPE						m_eModelType = { TYPE_END };
-	MATERIAL_LOAD_MODE m_eMatLoadMode = { MATLOAD_FROM_BINARY };
+    // 애님과 논애님을 구별하기 위함
+    TYPE						m_eModelType = {TYPE_END};
+    MATERIAL_LOAD_MODE m_eMatLoadMode = {MATLOAD_FROM_BINARY};
 
 private:
 	// 매쉬의 총 갯수를 저장
@@ -79,6 +113,8 @@ private:
 	vector<class CMesh*>		m_Meshes;
 	// 뼈 정보들을 저장하는 벡터 (베이스)
 	vector<class CBone*>		m_Bones;
+    // 상체시작 뼈 번호
+    _uint                       m_iSpineBoneIndex;
     // 뼈 정보들을 저장하는 벡터 (상체)
     vector<class CBone*>        m_BonesUpper;
     // 뼈 정보들을 저장하는 벡터 (하체)
@@ -111,39 +147,39 @@ private:
     _float                      m_fLowerBlendTime = 0;
 
 private:
-	// 메테리얼 총 갯수
-	_uint						m_iNumMaterials = {};
-	// 메테리얼들을 저장하는 벡터 -> 벡벡벡말고 메테리얼 클래스 하나만들어서 그냥 벡터로 만들것
-	vector<class CMaterial*>		m_Materials;
+    // 메테리얼 총 갯수
+    _uint						m_iNumMaterials = {};
+    // 메테리얼들을 저장하는 벡터 -> 벡벡벡말고 메테리얼 클래스 하나만들어서 그냥 벡터로 만들것
+    vector<class CMaterial*>		m_Materials;
 
 private:
-	// 로컬 매트릭스처럼 사용될 미리 준비한 매트릭스임 회전, 크기 정보같은 초기값들을 담음
-	_float4x4					m_PreTransformMatrix = {};
+    // 로컬 매트릭스처럼 사용될 미리 준비한 매트릭스임 회전, 크기 정보같은 초기값들을 담음
+    _float4x4					m_PreTransformMatrix = {};
 
 private:
 
-	// 본 매트릭스 Constant Buffer (프레임별)
-	static const _int FRAME_COUNT = CGraphic_Device::SWAP_CHAIN_BUFFER_COUNT;
-	ComPtr<ID3D12Resource>	m_pBoneBuffers[FRAME_COUNT];
-	CB_BONE_MATRICES* m_pCbMappedBones[FRAME_COUNT] = {};
+    // 본 매트릭스 Constant Buffer (프레임별)
+    static const _int FRAME_COUNT = CGraphic_Device::SWAP_CHAIN_BUFFER_COUNT;
+    ComPtr<ID3D12Resource>	m_pBoneBuffers[FRAME_COUNT];
+    CB_BONE_MATRICES* m_pCbMappedBones[FRAME_COUNT] = {};
 
-	HRESULT Create_BoneBuffer();
-
-private:
-	HRESULT Ready_Meshes();
-	HRESULT Ready_Materials(const wchar_t* pModelFilePath, MATERIAL_LOAD_MODE eMatMode);
-	HRESULT Ready_Bones();
-	HRESULT Ready_Animations();
+    HRESULT Create_BoneBuffer();
 
 private:
-	HRESULT Bind_Material(_uint iMeshIndex, TextureType eType, _uint iTextureIndex, ID3D12GraphicsCommandList* _commandList);
+    HRESULT Ready_Meshes();
+    HRESULT Ready_Materials(const wchar_t* pModelFilePath, MATERIAL_LOAD_MODE eMatMode);
+    HRESULT Ready_Bones();
+    HRESULT Ready_Animations();
+
+private:
+    HRESULT Bind_Material(_uint iMeshIndex, TextureType eType, _uint iTextureIndex, ID3D12GraphicsCommandList* _commandList);
 
 
 public:
-	virtual HRESULT Initialize_Prototype(TYPE eModelType, const wchar_t* pModelFilePath, _fmatrix PreTransformMatrix, MATERIAL_LOAD_MODE eMatMode);
-	virtual HRESULT Initialize(void* pArg) override;
+    virtual HRESULT Initialize_Prototype(TYPE eModelType, const wchar_t* pModelFilePath, _fmatrix PreTransformMatrix, MATERIAL_LOAD_MODE eMatMode);
+    virtual HRESULT Initialize(void* pArg) override;
 
-	static CModel* Create(EngineContext* pContext, TYPE eModelType, const wchar_t* pModelFilePath, _fmatrix PreTransformMatrix, MATERIAL_LOAD_MODE eMatMode = MATLOAD_FROM_BINARY);
-	virtual CComponent* Clone(void* pArg) override;
-	virtual void Free() override;
+    static CModel* Create(EngineContext* pContext, TYPE eModelType, const wchar_t* pModelFilePath, _fmatrix PreTransformMatrix, MATERIAL_LOAD_MODE eMatMode = MATLOAD_FROM_BINARY);
+    virtual CComponent* Clone(void* pArg) override;
+    virtual void Free() override;
 };

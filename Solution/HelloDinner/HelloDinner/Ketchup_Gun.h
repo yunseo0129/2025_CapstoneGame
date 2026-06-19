@@ -26,6 +26,14 @@ public:
 	virtual void		Late_Update(_float fTimeDelta) override;
 	virtual void		Render(ID3D12GraphicsCommandList* _commandList) override;
 	virtual void		ShadowRender(ID3D12GraphicsCommandList* _commandList) override;
+    void                Set_Socket(const _float4x4* _mat)
+    {
+        m_pSocketMatrix = _mat;
+    }
+    class CModel*       Get_Model()
+    {
+        return m_pModelCom;
+    }
 
 private:
 	HRESULT				Ready_Components();

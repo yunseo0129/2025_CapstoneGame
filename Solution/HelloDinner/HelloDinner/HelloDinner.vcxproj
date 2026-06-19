@@ -104,13 +104,13 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>../HelloDinner;../HelloDinner/ThirdParty/Inc</AdditionalIncludeDirectories>
-      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/utf-8 </AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>../HelloDinner/ThirdParty/Lib/Debug</AdditionalLibraryDirectories>
-      <AdditionalDependencies>DirectXTK12.lib</AdditionalDependencies>
+      <AdditionalDependencies>DirectXTK12.lib;gdi32.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -131,12 +131,13 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>../HelloDinner;../HelloDinner/ThirdParty/Inc</AdditionalIncludeDirectories>
+      <AdditionalOptions>/utf-8 </AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>../HelloDinner/ThirdParty/Lib/Release</AdditionalLibraryDirectories>
-      <AdditionalDependencies>DirectXTK12.lib</AdditionalDependencies>
+      <AdditionalDependencies>DirectXTK12.lib;gdi32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -157,12 +158,17 @@
     <ClInclude Include="Collider.h" />
     <ClInclude Include="Collision_Manager.h" />
     <ClInclude Include="Controller.h" />
+    <ClInclude Include="Font_Manager.h" />
+    <ClInclude Include="Fracture_System.h" />
+    <ClInclude Include="Game_Manager.h" />
     <ClInclude Include="Level_Gameplay.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Loader.h" />
     <ClInclude Include="LoadingWindow.h" />
-    <ClInclude Include="NetPlayer.h" />
+    <ClInclude Include="LobbyWindow.h" />
+    <ClInclude Include="MiniMap.h" />
     <ClInclude Include="Particle_System.h" />
+    <ClInclude Include="RoomWindow.h" />
     <ClInclude Include="Shadow.h" />
     <ClInclude Include="Texture_Manager.h" />
     <ClInclude Include="Obj_CollisionTest.h" />
@@ -208,6 +214,10 @@
     <ClInclude Include="Transform.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="UIObject.h" />
+    <ClInclude Include="UI_Panel.h" />
+    <ClInclude Include="UI_Text.h" />
+    <ClInclude Include="UI_Texture.h" />
     <ClInclude Include="Utiles.h" />
     <ClInclude Include="HelloDinner.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
@@ -219,7 +229,9 @@
     <ClInclude Include="Timer.h" />
     <ClInclude Include="VIBuffer.h" />
     <ClInclude Include="VIBuffer_Cube.h" />
+    <ClInclude Include="VIBuffer_Rect.h" />
     <ClInclude Include="VIBuffer_Skybox.h" />
+    <ClInclude Include="VIBuffer_Triangle.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
@@ -239,12 +251,17 @@
     </ClCompile>
     <ClCompile Include="Collision_Manager.cpp" />
     <ClCompile Include="Controller.cpp" />
+    <ClCompile Include="Font_Manager.cpp" />
+    <ClCompile Include="Fracture_System.cpp" />
+    <ClCompile Include="Game_Manager.cpp" />
     <ClCompile Include="Level_Gameplay.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Loader.cpp" />
     <ClCompile Include="LoadingWindow.cpp" />
-    <ClCompile Include="NetPlayer.cpp" />
+    <ClCompile Include="LobbyWindow.cpp" />
+    <ClCompile Include="MiniMap.cpp" />
     <ClCompile Include="Particle_System.cpp" />
+    <ClCompile Include="RoomWindow.cpp" />
     <ClCompile Include="Shadow.cpp" />
     <ClCompile Include="Texture_Manager.cpp" />
     <ClCompile Include="Obj_CollisionTest.cpp" />
@@ -294,9 +311,15 @@
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Timer_Manager.cpp" />
     <ClCompile Include="Transform.cpp" />
+    <ClCompile Include="UIObject.cpp" />
+    <ClCompile Include="UI_Panel.cpp" />
+    <ClCompile Include="UI_Text.cpp" />
+    <ClCompile Include="UI_Texture.cpp" />
     <ClCompile Include="VIBuffer.cpp" />
     <ClCompile Include="VIBuffer_Cube.cpp" />
+    <ClCompile Include="VIBuffer_Rect.cpp" />
     <ClCompile Include="VIBuffer_Skybox.cpp" />
+    <ClCompile Include="VIBuffer_Triangle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="HelloDinner.rc" />
@@ -306,6 +329,10 @@
     <Image Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Shader_Fracture_Compute.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="Shader_Particle.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -364,7 +391,12 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include=".editorconfig" />
     <None Include="Common.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="Shader_Fracture.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>

@@ -47,7 +47,8 @@ HRESULT CPlayer_Pig::Initialize(void* pArg)
 		return E_FAIL;
 
 	m_iState = 0;
-	m_pModelCom->SetUp_Animation(0, true);
+	m_pModelCom->SetUp_Animation(0, true, true);
+    m_pModelCom->SetUp_Animation(0, true, false);
 
 	if (FAILED(Ready_PartObjects()))
 		return E_FAIL;
@@ -65,15 +66,34 @@ void CPlayer_Pig::Priority_Update(_float fTimeDelta)
 
 void CPlayer_Pig::Update(_float fTimeDelta)
 {
-	if (!m_isBlending)
+    if (!m_pModelCom->Get_UpperBlend())
+    {
+        if (m_pModelCom->Play_Animation(fTimeDelta, true))
+        {
+            if (11 == m_pModelCom->Get_UpperAnimNum())
+            {
+                m_pModelCom->Change_Animation(0, 5.f, true, true);
+                m_pModelCom->Change_Animation(0, 5.f, true, false);
+            }
+        }
+    }
+    else
+        m_pModelCom->Blend_Animation(fTimeDelta, true);
+
+    if (!m_pModelCom->Get_LowerBlend())
+        m_pModelCom->Play_Animation(fTimeDelta, false);
+    else
+        m_pModelCom->Blend_Animation(fTimeDelta, false);
+
+    // 상하체 보간 없는 모델들만 사용
+	/*if (!m_pModelCom->Get_Blend())
 		m_pModelCom->Play_Animation(fTimeDelta);
 	else
-	{
-		if (m_pModelCom->Blend_Animation(fTimeDelta))
-            m_isBlending = false;
-	}
+        m_pModelCom->Blend_Animation(fTimeDelta);*/
 
     Anim_Test();
+
+    m_pModelCom->Merge_UpperLower();
 
 	for (CCollider* pCollider : m_vColliderComs)
 	{
@@ -188,6 +208,8 @@ HRESULT CPlayer_Pig::Ready_Components()
 		MSG_BOX("Failed to Add Component : Model in CPlayer_1rd");
 		return E_FAIL;
 	}
+    
+    m_pModelCom->Set_SpineBoneIndex(m_pModelCom->Get_BoneIndex("spine"));
 
 	// Collider 컴포넌트 생성
 	{
@@ -383,61 +405,70 @@ HRESULT CPlayer_Pig::Ready_Components()
 
 void CPlayer_Pig::Anim_Test()
 {
+    if (m_pGameInstance->Key_Pressing(DIK_0))
+    {
+        // 정지 
+        // 풀
+        m_pModelCom->Change_Animation(0, 5.f, true, true);
+        m_pModelCom->Change_Animation(0, 5.f, true, false);
+    }
     if (m_pGameInstance->Key_Pressing(DIK_1))
     {
-        // 대기 모션 
+        // 대기
         // 풀
-        m_pModelCom->Change_Animation(1, 5.f, false);
-        m_isBlending = true;
+        m_pModelCom->Change_Animation(1, 5.f, true, true);
+        m_pModelCom->Change_Animation(2, 5.f, true, false);
     }
     else if (m_pGameInstance->Key_Pressing(DIK_2))
     {
         // 사격
         // 상체
-        m_pModelCom->Change_Animation(2, 0.f, false);
-        m_isBlending = true;
+        m_pModelCom->Change_Animation(3, 0.f, false , true);
     }
     else if (m_pGameInstance->Key_Pressing(DIK_3))
     {
-        // 앉기 대기
+        // 앉기 정지
         // 하체
-        m_pModelCom->Change_Animation(3, 5.f, false);
-        m_isBlending = true;
+        m_pModelCom->Change_Animation(4, 2.f, true, false);
     }
     else if (m_pGameInstance->Key_Pressing(DIK_4))
     {
         // 앉기 걷기
         // 하체
-        m_pModelCom->Change_Animation(4, 1.f, true);
-        m_isBlending = true;
+        m_pModelCom->Change_Animation(5, 1.f, true, false);
     }
     else if (m_pGameInstance->Key_Pressing(DIK_5))
     {
         // 걷기
         // 하체
-        m_pModelCom->Change_Animation(8, 1.f, true);
-        m_isBlending = true;
+        m_pModelCom->Change_Animation(8, 1.f, true, false);
     }
     else if (m_pGameInstance->Key_Pressing(DIK_6))
     {
-        // 죽기
-        // 풀
-        m_pModelCom->Change_Animation(9, 5.f, false);
-        m_isBlending = true;
+        // 달리기
+        // 하체
+        m_pModelCom->Change_Animation(10, 0.f, true, false);
     }
     else if (m_pGameInstance->Key_Pressing(DIK_7))
     {
-        // 뛰기
-        // 하체
-        m_pModelCom->Change_Animation(10, 0.f, true);
-        m_isBlending = true;
+        // 죽기
+        // 풀 
+        m_pModelCom->Change_Animation(9, 5.f, false, true);
+        m_pModelCom->Change_Animation(9, 5.f, false, false);
     }
     else if (m_pGameInstance->Key_Pressing(DIK_8))
     {
         // 장전
         // 상체
-        m_pModelCom->Change_Animation(12, 3.f, false);
-        m_isBlending = true;
+        m_pModelCom->Change_Animation(12, 3.f, false, true);
+        static_cast<CKetchup_Gun*>(m_PartObjects[0])->Get_Model()->Change_Animation(2, 3.f, false);
+    }
+    else if (m_pGameInstance->Key_Pressing(DIK_9))
+    {
+        // 점프
+        // 풀
+        m_pModelCom->Change_Animation(11, 5.f, false, true);
+        m_pModelCom->Change_Animation(11, 5.f, false, false);
     }
 }
 

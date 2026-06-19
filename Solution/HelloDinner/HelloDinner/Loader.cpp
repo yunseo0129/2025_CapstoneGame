@@ -15,6 +15,13 @@
 #include "Ketchup_Gun.h"
 #include "Player_Pig.h"
 #include "Particle_System.h"
+#include "VIBuffer_Rect.h"
+#include "UI_Panel.h"
+#include "Font_Manager.h"
+#include "UI_Text.h"
+#include "MiniMap.h"
+
+#include "VIBuffer_Triangle.h"
 
 CLoader::CLoader(EngineContext* pContext)
     : m_pContext {pContext}
@@ -118,6 +125,9 @@ HRESULT CLoader::Loading_Level_GamePlay()
 
     Set_LoadingText(TEXT("폰트를 로딩중입니다."));
 
+    if (FAILED(m_pGameInstance->Add_Font(L"Font_Default", L"Resources/Font/font_default.spritefont")))
+        return E_FAIL;
+
     Set_LoadingText(TEXT("콜라이더를 로딩중입니다."));
     // CCollider
     {
@@ -153,11 +163,17 @@ HRESULT CLoader::Loading_Level_GamePlay()
         if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, L"Prototype_Component_VIBuffer_Skybox",
             CVIBuffer_Skybox::Create(m_pContext))))
             return E_FAIL;
+        if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_Component_VIBuffer_Rect",
+            CVIBuffer_Rect::Create(m_pContext))))
+            return E_FAIL;
+        if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_Component_VIBuffer_Triangle",
+            CVIBuffer_Triangle::Create(m_pContext))))
+            return E_FAIL;
     }
 
     // Prototype_Component_Pig_3rd
     {
-        _matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(0.01f, 0.01f, 0.01f);
+        _matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(1.f, 1.f, 1.f);
         if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Pig_3rd"),
             CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Pig/Prototype_Component_Pig.txt", PreTransformMatrix))))
             return E_FAIL;
@@ -173,7 +189,9 @@ HRESULT CLoader::Loading_Level_GamePlay()
 
     // Prototype_Component_ketchupGun
     {
-        _matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(1.f, 1.f, 1.f);
+        _matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(1.f, 1.f, 1.f) * XMMatrixRotationX(XMConvertToRadians(90.f)) *
+            XMMatrixRotationY(XMConvertToRadians(180.f)) *
+            XMMatrixRotationZ(XMConvertToRadians(0.f));
         if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_ketchupGun"),
             CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Gun/Prototype_Component_ketchupGun.txt", PreTransformMatrix))))
             return E_FAIL;
@@ -186,6 +204,8 @@ HRESULT CLoader::Loading_Level_GamePlay()
             CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/1st_Player/Prototype_Component_pig_first_person.txt", PreTransformMatrix))))
             return E_FAIL;
     }
+
+
 
     Set_LoadingText(TEXT("객체원형을 로딩중입니다."));
     // 객체 원형 로드
@@ -208,6 +228,19 @@ HRESULT CLoader::Loading_Level_GamePlay()
     // Prototype_GameObject_Skybox
     if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, L"Prototype_GameObject_Skybox",
         CSkybox::Create(m_pContext))))
+        return E_FAIL;
+
+    if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_GameObject_UI_Panel",
+        CUI_Panel::Create(m_pContext))) )
+        return E_FAIL;
+    
+    // Prototype_GameObject_MiniMap
+    if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_GameObject_MiniMap",
+        CMiniMap::Create(m_pContext))))
+        return E_FAIL;
+
+    if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_GameObject_UI_Text",
+        CUI_Text::Create(m_pContext))) )
         return E_FAIL;
 
     // Prototype_GameObject_Ketchup_Gun

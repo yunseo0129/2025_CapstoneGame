@@ -18,6 +18,10 @@
 #include "Map.h"
 //
 
+#include "Game_Manager.h"
+#include "UI_Panel.h"
+#include "MiniMap.h"
+
 CLevel_GamePlay::CLevel_GamePlay(EngineContext* pContext)
     : CLevel {pContext}
 {
@@ -35,10 +39,15 @@ HRESULT CLevel_GamePlay::Initialize()
     if (FAILED(Ready_Layer()))
         return E_FAIL;
 
+    if (FAILED(Ready_UI()))
+        return E_FAIL;
+
     // 시작 시점에 사용할 카메라
     Set_CurrentCamera(CAMERA_FPV);
 
     m_pGameInstance->Build_StaticBVH();
+
+    m_pGameManager = CGame_Manager::Create();   // 1라운드 SCOREBOARD부터 시작
 
     return S_OK;
 }
@@ -46,7 +55,6 @@ HRESULT CLevel_GamePlay::Initialize()
 void CLevel_GamePlay::Update(_float fTimeDelta)
 {
     __super::Update(fTimeDelta);
-
     //Process_NetworkEvents();
 
     // 네트워크 이벤트 처리: 플레이어 추가/제거/이동
@@ -158,50 +166,131 @@ HRESULT CLevel_GamePlay::Ready_Layer()
 
     // 충돌 파괴 테스트
     {
-        const int   N = 7;
-        const float segW = 1.f;                         // 세그먼트 간격(폭)
-        const _float3 vStart = _float3(-3.f, 0.f, 4.f);  // 위치
+        CMiniMap::MINIMAP_DESC desc;
+        desc.fX = 1060.f;  desc.fY = 20.f;
+        desc.fSizeX = 200.f;   desc.fSizeY = 200.f;
+        desc.fDepth = 0.3f;
+        desc.vColor = _float4(0.f, 0.f, 0.f, 0.5f); // 단색 배경(반투명 검정)
 
-        CMap* segs[N] = {};
-        for (int i = 0; i < N; ++i)
+        desc.fViewRange = 40.f;            // 플레이어 주변 ±40유닛 (작을수록 확대)
+        desc.iMapLevelIndex = LEVEL_GAMEPLAY;
+        desc.strMapLayerTag = L"Layer_Map";
+
+        desc.fHeightMin = -5.f;                // 맵의 실제 최저~최고에 맞춰 조정
+        desc.fHeightMax = 20.f;
+        // vColorLow/High, fBlipScale, fMarkerSize 등은 기본값으로 충분
+
+        if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
+            LEVEL_STATIC, L"Prototype_GameObject_MiniMap",
+            LEVEL_GAMEPLAY, L"Layer_UI_MiniMap", &desc)))
         {
-            CMap::MAP_DESC desc {};
-            
-            desc.strModelTag = L"Prototype_Component_Model_WallFence_A_4x";
-            desc.iModelLevelIndex = LEVEL_GAMEPLAY;
-
-            desc.vPosition = _float3(vStart.x + i * segW, vStart.y, vStart.z);
-            desc.vScale = _float3(1.f, 1.f, 1.f);
-
-            // 콜라이더는 월드 좌표 기준(정적). 1×5×1 박스 → extents=(0.5,2.5,0.5)
-            desc.eColliderType = CCollider::TYPE_AABB;
-            desc.vExtentsCollider = _float3(0.5f, 2.5f, 0.5f);
-            desc.vCenterCollider = _float3(vStart.x + i * segW, vStart.y + 2.5f, vStart.z);
-
-            desc.bBreakable = true; 
-
-            segs[i] = static_cast<CMap*>(
-            m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
-                LEVEL_GAMEPLAY, L"Prototype_GameObject_Map",
-                LEVEL_GAMEPLAY, L"Layer_Map", &desc));
-        }
-
-        // 이웃 연결
-        for (int i = 0; i < N; ++i)
-        {
-            if (!segs[i]) continue;
-            CMap* left = (i > 0) ? segs[i - 1] : nullptr;
-            CMap* right = (i < N - 1) ? segs[i + 1] : nullptr;
-            segs[i]->Set_Neighbors(left, right);
+            MSG_BOX("Failed to Add GameObject To Layer : MiniMap");
+            return E_FAIL;
         }
     }
 
     return S_OK;
-} 
+}
+
+static inline _float4 UICol(_int r, _int g, _int b, _float a)
+{
+    return _float4(r / 255.f, g / 255.f, b / 255.f, a);
+}
+
+HRESULT CLevel_GamePlay::Ready_UI()
+{
+    const _uint PROTO = LEVEL_STATIC;        // UI 프로토타입이 등록된 레벨
+    const _uint LV = LEVEL_GAMEPLAY;      // 생성될 레벨
+    const _wstring SB = L"Layer_UI_Scoreboard";
+    const _wstring SH = L"Layer_UI_Shop";
+
+    // -----------------------------------------------------------------
+    //  1) 스코어보드 (Layer_UI_Scoreboard)
+    // -----------------------------------------------------------------
+    // 좌표는 1280x720 기준. (설계 시안과 동일 비율)
+    // depth: 값이 클수록 뒤. 배경 0.8, 행 0.5
+
+    // 상단 점수판
+    {
+        CUI_Panel::UI_PANEL_DESC d;
+        d.fX = 440.f; d.fY = 40.f; d.fSizeX = 400.f; d.fSizeY = 70.f;
+        d.fDepth = 0.7f;
+        d.vColor = UICol(46, 50, 60, 0.92f);
+        m_pGameInstance->Add_GameObject_ToLayer(PROTO, L"Prototype_GameObject_UI_Panel", LV, SB, &d);
+    }
+
+    // 팀 A 패널 (좌측, 파랑 계열)
+    {
+        CUI_Panel::UI_PANEL_DESC d;
+        d.fX = 120.f; d.fY = 150.f; d.fSizeX = 480.f; d.fSizeY = 420.f;
+        d.fDepth = 0.8f;
+        d.vColor = UICol(28, 44, 72, 0.9f);
+        m_pGameInstance->Add_GameObject_ToLayer(PROTO, L"Prototype_GameObject_UI_Panel", LV, SB, &d);
+    }
+    // 팀 A 행 3개
+    for (_int i = 0; i < 3; ++i)
+    {
+        CUI_Panel::UI_PANEL_DESC d;
+        d.fX = 144.f; d.fY = 220.f + i * 64.f; d.fSizeX = 432.f; d.fSizeY = 52.f;
+        d.fDepth = 0.5f;
+        d.vColor = UICol(38, 60, 96, 0.95f);
+        m_pGameInstance->Add_GameObject_ToLayer(PROTO, L"Prototype_GameObject_UI_Panel", LV, SB, &d);
+    }
+
+    // 팀 B 패널 (우측, 빨강 계열)
+    {
+        CUI_Panel::UI_PANEL_DESC d;
+        d.fX = 680.f; d.fY = 150.f; d.fSizeX = 480.f; d.fSizeY = 420.f;
+        d.fDepth = 0.8f;
+        d.vColor = UICol(72, 32, 32, 0.9f);
+        m_pGameInstance->Add_GameObject_ToLayer(PROTO, L"Prototype_GameObject_UI_Panel", LV, SB, &d);
+    }
+    // 팀 B 행 3개
+    for (_int i = 0; i < 3; ++i)
+    {
+        CUI_Panel::UI_PANEL_DESC d;
+        d.fX = 704.f; d.fY = 220.f + i * 64.f; d.fSizeX = 432.f; d.fSizeY = 52.f;
+        d.fDepth = 0.5f;
+        d.vColor = UICol(96, 48, 48, 0.95f);
+        m_pGameInstance->Add_GameObject_ToLayer(PROTO, L"Prototype_GameObject_UI_Panel", LV, SB, &d);
+    }
+
+    // -----------------------------------------------------------------
+    //  2) 상점 (Layer_UI_Shop)
+    // -----------------------------------------------------------------
+    // 전체 반투명 오버레이 (게임이 뒤로 비침)
+    {
+        CUI_Panel::UI_PANEL_DESC d;
+        d.fX = 0.f; d.fY = 0.f; d.fSizeX = 1280.f; d.fSizeY = 720.f;
+        d.fDepth = 0.95f;                          // 가장 뒤
+        d.vColor = UICol(8, 10, 16, 0.55f);        // 어둡게 반투명
+        m_pGameInstance->Add_GameObject_ToLayer(PROTO, L"Prototype_GameObject_UI_Panel", LV, SH, &d);
+    }
+    // 상점 헤더
+    {
+        CUI_Panel::UI_PANEL_DESC d;
+        d.fX = 160.f; d.fY = 120.f; d.fSizeX = 960.f; d.fSizeY = 64.f;
+        d.fDepth = 0.6f;
+        d.vColor = UICol(120, 90, 30, 0.95f);
+        m_pGameInstance->Add_GameObject_ToLayer(PROTO, L"Prototype_GameObject_UI_Panel", LV, SH, &d);
+    }
+    // 상품 슬롯: 클릭 가능한 무기 슬롯은 CGame_Manager::Ready_ShopSlots() 에서
+    //  Layer_UI_Shop 에 직접 생성한다. (슬롯0=케첩건/빨강, 슬롯1=마요네즈건/하양)
+    //  여기서는 더 이상 더미 그리드를 만들지 않는다.
+
+    // 생성 직후 상점은 꺼둠 (스코어보드부터 시작)
+    {
+        list<CGameObject*> shopObjs = m_pGameInstance->Get_List(LV, SH);
+        for (auto* p : shopObjs)
+            if (p) p->SetOnOff(false);
+    }
+
+    return S_OK;
+}
 
 void CLevel_GamePlay::Process_NetworkEvents()
 {
-	// Update()에서 매 프레임마다 네트워크 이벤트를 처리하는 함수 여기로 옮기기
+    // Update()에서 매 프레임마다 네트워크 이벤트를 처리하는 함수 여기로 옮기기
 }
 
 CLevel_GamePlay* CLevel_GamePlay::Create(EngineContext* pContext)
@@ -222,6 +311,6 @@ void CLevel_GamePlay::Free()
     for (auto& pLight : m_pLights)
         Safe_Release(pLight);
     m_pLights.clear();
-
+    Safe_Release(m_pGameManager);
     __super::Free();
 }

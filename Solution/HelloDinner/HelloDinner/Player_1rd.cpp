@@ -104,7 +104,29 @@ void CPlayer_1rd::Priority_Update(_float fTimeDelta)
 
 void CPlayer_1rd::Update(_float fTimeDelta)
 {
-    m_pModelCom->Play_Animation(fTimeDelta);
+    if (!m_pModelCom->Get_UpperBlend())
+    {
+        if (m_pModelCom->Play_Animation(fTimeDelta, true))
+        {
+            if (11 == m_pModelCom->Get_UpperAnimNum())
+            {
+                m_pModelCom->Change_Animation(0, 5.f, true, true);
+                m_pModelCom->Change_Animation(0, 5.f, true, false);
+            }
+            else if (12 == m_pFPSModelCom->Get_AnimNum())
+            {
+                m_isReloading = false;
+                m_iAmmo = 30;
+                m_pModelCom->Change_Animation(0, 0.f, true, true);
+                m_pFPSModelCom->Change_Animation(0, 0.f, true);
+            }
+        }
+    }
+    else
+        m_pModelCom->Blend_Animation(fTimeDelta, true);
+
+    m_pModelCom->Merge_UpperLower();
+
     m_pFPSModelCom->Play_Animation(fTimeDelta);
 
     for (CCollider* pCollider : m_vColliderComs)
@@ -139,6 +161,8 @@ void CPlayer_1rd::Late_Update(_float fTimeDelta)
 {
     Cull_And_Submit(CRenderer::RG_NONBLEND);
     __super::Late_Update(fTimeDelta);
+    m_isCrouch = false;
+    m_isRun = false;
 }
 
 void CPlayer_1rd::Render(ID3D12GraphicsCommandList* _commandList)
@@ -200,6 +224,11 @@ void CPlayer_1rd::Move(_float _fLook, _float _fRight, _float _val)
 void CPlayer_1rd::Resolve_Movement(_float fTimeDelta)
 {
     // ---- 1) 수평 이동 벡터 (입력 기반) ----
+    _float val = 1.f;
+    if (m_isCrouch)
+        val = 0.5f;
+    else if (m_isRun)
+        val = 1.5f;
     _vector vHorizontal = XMVectorZero();
     {
         _vector vLook = XMVectorSetY(m_pTransformCom->Get_State(CTransform::STATE_LOOK), 0.f);
@@ -210,7 +239,7 @@ void CPlayer_1rd::Resolve_Movement(_float fTimeDelta)
 
         if (XMVectorGetX(XMVector3LengthSq(vDir)) > 1e-6f)
         {
-            vDir = XMVector3Normalize(vDir);
+            vDir = XMVector3Normalize(vDir) * val;
             _float fDist = m_pTransformCom->Get_SpeedPerSec() * fTimeDelta;
             vHorizontal = vDir * fDist;
         }
@@ -350,6 +379,56 @@ void CPlayer_1rd::Jump(_float _val)
 void CPlayer_1rd::Crouch(_float _val)
 {
     // 웅크리기
+    m_isCrouch = true;
+}
+
+void CPlayer_1rd::Run(_float _val)
+{
+    if (!m_isCrouch)
+    {
+        m_isRun = true;
+
+    }
+}
+
+void CPlayer_1rd::Reload(_float _val)
+{
+    if (!m_isReloading)
+    {
+        m_isReloading = true;
+        m_pModelCom->Change_Animation(12, 3.f, false, true);
+        m_pFPSModelCom->Change_Animation(7, 3.f, false);
+        static_cast<CKetchup_Gun*>(m_PartObjects[0])->Get_Model()->Change_Animation(2, 3.f, false);
+        static_cast<CKetchup_Gun*>(m_PartObjects[1])->Get_Model()->Change_Animation(2, 3.f, false);
+    }
+}
+
+void CPlayer_1rd::Shoot(_float _val)
+{
+    if (m_iAmmo && !m_isReloading)
+    {
+        m_pModelCom->Change_Animation(3, 0.f, false, true);
+        m_pFPSModelCom->Change_Animation(2, 0.f, false);
+        --m_iAmmo;
+    }
+}
+
+void CPlayer_1rd::Set_Weapon(_int iIndex)
+{
+    // 유효 범위(현재 0:케첩, 1:마요)만 처리
+    if (iIndex < 0 || iIndex >= (_int)m_PartObjects.size())
+        return;
+    if (iIndex == m_iWeapon)
+        return; // 이미 장착 중이면 무시
+
+    // 모든 무기 파트 Off 후, 선택한 무기만 On
+    for (_int i = 0; i < (_int)m_PartObjects.size(); ++i)
+    {
+        if (m_PartObjects[i] != nullptr)
+            m_PartObjects[i]->SetOnOff(i == iIndex);
+    }
+
+    m_iWeapon = iIndex;
 }
 
 HRESULT CPlayer_1rd::Ready_PartObjects()
