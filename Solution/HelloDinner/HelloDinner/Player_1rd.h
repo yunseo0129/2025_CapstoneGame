@@ -44,6 +44,10 @@ public:					// 플레이어 조종에 관련한 함수 구현
     void Shoot(_float _val);
 
 
+    // 무기 교체
+    void Set_Weapon(_int iIndex);
+    _int Get_Weapon() const { return m_iWeapon; } 
+
 private:
 	virtual HRESULT				Ready_PartObjects();
 	virtual HRESULT				Ready_Components();
@@ -74,6 +78,8 @@ private:
     _bool               m_isCrouch = false;
     _bool               m_isRun = false;
 
+    // 현재 무기 인덱스 (0: 케첩건, 1: 마요건)
+    _int                m_iWeapon = 0;
 public:
 	static CPlayer_1rd* Create(EngineContext* pContext);
 	virtual CGameObject* Clone(void* pArg);

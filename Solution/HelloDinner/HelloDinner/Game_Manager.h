@@ -110,6 +110,13 @@ private:
     void     Refresh_HUD();                 // 점수/타이머 텍스트 + 생존 박스 색 갱신
     _wstring Make_TimerString() const;      // 남은 라운드 시간 "m:ss"
 
+    // ---- UI: 상점 무기 슬롯 (클릭 → 무기 교체) ----
+    HRESULT  Ready_ShopSlots();             // 무기 슬롯 패널 생성 + 위치/포인터 보관
+    void     Handle_ShopClick();            // 좌클릭 시 슬롯 히트테스트 → 무기 교체
+    void     Highlight_ShopSlot(_int iWeapon); // 선택된 슬롯 테두리/색 강조
+    // 상점 창 표시/숨김에 맞춰 커서 표시 + 플레이어 입력 차단을 함께 처리
+    void     Set_ShopUIMode(_bool bOpen);
+
 private:
     class CGameInstance* m_pGameInstance = nullptr;
 
@@ -144,6 +151,13 @@ private:
     class CUI_Text* m_pHUDTimerText = nullptr;            // 중앙: 남은 시간
     class CUI_Text* m_pHUDTeamScoreText[2] = {nullptr}; // [0]=팀A 승수, [1]=팀B 승수
     class CUI_Panel* m_pHUDPlayerBox[MAX_PLAYER] = {nullptr};
+
+    // ---- 상점 무기 슬롯 ----
+    //  슬롯 인덱스 = 무기 인덱스 (0=케첩건/빨강, 1=마요네즈건/하양).
+    //  히트테스트를 위해 슬롯의 픽셀 사각형(좌상단 x,y / 크기 w,h)을 보관.
+    static constexpr _int SHOP_SLOT_COUNT = 2;
+    class CUI_Panel* m_pShopSlot[SHOP_SLOT_COUNT] = {nullptr};
+    _float4          m_vShopSlotRect[SHOP_SLOT_COUNT] = {}; // (x, y, w, h) 픽셀
 
     // ---- 상수 ----
     static constexpr _int   MAX_ROUND = 10;

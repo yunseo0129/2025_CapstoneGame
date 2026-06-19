@@ -26,6 +26,10 @@ void CController::Set_Player(CPlayer_1rd* _pPlayer)
 
 void CController::Input_Player(_float fTimeDelta)
 {
+    // 상점 등 메뉴가 열려 있으면 시점/이동/사격 입력을 전부 무시한다.
+    if (m_bBlockInput)
+        return;
+
 	if (m_pPlayer != nullptr && !m_pPlayer->IsDead())
 	{
         _long      MouseMove = {};

@@ -4,6 +4,8 @@
 #include "GameObject.h"
 #include "UI_Text.h"
 #include "UI_Panel.h"
+#include "Controller.h"
+#include "Player_1rd.h"
 
 IMPLEMENT_SINGLETON(CGame_Manager)
 
@@ -55,6 +57,9 @@ void CGame_Manager::Start_Match()
 
     // 인게임 HUD(중앙 상단 라운드 점수 + 생존/사망 박스) 생성
     Ready_HUD();
+
+    // 상점 무기 슬롯(클릭 → 무기 교체) 생성
+    Ready_ShopSlots();
 
     // 첫 라운드는 스코어보드 화면부터 시작
     m_ePhase = GAME_PHASE::PHASE_END; // Enter_Phase가 동작하도록 다른 값으로
@@ -135,6 +140,9 @@ void CGame_Manager::OnEnter_Shop()
     Set_LayerVisible(L"Layer_UI_Shop", true);
     Set_LayerVisible(L"Layer_UI_MiniMap", false);
     Set_LayerVisible(L"Layer_UI_HUD", false);
+
+    // 상점에서는 클릭을 위해 커서를 보이게 하고, 플레이어 입력을 막는다.
+    Set_ShopUIMode(true);
 }
 
 void CGame_Manager::OnEnter_Playing()
@@ -149,6 +157,9 @@ void CGame_Manager::OnEnter_Playing()
     Set_LayerVisible(L"Layer_UI_Shop", false);
     Set_LayerVisible(L"Layer_UI_MiniMap", true);
     Set_LayerVisible(L"Layer_UI_HUD", true);
+
+    // 플레이 중에는 커서를 숨기고(조준 모드) 입력을 허용한다.
+    Set_ShopUIMode(false);
 
     // 라운드 점수/생존 박스 최신화
     Refresh_HUD();
@@ -188,7 +199,12 @@ void CGame_Manager::Update_Shop(_float fTimeDelta)
         m_bShopOpen = !m_bShopOpen;
         GM_Log(L"Shop %s", m_bShopOpen ? L"OPEN" : L"CLOSE");
         Set_LayerVisible(L"Layer_UI_Shop", m_bShopOpen);
+        Set_ShopUIMode(m_bShopOpen); // 커서 표시 + 입력 차단 동기화
     }
+
+    // 구매창이 열려 있으면 슬롯 클릭으로 무기 교체
+    if (m_bShopOpen)
+        Handle_ShopClick();
 
     // 구매 시간 카운트다운 → 게임 플레이로
     m_fShopTimer -= fTimeDelta;
@@ -579,6 +595,144 @@ _wstring CGame_Manager::Make_TimerString() const
 }
 
 // =====================================================================
+//  상점 무기 슬롯 (클릭 → 무기 교체)
+//   슬롯0 = 케첩건(빨강), 슬롯1 = 마요네즈건(하양)
+//   - 지금은 텍스처 대신 단색 패널. (텍스처화는 다음 단계)
+//   - 좌표는 1280x720 디자인 기준. 히트테스트용 사각형을 보관한다.
+// =====================================================================
+HRESULT CGame_Manager::Ready_ShopSlots()
+{
+    const _uint PROTO = LEVEL_STATIC;
+    const _uint LV = LEVEL_GAMEPLAY;
+    const _wstring SH = L"Layer_UI_Shop";
+
+    // 슬롯 색: 케첩=빨강, 마요=하양
+    const _float4 vKetchup = _float4(0.85f, 0.12f, 0.12f, 1.f); // 빨강
+    const _float4 vMayo = _float4(0.95f, 0.95f, 0.95f, 1.f); // 하양
+
+    // 두 칸 위치(1280x720 기준). 화면 가운데에 가로로 두 칸.
+    const _float fSlotW = 220.f;
+    const _float fSlotH = 220.f;
+    const _float fGap = 60.f;
+    const _float fTotalW = fSlotW * SHOP_SLOT_COUNT + fGap * (SHOP_SLOT_COUNT - 1);
+    const _float fStartX = 640.f - fTotalW * 0.5f;
+    const _float fSlotY = 260.f;
+
+    const _float4 kColors[SHOP_SLOT_COUNT] = {vKetchup, vMayo};
+
+    for (_int i = 0; i < SHOP_SLOT_COUNT; ++i)
+    {
+        const _float fX = fStartX + i * (fSlotW + fGap);
+
+        CUI_Panel::UI_PANEL_DESC d;
+        d.fX = fX; d.fY = fSlotY;
+        d.fSizeX = fSlotW; d.fSizeY = fSlotH;
+        d.fDepth = 0.45f;                  // 상점 헤더/오버레이보다 앞
+        d.vColor = kColors[i];
+        m_pShopSlot[i] = static_cast<CUI_Panel*>(
+            m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
+                PROTO, L"Prototype_GameObject_UI_Panel", LV, SH, &d));
+
+        // 히트테스트용 사각형 저장 (x, y, w, h)
+        m_vShopSlotRect[i] = _float4(fX, fSlotY, fSlotW, fSlotH);
+    }
+
+    // 생성 직후 상점은 꺼진 상태 (스코어보드부터 시작) → 슬롯도 꺼둔다.
+    for (_int i = 0; i < SHOP_SLOT_COUNT; ++i)
+        if (m_pShopSlot[i]) m_pShopSlot[i]->SetOnOff(false);
+
+    return S_OK;
+}
+
+void CGame_Manager::Handle_ShopClick()
+{
+    // 좌클릭(누른 순간)만 처리
+    if (!m_pGameInstance->Mouse_Down(Engine::DIM_LB))
+        return;
+
+    // ---- 1) 절대 커서 위치 → 클라이언트 픽셀 좌표 ----
+    POINT pt;
+    if (!GetCursorPos(&pt))
+        return;
+    if (g_hWnd != nullptr)
+        ScreenToClient(g_hWnd, &pt);
+
+    // ---- 2) 클라이언트 픽셀 → 1280x720 디자인 좌표로 스케일 ----
+    //  창 크기가 디자인과 다를 수 있으므로 비율로 환산.
+    _float fDesignX = (_float)pt.x;
+    _float fDesignY = (_float)pt.y;
+    if (g_hWnd != nullptr)
+    {
+        RECT rc;
+        if (GetClientRect(g_hWnd, &rc))
+        {
+            const _float fClientW = (_float)(rc.right - rc.left);
+            const _float fClientH = (_float)(rc.bottom - rc.top);
+            if (fClientW > 0.f && fClientH > 0.f)
+            {
+                fDesignX = (_float)pt.x * (1280.f / fClientW);
+                fDesignY = (_float)pt.y * (720.f / fClientH);
+            }
+        }
+    }
+
+    // ---- 3) 슬롯 사각형 히트테스트 → 무기 교체 ----
+    for (_int i = 0; i < SHOP_SLOT_COUNT; ++i)
+    {
+        const _float fL = m_vShopSlotRect[i].x;
+        const _float fT = m_vShopSlotRect[i].y;
+        const _float fR = fL + m_vShopSlotRect[i].z;
+        const _float fB = fT + m_vShopSlotRect[i].w;
+
+        if (fDesignX >= fL && fDesignX <= fR && fDesignY >= fT && fDesignY <= fB)
+        {
+            // 플레이어를 컨트롤러에서 받아 무기 교체
+            CController* pController = m_pGameInstance->Get_Controller();
+            CPlayer_1rd* pPlayer = pController ? pController->Get_Player() : nullptr;
+            if (pPlayer != nullptr)
+            {
+                pPlayer->Set_Weapon(i);
+                GM_Log(L"Shop: 무기 %d 선택 (%s)", i, (i == 0) ? L"케첩건" : L"마요네즈건");
+            }
+
+            Highlight_ShopSlot(i);
+            break; // 한 번에 한 슬롯만
+        }
+    }
+}
+
+void CGame_Manager::Highlight_ShopSlot(_int iWeapon)
+{
+    // 선택된 슬롯은 밝게, 나머지는 기본 색으로.
+    //  (지금은 알파만 살짝 조절해 강조. 텍스처/테두리는 다음 단계.)
+    const _float4 vKetchup = _float4(0.85f, 0.12f, 0.12f, 1.f);
+    const _float4 vMayo = _float4(0.95f, 0.95f, 0.95f, 1.f);
+    const _float4 kBase[SHOP_SLOT_COUNT] = {vKetchup, vMayo};
+
+    for (_int i = 0; i < SHOP_SLOT_COUNT; ++i)
+    {
+        if (m_pShopSlot[i] == nullptr)
+            continue;
+
+        _float4 c = kBase[i];
+        if (i != iWeapon)
+            c.w = 0.45f; // 선택 안 된 슬롯은 반투명하게
+        m_pShopSlot[i]->Set_Color(c);
+    }
+}
+
+void CGame_Manager::Set_ShopUIMode(_bool bOpen)
+{
+    // 1) 커서: 상점 창이 열리면 보이고, 닫히면 숨긴다.
+    ShowCursor(bOpen);
+
+    // 2) 플레이어 입력 차단: 창이 열려 있는 동안 시점/이동/사격을 막는다.
+    CController* pController = m_pGameInstance->Get_Controller();
+    if (pController != nullptr)
+        pController->Set_BlockInput(bOpen);
+}
+
+// =====================================================================
 CGame_Manager* CGame_Manager::Create()
 {
     CGame_Manager* pInstance = new CGame_Manager();
@@ -604,6 +758,10 @@ void CGame_Manager::Free()
     m_pHUDTeamScoreText[1] = nullptr;
     for (_int i = 0; i < MAX_PLAYER; ++i)
         m_pHUDPlayerBox[i] = nullptr;
+
+    // 상점 슬롯도 레이어 소유. 참조만 끊는다.
+    for (_int i = 0; i < SHOP_SLOT_COUNT; ++i)
+        m_pShopSlot[i] = nullptr;
 
     m_vStats.clear();
     Safe_Release(m_pGameInstance);

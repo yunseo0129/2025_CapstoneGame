@@ -223,7 +223,7 @@ HRESULT CLevel_GamePlay::Ready_Layer()
     }
 
     return S_OK;
-} 
+}
 
 static inline _float4 UICol(_int r, _int g, _int b, _float a)
 {
@@ -307,20 +307,9 @@ HRESULT CLevel_GamePlay::Ready_UI()
         d.vColor = UICol(120, 90, 30, 0.95f);
         m_pGameInstance->Add_GameObject_ToLayer(PROTO, L"Prototype_GameObject_UI_Panel", LV, SH, &d);
     }
-    // 상품 슬롯 그리드 3 x 2
-    for (_int row = 0; row < 2; ++row)
-    {
-        for (_int col = 0; col < 3; ++col)
-        {
-            CUI_Panel::UI_PANEL_DESC d;
-            d.fX = 160.f + col * 332.f;
-            d.fY = 232.f + row * 216.f;
-            d.fSizeX = 300.f; d.fSizeY = 184.f;
-            d.fDepth = 0.5f;
-            d.vColor = UICol(30, 120, 100, 0.95f);
-            m_pGameInstance->Add_GameObject_ToLayer(PROTO, L"Prototype_GameObject_UI_Panel", LV, SH, &d);
-        }
-    }
+    // 상품 슬롯: 클릭 가능한 무기 슬롯은 CGame_Manager::Ready_ShopSlots() 에서
+    //  Layer_UI_Shop 에 직접 생성한다. (슬롯0=케첩건/빨강, 슬롯1=마요네즈건/하양)
+    //  여기서는 더 이상 더미 그리드를 만들지 않는다.
 
     // 생성 직후 상점은 꺼둠 (스코어보드부터 시작)
     {
@@ -334,7 +323,7 @@ HRESULT CLevel_GamePlay::Ready_UI()
 
 void CLevel_GamePlay::Process_NetworkEvents()
 {
-	// Update()에서 매 프레임마다 네트워크 이벤트를 처리하는 함수 여기로 옮기기
+    // Update()에서 매 프레임마다 네트워크 이벤트를 처리하는 함수 여기로 옮기기
 }
 
 CLevel_GamePlay* CLevel_GamePlay::Create(EngineContext* pContext)
