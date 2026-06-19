@@ -145,8 +145,12 @@ HRESULT CGameInstance::Draw()
     m_pLevel_Manager->Bind_CameraBuffer(m_pCommandList.Get(), RootParameterIndex::Camera, CAMERA_FPV);
     m_pLevel_Manager->Bind_LightBuffer(m_pCommandList.Get(), RootParameterIndex::Light);
     m_pRenderer->Draw_RenderObject(m_pCommandList.Get());
-    if (m_pParticle_System) m_pParticle_System->Render(m_pCommandList.Get());
     if (m_pFracture_System) m_pFracture_System->Render(m_pCommandList.Get());
+    if (m_pParticle_System) m_pParticle_System->Render(m_pCommandList.Get());
+
+    Set_RootSignature(m_pCommandList.Get());
+    m_pTexture_Manager->Bind_GlobalHeap(m_pCommandList.Get());
+    m_pRenderer->Draw_UI(m_pCommandList.Get());
     return S_OK;
 }
 

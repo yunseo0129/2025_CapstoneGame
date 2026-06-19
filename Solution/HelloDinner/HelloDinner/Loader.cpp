@@ -19,6 +19,9 @@
 #include "UI_Panel.h"
 #include "Font_Manager.h"
 #include "UI_Text.h"
+#include "MiniMap.h"
+
+#include "VIBuffer_Triangle.h"
 
 CLoader::CLoader(EngineContext* pContext)
     : m_pContext {pContext}
@@ -163,6 +166,9 @@ HRESULT CLoader::Loading_Level_GamePlay()
         if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_Component_VIBuffer_Rect",
             CVIBuffer_Rect::Create(m_pContext))))
             return E_FAIL;
+        if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_Component_VIBuffer_Triangle",
+            CVIBuffer_Triangle::Create(m_pContext))))
+            return E_FAIL;
     }
 
     // Prototype_Component_Pig_3rd
@@ -228,6 +234,11 @@ HRESULT CLoader::Loading_Level_GamePlay()
         CUI_Panel::Create(m_pContext))) )
         return E_FAIL;
     
+    // Prototype_GameObject_MiniMap
+    if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_GameObject_MiniMap",
+        CMiniMap::Create(m_pContext))))
+        return E_FAIL;
+
     if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_GameObject_UI_Text",
         CUI_Text::Create(m_pContext))) )
         return E_FAIL;

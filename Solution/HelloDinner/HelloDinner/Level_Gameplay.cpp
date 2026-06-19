@@ -20,6 +20,7 @@
 
 #include "Game_Manager.h"
 #include "UI_Panel.h"
+#include "MiniMap.h"
 
 CLevel_GamePlay::CLevel_GamePlay(EngineContext* pContext)
     : CLevel {pContext}
@@ -195,6 +196,30 @@ HRESULT CLevel_GamePlay::Ready_Layer()
         eState.iModelLevelIndex = LEVEL_GAMEPLAY;
         m_pGameInstance->Add_GameObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_Pig"),
             LEVEL_GAMEPLAY, TEXT("Layer_Other_Player"), &eState);
+    }
+    // MiniMap
+    {
+        CMiniMap::MINIMAP_DESC desc;
+        desc.fX = 1060.f;  desc.fY = 20.f;
+        desc.fSizeX = 200.f;   desc.fSizeY = 200.f;
+        desc.fDepth = 0.3f;
+        desc.vColor = _float4(0.f, 0.f, 0.f, 0.5f); // 단색 배경(반투명 검정)
+
+        desc.fViewRange = 40.f;            // 플레이어 주변 ±40유닛 (작을수록 확대)
+        desc.iMapLevelIndex = LEVEL_GAMEPLAY;
+        desc.strMapLayerTag = L"Layer_Map";
+
+        desc.fHeightMin = -5.f;                // 맵의 실제 최저~최고에 맞춰 조정
+        desc.fHeightMax = 20.f;
+        // vColorLow/High, fBlipScale, fMarkerSize 등은 기본값으로 충분
+
+        if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
+            LEVEL_STATIC, L"Prototype_GameObject_MiniMap",
+            LEVEL_GAMEPLAY, L"Layer_UI_MiniMap", &desc)))
+        {
+            MSG_BOX("Failed to Add GameObject To Layer : MiniMap");
+            return E_FAIL;
+        }
     }
 
     return S_OK;

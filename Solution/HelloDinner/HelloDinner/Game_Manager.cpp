@@ -112,6 +112,7 @@ void CGame_Manager::OnEnter_Scoreboard()
     // 스코어보드 UI ON, 나머지 OFF
     Set_LayerVisible(L"Layer_UI_Scoreboard", true);
     Set_LayerVisible(L"Layer_UI_Shop", false);
+    Set_LayerVisible(L"Layer_UI_MiniMap", false);
 
     // 최신 상태를 텍스트에 반영
     Refresh_Scoreboard();
@@ -127,6 +128,7 @@ void CGame_Manager::OnEnter_Shop()
     // 스코어보드 OFF, 상점 ON (게임은 뒤에서 계속)
     Set_LayerVisible(L"Layer_UI_Scoreboard", false);
     Set_LayerVisible(L"Layer_UI_Shop", true);
+    Set_LayerVisible(L"Layer_UI_MiniMap", false);
 }
 
 void CGame_Manager::OnEnter_Playing()
@@ -138,6 +140,7 @@ void CGame_Manager::OnEnter_Playing()
     // 전체화면 UI 모두 OFF (인게임 HUD 는 별도 레이어로 추후)
     Set_LayerVisible(L"Layer_UI_Scoreboard", false);
     Set_LayerVisible(L"Layer_UI_Shop", false);
+    Set_LayerVisible(L"Layer_UI_MiniMap", true);
 }
 
 void CGame_Manager::OnEnter_GameOver()

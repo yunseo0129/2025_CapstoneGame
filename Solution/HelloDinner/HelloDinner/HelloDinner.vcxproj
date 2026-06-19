@@ -166,6 +166,7 @@
     <ClInclude Include="Loader.h" />
     <ClInclude Include="LoadingWindow.h" />
     <ClInclude Include="LobbyWindow.h" />
+    <ClInclude Include="MiniMap.h" />
     <ClInclude Include="Particle_System.h" />
     <ClInclude Include="RoomWindow.h" />
     <ClInclude Include="Shadow.h" />
@@ -230,6 +231,7 @@
     <ClInclude Include="VIBuffer_Cube.h" />
     <ClInclude Include="VIBuffer_Rect.h" />
     <ClInclude Include="VIBuffer_Skybox.h" />
+    <ClInclude Include="VIBuffer_Triangle.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
@@ -257,6 +259,7 @@
     <ClCompile Include="Loader.cpp" />
     <ClCompile Include="LoadingWindow.cpp" />
     <ClCompile Include="LobbyWindow.cpp" />
+    <ClCompile Include="MiniMap.cpp" />
     <ClCompile Include="Particle_System.cpp" />
     <ClCompile Include="RoomWindow.cpp" />
     <ClCompile Include="Shadow.cpp" />
@@ -316,6 +319,7 @@
     <ClCompile Include="VIBuffer_Cube.cpp" />
     <ClCompile Include="VIBuffer_Rect.cpp" />
     <ClCompile Include="VIBuffer_Skybox.cpp" />
+    <ClCompile Include="VIBuffer_Triangle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="HelloDinner.rc" />

@@ -114,11 +114,16 @@ HRESULT CRenderer::Draw_RenderObject(ID3D12GraphicsCommandList* _CmdList)
     if (m_bInstancingEnabled)
         Render_InstancedQueue(_CmdList, PASS_MAIN);
     if (FAILED(Render_Blend(_CmdList))) return E_FAIL;
-    if (FAILED(Render_UI(_CmdList))) return E_FAIL;
-    if (FAILED(Render_Text(_CmdList))) return E_FAIL;
 #ifdef _DEBUG
     if (FAILED(Render_Collider(_CmdList))) return E_FAIL;
 #endif
+    return S_OK;
+}
+
+HRESULT CRenderer::Draw_UI(ID3D12GraphicsCommandList* _CmdList)
+{
+    if (FAILED(Render_UI(_CmdList))) return E_FAIL;
+    if (FAILED(Render_Text(_CmdList))) return E_FAIL;
     return S_OK;
 }
 

@@ -21,6 +21,7 @@ public:
     HRESULT Add_ShadowRenderObject(RENDERGROUP eRenderGroup, class CGameObject* pRenderObject);
     HRESULT Draw_RenderObject(ID3D12GraphicsCommandList* _CmdList);
     HRESULT Draw_ShadowQueue(ID3D12GraphicsCommandList* _CmdList);
+    HRESULT Draw_UI(ID3D12GraphicsCommandList* _CmdList);
 
     // Insatanced
     HRESULT Add_InstancedRenderObject(const _wstring& modelTag, class CGameObject* pObj);

@@ -488,6 +488,12 @@
     <ClInclude Include="UI_Text.h">
       <Filter>소스 파일\01. Engine\13.UI</Filter>
     </ClInclude>
+    <ClInclude Include="MiniMap.h">
+      <Filter>소스 파일\02. Game\GameObject\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="VIBuffer_Triangle.h">
+      <Filter>소스 파일\01. Engine\04. Components\04. VIbuffer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -717,6 +723,12 @@
     </ClCompile>
     <ClCompile Include="UI_Text.cpp">
       <Filter>소스 파일\01. Engine\13.UI</Filter>
+    </ClCompile>
+    <ClCompile Include="MiniMap.cpp">
+      <Filter>소스 파일\02. Game\GameObject\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="VIBuffer_Triangle.cpp">
+      <Filter>소스 파일\01. Engine\04. Components\04. VIbuffer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
