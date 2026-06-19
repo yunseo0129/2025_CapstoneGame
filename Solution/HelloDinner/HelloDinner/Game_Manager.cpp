@@ -3,6 +3,7 @@
 #include "GameInstance.h"
 #include "GameObject.h"
 #include "UI_Text.h"
+#include "UI_Panel.h"
 
 IMPLEMENT_SINGLETON(CGame_Manager)
 
@@ -51,6 +52,9 @@ void CGame_Manager::Start_Match()
 
     // 더미 데이터가 준비된 뒤 스코어보드 텍스트 생성 (포인터 보관)
     Ready_ScoreboardText();
+
+    // 인게임 HUD(중앙 상단 라운드 점수 + 생존/사망 박스) 생성
+    Ready_HUD();
 
     // 첫 라운드는 스코어보드 화면부터 시작
     m_ePhase = GAME_PHASE::PHASE_END; // Enter_Phase가 동작하도록 다른 값으로
@@ -113,6 +117,7 @@ void CGame_Manager::OnEnter_Scoreboard()
     Set_LayerVisible(L"Layer_UI_Scoreboard", true);
     Set_LayerVisible(L"Layer_UI_Shop", false);
     Set_LayerVisible(L"Layer_UI_MiniMap", false);
+    Set_LayerVisible(L"Layer_UI_HUD", false);
 
     // 최신 상태를 텍스트에 반영
     Refresh_Scoreboard();
@@ -129,18 +134,24 @@ void CGame_Manager::OnEnter_Shop()
     Set_LayerVisible(L"Layer_UI_Scoreboard", false);
     Set_LayerVisible(L"Layer_UI_Shop", true);
     Set_LayerVisible(L"Layer_UI_MiniMap", false);
+    Set_LayerVisible(L"Layer_UI_HUD", false);
 }
 
 void CGame_Manager::OnEnter_Playing()
 {
     m_bShopOpen = false;
+    m_fRoundTimer = ROUND_DURATION;   // 라운드 제한 시간 시작
 
     GM_Log(L"Round %d - PLAYING (게임 진행)", m_iRound);
 
-    // 전체화면 UI 모두 OFF (인게임 HUD 는 별도 레이어로 추후)
+    // 전체화면 UI 모두 OFF, 인게임 HUD ON
     Set_LayerVisible(L"Layer_UI_Scoreboard", false);
     Set_LayerVisible(L"Layer_UI_Shop", false);
     Set_LayerVisible(L"Layer_UI_MiniMap", true);
+    Set_LayerVisible(L"Layer_UI_HUD", true);
+
+    // 라운드 점수/생존 박스 최신화
+    Refresh_HUD();
 }
 
 void CGame_Manager::OnEnter_GameOver()
@@ -188,9 +199,26 @@ void CGame_Manager::Update_Shop(_float fTimeDelta)
     }
 }
 
-void CGame_Manager::Update_Playing(_float /*fTimeDelta*/)
+void CGame_Manager::Update_Playing(_float fTimeDelta)
 {
-    // 라운드 종료 조건은 추후(전멸/시간초과 등).
+    // 남은 라운드 시간 카운트다운 + HUD 타이머 갱신
+    if (m_fRoundTimer > 0.f)
+    {
+        m_fRoundTimer -= fTimeDelta;
+        if (m_fRoundTimer < 0.f)
+            m_fRoundTimer = 0.f;
+    }
+    Refresh_HUD();   // 타이머가 매 프레임 갱신되도록
+
+    // 시간 초과 시 라운드 종료 (승패 판정은 추후 생존 시스템으로 교체)
+    if (m_fRoundTimer <= 0.f)
+    {
+        // TODO(생존 시스템): 생존 인원이 많은 팀 승. 지금은 더미로 팀A 승.
+        End_Round(0);
+        return;
+    }
+
+    // 라운드 종료 조건은 추후(전멸 등).
     // 지금은 임시로: 디버그 키로 라운드 종료 테스트.
 #ifdef _DEBUG
     if (m_pGameInstance->Key_Down(DIK_F9))   // F9: 팀A 승으로 라운드 종료
@@ -402,6 +430,155 @@ _wstring CGame_Manager::Make_ScoreString() const
 }
 
 // =====================================================================
+//  인게임 HUD (중앙 상단 바)
+//   [팀A 생존박스] [팀A 승수] [타이머] [팀B 승수] [팀B 생존박스]
+//   - 생존=흰색 박스 / 사망=검정 박스 (박스 인덱스 = 슬롯)
+//   - 좌우 대칭, 화면 중앙(X=640) 기준
+// =====================================================================
+HRESULT CGame_Manager::Ready_HUD()
+{
+    const _uint PROTO = LEVEL_STATIC;
+    const _uint LV = LEVEL_GAMEPLAY;
+    const _wstring HUD = L"Layer_UI_HUD";
+
+    // 화면(1280x720) 중앙 상단 기준 좌표
+    const _float fCenterX = 640.f;
+    const _float fRowY = 30.f;   // 텍스트/박스가 놓이는 기준 Y
+    const _float fBox = 26.f;   // 생존 박스 한 변
+    const _float fBoxGap = 8.f;    // 박스 간 간격
+    const _float fScoreOff = 70.f;   // 중앙에서 팀 승수까지의 X 오프셋
+    const _float fBoxBlockOff = 130.f;  // 중앙에서 박스 그룹 안쪽 끝까지의 X 오프셋
+
+    // 한 팀(3명) 박스 그룹의 전체 너비
+    const _int   iPerTeam = 3;
+    const _float fGroupW = iPerTeam * fBox + (iPerTeam - 1) * fBoxGap;
+
+    // ---- 중앙: 남은 라운드 시간 타이머 ----
+    {
+        CUI_Text::UI_TEXT_DESC d;
+        d.fX = fCenterX; d.fY = fRowY;
+        d.fDepth = 0.3f;
+        d.strText = Make_TimerString();
+        d.strFontTag = L"Font_Default";
+        d.vColor = _float4(1.f, 1.f, 1.f, 1.f);
+        d.fTextScale = 0.85f;
+        d.bCentered = true;
+        m_pHUDTimerText = static_cast<CUI_Text*>(
+            m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
+                PROTO, L"Prototype_GameObject_UI_Text", LV, HUD, &d));
+    }
+
+    // ---- 팀 승수 (타이머 좌우) ----
+    {
+        // 팀 A (왼쪽, 파랑)
+        CUI_Text::UI_TEXT_DESC d;
+        d.fDepth = 0.3f;
+        d.strFontTag = L"Font_Default";
+        d.fTextScale = 0.85f;
+        d.bCentered = true;
+        d.fY = fRowY;
+
+        wchar_t buf[16];
+
+        d.fX = fCenterX - fScoreOff;
+        d.vColor = _float4(0.55f, 0.78f, 1.f, 1.f);
+        swprintf_s(buf, _countof(buf), L"%d", m_iTeamScore[0]);
+        d.strText = buf;
+        m_pHUDTeamScoreText[0] = static_cast<CUI_Text*>(
+            m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
+                PROTO, L"Prototype_GameObject_UI_Text", LV, HUD, &d));
+
+        // 팀 B (오른쪽, 빨강)
+        d.fX = fCenterX + fScoreOff;
+        d.vColor = _float4(1.f, 0.6f, 0.6f, 1.f);
+        swprintf_s(buf, _countof(buf), L"%d", m_iTeamScore[1]);
+        d.strText = buf;
+        m_pHUDTeamScoreText[1] = static_cast<CUI_Text*>(
+            m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
+                PROTO, L"Prototype_GameObject_UI_Text", LV, HUD, &d));
+    }
+
+    // ---- 생존/사망 박스 (양쪽 끝) ----
+    //  팀A(슬롯 0~2): 왼쪽 그룹, 안쪽 끝이 (center - fBoxBlockOff)에서 왼쪽으로.
+    //  팀B(슬롯 3~5): 오른쪽 그룹, 안쪽 끝이 (center + fBoxBlockOff)에서 오른쪽으로.
+    const _float fBoxY = fRowY - 2.f; // 텍스트와 세로 정렬 보정(필요시 조정)
+
+    // 팀A 그룹 시작 X (왼쪽 그룹의 가장 왼쪽 박스)
+    const _float fA_StartX = (fCenterX - fBoxBlockOff) - fGroupW;
+    // 팀B 그룹 시작 X (오른쪽 그룹의 가장 왼쪽 박스)
+    const _float fB_StartX = (fCenterX + fBoxBlockOff);
+
+    const _int iCount = (m_vStats.size() < (size_t)MAX_PLAYER) ? (_int)m_vStats.size() : MAX_PLAYER;
+    for (_int i = 0; i < iCount; ++i)
+    {
+        const _int iTeam = m_vStats[i].iTeam;           // 0 또는 1
+        const _int iIdxInTeam = (iTeam == 0) ? i : (i - iPerTeam); // 팀 내 0,1,2
+        const _float fGroupStart = (iTeam == 0) ? fA_StartX : fB_StartX;
+
+        CUI_Panel::UI_PANEL_DESC d;
+        d.fX = fGroupStart + iIdxInTeam * (fBox + fBoxGap);
+        d.fY = fBoxY;
+        d.fSizeX = fBox; d.fSizeY = fBox;
+        d.fDepth = 0.4f;
+        // 초기색은 Refresh_HUD 가 생존 여부로 다시 칠한다.
+        d.vColor = _float4(1.f, 1.f, 1.f, 1.f);
+        m_pHUDPlayerBox[i] = static_cast<CUI_Panel*>(
+            m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
+                PROTO, L"Prototype_GameObject_UI_Panel", LV, HUD, &d));
+    }
+
+    // 생성 직후엔 PLAYING 단계가 아니므로 꺼둔다.
+    Set_LayerVisible(HUD, false);
+
+    return S_OK;
+}
+
+void CGame_Manager::Refresh_HUD()
+{
+    // 중앙 타이머 갱신
+    if (m_pHUDTimerText != nullptr)
+        m_pHUDTimerText->Set_Text(Make_TimerString());
+
+    // 팀 승수 갱신
+    for (_int t = 0; t < 2; ++t)
+    {
+        if (m_pHUDTeamScoreText[t] != nullptr)
+        {
+            wchar_t buf[16];
+            swprintf_s(buf, _countof(buf), L"%d", m_iTeamScore[t]);
+            m_pHUDTeamScoreText[t]->Set_Text(buf);
+        }
+    }
+
+    // 생존/사망 박스 색: 생존=흰색, 사망=검정
+    const _float4 vAlive = _float4(1.f, 1.f, 1.f, 1.f);   // 흰색
+    const _float4 vDead = _float4(0.f, 0.f, 0.f, 1.f);   // 검정
+
+    const _int iCount = (m_vStats.size() < (size_t)MAX_PLAYER) ? (_int)m_vStats.size() : MAX_PLAYER;
+    for (_int i = 0; i < iCount; ++i)
+    {
+        if (m_pHUDPlayerBox[i] == nullptr)
+            continue;
+
+        // TODO(생존 시스템): 실제 "이번 라운드 생존" 플래그로 교체.
+        //  지금은 더미로 항상 생존(흰색) 처리.
+        const _bool bAlive = true;
+        m_pHUDPlayerBox[i]->Set_Color(bAlive ? vAlive : vDead);
+    }
+}
+
+_wstring CGame_Manager::Make_TimerString() const
+{
+    // 남은 라운드 시간 "m:ss"
+    const _int iTotal = (_int)(m_fRoundTimer + 0.5f); // 반올림
+    const _int iMin = iTotal / 60;
+    const _int iSec = iTotal % 60;
+    wchar_t buf[16];
+    swprintf_s(buf, _countof(buf), L"%d:%02d", iMin, iSec);
+    return buf;
+}
+
+// =====================================================================
 CGame_Manager* CGame_Manager::Create()
 {
     CGame_Manager* pInstance = new CGame_Manager();
@@ -420,6 +597,13 @@ void CGame_Manager::Free()
     m_pScoreText = nullptr;
     for (_int i = 0; i < MAX_PLAYER; ++i)
         m_pPlayerRowText[i] = nullptr;
+
+    // HUD 도 레이어 소유. 참조만 끊는다.
+    m_pHUDTimerText = nullptr;
+    m_pHUDTeamScoreText[0] = nullptr;
+    m_pHUDTeamScoreText[1] = nullptr;
+    for (_int i = 0; i < MAX_PLAYER; ++i)
+        m_pHUDPlayerBox[i] = nullptr;
 
     m_vStats.clear();
     Safe_Release(m_pGameInstance);

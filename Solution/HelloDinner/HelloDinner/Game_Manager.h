@@ -105,6 +105,11 @@ private:
     _wstring Make_RowString(const PLAYER_STAT& stat) const; // "이름  K/D/A  $돈" 포맷
     _wstring Make_ScoreString() const;      // "TEAM A  n : n  TEAM B   ROUND r/10"
 
+    // ---- UI: 인게임 HUD (중앙 상단 바: 생존박스 - 승수 - 타이머 - 승수 - 생존박스) ----
+    HRESULT  Ready_HUD();                   // HUD 패널/텍스트 생성 + 포인터 보관
+    void     Refresh_HUD();                 // 점수/타이머 텍스트 + 생존 박스 색 갱신
+    _wstring Make_TimerString() const;      // 남은 라운드 시간 "m:ss"
+
 private:
     class CGameInstance* m_pGameInstance = nullptr;
 
@@ -118,6 +123,9 @@ private:
     _bool       m_bShopOpen = false;        // E키 토글 상태
     _float      m_fShopTimer = 0.f;         // 구매 단계 남은 시간
 
+    // 플레이 단계: 남은 라운드 시간 (HUD 중앙 타이머)
+    _float      m_fRoundTimer = 0.f;
+
     // 스코어보드 단계 타임아웃(모두 로드 안 끝나도 강제 진행)
     _float      m_fScoreboardTimer = 0.f;
 
@@ -130,10 +138,18 @@ private:
     class CUI_Text* m_pPlayerRowText[6] = {nullptr}; // 플레이어 6명 행 (슬롯 인덱스 = 배열 인덱스)
     static constexpr _int MAX_PLAYER = 6;
 
+    // ---- 인게임 HUD 포인터 ----
+    //  중앙 상단 바: [팀A 생존박스] [팀A 승수] [타이머] [팀B 승수] [팀B 생존박스]
+    //  생존=흰색 박스 / 사망=검정 박스. 박스 인덱스 = 슬롯(= m_vStats 인덱스).
+    class CUI_Text* m_pHUDTimerText = nullptr;            // 중앙: 남은 시간
+    class CUI_Text* m_pHUDTeamScoreText[2] = {nullptr}; // [0]=팀A 승수, [1]=팀B 승수
+    class CUI_Panel* m_pHUDPlayerBox[MAX_PLAYER] = {nullptr};
+
     // ---- 상수 ----
     static constexpr _int   MAX_ROUND = 10;
     static constexpr _float SHOP_DURATION = 15.f;  // 구매 시간(초)
     static constexpr _float SCOREBOARD_TIMEOUT = 8.f;   // 스코어보드 최대 대기(초)
+    static constexpr _float ROUND_DURATION = 100.f; // 한 라운드 제한 시간(초)
 
 public:
     static CGame_Manager* Create();
