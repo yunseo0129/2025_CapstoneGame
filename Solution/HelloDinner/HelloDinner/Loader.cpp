@@ -167,7 +167,7 @@ HRESULT CLoader::Loading_Level_GamePlay()
 
     // Prototype_Component_Pig_3rd
     {
-        _matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(0.01f, 0.01f, 0.01f);
+        _matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(1.f, 1.f, 1.f);
         if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Pig_3rd"),
             CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Pig/Prototype_Component_Pig.txt", PreTransformMatrix))))
             return E_FAIL;
@@ -183,7 +183,9 @@ HRESULT CLoader::Loading_Level_GamePlay()
 
     // Prototype_Component_ketchupGun
     {
-        _matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(1.f, 1.f, 1.f);
+        _matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(1.f, 1.f, 1.f) * XMMatrixRotationX(XMConvertToRadians(90.f)) *
+            XMMatrixRotationY(XMConvertToRadians(180.f)) *
+            XMMatrixRotationZ(XMConvertToRadians(0.f));
         if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_ketchupGun"),
             CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/Gun/Prototype_Component_ketchupGun.txt", PreTransformMatrix))))
             return E_FAIL;
