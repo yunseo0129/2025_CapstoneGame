@@ -76,10 +76,6 @@ void CController::Input_Player(_float fTimeDelta)
 	}
 }
 
-void CController::Input_UI(_float fTimeDelta)
-{
-}
-
 void CController::Update_Input()
 {
     for (int i = 0; i < MOUSE_END; ++i)

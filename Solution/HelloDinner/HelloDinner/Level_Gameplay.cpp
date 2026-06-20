@@ -214,6 +214,8 @@ HRESULT CLevel_GamePlay::Ready_Layer()
             MSG_BOX("Failed to Add GameObject To Layer : MiniMap");
             return E_FAIL;
         }
+    }
+
     // Chick_3rd
     {
         CPlayer_Chick::PLAYER_CHICK_DESC eState;

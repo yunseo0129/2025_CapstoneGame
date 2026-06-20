@@ -28,6 +28,7 @@ private:
     void Predict_Local(_float fTimeDelta);
     void Send_InputPacket(_float fTimeDelta);
     void Apply_ServerEvents(_float fTimeDelta);
+    void Input_Player(_float fTimeDelta);
     void Input_UI(_float fTimeDelta);
 
     unsigned char Build_KeyBitFlags() const;
