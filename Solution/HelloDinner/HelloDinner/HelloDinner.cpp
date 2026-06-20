@@ -51,14 +51,29 @@ static bool RunFrontend(HINSTANCE hInstance)
             return false;                         // 프로그램 종료
         if (LOBBY_START_GAME == eLobby)
         {
-            // 대기방을 건너뛴 빠른 시작: 기본값 RED / 1번.
-            g_MatchSetup.iTeam = 0;
+            // 빠른 매칭 큐 진입 (서버가 SC_REDIRECT를 보내면 인스턴스 접속 자동 처리)
+            g_MatchSetup.iTeam   = 0;
             g_MatchSetup.iNumber = 1;
-            return true;                          // 곧바로 게임 시작
+            NetworkClient::GetInstance()->Send_QuickMatch();
+            return true;
         }
 
         // [방 만들기] / [방 들어가기] → 대기방
         bool bIsHost = (LOBBY_CREATE_ROOM == eLobby);
+
+        if (bIsHost) {
+            // 방 생성 요청 후 서버 응답(SC_ROOM_CREATED) 대기
+            NetworkClient::GetInstance()->Send_CreateRoom();
+            // 짧은 폴링으로 방 코드 수신 대기 (최대 3초)
+            for (int i = 0; i < 300; ++i) {
+                if (NetworkClient::GetInstance()->GetRoomSnapshot().code != 0)
+                    break;
+                Sleep(10);
+                MSG tmpMsg;
+                while (PeekMessage(&tmpMsg, nullptr, 0, 0, PM_REMOVE))
+                    DispatchMessage(&tmpMsg);
+            }
+        }
 
         CRoomWindow* pRoom = CRoomWindow::Create(hInstance, bIsHost);
         if (nullptr == pRoom)
@@ -68,7 +83,7 @@ static bool RunFrontend(HINSTANCE hInstance)
         Safe_Release(pRoom);
 
         if (ROOM_START_GAME == eRoom)
-            return true;                          // 대기방에서 게임 시작
+            return true;
         // ROOM_LEAVE → 로비로 돌아가서 반복
     }
 }

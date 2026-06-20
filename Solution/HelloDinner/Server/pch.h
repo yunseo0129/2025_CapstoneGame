@@ -8,6 +8,8 @@
 #include <mutex>
 #include <random>
 #include <unordered_set>
+#include <unordered_map>
+#include <algorithm>
 #include <chrono>
 #include "PlayerInfo.h"
 #include "protocol.h"

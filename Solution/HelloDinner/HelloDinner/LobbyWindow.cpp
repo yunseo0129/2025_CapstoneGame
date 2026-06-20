@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "LobbyWindow.h"
+#include "NetworkClient.h"
 
 #include <gdiplus.h>
 #include <cmath>
@@ -219,17 +220,132 @@ void CLobbyWindow::OnCreate(HWND hWnd)
     // 정지 이미지면 타이머 불필요 (한 번만 그림)
 }
 
+// 4자리 방 코드 입력을 받는 간단한 팝업 다이얼로그
+// 성공 시 code에 값 저장 후 true 반환, 취소 시 false 반환
+static bool PromptRoomCode(HWND hParent, int& out_code)
+{
+    // 다이얼로그 윈도우 클래스 등록
+    static bool s_registered = false;
+    static const TCHAR* CLASS_NAME = TEXT("RoomCodeDlg");
+    if (!s_registered) {
+        WNDCLASSEX wc = {};
+        wc.cbSize        = sizeof(WNDCLASSEX);
+        wc.lpfnWndProc   = DefWindowProc;
+        wc.hInstance     = GetModuleHandle(nullptr);
+        wc.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
+        wc.lpszClassName = CLASS_NAME;
+        RegisterClassEx(&wc);
+        s_registered = true;
+    }
+
+    const int DLG_W = 320, DLG_H = 150;
+    int x = (GetSystemMetrics(SM_CXSCREEN) - DLG_W) / 2;
+    int y = (GetSystemMetrics(SM_CYSCREEN) - DLG_H) / 2;
+
+    HWND hDlg = CreateWindowEx(WS_EX_DLGMODALFRAME, CLASS_NAME, TEXT("방 코드 입력"),
+        WS_POPUP | WS_CAPTION | WS_SYSMENU,
+        x, y, DLG_W, DLG_H, hParent, nullptr, GetModuleHandle(nullptr), nullptr);
+    if (!hDlg) return false;
+
+    // 안내 문구
+    CreateWindowEx(0, TEXT("STATIC"), TEXT("방 코드 4자리를 입력하세요:"),
+        WS_CHILD | WS_VISIBLE,
+        20, 20, 280, 24, hDlg, nullptr, GetModuleHandle(nullptr), nullptr);
+
+    // 숫자 전용 EDIT 컨트롤
+    HWND hEdit = CreateWindowEx(WS_EX_CLIENTEDGE, TEXT("EDIT"), TEXT(""),
+        WS_CHILD | WS_VISIBLE | ES_NUMBER | ES_CENTER,
+        80, 52, 160, 28, hDlg, (HMENU)100, GetModuleHandle(nullptr), nullptr);
+    SendMessage(hEdit, EM_SETLIMITTEXT, 4, 0);
+
+    // 확인 버튼
+    HWND hOK = CreateWindowEx(0, TEXT("BUTTON"), TEXT("확인"),
+        WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
+        80, 96, 80, 30, hDlg, (HMENU)IDOK, GetModuleHandle(nullptr), nullptr);
+    // 취소 버튼
+    CreateWindowEx(0, TEXT("BUTTON"), TEXT("취소"),
+        WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+        170, 96, 80, 30, hDlg, (HMENU)IDCANCEL, GetModuleHandle(nullptr), nullptr);
+
+    SetFocus(hEdit);
+    ShowWindow(hDlg, SW_SHOW);
+    UpdateWindow(hDlg);
+
+    bool confirmed = false;
+    MSG msg;
+    while (GetMessage(&msg, nullptr, 0, 0) > 0) {
+        if (msg.message == WM_COMMAND) {
+            WORD id = LOWORD(msg.wParam);
+            if (id == IDOK || (msg.hwnd == hEdit && HIWORD(msg.wParam) == EN_CHANGE)) {
+                if (id == IDOK) {
+                    TCHAR buf[8] = {};
+                    GetWindowText(hEdit, buf, 8);
+                    int code = _ttoi(buf);
+                    if (code >= 1000 && code <= 9999) {
+                        out_code  = code;
+                        confirmed = true;
+                        break;
+                    } else {
+                        MessageBox(hDlg, TEXT("1000~9999 사이의 4자리 숫자를 입력하세요."),
+                                   TEXT("오류"), MB_OK | MB_ICONWARNING);
+                    }
+                }
+            } else if (id == IDCANCEL) {
+                break;
+            }
+        }
+        if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE) break;
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
+    DestroyWindow(hDlg);
+    return confirmed;
+}
+
 void CLobbyWindow::OnCommand(_uint iCtrlID)
 {
     switch (iCtrlID)
     {
-    case IDC_BTN_START:  m_eResult = LOBBY_START_GAME;  break;
-    case IDC_BTN_CREATE: m_eResult = LOBBY_CREATE_ROOM; break;
-    case IDC_BTN_JOIN:   m_eResult = LOBBY_JOIN_ROOM;   break;
+    case IDC_BTN_START:
+        m_eResult = LOBBY_START_GAME;
+        break;
+    case IDC_BTN_CREATE:
+        m_eResult = LOBBY_CREATE_ROOM;
+        break;
+    case IDC_BTN_JOIN: {
+        // 코드 입력 팝업 → 서버에 입장 요청 → 결과 대기
+        int code = 0;
+        if (!PromptRoomCode(m_hWnd, code))
+            return;  // 취소 — 로비로 복귀
+
+        NetworkClient::GetInstance()->Send_JoinRoomCode(code);
+
+        // SC_ROOM_JOIN_RESULT 대기 (최대 3초)
+        for (int i = 0; i < 300; ++i) {
+            auto snap = NetworkClient::GetInstance()->GetRoomSnapshot();
+            if (!snap.join_pending) {
+                if (snap.join_result == RJR_OK) {
+                    m_eResult = LOBBY_JOIN_ROOM;
+                } else {
+                    const TCHAR* msg = TEXT("알 수 없는 오류");
+                    if (snap.join_result == RJR_NOT_FOUND) msg = TEXT("존재하지 않는 방입니다.");
+                    else if (snap.join_result == RJR_FULL)    msg = TEXT("방이 가득 찼습니다.");
+                    else if (snap.join_result == RJR_STARTED) msg = TEXT("이미 시작된 방입니다.");
+                    MessageBox(m_hWnd, msg, TEXT("입장 실패"), MB_OK | MB_ICONINFORMATION);
+                }
+                break;
+            }
+            Sleep(10);
+            MSG tmpMsg;
+            while (PeekMessage(&tmpMsg, nullptr, 0, 0, PM_REMOVE))
+                DispatchMessage(&tmpMsg);
+        }
+        break;
+    }
     default: return;
     }
 
-    // GetMessage 대기 상태를 깨워서 DoModal 루프가 즉시 결과를 확인하도록
     PostMessage(m_hWnd, WM_NULL, 0, 0);
 }
 

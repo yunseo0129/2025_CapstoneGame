@@ -29,6 +29,9 @@
     <Filter Include="소스 파일\MatchManager">
       <UniqueIdentifier>{124f6481-73bf-4014-8942-a5a2cdd3b8b2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\RoomManager">
+      <UniqueIdentifier>{f2c35bae-ca1d-4cb8-8e4c-523b6004cc79}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -51,6 +54,9 @@
     </ClCompile>
     <ClCompile Include="InstanceManager.cpp">
       <Filter>소스 파일\Server\InstanceManager</Filter>
+    </ClCompile>
+    <ClCompile Include="RoomManager.cpp">
+      <Filter>소스 파일\RoomManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -83,6 +89,9 @@
     </ClInclude>
     <ClInclude Include="InstanceInfo.h">
       <Filter>소스 파일\Defines</Filter>
+    </ClInclude>
+    <ClInclude Include="RoomManager.h">
+      <Filter>소스 파일\RoomManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

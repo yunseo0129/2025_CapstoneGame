@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base.h"
+#include <vector>
 
 // =====================================================================
 //  CRoomWindow
@@ -28,7 +29,7 @@ private:
     virtual ~CRoomWindow() = default;
 
 public:
-    HRESULT     Initialize(HINSTANCE hInstance, _bool bIsHost);
+    HRESULT     Initialize(HINSTANCE hInstance, _bool bIsHost, int serverRoomCode = 0);
     ROOM_RESULT DoModal();
     void        Close();
 
@@ -38,6 +39,7 @@ private:
     void OnCreate(HWND hWnd);
     void OnPaint(HWND hWnd);
     void OnCommand(_uint iCtrlID);
+    void OnPollTimer();
 
     // 좌클릭 시 블럭 격자 히트테스트 → 팀/번호 선택
     void OnLButtonDown(int x, int y);
@@ -65,6 +67,11 @@ private:
 
     void* m_pBackBuffer = nullptr; // Gdiplus::Bitmap* (더블버퍼)
 
+    // ── 서버 방 상태 캐시 (WM_TIMER 폴링으로 갱신) ──
+    struct RoomMemberCache { int id; char name[20]; };
+    std::vector<RoomMemberCache> m_cachedMembers;
+    int  m_cachedHostId = -1;
+
     HWND        m_hBtnPrimary = nullptr; // 방장: 게임시작 / 참가자: 준비
     HWND        m_hBtnLeave = nullptr; // 나가기
     HFONT       m_hFontBtn = nullptr;
@@ -72,6 +79,6 @@ private:
     static const _tchar* WND_CLASS_NAME;
 
 public:
-    static CRoomWindow* Create(HINSTANCE hInstance, _bool bIsHost);
+    static CRoomWindow* Create(HINSTANCE hInstance, _bool bIsHost, int serverRoomCode = 0);
     virtual void Free() override;
 };

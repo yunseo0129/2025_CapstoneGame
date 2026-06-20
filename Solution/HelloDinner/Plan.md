@@ -649,6 +649,62 @@ recv 임시 버퍼(`recvBuf`)가 충분한지 확인하고 필요 시 **512 또�
 
 ---
 
+## 7. 방 코드 기반 매칭 (수동 방)
+
+> 구현 완료: 2026-06-20
+
+### 목표
+
+친구끼리 4자리 코드를 공유해 **원하는 사람들끼리** 같은 Room에 모인 뒤,
+방장이 시작을 누르면 그 인원 그대로 인스턴스 서버로 핸드오프된다.
+기존 자동 매칭(빠른 매칭)은 **유지하며 두 경로가 공존**한다.
+
+### 핵심 설계 결정
+
+- **방 코드:** 4자리 숫자 (1000~9999), 로비 전용 식별자
+- **`code ≠ room_id`:** 코드는 로비 대기방용, `room_id`는 인스턴스 서버용 (별개)
+- **자동 큐 옵트인:** 로그인 시 자동 큐 진입 제거 → `CS_QUICK_MATCH` 수신 시 큐 진입
+
+### 추가된 패킷 (`Server/protocol.h`)
+
+| ID | 패킷 | 방향 | 설명 |
+|----|------|------|------|
+| CS 5 | `CS_CREATE_ROOM` | 클라→로비 | 방 생성 요청 |
+| CS 6 | `CS_JOIN_ROOM_CODE` | 클라→로비 | 코드로 대기방 입장 |
+| CS 7 | `CS_START_GAME` | 클라→로비 | 방장 게임 시작 |
+| CS 8 | `CS_LEAVE_ROOM` | 클라→로비 | 대기방 나가기 |
+| CS 9 | `CS_QUICK_MATCH` | 클라→로비 | 빠른 매칭 옵트인 |
+| SC 7 | `SC_ROOM_CREATED` | 로비→클라 | 발급된 코드 통보 |
+| SC 8 | `SC_ROOM_JOIN_RESULT` | 로비→클라 | 입장 결과 (`ROOM_JOIN_RESULT`) |
+| SC 9 | `SC_ROOM_UPDATE` | 로비→클라 | 멤버 목록 갱신 브로드캐스트 |
+
+### 추가/수정된 파일
+
+| 파일 | 변경 내용 |
+|------|-----------|
+| `Server/protocol.h` | 신규 패킷 ID/구조체 + `ROOM_JOIN_RESULT` enum |
+| `Server/RoomManager.h/.cpp` | **신규** 대기방 레지스트리 싱글톤 |
+| `Server/SessionManager.cpp` | 로그인 자동큐 제거, CS 핸들러 5종, disconnect 시 LeaveRoom |
+| `Server/MatchManager.h/.cpp` | `LaunchRoom()` 추출 (자동/수동 공용 핸드오프) |
+| `Server/SERVER.vcxproj` | RoomManager 파일 컴파일 등록 |
+| `Server/pch.h` | `unordered_map`, `algorithm` 추가 |
+| `HelloDinner/NetworkClient.h/.cpp` | 송신 5종, 수신 3종, 방 상태 필드 (`RoomSnapshot`) |
+| `HelloDinner/HelloDinner.cpp` | RunFrontend: 방 만들기 시 서버 코드 대기 로직 |
+| `HelloDinner/LobbyWindow.cpp` | 버튼→패킷 연결, 코드 입력 팝업 (`PromptRoomCode`) |
+| `HelloDinner/RoomWindow.h/.cpp` | 서버 코드 표시, WM_TIMER 폴링, 멤버 목록 표시 |
+
+### 검증 방법
+
+1. `Server` → `InstanceServer` → `HelloDinner.exe` ×2 빌드/실행
+2. **방 생성:** 클라A "방 만들기" → 서버 콘솔 `Created room XXXX` + 클라A 창에 코드 표시
+3. **코드 입장:** 클라B "방 들어가기" → 코드 입력 → 양쪽 대기방에 2명 목록 동시 갱신
+4. **오입력:** 없는 코드 → `RJR_NOT_FOUND` 메시지박스 / 가득 찬 방 → `RJR_FULL` 확인
+5. **게임 시작:** 클라A(방장) "게임 시작" → 양쪽 모두 동일 인스턴스 Room에 접속
+6. **빠른 매칭 회귀:** 클라 2개가 "게임 시작" → 기존 자동매칭 동작 확인
+7. **나가기/끊김:** 대기방 나가기 / 강제 종료 시 남은 멤버 목록 갱신 확인
+
+---
+
 ## 6. 검증 방법 (전체 공통)
 
 1. **빌드 순서:** `Server` (LobbyServer) → `InstanceServer` → `HelloDinner` (클라이언트) 빌드.

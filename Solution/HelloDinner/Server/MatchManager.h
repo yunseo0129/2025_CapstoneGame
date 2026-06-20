@@ -12,6 +12,7 @@ public:
 
 	void EnqueuePlayer(int c_id);
 	void DequeuePlayer(int c_id);
+	void LaunchRoom(const vector<int>& players);  // 자동/수동 공용 인스턴스 핸드오프
 
 private:
 	MatchManager() = default;

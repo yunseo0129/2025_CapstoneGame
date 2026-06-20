@@ -37,6 +37,9 @@
     <ClCompile Include="Room.cpp">
       <Filter>소스 파일\Room</Filter>
     </ClCompile>
+    <ClCompile Include="RoomPhaseManager.cpp">
+      <Filter>소스 파일\Room</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameSession.h">
@@ -55,6 +58,9 @@
       <Filter>소스 파일\InstanceServer</Filter>
     </ClInclude>
     <ClInclude Include="Room.h">
+      <Filter>소스 파일\Room</Filter>
+    </ClInclude>
+    <ClInclude Include="RoomPhaseManager.h">
       <Filter>소스 파일\Room</Filter>
     </ClInclude>
   </ItemGroup>

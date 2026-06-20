@@ -1,0 +1,38 @@
+#pragma once
+#include "pch.h"
+
+struct WaitingRoom {
+    int         code;
+    int         host_c_id;
+    vector<int> members;
+    bool        started = false;
+};
+
+class RoomManager
+{
+public:
+    static RoomManager* GetInstance()
+    {
+        static RoomManager instance;
+        return &instance;
+    }
+
+    int              CreateRoom(int host_c_id);
+    ROOM_JOIN_RESULT JoinRoom(int code, int c_id);
+    void             LeaveRoom(int c_id);
+    bool             StartRoom(int code, int requester_c_id, vector<int>& out_members);
+    bool             StartByHost(int host_c_id, int& out_code, vector<int>& out_members);
+    void             BroadcastRoomUpdate(int code);
+
+private:
+    RoomManager() = default;
+    ~RoomManager() = default;
+    RoomManager(const RoomManager&) = delete;
+    RoomManager& operator=(const RoomManager&) = delete;
+
+    int GenerateUniqueCode();
+
+    mutex                           m_lock;
+    unordered_map<int, WaitingRoom> m_rooms;        // code → 방
+    unordered_map<int, int>         m_player_room;  // c_id → code
+};

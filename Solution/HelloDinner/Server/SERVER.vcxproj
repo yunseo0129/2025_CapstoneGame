@@ -139,6 +139,7 @@
     </ClCompile>
     <ClCompile Include="MatchManager.cpp" />
     <ClCompile Include="OverllapedEXP.cpp" />
+    <ClCompile Include="RoomManager.cpp" />
     <ClCompile Include="Session.cpp" />
     <ClCompile Include="SessionManager.cpp" />
   </ItemGroup>
@@ -151,6 +152,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="PlayerInfo.h" />
     <ClInclude Include="protocol.h" />
+    <ClInclude Include="RoomManager.h" />
     <ClInclude Include="Session.h" />
     <ClInclude Include="SessionManager.h" />
   </ItemGroup>

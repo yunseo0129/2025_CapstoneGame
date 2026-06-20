@@ -25,6 +25,12 @@ constexpr char CS_MOVE = 1;
 constexpr char CS_LOGOUT = 2;
 constexpr char CS_JOIN_ROOM = 3;       // 인스턴스 서버에 방 진입 요청
 constexpr char CS_CHAR_SELECT = 4;     // 캐릭터 선택 완료 통보 (클라 권위)
+// 수동 방 관련 패킷 (로비 소켓 전용)
+constexpr char CS_CREATE_ROOM    = 5;  // 방 생성 요청
+constexpr char CS_JOIN_ROOM_CODE = 6;  // 코드로 대기방 입장
+constexpr char CS_START_GAME     = 7;  // 방장: 게임 시작
+constexpr char CS_LEAVE_ROOM     = 8;  // 대기방 나가기
+constexpr char CS_QUICK_MATCH    = 9;  // 빠른 매칭 옵트인
 
 // 패킷 ID (서버 → 클라)
 constexpr char SC_LOGIN_INFO = 0;
@@ -34,6 +40,10 @@ constexpr char SC_MOVE_PLAYER = 3;
 constexpr char SC_MATCH_WAIT = 4;
 constexpr char SC_MATCH_SUCCESS = 5;
 constexpr char SC_REDIRECT = 6;        // 인스턴스 서버 주소 전달
+// 수동 방 관련 패킷 (로비 소켓 전용)
+constexpr char SC_ROOM_CREATED     = 7;  // 방 코드 통보 (방장)
+constexpr char SC_ROOM_JOIN_RESULT = 8;  // 입장 결과 (성공/실패)
+constexpr char SC_ROOM_UPDATE      = 9;  // 멤버 목록 갱신 브로드캐스트
 
 // 인스턴스 ↔ 로비 (내부 통신)
 constexpr char IS_HEARTBEAT = 10;      // 부하 정보 리포트
@@ -80,6 +90,32 @@ struct CS_JOIN_ROOM_PACKET {
     int     player_id;
     char    name[NAME_SIZE];
     char    auth_token[32];
+};
+
+// ── 수동 방 관련 패킷 구조체 ──────────────────────────────────────────────
+enum ROOM_JOIN_RESULT : unsigned char {
+    RJR_OK = 0, RJR_NOT_FOUND = 1, RJR_FULL = 2, RJR_STARTED = 3
+};
+
+struct CS_CREATE_ROOM_PACKET    { unsigned char size; char type; };
+struct CS_JOIN_ROOM_CODE_PACKET { unsigned char size; char type; int code; };
+struct CS_START_GAME_PACKET     { unsigned char size; char type; };
+struct CS_LEAVE_ROOM_PACKET     { unsigned char size; char type; };
+struct CS_QUICK_MATCH_PACKET    { unsigned char size; char type; };
+
+struct SC_ROOM_CREATED_PACKET   { unsigned char size; char type; int code; };
+struct SC_ROOM_JOIN_RESULT_PACKET {
+    unsigned char size; char type;
+    unsigned char result;  // ROOM_JOIN_RESULT
+    int           code;    // 성공 시 입장한 방 코드
+};
+struct SC_ROOM_UPDATE_PACKET {
+    unsigned char size; char type;
+    int           code;
+    int           host_id;
+    unsigned char member_count;
+    int           member_ids[ROOM_MAX_PLAYER];
+    char          member_names[ROOM_MAX_PLAYER][NAME_SIZE];
 };
 
 struct SC_LOGIN_INFO_PACKET {

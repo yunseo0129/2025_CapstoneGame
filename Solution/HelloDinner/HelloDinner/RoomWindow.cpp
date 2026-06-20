@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "RoomWindow.h"
+#include "NetworkClient.h"
 
 #include <gdiplus.h>
 #include <windowsx.h>
@@ -12,7 +13,8 @@
 namespace
 {
     constexpr _uint IDC_BTN_PRIMARY = 2001; // 방장: 게임 시작 / 참가자: 준비
-    constexpr _uint IDC_BTN_LEAVE = 2002; // 나가기
+    constexpr _uint IDC_BTN_LEAVE   = 2002; // 나가기
+    constexpr UINT_PTR TIMER_POLL   = 1;    // 서버 방 상태 폴링 (100ms)
 }
 
 const _tchar* CRoomWindow::WND_CLASS_NAME = TEXT("HelloDinnerRoomWnd");
@@ -21,13 +23,18 @@ CRoomWindow::CRoomWindow()
 {
 }
 
-HRESULT CRoomWindow::Initialize(HINSTANCE hInstance, _bool bIsHost)
+HRESULT CRoomWindow::Initialize(HINSTANCE hInstance, _bool bIsHost, int serverRoomCode)
 {
     m_hInstance = hInstance;
-    m_bIsHost = bIsHost;
+    m_bIsHost   = bIsHost;
 
-    // 방 코드 스텁 (1000~9999). 네트워크 연동 시 서버가 내려준 값으로 교체.
-    m_iRoomCode = 1000 + (rand() % 9000);
+    // 서버가 발급한 코드 사용 (0이면 스냅샷에서 읽기)
+    if (serverRoomCode != 0) {
+        m_iRoomCode = serverRoomCode;
+    } else {
+        auto snap   = NetworkClient::GetInstance()->GetRoomSnapshot();
+        m_iRoomCode = (snap.code != 0) ? snap.code : 0;
+    }
 
     WNDCLASSEX wcex = {};
     wcex.cbSize = sizeof(WNDCLASSEX);
@@ -88,6 +95,7 @@ ROOM_RESULT CRoomWindow::DoModal()
 
 void CRoomWindow::Close()
 {
+    if (m_hWnd) KillTimer(m_hWnd, TIMER_POLL);
     if (m_pBackBuffer) { delete static_cast<Gdiplus::Bitmap*>(m_pBackBuffer); m_pBackBuffer = nullptr; }
     if (m_hWnd) { DestroyWindow(m_hWnd); m_hWnd = nullptr; }
     if (m_hFontBtn) { DeleteObject(m_hFontBtn); m_hFontBtn = nullptr; }
@@ -124,8 +132,16 @@ LRESULT CALLBACK CRoomWindow::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
     case WM_ERASEBKGND:
         return 1;
 
+    case WM_TIMER:
+        if (pSelf && TIMER_POLL == wParam)
+            pSelf->OnPollTimer();
+        return 0;
+
     case WM_CLOSE:
-        if (pSelf) pSelf->m_eResult = ROOM_LEAVE;
+        if (pSelf) {
+            NetworkClient::GetInstance()->Send_LeaveRoom();
+            pSelf->m_eResult = ROOM_LEAVE;
+        }
         return 0;
 
     case WM_DESTROY:
@@ -173,7 +189,9 @@ void CRoomWindow::OnCreate(HWND hWnd)
         if (m_hBtnPrimary) SendMessage(m_hBtnPrimary, WM_SETFONT, (WPARAM)m_hFontBtn, TRUE);
         if (m_hBtnLeave)   SendMessage(m_hBtnLeave, WM_SETFONT, (WPARAM)m_hFontBtn, TRUE);
     }
-    // 팀/번호는 OnPaint 의 블럭 격자를 클릭해서 고른다(OnLButtonDown).
+
+    // 서버 방 상태 폴링 타이머 시작 (100ms)
+    SetTimer(hWnd, TIMER_POLL, 100, nullptr);
 }
 
 void CRoomWindow::OnCommand(_uint iCtrlID)
@@ -181,6 +199,7 @@ void CRoomWindow::OnCommand(_uint iCtrlID)
     switch (iCtrlID)
     {
     case IDC_BTN_LEAVE:
+        NetworkClient::GetInstance()->Send_LeaveRoom();
         m_eResult = ROOM_LEAVE;
         PostMessage(m_hWnd, WM_NULL, 0, 0);
         break;
@@ -188,14 +207,13 @@ void CRoomWindow::OnCommand(_uint iCtrlID)
     case IDC_BTN_PRIMARY:
         if (m_bIsHost)
         {
-            // 방장: 게임 시작 — 고른 팀/번호를 전역에 기록하고 게임으로
+            // 방장: 서버에 게임 시작 요청 — SC_REDIRECT를 받으면 OnPollTimer가 창을 닫음
             Commit_Selection();
-            m_eResult = ROOM_START_GAME;
-            PostMessage(m_hWnd, WM_NULL, 0, 0);
+            NetworkClient::GetInstance()->Send_StartGame();
         }
         else
         {
-            // 참가자: 준비 토글 (현재는 표시용)
+            // 참가자: 준비 토글 (표시용)
             m_bReady = !m_bReady;
             SetWindowText(m_hBtnPrimary, m_bReady ? TEXT("준비 완료") : TEXT("준비"));
             InvalidateRect(m_hWnd, nullptr, FALSE);
@@ -204,6 +222,41 @@ void CRoomWindow::OnCommand(_uint iCtrlID)
 
     default:
         break;
+    }
+}
+
+void CRoomWindow::OnPollTimer()
+{
+    // 게임 시작 신호 감지 (SC_REDIRECT 수신 후 NetworkClient가 세움)
+    if (NetworkClient::GetInstance()->IsGameStarting()) {
+        KillTimer(m_hWnd, TIMER_POLL);
+        m_eResult = ROOM_START_GAME;
+        PostMessage(m_hWnd, WM_NULL, 0, 0);
+        return;
+    }
+
+    // 멤버 목록 갱신
+    auto snap = NetworkClient::GetInstance()->GetRoomSnapshot();
+    bool changed = (snap.members.size() != m_cachedMembers.size())
+                || (snap.host_id != m_cachedHostId);
+    if (!changed) {
+        for (int i = 0; i < (int)snap.members.size(); ++i) {
+            if (snap.members[i].id != m_cachedMembers[i].id) { changed = true; break; }
+        }
+    }
+    if (changed) {
+        m_cachedHostId = snap.host_id;
+        m_cachedMembers.clear();
+        for (auto& m : snap.members) {
+            RoomMemberCache c;
+            c.id = m.id;
+            strcpy_s(c.name, m.name);
+            m_cachedMembers.push_back(c);
+        }
+        // 방 코드 업데이트 (참가자의 경우 JOIN 후 수신)
+        if (snap.code != 0)
+            m_iRoomCode = snap.code;
+        InvalidateRect(m_hWnd, nullptr, FALSE);
     }
 }
 
@@ -364,9 +417,7 @@ void CRoomWindow::OnPaint(HWND hWnd)
             }
         }
 
-        // ===== 대기자들 =====
-        //  아직 팀/번호를 못(안) 정한 사람들이 모이는 영역.
-        //  네트워크 연동 전이라 지금은 빈 박스만 그려둔다.
+        // ===== 멤버 목록 =====
         const REAL waitTop = blocksTop + 3 * (blockH + blockGap) + 14.f;
         const REAL waitX = 28.f;
         const REAL waitW = (REAL)W - 56.f;
@@ -374,18 +425,35 @@ void CRoomWindow::OnPaint(HWND hWnd)
         {
             Gdiplus::Font wF(&ff, 15, FontStyleBold, UnitPixel);
             SolidBrush wlbl(Color(220, 210, 216, 230));
-            g.DrawString(L"대기자들", -1, &wF, PointF(waitX, waitTop - 24.f), &wlbl);
+            g.DrawString(L"참가자 목록", -1, &wF, PointF(waitX, waitTop - 24.f), &wlbl);
 
             SolidBrush wbg(Color(255, 26, 28, 38));
             g.FillRectangle(&wbg, waitX, waitTop, waitW, waitH);
             Pen wpen(Color(255, 56, 60, 74), 1.5f);
             g.DrawRectangle(&wpen, waitX, waitTop, waitW, waitH);
 
-            // (네트워크 연동 전) 안내 텍스트
-            SolidBrush wtx(Color(255, 110, 116, 130));
-            StringFormat sfWC; sfWC.SetAlignment(StringAlignmentCenter); sfWC.SetLineAlignment(StringAlignmentCenter);
-            g.DrawString(L"(네트워크 연동 후 표시)", -1, &blkSubF,
-                RectF(waitX, waitTop, waitW, waitH), &sfWC, &wtx);
+            if (m_cachedMembers.empty()) {
+                SolidBrush wtx(Color(255, 110, 116, 130));
+                StringFormat sfWC; sfWC.SetAlignment(StringAlignmentCenter); sfWC.SetLineAlignment(StringAlignmentCenter);
+                g.DrawString(L"서버에 연결 중...", -1, &blkSubF,
+                    RectF(waitX, waitTop, waitW, waitH), &sfWC, &wtx);
+            } else {
+                Gdiplus::Font mF(&ff, 14, FontStyleRegular, UnitPixel);
+                const REAL itemW = waitW / ROOM_MAX_PLAYER;
+                for (int i = 0; i < (int)m_cachedMembers.size(); ++i) {
+                    bool isHost = (m_cachedMembers[i].id == m_cachedHostId);
+                    Color col = isHost ? Color(255, 255, 220, 80) : Color(255, 200, 210, 230);
+                    SolidBrush mb(col);
+                    // 이름을 wchar로 변환
+                    WCHAR wname[NAME_SIZE] = {};
+                    MultiByteToWideChar(CP_ACP, 0, m_cachedMembers[i].name, -1, wname, NAME_SIZE);
+                    StringFormat sfC; sfC.SetAlignment(StringAlignmentCenter); sfC.SetLineAlignment(StringAlignmentCenter);
+                    _tchar disp[NAME_SIZE + 8] = {};
+                    swprintf_s(disp, isHost ? L"[방장]\n%s" : L"%s", wname);
+                    g.DrawString(disp, -1, &mF,
+                        RectF(waitX + i * itemW, waitTop, itemW, waitH), &sfC, &mb);
+                }
+            }
         }
 
         // ---- 하단 안내 문구 (버튼 위) ----
@@ -406,11 +474,11 @@ void CRoomWindow::OnPaint(HWND hWnd)
     EndPaint(hWnd, &ps);
 }
 
-CRoomWindow* CRoomWindow::Create(HINSTANCE hInstance, _bool bIsHost)
+CRoomWindow* CRoomWindow::Create(HINSTANCE hInstance, _bool bIsHost, int serverRoomCode)
 {
     CRoomWindow* pInstance = new CRoomWindow();
 
-    if (FAILED(pInstance->Initialize(hInstance, bIsHost)))
+    if (FAILED(pInstance->Initialize(hInstance, bIsHost, serverRoomCode)))
     {
         MSG_BOX("Failed to Created : CRoomWindow");
         Safe_Release(pInstance);

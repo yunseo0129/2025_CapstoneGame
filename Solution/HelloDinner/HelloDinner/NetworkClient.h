@@ -52,18 +52,37 @@ public:
     // 캐릭터 선택 완료 통보 (Ready 클릭 시 1회) — 오프라인 모드에서는 무시
     void Send_CharSelect(unsigned char charType);
 
+    // ── 수동 방 관련 송신 (로비 소켓) ──────────────────────────────────
+    void Send_CreateRoom();
+    void Send_JoinRoomCode(int code);
+    void Send_StartGame();
+    void Send_LeaveRoom();
+    void Send_QuickMatch();
+
     void Disconnect();
 
-    bool IsConnected()   const { return m_bConnected; }
-    bool IsLoggedIn()    const { return m_bLoggedIn; }
-    bool IsMatched()     const { return m_bMatched; }
-    bool IsInGame()      const { return m_bInGame || m_bOfflineMode; }
-    bool IsOfflineMode() const { return m_bOfflineMode; }
-    void EnableOfflineMode()   { m_bOfflineMode = true; }
+    bool IsConnected()      const { return m_bConnected; }
+    bool IsLoggedIn()       const { return m_bLoggedIn; }
+    bool IsMatched()        const { return m_bMatched; }
+    bool IsInGame()         const { return m_bInGame || m_bOfflineMode; }
+    bool IsOfflineMode()    const { return m_bOfflineMode; }
+    bool IsGameStarting()   const { return m_bGameStarting; }
+    void EnableOfflineMode()      { m_bOfflineMode = true; }
 
     int GetMyId()       const { return m_iMyId; }
     int GetRoomId()     const { return m_iRoomId; }
     int GetQueueSize()  const { return m_iQueueSize; }
+
+    // ── 방 상태 조회 (스레드 안전) ──────────────────────────────────────
+    struct RoomMember { int id; char name[20]; };
+    struct RoomSnapshot {
+        int                    code     = 0;
+        int                    host_id  = -1;
+        std::vector<RoomMember> members;
+        bool                   join_pending = false;
+        unsigned char          join_result  = 0;  // ROOM_JOIN_RESULT
+    };
+    RoomSnapshot GetRoomSnapshot();
 
     NetPlayer& GetPlayer(int id)            { return m_players[id]; }
     const NetPlayer& GetPlayer(int id) const{ return m_players[id]; }
@@ -106,6 +125,15 @@ private:
 
     float   m_worldMatrix[16] = {};
     char    m_szName[NAME_SIZE] = {};
+
+    // ── 수동 방 상태 (recv 스레드가 쓰고, 메인 스레드가 읽음) ───────────
+    std::mutex              m_roomLock;
+    int                     m_roomCode      = 0;
+    int                     m_roomHostId    = -1;
+    std::vector<RoomMember> m_roomMembers;
+    bool                    m_roomJoinPending = false;
+    unsigned char           m_roomJoinResult  = 0;
+    bool                    m_bGameStarting   = false;
 
     NetPlayer m_players[MAX_USER];
 

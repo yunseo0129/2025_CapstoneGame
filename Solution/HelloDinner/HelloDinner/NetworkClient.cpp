@@ -151,6 +151,69 @@ void NetworkClient::SendToInstance(void* packet, int size)
 }
 
 // ─────────────────────────────────────────────
+// 수동 방 관련 송신 (로비 소켓)
+// ─────────────────────────────────────────────
+void NetworkClient::Send_CreateRoom()
+{
+    CS_CREATE_ROOM_PACKET p{};
+    p.size = sizeof(CS_CREATE_ROOM_PACKET);
+    p.type = CS_CREATE_ROOM;
+    Send(&p, p.size);
+}
+
+void NetworkClient::Send_JoinRoomCode(int code)
+{
+    CS_JOIN_ROOM_CODE_PACKET p{};
+    p.size = sizeof(CS_JOIN_ROOM_CODE_PACKET);
+    p.type = CS_JOIN_ROOM_CODE;
+    p.code = code;
+    Send(&p, p.size);
+    std::lock_guard<std::mutex> lk(m_roomLock);
+    m_roomJoinPending = true;
+    m_roomJoinResult  = 0;
+}
+
+void NetworkClient::Send_StartGame()
+{
+    CS_START_GAME_PACKET p{};
+    p.size = sizeof(CS_START_GAME_PACKET);
+    p.type = CS_START_GAME;
+    Send(&p, p.size);
+}
+
+void NetworkClient::Send_LeaveRoom()
+{
+    CS_LEAVE_ROOM_PACKET p{};
+    p.size = sizeof(CS_LEAVE_ROOM_PACKET);
+    p.type = CS_LEAVE_ROOM;
+    Send(&p, p.size);
+    std::lock_guard<std::mutex> lk(m_roomLock);
+    m_roomCode    = 0;
+    m_roomHostId  = -1;
+    m_roomMembers.clear();
+}
+
+void NetworkClient::Send_QuickMatch()
+{
+    CS_QUICK_MATCH_PACKET p{};
+    p.size = sizeof(CS_QUICK_MATCH_PACKET);
+    p.type = CS_QUICK_MATCH;
+    Send(&p, p.size);
+}
+
+NetworkClient::RoomSnapshot NetworkClient::GetRoomSnapshot()
+{
+    std::lock_guard<std::mutex> lk(m_roomLock);
+    RoomSnapshot snap;
+    snap.code         = m_roomCode;
+    snap.host_id      = m_roomHostId;
+    snap.members      = m_roomMembers;
+    snap.join_pending = m_roomJoinPending;
+    snap.join_result  = m_roomJoinResult;
+    return snap;
+}
+
+// ─────────────────────────────────────────────
 // 캐릭터 선택 완료 → 인스턴스 서버로 전송 (Ready 클릭 시 1회)
 // ─────────────────────────────────────────────
 void NetworkClient::Send_CharSelect(unsigned char charType)
@@ -294,11 +357,51 @@ void NetworkClient::ProcessLobbyPacket(char* packet)
         break;
     }
     case SC_REDIRECT: {
-        // ← 핵심 수정: 인스턴스 서버에 접속
         SC_REDIRECT_PACKET* p = reinterpret_cast<SC_REDIRECT_PACKET*>(packet);
         std::cout << "[Lobby] Redirect → Instance " << p->ip << ":" << p->port
                   << "  Room " << p->room_id << "\n";
         ConnectToInstance(p->ip, p->port, p->room_id, p->auth_token);
+        {
+            std::lock_guard<std::mutex> lk(m_roomLock);
+            m_bGameStarting = true;
+        }
+        break;
+    }
+    case SC_ROOM_CREATED: {
+        SC_ROOM_CREATED_PACKET* p = reinterpret_cast<SC_ROOM_CREATED_PACKET*>(packet);
+        std::lock_guard<std::mutex> lk(m_roomLock);
+        m_roomCode   = p->code;
+        m_roomHostId = m_iMyId;
+        m_roomMembers.clear();
+        RoomMember me{};
+        me.id = m_iMyId;
+        strcpy_s(me.name, m_szName);
+        m_roomMembers.push_back(me);
+        std::cout << "[Lobby] Room created: " << p->code << "\n";
+        break;
+    }
+    case SC_ROOM_JOIN_RESULT: {
+        SC_ROOM_JOIN_RESULT_PACKET* p = reinterpret_cast<SC_ROOM_JOIN_RESULT_PACKET*>(packet);
+        std::lock_guard<std::mutex> lk(m_roomLock);
+        m_roomJoinResult  = p->result;
+        m_roomJoinPending = false;
+        if (p->result == RJR_OK)
+            m_roomCode = p->code;
+        std::cout << "[Lobby] Join result: " << (int)p->result << "\n";
+        break;
+    }
+    case SC_ROOM_UPDATE: {
+        SC_ROOM_UPDATE_PACKET* p = reinterpret_cast<SC_ROOM_UPDATE_PACKET*>(packet);
+        std::lock_guard<std::mutex> lk(m_roomLock);
+        m_roomCode    = p->code;
+        m_roomHostId  = p->host_id;
+        m_roomMembers.clear();
+        for (int i = 0; i < (int)p->member_count && i < ROOM_MAX_PLAYER; ++i) {
+            RoomMember m{};
+            m.id = p->member_ids[i];
+            strcpy_s(m.name, p->member_names[i]);
+            m_roomMembers.push_back(m);
+        }
         break;
     }
     }

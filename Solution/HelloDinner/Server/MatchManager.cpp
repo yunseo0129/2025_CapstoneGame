@@ -37,19 +37,23 @@ void MatchManager::TryMatch()
 	if (queueSize < MIN_MATCH_PLAYERS)
 		return;
 
-	// 인스턴스 서버 선택
+	int matchCount = min(queueSize, ROOM_MAX_PLAYER);
+	vector<int> matched_players(m_wait_queue.begin(), m_wait_queue.begin() + matchCount);
+	m_wait_queue.erase(m_wait_queue.begin(), m_wait_queue.begin() + matchCount);
+
+	LaunchRoom(matched_players);
+}
+
+void MatchManager::LaunchRoom(const vector<int>& players)
+{
+	if (players.empty()) return;
+
 	auto* bestInst = InstanceManager::GetInstance()->SelectBestInstance();
 	if (!bestInst) {
 		cout << "[Match] No available instance server! Waiting...\n";
 		return;
 	}
 
-	// 대기QUEUE에서 최대 ROOM_MAX_PLAYER명 추출
-	int matchCount = min(queueSize, ROOM_MAX_PLAYER);
-	vector<int> matched_players(m_wait_queue.begin(), m_wait_queue.begin() + matchCount);
-	m_wait_queue.erase(m_wait_queue.begin(), m_wait_queue.begin() + matchCount);
-
-	// room_id 발급
 	int room_id;
 	{
 		lock_guard<mutex> ll(m_room_id_lock);
@@ -57,44 +61,41 @@ void MatchManager::TryMatch()
 	}
 
 	auto* sm = SessionManager::GetInstance();
+	int playerCount = (int)players.size();
 
 	cout << "========================================" << endl;
-	cout << "  [MATCH SUCCESS] Room " << room_id
+	cout << "  [LAUNCH ROOM] Room " << room_id
 		<< " -> Instance #" << bestInst->id
 		<< " (" << bestInst->ip << ":" << bestInst->port << ")" << endl;
 	cout << "  Players:";
 
-	// 인증 토큰 생성
 	char auth_token[32] = {};
 	snprintf(auth_token, sizeof(auth_token), "TK_%d_%d", room_id,
 		static_cast<int>(steady_clock::now().time_since_epoch().count() % 100000));
 
-	// 인스턴스 서버에 방 정보 전달
 	IS_ROOM_NOTIFY_PACKET notify;
 	notify.size = sizeof(IS_ROOM_NOTIFY_PACKET);
 	notify.type = IS_ROOM_NOTIFY;
 	notify.room_id = room_id;
-	notify.player_count = matchCount;
+	notify.player_count = playerCount;
 	strcpy_s(notify.auth_token, sizeof(notify.auth_token), auth_token);
 	memset(notify.player_ids, -1, sizeof(notify.player_ids));
 	memset(notify.player_names, 0, sizeof(notify.player_names));
 
-	for (int i = 0; i < matchCount; ++i) {
-		int pid = matched_players[i];
-		notify.player_ids[i] = pid;
+	for (int i = 0; i < playerCount; ++i) {
+		notify.player_ids[i] = players[i];
 		strcpy_s(notify.player_names[i], sizeof(notify.player_names[i]),
-			sm->GetClient(pid).m_player.name);
+			sm->GetClient(players[i]).m_player.name);
 	}
 
 	InstanceManager::GetInstance()->NotifyRoomToInstance(bestInst, notify);
 
-	// 매칭된 플레이어 상태 전환 및 리다이렉트
-	for (int i = 0; i < matchCount; ++i) {
-		int pid = matched_players[i];
+	for (int i = 0; i < playerCount; ++i) {
+		int pid = players[i];
 		auto& client = sm->GetClient(pid);
 		{
 			lock_guard<mutex> ll(client.m_s_lock);
-			client.m_state = ST_INGAME;
+			client.m_state   = ST_INGAME;
 			client.m_room_id = room_id;
 		}
 		cout << " " << pid << "(" << client.m_player.name << ")";
@@ -103,7 +104,7 @@ void MatchManager::TryMatch()
 		rp.size = sizeof(SC_REDIRECT_PACKET);
 		rp.type = SC_REDIRECT;
 		strcpy_s(rp.ip, sizeof(rp.ip), bestInst->ip);
-		rp.port = bestInst->port;
+		rp.port    = bestInst->port;
 		rp.room_id = room_id;
 		strcpy_s(rp.auth_token, sizeof(rp.auth_token), auth_token);
 		client.Send(&rp);
