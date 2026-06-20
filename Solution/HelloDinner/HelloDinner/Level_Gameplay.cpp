@@ -125,7 +125,7 @@ void CLevel_GamePlay::Add_Camera()
     tDesc.fFovy = XMConvertToRadians(60.f);
     tDesc.fAspect = 1280.f / 720.f;
     tDesc.fNear = 0.1f;
-    tDesc.fFar = 100.f;
+    tDesc.fFar = 10000.f;
     tDesc.fCamMouseSensor = 1.f;
     tDesc.fCamSpeedPerSec = 1.f;
     tDesc.fRotationPerSec = 1.f;
