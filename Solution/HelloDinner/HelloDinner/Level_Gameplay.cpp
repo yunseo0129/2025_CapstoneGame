@@ -12,6 +12,7 @@
 #include "Skybox.h"
 #include "Player_1rd.h"
 #include "Player_Pig.h"
+#include "Player_Chick.h"
 
 // 테스트용
 #include "Collider.h"
@@ -182,6 +183,18 @@ HRESULT CLevel_GamePlay::Ready_Layer()
             LEVEL_GAMEPLAY, TEXT("Layer_Player"), &cdesc);
 
         m_pGameInstance->Get_Controller()->Set_Player(static_cast<CPlayer_1rd*>(pPlayer));
+    }
+
+    // Chick_3rd
+    {
+        CPlayer_Chick::PLAYER_CHICK_DESC eState;
+        eState.fSpeedPerSec = 1.f;
+        eState.vRotation = _float3(0.f, XM_PI, 0.f);
+        eState.vPos = _float3(-1.f, 0.f, 0.f);
+        eState.strModelTag = L"Prototype_Component_Chick_3rd";
+        eState.iModelLevelIndex = LEVEL_GAMEPLAY;
+        m_pGameInstance->Add_GameObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_Chick"),
+            LEVEL_GAMEPLAY, TEXT("Layer_Other_Player"), &eState);
     }
 
     // Pig_3rd

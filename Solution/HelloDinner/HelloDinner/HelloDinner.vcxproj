@@ -170,6 +170,7 @@
     <ClInclude Include="MapSelect.h" />
     <ClInclude Include="MiniMap.h" />
     <ClInclude Include="Particle_System.h" />
+    <ClInclude Include="Player_Chick.h" />
     <ClInclude Include="RoomWindow.h" />
     <ClInclude Include="Shadow.h" />
     <ClInclude Include="Texture_Manager.h" />
@@ -265,6 +266,7 @@
     <ClCompile Include="MapSelect.cpp" />
     <ClCompile Include="MiniMap.cpp" />
     <ClCompile Include="Particle_System.cpp" />
+    <ClCompile Include="Player_Chick.cpp" />
     <ClCompile Include="RoomWindow.cpp" />
     <ClCompile Include="Shadow.cpp" />
     <ClCompile Include="Texture_Manager.cpp" />

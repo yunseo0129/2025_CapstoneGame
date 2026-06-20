@@ -506,6 +506,9 @@
     <ClInclude Include="MapSelect.h">
       <Filter>소스 파일\02. Game\GameObject\Object</Filter>
     </ClInclude>
+    <ClInclude Include="Player_Chick.h">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd\01. Chick_3rd</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -747,6 +750,9 @@
     </ClCompile>
     <ClCompile Include="MapSelect.cpp">
       <Filter>소스 파일\02. Game\GameObject\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Player_Chick.cpp">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd\01. Chick_3rd</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
