@@ -104,6 +104,12 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
         }
         break;
     }
+    case CS_CHAR_SELECT: {
+        CS_CHAR_SELECT_PACKET* p = reinterpret_cast<CS_CHAR_SELECT_PACKET*>(packet);
+        m_clients[c_id].m_iCharType = p->char_type;
+        cout << "[Instance] Client [" << c_id << "] selected char " << (int)p->char_type << endl;
+        break;
+    }
     case CS_LOGOUT: {
         cout << "[Instance] Client [" << c_id << "] logout requested." << endl;
         Disconnect(c_id);

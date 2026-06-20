@@ -49,6 +49,9 @@ public:
     // 이동 패킷 전송 → 인스턴스 서버로 전송
     void Send_Move(unsigned char keyInput, float mouseYaw, const float* worldMatrix);
 
+    // 캐릭터 선택 완료 통보 (Ready 클릭 시 1회) — 오프라인 모드에서는 무시
+    void Send_CharSelect(unsigned char charType);
+
     void Disconnect();
 
     bool IsConnected()   const { return m_bConnected; }

@@ -151,6 +151,20 @@ void NetworkClient::SendToInstance(void* packet, int size)
 }
 
 // ─────────────────────────────────────────────
+// 캐릭터 선택 완료 → 인스턴스 서버로 전송 (Ready 클릭 시 1회)
+// ─────────────────────────────────────────────
+void NetworkClient::Send_CharSelect(unsigned char charType)
+{
+    if (m_bOfflineMode || m_instanceSocket == INVALID_SOCKET) return;
+
+    CS_CHAR_SELECT_PACKET p{};
+    p.size      = sizeof(CS_CHAR_SELECT_PACKET);
+    p.type      = CS_CHAR_SELECT;
+    p.char_type = charType;
+    SendToInstance(&p, p.size);
+}
+
+// ─────────────────────────────────────────────
 // 이동 패킷 → 인스턴스 서버로 전송
 // ─────────────────────────────────────────────
 void NetworkClient::Send_Move(unsigned char keyInput, float mouseYaw, const float* worldMatrix)

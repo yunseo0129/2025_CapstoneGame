@@ -18,7 +18,8 @@ public:
 
     int         m_prev_remain;
     int         m_room_id;
-    int         m_lobby_player_id;  // �κ񿡼� �ο����� ���� id
+    int         m_lobby_player_id;  // 로비에서 부여받은 글로벌 id
+    int         m_iCharType = 0;    // 0=Pig, 1=Chick, 2=Blank (CS_CHAR_SELECT 수신 시 갱신)
 
     unsigned int    m_lastClientTimestamp;
     unsigned int    m_lastServerTimestamp;

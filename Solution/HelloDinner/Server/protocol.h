@@ -24,6 +24,7 @@ constexpr char CS_LOGIN = 0;
 constexpr char CS_MOVE = 1;
 constexpr char CS_LOGOUT = 2;
 constexpr char CS_JOIN_ROOM = 3;       // 인스턴스 서버에 방 진입 요청
+constexpr char CS_CHAR_SELECT = 4;     // 캐릭터 선택 완료 통보 (클라 권위)
 
 // 패킷 ID (서버 → 클라)
 constexpr char SC_LOGIN_INFO = 0;
@@ -62,6 +63,13 @@ struct CS_MOVE_PACKET {
 struct CS_LOGOUT_PACKET {
     unsigned char size;
     char    type;
+};
+
+// 캐릭터 선택 완료 (클라이언트 권위 — Ready 클릭 시 1회 전송)
+struct CS_CHAR_SELECT_PACKET {
+    unsigned char size;
+    char          type;       // CS_CHAR_SELECT
+    unsigned char char_type;  // 0=Pig, 1=Chick, 2=Blank(기본값)
 };
 
 // 인스턴스 서버에 방 진입 요청
