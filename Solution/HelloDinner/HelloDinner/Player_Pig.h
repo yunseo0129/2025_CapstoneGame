@@ -35,6 +35,7 @@ public:
 private:
 	virtual HRESULT				Ready_PartObjects();
 	virtual HRESULT				Ready_Components();
+    void                        Drive_Animation();
     void                        Anim_Test();
 
 private:
@@ -45,11 +46,13 @@ private:
 	_int				m_iHealth = 0;
 	_wstring			m_strModelTag = L"";
 	_uint				m_iModelLevelIndex = 0;
-    bool                m_isBlending = false;
-
+    bool                m_isBlending   = false;
+    bool                m_bIsJumping   = false;
+    unsigned short      m_keyInput     = 0;
+    unsigned short      m_prevKeyInput = 0;
 
 public:
-	void Apply_NetworkMatrix(const float* pMatrix);
+	void Apply_NetworkMatrix(const float* pMatrix, unsigned short keyInput = 0);
 
 public:
 	static CPlayer_Pig* Create(EngineContext* pContext);

@@ -5,6 +5,7 @@
 #include "Bounding_AABB.h"
 #include "Bounding_Sphere.h"
 #include "Bounding_OBB.h"
+#include "../Server/protocol.h"
 
 CPlayer_Pig::CPlayer_Pig(EngineContext* _pcontext)
 	: CContainerObj{ _pcontext }
@@ -91,7 +92,7 @@ void CPlayer_Pig::Update(_float fTimeDelta)
 	else
         m_pModelCom->Blend_Animation(fTimeDelta);*/
 
-    Anim_Test();
+    Drive_Animation();
 
     m_pModelCom->Merge_UpperLower();
 
@@ -403,6 +404,54 @@ HRESULT CPlayer_Pig::Ready_Components()
 	return S_OK;
 }
 
+void CPlayer_Pig::Drive_Animation()
+{
+    // 공중 상태 — 착지 전까지 SPACE를 다시 눌러도 재트리거 금지
+    // m_bIsJumping은 Apply_NetworkMatrix에서 Y<0.05 감지 시 해제
+    if (m_bIsJumping) return;
+
+    // 착지 후에도 애니메이션 11이 재생 중이면 끝날 때까지 대기
+    if (m_pModelCom->Get_UpperAnimNum() == 11 || m_pModelCom->Get_LowerAnimNum() == 11)
+        return;
+
+    const bool bSpace = (m_keyInput & KEY_SPACE) != 0;
+
+    // 착지 상태에서 SPACE 라이징 에지 → 점프 애니메이션 1회 재생
+    if (bSpace && !(m_prevKeyInput & KEY_SPACE))
+    {
+        m_bIsJumping = true;
+        m_pModelCom->Change_Animation(11, 0.f, false, true);
+        m_pModelCom->Change_Animation(11, 0.f, false, false);
+        return;
+    }
+
+    // 이동 애니메이션
+    const bool bW     = (m_keyInput & KEY_W)     != 0;
+    const bool bS     = (m_keyInput & KEY_S)     != 0;
+    const bool bA     = (m_keyInput & KEY_A)     != 0;
+    const bool bD     = (m_keyInput & KEY_D)     != 0;
+    const bool bShift = (m_keyInput & KEY_SHIFT) != 0;
+    const bool bCtrl  = (m_keyInput & KEY_CTRL)  != 0;
+
+    const bool isMove   = bW || bS || bA || bD;
+    const bool isRun    = bShift && !bCtrl;
+    const bool isCrouch = bCtrl;
+
+    _uint lowerAnim = m_pModelCom->Get_LowerAnimNum();
+
+    if (isMove)
+    {
+        if (isCrouch)   { if (lowerAnim != 5)  m_pModelCom->Change_Animation(5,  2.f, true, false); }
+        else if (isRun) { if (lowerAnim != 10) m_pModelCom->Change_Animation(10, 2.f, true, false); }
+        else            { if (lowerAnim != 8)  m_pModelCom->Change_Animation(8,  2.f, true, false); }
+    }
+    else
+    {
+        if (isCrouch)   { if (lowerAnim != 4) m_pModelCom->Change_Animation(4,  10.f, true, false); }
+        else            { if (lowerAnim != 0) m_pModelCom->Change_Animation(0,  10.f, true, false); }
+    }
+}
+
 void CPlayer_Pig::Anim_Test()
 {
     if (m_pGameInstance->Key_Pressing(DIK_0))
@@ -479,11 +528,17 @@ bool CPlayer_Pig::Get_WorldBoundingSphere(_float3& outCenter, _float& outRadius)
     return m_vColliderComs[COLLIDER_MAIN]->Get_SphereBound(outCenter, outRadius);
 }
 
-void CPlayer_Pig::Apply_NetworkMatrix(const float* pMatrix)
+void CPlayer_Pig::Apply_NetworkMatrix(const float* pMatrix, unsigned short keyInput)
 {
     XMFLOAT4X4 mat;
     memcpy(&mat, pMatrix, sizeof(float) * 16);
     m_pTransformCom->Set_WorldMatrix(mat);
+    m_prevKeyInput = m_keyInput;
+    m_keyInput     = keyInput;
+
+    // 착지 감지: Y가 바닥 근처에 오면 공중 플래그 해제
+    if (m_bIsJumping && pMatrix[13] < 0.05f)
+        m_bIsJumping = false;
 }
 
 CPlayer_Pig* CPlayer_Pig::Create(EngineContext* _pcontext)

@@ -11,13 +11,16 @@ constexpr int ROOM_MAX_PLAYER = 6;
 constexpr int MAX_ROOM = MAX_USER / ROOM_MAX_PLAYER;
 constexpr int MAX_INSTANCE_SERVERS = 5;
 
-// 키입력 (비트 플래그)
-constexpr unsigned char KEY_W     = 0x01;
-constexpr unsigned char KEY_S     = 0x02;
-constexpr unsigned char KEY_A     = 0x04;
-constexpr unsigned char KEY_D     = 0x08;
-constexpr unsigned char KEY_SPACE = 0x10;
-constexpr unsigned char KEY_CTRL  = 0x20;
+// 키입력 (비트 플래그) — unsigned short (9키)
+constexpr unsigned short KEY_W        = 0x0001;
+constexpr unsigned short KEY_S        = 0x0002;
+constexpr unsigned short KEY_A        = 0x0004;
+constexpr unsigned short KEY_D        = 0x0008;
+constexpr unsigned short KEY_SPACE    = 0x0010;
+constexpr unsigned short KEY_CTRL     = 0x0020;
+constexpr unsigned short KEY_SHIFT    = 0x0040;  // 달리기
+constexpr unsigned short KEY_R        = 0x0080;  // 상호작용
+constexpr unsigned short KEY_MOUSE_LB = 0x0100;  // 공격/사용
 
 // 패킷 ID (클라 → 서버)
 constexpr char CS_LOGIN = 0;
@@ -64,12 +67,12 @@ struct CS_LOGIN_PACKET {
 };
 
 struct CS_MOVE_PACKET {
-    unsigned char size;
-    char    type;
-    unsigned char   keyInput;
-    unsigned int    timestamp;
-    float   mouseYaw;
-    float   worldMatrix[16];
+    unsigned char  size;
+    char           type;
+    unsigned short keyInput;    // KEY_W~KEY_MOUSE_LB 비트 플래그
+    unsigned int   timestamp;
+    float          mouseYaw;
+    float          worldMatrix[16];
 };
 
 struct CS_LOGOUT_PACKET {
@@ -151,12 +154,12 @@ struct SC_REMOVE_PLAYER_PACKET {
 };
 
 struct SC_MOVE_PLAYER_PACKET {
-    unsigned char size;
-    char    type;
-    int     id;
-    unsigned char   keyInput;
-    unsigned int    timestamp;
-    float   worldMatrix[16];
+    unsigned char  size;
+    char           type;
+    int            id;
+    unsigned short keyInput;    // KEY_W~KEY_MOUSE_LB 비트 플래그
+    unsigned int   timestamp;
+    float          worldMatrix[16];
 };
 
 struct SC_MATCH_WAIT_PACKET {

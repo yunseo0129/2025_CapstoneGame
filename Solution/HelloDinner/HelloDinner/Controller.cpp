@@ -100,6 +100,12 @@ void CController::Update_Input()
         m_isKeyboardInput[KEYS_SPACE] = true;
     if (m_pGameInstance->Key_Pressing(DIK_LCONTROL))
         m_isKeyboardInput[KEYS_CTRL] = true;
+    if (m_pGameInstance->Key_Pressing(DIK_LSHIFT))
+        m_isKeyboardInput[KEYS_SHIFT] = true;
+    if (m_pGameInstance->Key_Pressing(DIK_R))
+        m_isKeyboardInput[KEYS_R] = true;
+    if (m_pGameInstance->Get_DIMouseState(Engine::DIM_LB))
+        m_isMouseInput[MOUSE_LB] = true;
 
     // 마우스 Yaw/Pitch (매 프레임 수집)
     _long mouseX = m_pGameInstance->Get_DIMouseMove(Engine::DIMS_X);
@@ -116,15 +122,18 @@ void CController::Update_Input()
         m_fMousePitchThisFrame = mouseY * m_fMouseSensitive;
 }
 
-unsigned char CController::Build_KeyBitFlags() const
+unsigned short CController::Build_KeyBitFlags() const
 {
-    unsigned char flags = 0;
+    unsigned short flags = 0;
     if (m_isKeyboardInput[KEYS_W])     flags |= KEY_W;
     if (m_isKeyboardInput[KEYS_S])     flags |= KEY_S;
     if (m_isKeyboardInput[KEYS_A])     flags |= KEY_A;
     if (m_isKeyboardInput[KEYS_D])     flags |= KEY_D;
     if (m_isKeyboardInput[KEYS_SPACE]) flags |= KEY_SPACE;
     if (m_isKeyboardInput[KEYS_CTRL])  flags |= KEY_CTRL;
+    if (m_isKeyboardInput[KEYS_SHIFT]) flags |= KEY_SHIFT;
+    if (m_isKeyboardInput[KEYS_R])     flags |= KEY_R;
+    if (m_isMouseInput[MOUSE_LB])      flags |= KEY_MOUSE_LB;
     return flags;
 }
 
@@ -134,7 +143,7 @@ void CController::Predict_Local(_float fTimeDelta)
     if (!pNet->IsInGame()) return;
     if (m_pPlayer == nullptr || m_pPlayer->IsDead()) return;
 
-    unsigned char keyFlags = Build_KeyBitFlags();
+    unsigned short keyFlags = Build_KeyBitFlags();
 
     float fLook  = 0.f;
     float fRight = 0.f;
@@ -143,6 +152,10 @@ void CController::Predict_Local(_float fTimeDelta)
     if (keyFlags & KEY_A) fRight -= 1.f;
     if (keyFlags & KEY_D) fRight += 1.f;
     m_pPlayer->Move(fLook, fRight, 0.f);
+
+    if (keyFlags & KEY_SPACE) m_pPlayer->Jump(fTimeDelta);
+    if (keyFlags & KEY_CTRL)  m_pPlayer->Crouch(fTimeDelta);
+    if (keyFlags & KEY_SHIFT) m_pPlayer->Run(fTimeDelta);
 
     if (m_fMouseYawThisFrame != 0.f)
         m_pPlayer->TurnYaw(m_fMouseYawThisFrame * fTimeDelta * 2.2f);
@@ -162,7 +175,7 @@ void CController::Send_InputPacket(_float fTimeDelta)
 
     if (m_pPlayer == nullptr || m_pPlayer->IsDead()) return;
 
-    unsigned char keyFlags = Build_KeyBitFlags();
+    unsigned short keyFlags = Build_KeyBitFlags();
     pNet->Send_Move(keyFlags, m_fAccumMouseYaw,
         m_pPlayer->Get_PredictedMatrixPtr());
 
@@ -195,7 +208,7 @@ void CController::Apply_ServerEvents(_float fTimeDelta)
             Spawn_OtherPlayer(evt.id, evt.worldMatrix);
             break;
         case NetPlayer::EventType::MOVED:
-            Move_OtherPlayer(evt.id, evt.worldMatrix);
+            Move_OtherPlayer(evt.id, evt.worldMatrix, evt.keyInput);
             break;
         case NetPlayer::EventType::REMOVED:
             Remove_OtherPlayer(evt.id);
@@ -261,11 +274,11 @@ void CController::Remove_OtherPlayer(int id)
     m_otherPlayers.erase(it);
 }
 
-void CController::Move_OtherPlayer(int id, const float* worldMatrix)
+void CController::Move_OtherPlayer(int id, const float* worldMatrix, unsigned short keyInput)
 {
     auto it = m_otherPlayers.find(id);
     if (it == m_otherPlayers.end()) return;
-    it->second->Apply_NetworkMatrix(worldMatrix);
+    it->second->Apply_NetworkMatrix(worldMatrix, keyInput);
 }
 
 void CController::Clear_OtherPlayers()
@@ -277,12 +290,8 @@ void CController::Clear_OtherPlayers()
 
 void CController::Input_UI(_float fTimeDelta)
 {
-    if (m_pGameInstance->Key_Pressing(DIK_LSHIFT))
-        m_isKeyboardInput[KEYS_SHIFT] = true;
-    if (m_pGameInstance->Key_Pressing(DIK_R))
-        m_isKeyboardInput[KEYS_R] = true;
-    if (m_pGameInstance->Get_DIMouseState(Engine::DIM_LB))
-        m_isMouseInput[MOUSE_LB] = true;
+    // SHIFT/R/MOUSE_LB는 Update_Input에서 이미 읽음 (패킷 전송 전 필요)
+    // UI 전용 로직이 있으면 여기에 추가
 }
 
 CController* CController::Create()

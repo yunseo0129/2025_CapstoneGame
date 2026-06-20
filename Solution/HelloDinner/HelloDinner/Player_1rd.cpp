@@ -389,22 +389,21 @@ void CPlayer_1rd::Apply_ServerCorrection(const float* pServerMatrix, float fTime
 {
     if (!m_bPredictionInit)
     {
-        // 서버 스폰 위치로 초기화 (회전은 클라이언트 유지)
         m_pTransformCom->Set_State(CTransform::STATE_POSITION,
             XMVectorSet(pServerMatrix[12], pServerMatrix[13], pServerMatrix[14], 1.f));
         m_bPredictionInit = true;
         return;
     }
 
-    // 현재 위치 가져오기 (회전은 건드리지 않음)
     _vector vPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
     XMFLOAT3 pos;
     XMStoreFloat3(&pos, vPos);
 
-    // XZ 거리만 비교 (Y는 클라이언트 중력이 담당)
+    // 3D 거리 비교 (Y 포함 — 서버가 점프/중력도 계산)
     float dx = pos.x - pServerMatrix[12];
+    float dy = pos.y - pServerMatrix[13];
     float dz = pos.z - pServerMatrix[14];
-    float distSq = dx * dx + dz * dz;
+    float distSq = dx * dx + dy * dy + dz * dz;
 
     if (distSq <= SOFT_TOLERANCE * SOFT_TOLERANCE)
         return;
@@ -413,16 +412,17 @@ void CPlayer_1rd::Apply_ServerCorrection(const float* pServerMatrix, float fTime
     {
         float t = 1.f - expf(-LERP_RATE * fTimeDelta);
         pos.x += (pServerMatrix[12] - pos.x) * t;
+        pos.y += (pServerMatrix[13] - pos.y) * t;
         pos.z += (pServerMatrix[14] - pos.z) * t;
     }
     else
     {
         pos.x = pServerMatrix[12];
+        pos.y = pServerMatrix[13];
         pos.z = pServerMatrix[14];
         m_fVerticalVelocity = 0.f;
     }
 
-    // 회전은 건드리지 않고 XZ 위치만 수정
     m_pTransformCom->Set_State(CTransform::STATE_POSITION,
         XMVectorSet(pos.x, pos.y, pos.z, 1.f));
 }

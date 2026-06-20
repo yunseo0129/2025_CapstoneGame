@@ -31,11 +31,11 @@ private:
     void Input_Player(_float fTimeDelta);
     void Input_UI(_float fTimeDelta);
 
-    unsigned char Build_KeyBitFlags() const;
+    unsigned short Build_KeyBitFlags() const;
 
     void Spawn_OtherPlayer(int id, const float* worldMatrix);
     void Remove_OtherPlayer(int id);
-    void Move_OtherPlayer(int id, const float* worldMatrix);
+    void Move_OtherPlayer(int id, const float* worldMatrix, unsigned short keyInput = 0);
 
 private:
     class CGameInstance*    m_pGameInstance = nullptr;

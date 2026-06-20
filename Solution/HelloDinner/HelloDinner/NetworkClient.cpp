@@ -249,7 +249,7 @@ void NetworkClient::Send_CharSelect(unsigned char charType)
 // ─────────────────────────────────────────────
 // 이동 패킷 → 인스턴스 서버로 전송
 // ─────────────────────────────────────────────
-void NetworkClient::Send_Move(unsigned char keyInput, float mouseYaw, const float* worldMatrix)
+void NetworkClient::Send_Move(unsigned short keyInput, float mouseYaw, const float* worldMatrix)
 {
     if (!m_bInGame || m_instanceSocket == INVALID_SOCKET) return;
 

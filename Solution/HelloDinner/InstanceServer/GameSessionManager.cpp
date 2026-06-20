@@ -66,11 +66,34 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
         CS_MOVE_PACKET* p = reinterpret_cast<CS_MOVE_PACKET*>(packet);
 
         auto& session = m_clients[c_id];
-        session.m_player.keyInput = p->keyInput;
+
+        // 클라이언트 타임스탬프 차이를 fTimeDelta로 사용
+        // → 서버와 클라이언트가 동일한 dt로 CalculateMovement를 실행하게 됨
+        float fTimeDelta = 0.f;
+        if (session.m_lastClientTimestamp != 0) {
+            unsigned int delta = p->timestamp - session.m_lastClientTimestamp;
+            fTimeDelta = delta / 1000.f;
+            if (fTimeDelta > 0.1f) fTimeDelta = 0.1f;
+        }
+
+        // 라이징 에지: 이번 패킷에서 새로 눌린 키
+        unsigned short risingEdge = (~session.m_player.keyInput) & p->keyInput;
+
+        session.m_player.prevKeyInput = session.m_player.keyInput;
+        session.m_player.keyInput     = p->keyInput;
         session.UpdateTimestamp(p->timestamp);
 
-        // 클라이언트 worldMatrix 전체(회전+위치)를 신뢰하고 그대로 저장
-        memcpy(session.m_worldMatrix.m, p->worldMatrix, sizeof(float) * 16);
+        // 클라이언트 회전(Right/Up/Look, m[0..11])만 복사 — 위치는 서버가 계산
+        memcpy(session.m_worldMatrix.m, p->worldMatrix, sizeof(float) * 12);
+
+        // 서버 권위 물리: 중력, 점프, 달리기, 웅크리기, WASD 수평이동
+        session.m_worldMatrix.ApplyPlayerPhysics(session.m_player, p->keyInput, fTimeDelta);
+
+        // 액션 키 라이징 에지 처리
+        if (risingEdge & KEY_R)
+            cout << "[Instance] Client [" << c_id << "] interact (R)\n";
+        if (risingEdge & KEY_MOUSE_LB)
+            cout << "[Instance] Client [" << c_id << "] attack (MOUSE_LB)\n";
 
         int room_id = session.m_room_id;
         if (room_id == -1) break;

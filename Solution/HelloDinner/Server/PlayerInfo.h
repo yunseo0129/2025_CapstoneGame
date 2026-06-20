@@ -6,6 +6,8 @@
 // 위치 비교 허용 오차
 constexpr float POSITION_TOLERANCE = 0.01f;
 
+struct PlayerInfo; // forward declaration for ApplyPlayerPhysics
+
 // 월드 행렬 정보 (4x4 = float[16], 행 우선)
 // [0..3]=Right, [4..7]=Up, [8..11]=Look, [12..15]=Position
 // CTransform::STATE_RIGHT=0행, STATE_UP=1행, STATE_LOOK=2행, STATE_POSITION=3행
@@ -134,25 +136,37 @@ struct WorldMatrixInfo
 	}
 
 	// ==========================================
+	// Player_1rd::Resolve_Movement + Jump/Run/Crouch 로직을 서버에서 동일하게 수행
+	// SPACE=점프(중력기반), SHIFT=달리기(1.5x), CTRL=웅크리기(0.5x), WASD=수평이동
+	// info.fVerticalVelocity / info.bIsGrounded 갱신
+	// ==========================================
+	static constexpr float PHYS_GRAVITY      = -9.8f;
+	static constexpr float PHYS_JUMP_SPEED   =  4.5f;
+	static constexpr float PHYS_TERMINAL_VEL = 20.f;
+
+	void ApplyPlayerPhysics(PlayerInfo& info, unsigned short keyInput, float fTimeDelta);
+
+	// ==========================================
 	// Camera_FPV::Update 이동 로직과 동일
 	// keyInput 비트 플래그 + mouseYaw + timeDelta를 받아
 	// 서버에서 클라이언트와 동일한 위치를 시뮬레이션
 	// ==========================================
-	void CalculateMovement(unsigned char keyInput, float mouseYaw, float speedPerSec, float rotationPerSec, float fTimeDelta)
+	void CalculateMovement(unsigned short keyInput, float mouseYaw, float speedPerSec, float rotationPerSec, float fTimeDelta)
 	{
 		// 1) 마우스 Yaw 회전 적용 (CTransform::Turn Y축)
 		if (mouseYaw != 0.f)
 			TurnY(rotationPerSec * mouseYaw * fTimeDelta * 2.2f);
 
 		// 2) 키 입력에 따른 이동 (Camera_FPV 로직 그대로)
-		bool bW = (keyInput & KEY_W) != 0;
-		bool bS = (keyInput & KEY_S) != 0;
-		bool bA = (keyInput & KEY_A) != 0;
-		bool bD = (keyInput & KEY_D) != 0;
+		bool bW     = (keyInput & KEY_W)     != 0;
+		bool bS     = (keyInput & KEY_S)     != 0;
+		bool bA     = (keyInput & KEY_A)     != 0;
+		bool bD     = (keyInput & KEY_D)     != 0;
 		bool bSpace = (keyInput & KEY_SPACE) != 0;
 		bool bCtrl  = (keyInput & KEY_CTRL)  != 0;
+		bool bShift = (keyInput & KEY_SHIFT) != 0;
 
-		float speed = speedPerSec;
+		float speed = bShift ? speedPerSec * 2.f : speedPerSec;
 		constexpr float DIAG = 0.7071f;
 
 		if (bW && bS) {
@@ -222,9 +236,81 @@ struct WorldMatrixInfo
 // 플레이어 정보
 struct PlayerInfo
 {
-	int				id = -1;
-	char			name[NAME_SIZE] = {};
-	unsigned char	keyInput = 0;
-	float			speedPerSec = 1.f;
-	float			rotationPerSec = 1.f;
+	int             id = -1;
+	char            name[NAME_SIZE] = {};
+	unsigned short  keyInput    = 0;
+	unsigned short  prevKeyInput = 0;  // 라이징 에지 감지용
+	float           speedPerSec    = 1.f;
+	float           rotationPerSec = 1.f;
+
+	// 서버 권위 물리 상태 (ApplyPlayerPhysics에서 갱신)
+	float           fVerticalVelocity = 0.f;
+	bool            bIsGrounded       = true;
 };
+
+// ApplyPlayerPhysics 인라인 구현 (PlayerInfo 완전 정의 이후)
+inline void WorldMatrixInfo::ApplyPlayerPhysics(PlayerInfo& info, unsigned short keyInput, float fTimeDelta)
+{
+	const bool bSpace = (keyInput & KEY_SPACE) != 0;
+	const bool bCtrl  = (keyInput & KEY_CTRL)  != 0;
+	const bool bShift = (keyInput & KEY_SHIFT) != 0;
+	const bool bW     = (keyInput & KEY_W)     != 0;
+	const bool bS     = (keyInput & KEY_S)     != 0;
+	const bool bA     = (keyInput & KEY_A)     != 0;
+	const bool bD     = (keyInput & KEY_D)     != 0;
+
+	// 1) 점프: SPACE + 착지 상태일 때만 (Player_1rd::Jump 동일)
+	if (bSpace && info.bIsGrounded)
+	{
+		info.fVerticalVelocity = PHYS_JUMP_SPEED;
+		info.bIsGrounded       = false;
+	}
+
+	// 2) 중력 적용 (Player_1rd::Resolve_Movement 동일)
+	info.fVerticalVelocity += PHYS_GRAVITY * fTimeDelta;
+	if (info.fVerticalVelocity < -PHYS_TERMINAL_VEL)
+		info.fVerticalVelocity = -PHYS_TERMINAL_VEL;
+
+	// 3) 속도 배율: 웅크리기=0.5x, 달리기=1.5x (Player_1rd::Resolve_Movement 동일)
+	float val = 1.f;
+	if (bCtrl)       val = 0.5f;
+	else if (bShift) val = 1.5f;
+	const float speed = info.speedPerSec * val;
+
+	// 4) 수평 이동 (XZ only — Y=0으로 만든 look/right, Resolve_Movement 동일)
+	float lx = m[8], lz = m[10];
+	const float lenL = sqrtf(lx * lx + lz * lz);
+	if (lenL > 0.0001f) { lx /= lenL; lz /= lenL; }
+
+	float rx = m[0], rz = m[2];
+	const float lenR = sqrtf(rx * rx + rz * rz);
+	if (lenR > 0.0001f) { rx /= lenR; rz /= lenR; }
+
+	const float fLook  = (bW ? 1.f : 0.f) - (bS ? 1.f : 0.f);
+	const float fRight = (bD ? 1.f : 0.f) - (bA ? 1.f : 0.f);
+
+	float dirX = lx * fLook + rx * fRight;
+	float dirZ = lz * fLook + rz * fRight;
+	const float dirLen = sqrtf(dirX * dirX + dirZ * dirZ);
+	if (dirLen > 0.0001f)
+	{
+		dirX /= dirLen;
+		dirZ /= dirLen;
+		m[12] += dirX * speed * fTimeDelta;
+		m[14] += dirZ * speed * fTimeDelta;
+	}
+
+	// 5) 수직 이동
+	m[13] += info.fVerticalVelocity * fTimeDelta;
+
+	// 6) 바닥 클램프 Y=0 (Player_1rd::Resolve_Movement 동일)
+	if (m[13] < 0.f)
+	{
+		m[13] = 0.f;
+		if (info.fVerticalVelocity < 0.f)
+		{
+			info.fVerticalVelocity = 0.f;
+			info.bIsGrounded       = true;
+		}
+	}
+}

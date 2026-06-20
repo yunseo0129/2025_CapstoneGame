@@ -17,7 +17,7 @@ void NetPlayer::OnRemoved()
     PushEvent(EventType::REMOVED);
 }
 
-void NetPlayer::OnMoved(unsigned char keyInput, const float* worldMatrix)
+void NetPlayer::OnMoved(unsigned short keyInput, const float* worldMatrix)
 {
     memcpy(m_worldMatrix, worldMatrix, sizeof(float) * 16);
     m_keyInput = keyInput;
