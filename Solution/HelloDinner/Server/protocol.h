@@ -158,4 +158,50 @@ struct IS_ROOM_NOTIFY_PACKET {
     char    auth_token[32];
 };
 
+// Phase 1: 게임 상태머신 동기화 패킷 (서버 → 클라)
+constexpr char SC_PHASE_CHANGE = 20;   // 페이즈 전환
+constexpr char SC_ROUND_START  = 21;   // 라운드 시작 (타이머 동기화)
+constexpr char SC_ROUND_END    = 22;   // 라운드 종료 (승패 + 점수)
+constexpr char SC_SCORE_UPDATE = 33;   // K/D/A + 팀 점수 브로드캐스트
+
+struct SC_PHASE_CHANGE_PACKET {
+    unsigned char size;
+    char          type;    // SC_PHASE_CHANGE
+    unsigned char phase;   // 0=CHARSELECT 1=SCOREBOARD 2=SHOP 3=PLAYING 4=GAMEOVER
+    unsigned char round;   // 현재 라운드 (1~10)
+};
+
+struct SC_ROUND_START_PACKET {
+    unsigned char size;
+    char          type;           // SC_ROUND_START
+    unsigned char round;          // 1~10
+    unsigned int  duration_ms;    // 라운드 길이 (ms)
+    unsigned int  server_time_ms; // 서버 현재 시각 (ms)
+};
+
+struct SC_ROUND_END_PACKET {
+    unsigned char size;
+    char          type;         // SC_ROUND_END
+    unsigned char winner_team;  // 0=팀A, 1=팀B, 2=무승부
+    unsigned char score_a;
+    unsigned char score_b;
+};
+
+struct PlayerStatBrief {
+    int            player_id;
+    unsigned char  kills;
+    unsigned char  deaths;
+    unsigned char  assists;
+    unsigned short money;
+};
+
+struct SC_SCORE_UPDATE_PACKET {
+    unsigned char   size;
+    char            type;          // SC_SCORE_UPDATE
+    unsigned char   score_a;
+    unsigned char   score_b;
+    unsigned char   player_count;
+    PlayerStatBrief stats[ROOM_MAX_PLAYER];
+};
+
 #pragma pack (pop)

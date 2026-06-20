@@ -315,9 +315,53 @@ void NetworkClient::ProcessInstancePacket(char* packet)
         break;
     }
     case SC_MOVE_PLAYER: {
-        // ← 서버 계산 결과 수신 → NetPlayer 이벤트 큐에 적재
         SC_MOVE_PLAYER_PACKET* p = reinterpret_cast<SC_MOVE_PLAYER_PACKET*>(packet);
         m_players[p->id].OnMoved(p->keyInput, p->worldMatrix);
+        break;
+    }
+    // ── Phase 1: 게임 상태머신 패킷 ──────────────────────────────────
+    case SC_PHASE_CHANGE: {
+        SC_PHASE_CHANGE_PACKET* p = reinterpret_cast<SC_PHASE_CHANGE_PACKET*>(packet);
+        NetEvent evt{};
+        evt.type  = NetEventType::PHASE_CHANGE;
+        evt.phase = p->phase;
+        evt.round = p->round;
+        std::lock_guard<std::mutex> lk(m_matchEventLock);
+        m_pendingMatchEvents.push_back(evt);
+        break;
+    }
+    case SC_ROUND_START: {
+        SC_ROUND_START_PACKET* p = reinterpret_cast<SC_ROUND_START_PACKET*>(packet);
+        NetEvent evt{};
+        evt.type           = NetEventType::ROUND_START;
+        evt.round          = p->round;
+        evt.duration_ms    = p->duration_ms;
+        evt.server_time_ms = p->server_time_ms;
+        std::lock_guard<std::mutex> lk(m_matchEventLock);
+        m_pendingMatchEvents.push_back(evt);
+        break;
+    }
+    case SC_ROUND_END: {
+        SC_ROUND_END_PACKET* p = reinterpret_cast<SC_ROUND_END_PACKET*>(packet);
+        NetEvent evt{};
+        evt.type        = NetEventType::ROUND_END;
+        evt.winner_team = p->winner_team;
+        evt.score_a     = p->score_a;
+        evt.score_b     = p->score_b;
+        std::lock_guard<std::mutex> lk(m_matchEventLock);
+        m_pendingMatchEvents.push_back(evt);
+        break;
+    }
+    case SC_SCORE_UPDATE: {
+        SC_SCORE_UPDATE_PACKET* p = reinterpret_cast<SC_SCORE_UPDATE_PACKET*>(packet);
+        NetEvent evt{};
+        evt.type         = NetEventType::SCORE_UPDATE;
+        evt.score_a      = p->score_a;
+        evt.score_b      = p->score_b;
+        evt.player_count = p->player_count;
+        memcpy(evt.stats, p->stats, sizeof(PlayerStatBrief) * ROOM_MAX_PLAYER);
+        std::lock_guard<std::mutex> lk(m_matchEventLock);
+        m_pendingMatchEvents.push_back(evt);
         break;
     }
     }

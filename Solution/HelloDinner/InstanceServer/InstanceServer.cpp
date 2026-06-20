@@ -1,4 +1,5 @@
 ﻿#include "InstanceServer.h"
+#include "RoomPhaseManager.h"
 
 InstanceServer::~InstanceServer()
 {
@@ -110,6 +111,9 @@ bool InstanceServer::ConnectToLobby(const char* lobby_ip)
 
 void InstanceServer::Run()
 {
+    // 페이즈 타이머 스레드 (룸별 게임 상태머신 구동)
+    RoomPhaseManager::GetInstance()->StartTimerThread();
+
     // Heartbeat 스레드
     thread hb_th(&InstanceServer::HeartbeatThread, this);
     hb_th.detach();

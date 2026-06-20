@@ -82,6 +82,13 @@ public:
     // 라운드 결과를 반영하고 다음 라운드로 진행 (iWinnerTeam 팀 승)
     void    End_Round(_int iWinnerTeam);
 
+    // ---- 서버 주도 이벤트 (Phase 1: Controller::Apply_ServerEvents 에서 호출) ----
+    void    Apply_PhaseChange(unsigned char phase, unsigned char round);
+    void    Apply_RoundStart(unsigned char round, unsigned int duration_ms, unsigned int server_time_ms);
+    void    Apply_RoundEnd(unsigned char winner_team, unsigned char score_a, unsigned char score_b);
+    void    Apply_ScoreUpdate(unsigned char score_a, unsigned char score_b,
+                              unsigned char player_count, const PlayerStatBrief* stats);
+
 private:
     // ---- 단계 진입(한 번) ----
     void    Enter_Phase(GAME_PHASE eNext);

@@ -10,13 +10,31 @@ public:
     enum class NetEventType {
         MATCH_WAIT,
         MATCH_SUCCESS,
+        // Phase 1: 게임 상태머신 이벤트
+        PHASE_CHANGE,
+        ROUND_START,
+        ROUND_END,
+        SCORE_UPDATE,
     };
 
     struct NetEvent {
         NetEventType    type;
-        int             roomId = -1;
+        int             roomId    = -1;
         int             queueSize = 0;
         int             playerIds[ROOM_MAX_PLAYER] = {};
+
+        // PHASE_CHANGE / ROUND_START / ROUND_END 공용
+        unsigned char   phase          = 0;
+        unsigned char   round          = 0;
+        unsigned int    duration_ms    = 0;
+        unsigned int    server_time_ms = 0;
+        unsigned char   winner_team    = 0;
+        unsigned char   score_a        = 0;
+        unsigned char   score_b        = 0;
+
+        // SCORE_UPDATE
+        unsigned char   player_count   = 0;
+        PlayerStatBrief stats[ROOM_MAX_PLAYER] = {};
     };
 
 public:

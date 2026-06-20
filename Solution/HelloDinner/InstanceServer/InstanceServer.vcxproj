@@ -129,6 +129,7 @@
     <ClCompile Include="InstanceServer.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Room.cpp" />
+    <ClCompile Include="RoomPhaseManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameSession.h" />
@@ -137,6 +138,7 @@
     <ClInclude Include="OverllapedEXP.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Room.h" />
+    <ClInclude Include="RoomPhaseManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

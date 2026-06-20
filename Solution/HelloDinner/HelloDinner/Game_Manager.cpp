@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Game_Manager.h"
+#include "NetworkClient.h"
 #include "GameInstance.h"
 #include "GameObject.h"
 #include "UI_Text.h"
@@ -346,31 +347,30 @@ void CGame_Manager::Update_Shop(_float fTimeDelta)
 
 void CGame_Manager::Update_Playing(_float fTimeDelta)
 {
-    // 남은 라운드 시간 카운트다운 + HUD 타이머 갱신
+    // 남은 라운드 시간 카운트다운 (HUD 표시 전용 — 실제 종료는 서버 SC_ROUND_END로 제어)
     if (m_fRoundTimer > 0.f)
     {
         m_fRoundTimer -= fTimeDelta;
         if (m_fRoundTimer < 0.f)
             m_fRoundTimer = 0.f;
     }
-    Refresh_HUD();   // 타이머가 매 프레임 갱신되도록
+    Refresh_HUD();
 
-    // 시간 초과 시 라운드 종료 (승패 판정은 추후 생존 시스템으로 교체)
-    if (m_fRoundTimer <= 0.f)
+    // 오프라인 모드에서만 로컬 타이머로 라운드 종료 + 디버그 키 허용
+    if (NetworkClient::GetInstance()->IsOfflineMode())
     {
-        // TODO(생존 시스템): 생존 인원이 많은 팀 승. 지금은 더미로 팀A 승.
-        End_Round(0);
-        return;
-    }
-
-    // 라운드 종료 조건은 추후(전멸 등).
-    // 지금은 임시로: 디버그 키로 라운드 종료 테스트.
+        if (m_fRoundTimer <= 0.f)
+        {
+            End_Round(0);
+            return;
+        }
 #ifdef _DEBUG
-    if (m_pGameInstance->Key_Down(DIK_F9))   // F9: 팀A 승으로 라운드 종료
-        End_Round(0);
-    else if (m_pGameInstance->Key_Down(DIK_F10)) // F10: 팀B 승으로 라운드 종료
-        End_Round(1);
+        if (m_pGameInstance->Key_Down(DIK_F9))
+            End_Round(0);
+        else if (m_pGameInstance->Key_Down(DIK_F10))
+            End_Round(1);
 #endif
+    }
 }
 
 // =====================================================================
@@ -415,6 +415,55 @@ void CGame_Manager::End_Round(_int iWinnerTeam)
     // 다음 라운드: 다시 스코어보드부터
     ++m_iRound;
     Enter_Phase(GAME_PHASE::PHASE_SCOREBOARD);
+}
+
+// =====================================================================
+//  서버 주도 이벤트 (Phase 1)
+// =====================================================================
+
+void CGame_Manager::Apply_PhaseChange(unsigned char phase, unsigned char round)
+{
+    // 서버 페이즈 번호(0~4) → GAME_PHASE enum 변환
+    static const GAME_PHASE s_map[] = {
+        GAME_PHASE::PHASE_CHARSELECT,
+        GAME_PHASE::PHASE_SCOREBOARD,
+        GAME_PHASE::PHASE_SHOP,
+        GAME_PHASE::PHASE_PLAYING,
+        GAME_PHASE::PHASE_GAMEOVER,
+    };
+    if (phase >= 5) return;
+
+    m_iRound = static_cast<_int>(round);
+    Enter_Phase(s_map[phase]);
+}
+
+void CGame_Manager::Apply_RoundStart(unsigned char round, unsigned int duration_ms,
+                                      unsigned int /*server_time_ms*/)
+{
+    // 라운드 번호는 SC_PHASE_CHANGE 에서 이미 설정. 타이머만 서버 값으로 맞춤.
+    m_iRound      = static_cast<_int>(round);
+    m_fRoundTimer = static_cast<_float>(duration_ms) / 1000.f;
+    GM_Log(L"Round %d 시작 | 타이머 %.0fs", m_iRound, m_fRoundTimer);
+}
+
+void CGame_Manager::Apply_RoundEnd(unsigned char winner_team,
+                                    unsigned char score_a, unsigned char score_b)
+{
+    // 점수는 서버 값으로 덮어쓰고, 페이즈 전환은 뒤따르는 SC_PHASE_CHANGE 가 처리
+    m_iTeamScore[0] = static_cast<_int>(score_a);
+    m_iTeamScore[1] = static_cast<_int>(score_b);
+    GM_Log(L"서버 라운드 종료 | winner=%d  score %d:%d", winner_team, score_a, score_b);
+}
+
+void CGame_Manager::Apply_ScoreUpdate(unsigned char score_a, unsigned char score_b,
+                                       unsigned char /*player_count*/,
+                                       const PlayerStatBrief* /*stats*/)
+{
+    m_iTeamScore[0] = static_cast<_int>(score_a);
+    m_iTeamScore[1] = static_cast<_int>(score_b);
+    // Phase 3에서 개인 K/D/A stats 연동 예정
+    Refresh_Scoreboard();
+    Refresh_HUD();
 }
 
 // =====================================================================

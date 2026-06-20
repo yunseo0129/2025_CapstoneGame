@@ -1,4 +1,5 @@
 #include "GameSessionManager.h"
+#include "RoomPhaseManager.h"
 
 int GameSessionManager::GetNewClientId()
 {
@@ -53,6 +54,9 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
 
         // 본인에게 초기 위치 전송 (클라이언트가 첫 snap에 사용)
         session.Send_Move_Packet(c_id, this);
+
+        // 페이즈 매니저에 입장 완료 알림 → 전원 입장 시 CHARSELECT로 전환
+        RoomPhaseManager::GetInstance()->OnPlayerJoined(p->room_id);
 
         cout << "[Instance] Client [" << c_id << "] joined room " << p->room_id
              << " as " << p->name << endl;
@@ -127,6 +131,7 @@ void GameSessionManager::Disconnect(int c_id)
             }
             room->RemovePlayer(c_id);
         }
+        RoomPhaseManager::GetInstance()->OnPlayerLeft(room_id);
     }
 
     closesocket(m_clients[c_id].m_socket);
@@ -150,6 +155,9 @@ void GameSessionManager::RegisterPendingRoom(const IS_ROOM_NOTIFY_PACKET& pkt)
         lock_guard<mutex> ll(m_pending_lock);
         m_pending_tokens[pkt.room_id] = string(pkt.auth_token);
     }
+
+    // 페이즈 매니저에 방 등록 (입장 대기 상태로 초기화)
+    RoomPhaseManager::GetInstance()->OnRoomRegistered(pkt.room_id, pkt.player_count);
 
     cout << "[Instance] Room " << pkt.room_id << " registered. Expecting "
          << pkt.player_count << " players." << endl;
