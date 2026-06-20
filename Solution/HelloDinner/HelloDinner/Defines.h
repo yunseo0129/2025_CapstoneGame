@@ -87,6 +87,7 @@ enum RootParameterIndex
     Light,
     ShadowMap,
     UIColor,
+    MapUV,      // [방식 가] 팔레트 crop UV 재매핑 (b5: float2 offset + float2 scale)
     // 후에 Material, BoneMatrix 등등 추가할 수 있음
     End
 };

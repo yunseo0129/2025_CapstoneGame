@@ -10,6 +10,11 @@ private:
     {
         _wstring strAlbedoFile {};
         _wstring strNormalFile {};
+
+        // [방식 가] 팔레트 crop UV 재매핑: finalUV = meshUV * uvScale + uvOffset
+        //   MaterialExporter 가 슬롯별로 기록한 값. 기본값(0,0)/(1,1) = 변환 없음.
+        _float2  vUVOffset {0.f, 0.f};
+        _float2  vUVScale {1.f, 1.f};
     };
 private:
     CLoader_Map(EngineContext* pContext);
@@ -49,6 +54,9 @@ private:
 
     // material file을 읽어 존재하는 texture 파일명을 저장
     unordered_map<std::string, MATERIAL_INFO> m_MaterialInfos;
+
+    // 텍스처(dds) 공통 경로 프리픽스. 슬롯별 crop dds 도 동일 폴더에 위치.
+    const _wstring m_strTextureDir = L"Resources/NonAnim/Map/dds/";
 
 public:
     static CLoader_Map* Create(EngineContext* pContext);
