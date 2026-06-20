@@ -152,6 +152,7 @@ void CCollision_Manager::NewBullet(_vector _look, _vector _pos)
     CBullets::BULLET b;
     b.vLook = _look;
     b.vPos = _pos;
+    b.isTarget = false;
     b.isOn = true;
     b.iLifeTime = 0.2f;
     m_pBullets->NewBullet(b);

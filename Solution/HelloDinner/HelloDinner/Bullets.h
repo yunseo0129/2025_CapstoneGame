@@ -14,6 +14,7 @@ public:
         _vector vPos;
         _vector vTarget;
         _float   iLifeTime;
+        _bool   isTarget = false;
         _bool   isOn = false;
     };
 private:

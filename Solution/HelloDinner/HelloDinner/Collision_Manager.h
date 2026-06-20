@@ -24,6 +24,7 @@ public:
     void Clear_CollisionGroup();
     void Set_CollisionMatrix(COLLISION_GROUP _lgroup, COLLISION_GROUP _rgroup, _bool _is);
     void Add_CollisionGroup(COLLISION_GROUP _eGroup, class CCollider* _pCollider);
+    // 모든애들 콜리젼에 추가해주고 총알벡터에서 타겟 아직없는애들만 충돌시켜서 타격지점 정해주기
     void Delete_CollisionGroup(COLLISION_GROUP _eGroup, class CCollider* _pCollider);
     vector<class CCollider*> CollisionCheck_with_Group(class CCollider* _pCollider, COLLISION_GROUP _eGroup);
     bool CollisionCheck_with_Collider(class CCollider* _pMyCollider, class CCollider* _pOtherCollider);
