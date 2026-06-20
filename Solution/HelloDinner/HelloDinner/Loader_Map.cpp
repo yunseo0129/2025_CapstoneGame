@@ -4,6 +4,7 @@
 #include "Map.h"
 #include "Texture.h"
 
+#include <unordered_set>
 #include <fstream>
 #include "json.hpp"
 using json = nlohmann::json;
@@ -43,26 +44,33 @@ HRESULT CLoader_Map::Load_MaterialData(const string& strJsonPath)
     file >> matJson;
     file.close();
 
-    // [Palette 대응] 과거에는 머티리얼마다 albedo 가 1:1 로 존재했지만,
-    //   현재는 다수 머티리얼이 하나의 Palette(아틀라스) 텍스처를 공유한다.
-    //   => 파일명 기준 중복 제거를 하면 "Palette 를 두 번째 이후로 참조한"
-    //      머티리얼들이 빈 경로가 되어 검정으로 렌더링된다.
-    //   매핑 테이블(materialName -> 파일 경로)은 모든 머티리얼에 대해 채우고,
-    //   실제 텍스처 중복 로딩 방지는 CTexture 캐시 단계에서 처리한다.
+    unordered_set<string> registeredTextures;
+
     for (auto& mat : matJson["materials"])
     {
         string matName = mat["materialName"].get<string>();
-        string albedoFile = mat.contains("albedoTexture") ? mat["albedoTexture"].get<string>() : "";
-        string normalFile = mat.contains("normalTexture") ? mat["normalTexture"].get<string>() : "";
-
-        // 같은 materialName 이 중복되면(예: "Kitchen" 2개) 동일 경로로 덮어쓰므로 무해.
-        MATERIAL_INFO& info = m_MaterialInfos[matName];
+        string albedoFile = mat["albedoTexture"].get<string>();
+        string normalFile = mat["normalTexture"].get<string>();
 
         if (!albedoFile.empty())
-            info.strAlbedoFile = m_strTextureDir + _wstring(albedoFile.begin(), albedoFile.end());
+        {
+            if (registeredTextures.find(albedoFile) == registeredTextures.end())
+            {
+                _wstring strPath = L"Resources/NonAnim/Map/dds/" + _wstring(albedoFile.begin(), albedoFile.end());
+                registeredTextures.insert(albedoFile);
+                m_MaterialInfos[matName].strAlbedoFile = strPath;
+            }
+        }
 
         if (!normalFile.empty())
-            info.strNormalFile = m_strTextureDir + _wstring(normalFile.begin(), normalFile.end());
+        {
+            if (registeredTextures.find(normalFile) == registeredTextures.end())
+            {
+                _wstring strPath = L"Resources/NonAnim/Map/dds/" + _wstring(normalFile.begin(), normalFile.end());
+                registeredTextures.insert(normalFile);
+                m_MaterialInfos[matName].strNormalFile = strPath;
+            }
+        }
     }
     return S_OK;
 }
@@ -186,9 +194,9 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
                 desc.iWallId = iFractureWallId++;
             }
 
-            desc.vPosition.x = inst["position"]["x"].get<float>() * 100;
-            desc.vPosition.y = inst["position"]["y"].get<float>() * 100 - 150.f;
-            desc.vPosition.z = inst["position"]["z"].get<float>() * 100;
+            desc.vPosition.x = inst["position"]["x"].get<float>();
+            desc.vPosition.y = inst["position"]["y"].get<float>() - 1.5f;
+            desc.vPosition.z = inst["position"]["z"].get<float>();
 
             desc.vRotation.x = XMConvertToRadians(inst["rotation"]["x"].get<float>());
             desc.vRotation.y = XMConvertToRadians(inst["rotation"]["y"].get<float>() + 180);
@@ -210,9 +218,9 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
             else
                 desc.eColliderType = CCollider::TYPE_END;
 
-            desc.vCenterCollider.x = colliderNode["center"]["x"].get<float>() * 100;
-            desc.vCenterCollider.y = colliderNode["center"]["y"].get<float>() * 100 - 150.f;
-            desc.vCenterCollider.z = colliderNode["center"]["z"].get<float>() * 100;
+            desc.vCenterCollider.x = colliderNode["center"]["x"].get<float>();
+            desc.vCenterCollider.y = colliderNode["center"]["y"].get<float>() - 1.5f;
+            desc.vCenterCollider.z = colliderNode["center"]["z"].get<float>();
 
             desc.vExtentsCollider.x = colliderNode["extents"]["x"].get<float>();
             desc.vExtentsCollider.y = colliderNode["extents"]["y"].get<float>();
