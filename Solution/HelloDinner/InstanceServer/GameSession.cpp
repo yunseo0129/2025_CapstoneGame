@@ -48,7 +48,7 @@ void GameSession::Send(void* packet)
 void GameSession::Send_Add_Player_Packet(int c_id, GameSessionManager* gsm)
 {
     auto& target = gsm->GetClient(c_id);
-    SC_ADD_PLAYER_PACKET p;
+    SC_ADD_PLAYER_PACKET p{};
     p.size = sizeof(SC_ADD_PLAYER_PACKET);
     p.type = SC_ADD_PLAYER;
     p.id = target.m_lobby_player_id;  // 로비 ID 기준으로 통일

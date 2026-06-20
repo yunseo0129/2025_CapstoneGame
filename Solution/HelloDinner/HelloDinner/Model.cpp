@@ -56,19 +56,39 @@ HRESULT CModel::Initialize_Prototype(TYPE eModelType, const wchar_t* pModelFileP
 
     XMStoreFloat4x4(&m_PreTransformMatrix, PreTransformMatrix);
 
-    m_pGameInstance->Open_File(pModelFilePath);
+    if (FAILED(m_pGameInstance->Open_File(pModelFilePath)))
+    {
+        char szDbg[MAX_PATH * 2] = {};
+        sprintf_s(szDbg, "[Model] Open_File failed (err=%lu): ", GetLastError());
+        OutputDebugStringA(szDbg);
+        OutputDebugStringW(pModelFilePath);
+        OutputDebugStringA("\n");
+        return E_FAIL;
+    }
 
     if (FAILED(Ready_Bones()))
+    {
+        m_pGameInstance->Close_File();
         return E_FAIL;
+    }
 
     if (FAILED(Ready_Meshes()))
+    {
+        m_pGameInstance->Close_File();
         return E_FAIL;
+    }
 
     if (FAILED(Ready_Materials(pModelFilePath, eMatMode)))
+    {
+        m_pGameInstance->Close_File();
         return E_FAIL;
+    }
 
     if (FAILED(Ready_Animations()))
+    {
+        m_pGameInstance->Close_File();
         return E_FAIL;
+    }
 
     m_pGameInstance->Close_File();
 
@@ -191,10 +211,10 @@ HRESULT CModel::Ready_Bones()
     if (m_eModelType == TYPE_NONANIM)
         return S_OK;
 
-    size_t NumBone;
+    size_t NumBone = 0;
     m_pGameInstance->Read_File(NumBone);
 
-    _char BoneName[MAX_PATH];
+    _char BoneName[MAX_PATH] = {};
     _float4x4 BoneTransformMatrix;
     _float4x4 CombindTransformationMatrix;
     _int BoneParentIndex;
