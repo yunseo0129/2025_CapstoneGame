@@ -186,9 +186,9 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
                 desc.iWallId = iFractureWallId++;
             }
 
-            desc.vPosition.x = inst["position"]["x"].get<float>();
-            desc.vPosition.y = inst["position"]["y"].get<float>() - 1.5f;
-            desc.vPosition.z = inst["position"]["z"].get<float>();
+            desc.vPosition.x = inst["position"]["x"].get<float>() * 100;
+            desc.vPosition.y = inst["position"]["y"].get<float>() * 100 - 150.f;
+            desc.vPosition.z = inst["position"]["z"].get<float>() * 100;
 
             desc.vRotation.x = XMConvertToRadians(inst["rotation"]["x"].get<float>());
             desc.vRotation.y = XMConvertToRadians(inst["rotation"]["y"].get<float>() + 180);
@@ -210,9 +210,9 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
             else
                 desc.eColliderType = CCollider::TYPE_END;
 
-            desc.vCenterCollider.x = colliderNode["center"]["x"].get<float>();
-            desc.vCenterCollider.y = colliderNode["center"]["y"].get<float>() - 1.5f;
-            desc.vCenterCollider.z = colliderNode["center"]["z"].get<float>();
+            desc.vCenterCollider.x = colliderNode["center"]["x"].get<float>() * 100;
+            desc.vCenterCollider.y = colliderNode["center"]["y"].get<float>() * 100 - 150.f;
+            desc.vCenterCollider.z = colliderNode["center"]["z"].get<float>() * 100;
 
             desc.vExtentsCollider.x = colliderNode["extents"]["x"].get<float>();
             desc.vExtentsCollider.y = colliderNode["extents"]["y"].get<float>();

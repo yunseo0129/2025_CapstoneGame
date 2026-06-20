@@ -32,6 +32,9 @@ public:
     ROOM_RESULT DoModal();
     void        Close();
 
+    // 방 들어가기에서 입력받은 방 코드를 표시용으로 지정(선택).
+    void        Set_RoomCode(_int iCode) { m_iRoomCode = iCode; }
+
 private:
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 

@@ -1652,54 +1652,9 @@
                 }
             ]
         },
+        
         {
-            "fbxName": "Floor_Kitchen.fbx",
-            "isAnim": false,
-            "isColliderOnly": false,
-            "materialNames": [
-                "Floor"
-            ],
-            "instances": [
-                {
-                    "position": {
-                        "x": 0.019999761134386064,
-                        "y": 7.383339701393196e-18,
-                        "z": 0.0000034570693969726564
-                    },
-                    "rotation": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "scale": {
-                        "x": 1.0,
-                        "y": 1.0,
-                        "z": 1.0
-                    },
-                    "collider": {
-                        "colliderType": "AABB",
-                        "center": {
-                            "x": 0.019999761134386064,
-                            "y": 7.383339701393196e-18,
-                            "z": 0.0000034570693969726564
-                        },
-                        "extents": {
-                            "x": 1.4999998807907105,
-                            "y": 1.4581748287599136e-17,
-                            "z": 1.4999998807907105
-                        },
-                        "rotation": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "radius": 0.0
-                    }
-                }
-            ]
-        },
-        {
-            "fbxName": "Сutting board_1_Cheeze.fbx",
+            "fbxName": "Cutting board_1_Cheeze.fbx",
             "isAnim": false,
             "isColliderOnly": false,
             "materialNames": [

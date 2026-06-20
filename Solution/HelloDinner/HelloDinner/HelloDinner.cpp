@@ -31,6 +31,265 @@ LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 // ---------------------------------------------------------------------
+//  방 코드 입력 창 (GDI+ 테마 — 로비/대기방과 동일한 느낌)
+//   - [방 들어가기] 클릭 시 먼저 띄운다.
+//   - [접속] 누르면 입력 코드를 정수로 반환, [취소]/닫기면 -1 반환.
+//   - 자체 모달 루프를 돈다(대기방 DoModal 과 동일한 패턴).
+// ---------------------------------------------------------------------
+namespace
+{
+    constexpr int IDC_ROOMCODE_EDIT = 3101;
+    constexpr int IDC_ROOMCODE_OK = 3102;
+    constexpr int IDC_ROOMCODE_CANCEL = 3103;
+
+    constexpr int ROOMCODE_W = 420;
+    constexpr int ROOMCODE_H = 240;
+
+    // 창 ↔ 모달 루프 사이 상태 공유.
+    struct ROOMCODE_STATE
+    {
+        int    iResultCode = -1;   // 확정된 코드(>=0) 또는 취소(-1)
+        bool   bDone = false;       // 모달 종료 플래그
+        HWND   hEdit = nullptr;
+        HFONT  hFontUI = nullptr;   // 버튼/에디트용
+        void* pBack = nullptr;     // Gdiplus::Bitmap* 더블버퍼
+    };
+
+    void RoomCode_Paint(HWND hWnd)
+    {
+        using namespace Gdiplus;
+
+        ROOMCODE_STATE* pState = reinterpret_cast<ROOMCODE_STATE*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hWnd, &ps);
+
+        RECT rc; GetClientRect(hWnd, &rc);
+        int W = rc.right - rc.left, H = rc.bottom - rc.top;
+        if (W <= 0 || H <= 0) { EndPaint(hWnd, &ps); return; }
+
+        Bitmap* pBack = pState ? static_cast<Bitmap*>(pState->pBack) : nullptr;
+        if (!pBack || (int)pBack->GetWidth() != W || (int)pBack->GetHeight() != H)
+        {
+            if (pBack) delete pBack;
+            pBack = new Bitmap(W, H, PixelFormat32bppPARGB);
+            if (pState) pState->pBack = pBack;
+        }
+
+        {
+            Graphics g(pBack);
+            g.SetSmoothingMode(SmoothingModeAntiAlias);
+            g.SetTextRenderingHint(TextRenderingHintAntiAlias);
+
+            FontFamily ff(L"맑은 고딕");
+
+            // 배경 (대기방과 동일 톤)
+            SolidBrush bgBrush(Color(255, 22, 24, 32));
+            g.FillRectangle(&bgBrush, 0, 0, W, H);
+
+            // 헤더 바 (대기방과 동일 그라데이션)
+            LinearGradientBrush headBrush(
+                Point(0, 0), Point(0, 64),
+                Color(255, 46, 80, 130), Color(255, 32, 56, 96));
+            g.FillRectangle(&headBrush, 0, 0, W, 64);
+
+            Gdiplus::Font hTitle(&ff, 24, FontStyleBold, UnitPixel);
+            SolidBrush wbr(Color(255, 240, 244, 250));
+            g.DrawString(L"방 들어가기", -1, &hTitle, PointF(24, 18), &wbr);
+
+            // 안내 라벨
+            Gdiplus::Font lblF(&ff, 16, FontStyleRegular, UnitPixel);
+            SolidBrush lblBr(Color(220, 205, 212, 226));
+            g.DrawString(L"방 코드를 입력하세요 (숫자)", -1, &lblF, PointF(24, 92), &lblBr);
+
+            // 에디트 박스 배경(테두리 느낌) — 실제 입력은 자식 EDIT 컨트롤이 담당.
+            REAL ex = 24.f, ey = 122.f, ew = (REAL)W - 48.f, eh = 38.f;
+            SolidBrush eBg(Color(255, 14, 15, 22));
+            g.FillRectangle(&eBg, ex, ey, ew, eh);
+            Pen ePen(Color(255, 70, 90, 130), 1.5f);
+            g.DrawRectangle(&ePen, ex, ey, ew, eh);
+        }
+
+        Graphics screen(hdc);
+        screen.DrawImage(pBack, 0, 0, W, H);
+        EndPaint(hWnd, &ps);
+    }
+
+    LRESULT CALLBACK RoomCode_WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+    {
+        if (WM_NCCREATE == msg)
+        {
+            CREATESTRUCT* pCS = reinterpret_cast<CREATESTRUCT*>(lParam);
+            SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)pCS->lpCreateParams);
+        }
+        ROOMCODE_STATE* pState = reinterpret_cast<ROOMCODE_STATE*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+
+        switch (msg)
+        {
+        case WM_CREATE:
+        {
+            RECT rc; GetClientRect(hWnd, &rc);
+            int W = rc.right - rc.left;
+
+            // 입력 EDIT (테마 박스 안쪽에 겹쳐 배치)
+            pState->hEdit = CreateWindowEx(
+                0, TEXT("EDIT"), TEXT(""),
+                WS_CHILD | WS_VISIBLE | ES_NUMBER | ES_AUTOHSCROLL,
+                30, 130, W - 60, 24,
+                hWnd, (HMENU)(UINT_PTR)IDC_ROOMCODE_EDIT,
+                (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), nullptr);
+
+            // 버튼 2개 ([접속]/[취소])
+            const int btnW = 120, btnH = 40, gap = 16;
+            const int by = 178;
+            const int totalW = btnW * 2 + gap;
+            int bx = (W - totalW) / 2;
+
+            HWND hOK = CreateWindowEx(0, TEXT("BUTTON"), TEXT("접속"),
+                WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
+                bx, by, btnW, btnH, hWnd, (HMENU)(UINT_PTR)IDC_ROOMCODE_OK,
+                (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), nullptr);
+            HWND hCancel = CreateWindowEx(0, TEXT("BUTTON"), TEXT("취소"),
+                WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+                bx + btnW + gap, by, btnW, btnH, hWnd, (HMENU)(UINT_PTR)IDC_ROOMCODE_CANCEL,
+                (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), nullptr);
+
+            // 공용 폰트 적용 (대기방 버튼과 동일 톤)
+            pState->hFontUI = CreateFont(
+                22, 0, 0, 0, FW_SEMIBOLD, FALSE, FALSE, FALSE,
+                DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+                CLEARTYPE_QUALITY, DEFAULT_PITCH, TEXT("맑은 고딕"));
+            if (pState->hFontUI)
+            {
+                SendMessage(pState->hEdit, WM_SETFONT, (WPARAM)pState->hFontUI, TRUE);
+                SendMessage(hOK, WM_SETFONT, (WPARAM)pState->hFontUI, TRUE);
+                SendMessage(hCancel, WM_SETFONT, (WPARAM)pState->hFontUI, TRUE);
+            }
+            SetFocus(pState->hEdit);
+            return 0;
+        }
+
+        case WM_COMMAND:
+            switch (LOWORD(wParam))
+            {
+            case IDC_ROOMCODE_OK:
+            {
+                _tchar szBuf[32] = {};
+                GetWindowText(pState->hEdit, szBuf, _countof(szBuf));
+                if (szBuf[0] == L'\0')
+                {
+                    MessageBox(hWnd, TEXT("방 코드를 입력하세요."), TEXT("알림"), MB_OK | MB_ICONINFORMATION);
+                    return 0;
+                }
+                pState->iResultCode = _wtoi(szBuf);
+                pState->bDone = true;
+                return 0;
+            }
+            case IDC_ROOMCODE_CANCEL:
+                pState->iResultCode = -1;
+                pState->bDone = true;
+                return 0;
+            }
+            return 0;
+
+        case WM_PAINT:
+            RoomCode_Paint(hWnd);
+            return 0;
+
+        case WM_CTLCOLOREDIT:
+        {
+            // 입력 박스를 어두운 테마로(흰 배경 대신).
+            HDC hdcEdit = (HDC)wParam;
+            SetTextColor(hdcEdit, RGB(235, 240, 248));
+            SetBkColor(hdcEdit, RGB(14, 15, 22));
+            static HBRUSH s_hEditBrush = nullptr;
+            if (!s_hEditBrush) s_hEditBrush = CreateSolidBrush(RGB(14, 15, 22));
+            return (LRESULT)s_hEditBrush;
+        }
+
+        case WM_ERASEBKGND:
+            return 1;
+
+        case WM_CLOSE:
+            if (pState) { pState->iResultCode = -1; pState->bDone = true; }
+            return 0;
+        }
+        return DefWindowProc(hWnd, msg, wParam, lParam);
+    }
+
+    // GDI+ 테마 방코드 입력 창을 모달로 띄운다. 반환: 코드(>=0) 또는 -1.
+    int Prompt_RoomCode(HINSTANCE hInstance, HWND hParent)
+    {
+        static const _tchar* CLS = TEXT("HelloDinnerRoomCodeWnd");
+        static bool bRegistered = false;
+        if (!bRegistered)
+        {
+            WNDCLASSEX wc = {};
+            wc.cbSize = sizeof(wc);
+            wc.style = CS_HREDRAW | CS_VREDRAW;
+            wc.lpfnWndProc = RoomCode_WndProc;
+            wc.hInstance = hInstance;
+            wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+            wc.hbrBackground = nullptr;
+            wc.lpszClassName = CLS;
+            RegisterClassEx(&wc);
+            bRegistered = true;
+        }
+
+        ROOMCODE_STATE state;
+
+        DWORD dwStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN;
+        RECT rc = {0, 0, ROOMCODE_W, ROOMCODE_H};
+        AdjustWindowRect(&rc, dwStyle, FALSE);
+        int wW = rc.right - rc.left, wH = rc.bottom - rc.top;
+        int wX = (GetSystemMetrics(SM_CXSCREEN) - wW) / 2;
+        int wY = (GetSystemMetrics(SM_CYSCREEN) - wH) / 2;
+
+        HWND hWnd = CreateWindowEx(
+            0, CLS, TEXT("방 들어가기"),
+            dwStyle, wX, wY, wW, wH,
+            hParent, nullptr, hInstance, &state);
+
+        if (!hWnd)
+            return -1;
+
+        // 부모가 있으면 모달처럼 비활성화
+        if (hParent) EnableWindow(hParent, FALSE);
+        ShowWindow(hWnd, SW_SHOW);
+        UpdateWindow(hWnd);
+        SetForegroundWindow(hWnd);
+
+        // 자체 모달 루프
+        MSG msg;
+        while (!state.bDone)
+        {
+            if (GetMessage(&msg, nullptr, 0, 0) <= 0) { state.iResultCode = -1; break; }
+            // 엔터/ESC 및 탭 이동 처리
+            if (!IsDialogMessage(hWnd, &msg))
+            {
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            }
+        }
+
+        if (hParent) EnableWindow(hParent, TRUE);
+        if (state.pBack) { delete static_cast<Gdiplus::Bitmap*>(state.pBack); state.pBack = nullptr; }
+        if (state.hFontUI) { DeleteObject(state.hFontUI); state.hFontUI = nullptr; }
+        DestroyWindow(hWnd);
+
+        return state.iResultCode;
+    }
+
+    // 네트워크 연결 (스텁). 지금은 항상 성공으로 간주.
+    //  TODO: NetworkClient::GetInstance()->ConnectWithConsole() 등으로 실제 접속/방 입장.
+    bool Connect_ToRoom(int iRoomCode)
+    {
+        (void)iRoomCode;
+        return true;
+    }
+}
+
+// ---------------------------------------------------------------------
 //  로비 → (대기방) → 게임 흐름.
 //  반환값 true  : 게임을 시작해야 함 (이후 엔진/게임플레이 진입)
 //  반환값 false : 사용자가 종료를 선택함
@@ -60,9 +319,29 @@ static bool RunFrontend(HINSTANCE hInstance)
         // [방 만들기] / [방 들어가기] → 대기방
         bool bIsHost = (LOBBY_CREATE_ROOM == eLobby);
 
+        int iJoinCode = -1;
+        if (!bIsHost)
+        {
+            // [방 들어가기]: 먼저 방 코드 입력 → 네트워크 연결 → 대기방 입장.
+            iJoinCode = Prompt_RoomCode(hInstance, nullptr);
+            if (iJoinCode < 0)
+                continue;                          // 취소 → 로비로 복귀
+
+            if (!Connect_ToRoom(iJoinCode))
+            {
+                MessageBox(nullptr, TEXT("방에 연결하지 못했습니다."),
+                    TEXT("연결 실패"), MB_OK | MB_ICONERROR);
+                continue;                          // 연결 실패 → 로비로 복귀
+            }
+        }
+
         CRoomWindow* pRoom = CRoomWindow::Create(hInstance, bIsHost);
         if (nullptr == pRoom)
             return false;
+
+        // 참가자는 입력한 코드를 대기방에 표시.
+        if (!bIsHost && iJoinCode >= 0)
+            pRoom->Set_RoomCode(iJoinCode);
 
         ROOM_RESULT eRoom = pRoom->DoModal();
         Safe_Release(pRoom);
