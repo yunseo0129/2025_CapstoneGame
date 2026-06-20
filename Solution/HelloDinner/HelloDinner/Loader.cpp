@@ -22,6 +22,7 @@
 #include "UI_Text.h"
 #include "MiniMap.h"
 #include "MapSelect.h"
+#include "Bullets.h"
 
 #include "VIBuffer_Triangle.h"
 #include "CharSelect_Pig.h"
@@ -296,6 +297,11 @@ HRESULT CLoader::Loading_Level_GamePlay()
     // Prototype_GameObject_Pig_3rd
     if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_Chick"),
         CPlayer_Chick::Create(m_pContext))))
+        return E_FAIL;
+
+    // Prototype_GameObject_Bullets
+    if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Bullets"),
+        CBullets::Create(m_pContext))))
         return E_FAIL;
 
     Set_LoadingText(TEXT("로딩이 완료되었습니다."));
