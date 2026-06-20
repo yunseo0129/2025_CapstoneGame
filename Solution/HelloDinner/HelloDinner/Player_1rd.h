@@ -48,10 +48,19 @@ public:					// 플레이어 조종에 관련한 함수 구현
     void Set_Weapon(_int iIndex);
     _int Get_Weapon() const { return m_iWeapon; } 
 
+    // ---- 포물선 낙하(스폰) ----
+    //  현재 위치에서 vTarget 까지 공을 던지듯 위로 솟구쳤다가 떨어진다.
+    //   - 비행 중에는 충돌 처리 없음(요구사항). 이동 입력 무시(시점 회전은 가능).
+    //   - 정점 높이 = max(현재y, 목표y) + fArcHeight 가 되도록 초기 수직속도 계산.
+    //   - 하강하다가 y 가 fLandY(목표 높이) 이하로 내려오면 그 지점에서 멈춤.
+    void Launch_To(const _float3& vTarget, _float fArcHeight = 3.f);
+    _bool Is_Launching() const { return m_bLaunching; }
+
 private:
 	virtual HRESULT				Ready_PartObjects();
 	virtual HRESULT				Ready_Components();
     void Resolve_Movement(_float fTimeDelta);
+    void Update_Launch(_float fTimeDelta); // 비행 중 탄도 적분(충돌 없음)
 
 private:
 	class CModel*		m_pModelCom = { nullptr };
@@ -80,6 +89,13 @@ private:
 
     // 현재 무기 인덱스 (0: 케첩건, 1: 마요건)
     _int                m_iWeapon = 0;
+
+    // ---- 포물선 낙하(스폰) 상태 ----
+    _bool               m_bLaunching = false;       // 비행 중?
+    _float3             m_vLaunchVel = _float3(0.f, 0.f, 0.f); // 현재 속도(월드, units/s)
+    _float              m_fLaunchLandY = 0.f;       // 이 높이 이하로 떨어지면 착지
+    _bool               m_bLaunchDescending = false;// 정점을 지나 하강 시작했는지
+
 public:
 	static CPlayer_1rd* Create(EngineContext* pContext);
 	virtual CGameObject* Clone(void* pArg);

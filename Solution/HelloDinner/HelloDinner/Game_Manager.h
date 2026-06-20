@@ -23,6 +23,7 @@
 // 라운드 화면(단계)
 enum class GAME_PHASE
 {
+    PHASE_CHARSELECT,   // 캐릭터 선택 화면
     PHASE_SCOREBOARD,   // 현재 게임 상황 화면
     PHASE_SHOP,         // 상품 구매 화면
     PHASE_PLAYING,      // 게임 플레이 화면
@@ -81,12 +82,14 @@ public:
 private:
     // ---- 단계 진입(한 번) ----
     void    Enter_Phase(GAME_PHASE eNext);
+    void    OnEnter_CharSelect();
     void    OnEnter_Scoreboard();
     void    OnEnter_Shop();
     void    OnEnter_Playing();
     void    OnEnter_GameOver();
 
     // ---- 단계별 매 프레임 ----
+    void    Update_CharSelect(_float fTimeDelta);
     void    Update_Scoreboard(_float fTimeDelta);
     void    Update_Shop(_float fTimeDelta);
     void    Update_Playing(_float fTimeDelta);
@@ -98,6 +101,11 @@ private:
 
     // 레이어의 모든 UI 오브젝트를 켜고/끈다 (SetOnOff)
     void    Set_LayerVisible(const _wstring& strLayerTag, _bool bVisible);
+
+    // ---- UI 캐릭터선택 ----
+    HRESULT Ready_CharSelect();
+    void    Handle_CharSelectClick();
+    void    Refresh_CharSelectFaces();
 
     // ---- UI 텍스트 (스코어보드) ----
     HRESULT Ready_ScoreboardText();         // 점수판/플레이어 행 텍스트 생성 + 포인터 보관
@@ -117,11 +125,27 @@ private:
     // 상점 창 표시/숨김에 맞춰 커서 표시 + 플레이어 입력 차단을 함께 처리
     void     Set_ShopUIMode(_bool bOpen);
 
+    // ---- UI: 맵 선택 창 (상점 대신 사용. 클릭 → 스폰 위치 선택) ----
+    //  실제 창(CMapSelect)은 Level_Gameplay 에서 Layer_UI_MapSelect 로 생성한다.
+    //  여기서는 그 창을 찾아 보관하고, 단계 전환/스폰 위치 확정에 사용한다.
+    void     Cache_MapSelect();             // Layer_UI_MapSelect 에서 창 포인터 확보
+    void     Apply_SpawnLaunch();           // 선택(또는 기본) 위치로 플레이어 포물선 발사
+
 private:
     class CGameInstance* m_pGameInstance = nullptr;
 
-    GAME_PHASE  m_ePhase = GAME_PHASE::PHASE_SCOREBOARD;
+    GAME_PHASE  m_ePhase = GAME_PHASE::PHASE_CHARSELECT;
+
     _int        m_iRound = 1;
+
+    // 캐릭터 선택창에 필요한 정보
+    class CCharSelect_Pig* m_pCSPreviewMe = nullptr;   // 중앙(나) 프리뷰
+    class CUI_Panel* m_pCSFacePanel[3] = {nullptr, nullptr, nullptr};
+    _float4 m_vCSFaceRect[3] = {};   // (x,y,w,h) 픽셀
+    _float4 m_vCSReadyRect = {};
+    _int    m_iCSMyCharacter = 0;
+    _bool   m_bCSReady = false;
+    _bool   m_bCSBuilt = false;
 
     // 팀 라운드 승수 (인덱스 0: 팀A, 1: 팀B)
     _int        m_iTeamScore[2] = {0, 0};
@@ -158,6 +182,20 @@ private:
     static constexpr _int SHOP_SLOT_COUNT = 2;
     class CUI_Panel* m_pShopSlot[SHOP_SLOT_COUNT] = {nullptr};
     _float4          m_vShopSlotRect[SHOP_SLOT_COUNT] = {}; // (x, y, w, h) 픽셀
+
+    // ---- 맵 선택 창 ----
+    //  상점 대신 띄우는 맵 정보/스폰 선택 창. (Level_Gameplay 에서 생성)
+    class CMapSelect* m_pMapSelect = nullptr;
+
+    // 아무 곳도 클릭 안 하고 시간이 끝났을 때 사용할 기본 스폰 위치(코드에서 지정).
+    _float3          m_vDefaultSpawn = _float3(0.f, 0.f, 0.f);
+
+    // 스폰 발사 시 포물선 정점 추가 높이(현재/목표 중 높은 y + 이 값).
+    static constexpr _float SPAWN_ARC_HEIGHT = 3.f;
+
+    // 상점 단계를 쓸지 여부. (false = 맵 선택 창 사용 / true = 예전 상점 사용)
+    //  나중에 상점을 되살리려면 이 값을 true 로 바꾸면 된다.
+    static constexpr _bool USE_SHOP = false;
 
     // ---- 상수 ----
     static constexpr _int   MAX_ROUND = 10;

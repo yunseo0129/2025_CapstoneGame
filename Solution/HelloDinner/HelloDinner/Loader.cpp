@@ -20,8 +20,10 @@
 #include "Font_Manager.h"
 #include "UI_Text.h"
 #include "MiniMap.h"
+#include "MapSelect.h"
 
 #include "VIBuffer_Triangle.h"
+#include "CharSelect_Pig.h"
 
 CLoader::CLoader(EngineContext* pContext)
     : m_pContext {pContext}
@@ -239,6 +241,11 @@ HRESULT CLoader::Loading_Level_GamePlay()
         CMiniMap::Create(m_pContext))))
         return E_FAIL;
 
+    // Prototype_GameObject_MapSelect (상점 대신 쓰는 맵 정보/스폰 선택 창)
+    if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_GameObject_MapSelect",
+        CMapSelect::Create(m_pContext))))
+        return E_FAIL;
+
     if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_GameObject_UI_Text",
         CUI_Text::Create(m_pContext))) )
         return E_FAIL;
@@ -251,6 +258,11 @@ HRESULT CLoader::Loading_Level_GamePlay()
     // Prototype_GameObject_Player_1rd
     if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_1rd"),
         CPlayer_1rd::Create(m_pContext))))
+        return E_FAIL;
+
+    // Prototype_GameObject_CharSelect_Pig
+    if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_CharSelect_Pig"),
+        CCharSelect_Pig::Create(m_pContext))))
         return E_FAIL;
 
     // Prototype_GameObject_Pig_3rd

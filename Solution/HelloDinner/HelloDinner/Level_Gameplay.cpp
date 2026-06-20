@@ -21,6 +21,7 @@
 #include "Game_Manager.h"
 #include "UI_Panel.h"
 #include "MiniMap.h"
+#include "MapSelect.h"
 
 CLevel_GamePlay::CLevel_GamePlay(EngineContext* pContext)
     : CLevel {pContext}
@@ -53,6 +54,25 @@ HRESULT CLevel_GamePlay::Initialize()
 void CLevel_GamePlay::Update(_float fTimeDelta)
 {
     __super::Update(fTimeDelta);
+
+    // [캐릭터 선택 카메라 고정]
+    //  플레이어가 Priority_Update에서 카메라를 자기 위치로 동기화한다(그게 먼저 돈다).
+    //  레벨 Update는 그 뒤·Draw 직전이므로, 선택 단계엔 여기서 매 프레임 덮어써야
+    //  카메라가 "선택 시점"에 고정된다. (준비완료로 phase가 바뀌면 자동으로 플레이어가 다시 가져감)
+    if (m_pGameManager && m_pGameManager->Get_Phase() == GAME_PHASE::PHASE_CHARSELECT)
+    {
+        // 선택 시점 — eye에서 at을 바라봄. 프리뷰 위치(Game_Manager::Ready_CharSelect)와 함께 조정.
+        const XMVECTOR eye = XMVectorSet(0.f, 1.25f, -6.5f, 1.f);
+        const XMVECTOR at = XMVectorSet(0.f, 0.95f, 0.f, 1.f);
+        const XMVECTOR up = XMVectorSet(0.f, 1.f, 0.f, 0.f);
+
+        // 카메라 월드 = 뷰의 역행렬 (뷰 = inverse(world)이므로)
+        XMMATRIX world = XMMatrixInverse(nullptr, XMMatrixLookAtLH(eye, at, up));
+        XMFLOAT4X4 w;
+        XMStoreFloat4x4(&w, world);
+        static_cast<CCamera_FPV*>(m_pCamera[CAMERA_FPV])->Set_WorldMatrix(w);
+    }
+
     //Process_NetworkEvents();
 
     // 네트워크 이벤트 처리: 플레이어 추가/제거/이동
@@ -197,30 +217,6 @@ HRESULT CLevel_GamePlay::Ready_Layer()
         m_pGameInstance->Add_GameObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_Pig"),
             LEVEL_GAMEPLAY, TEXT("Layer_Other_Player"), &eState);
     }
-    // MiniMap
-    {
-        CMiniMap::MINIMAP_DESC desc;
-        desc.fX = 1060.f;  desc.fY = 20.f;
-        desc.fSizeX = 200.f;   desc.fSizeY = 200.f;
-        desc.fDepth = 0.3f;
-        desc.vColor = _float4(0.f, 0.f, 0.f, 0.5f); // 단색 배경(반투명 검정)
-
-        desc.fViewRange = 40.f;            // 플레이어 주변 ±40유닛 (작을수록 확대)
-        desc.iMapLevelIndex = LEVEL_GAMEPLAY;
-        desc.strMapLayerTag = L"Layer_Map";
-
-        desc.fHeightMin = -5.f;                // 맵의 실제 최저~최고에 맞춰 조정
-        desc.fHeightMax = 20.f;
-        // vColorLow/High, fBlipScale, fMarkerSize 등은 기본값으로 충분
-
-        if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
-            LEVEL_STATIC, L"Prototype_GameObject_MiniMap",
-            LEVEL_GAMEPLAY, L"Layer_UI_MiniMap", &desc)))
-        {
-            MSG_BOX("Failed to Add GameObject To Layer : MiniMap");
-            return E_FAIL;
-        }
-    }
 
     return S_OK;
 }
@@ -315,6 +311,66 @@ HRESULT CLevel_GamePlay::Ready_UI()
     {
         list<CGameObject*> shopObjs = m_pGameInstance->Get_List(LV, SH);
         for (auto* p : shopObjs)
+            if (p) p->SetOnOff(false);
+    }
+
+    // MiniMap
+    {
+        CMiniMap::MINIMAP_DESC desc;
+        desc.fX = 1060.f;  desc.fY = 20.f;
+        desc.fSizeX = 200.f;   desc.fSizeY = 200.f;
+        desc.fDepth = 0.3f;
+        desc.vColor = _float4(0.f, 0.f, 0.f, 0.5f); // 단색 배경(반투명 검정)
+
+        desc.fViewRange = 40.f;            // 플레이어 주변 ±40유닛 (작을수록 확대)
+        desc.iMapLevelIndex = LEVEL_GAMEPLAY;
+        desc.strMapLayerTag = L"Layer_Map";
+
+        desc.fHeightMin = -5.f;                // 맵의 실제 최저~최고에 맞춰 조정
+        desc.fHeightMax = 20.f;
+        // vColorLow/High, fBlipScale, fMarkerSize 등은 기본값으로 충분
+
+        if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
+            LEVEL_STATIC, L"Prototype_GameObject_MiniMap",
+            LEVEL_GAMEPLAY, L"Layer_UI_MiniMap", &desc)))
+        {
+            MSG_BOX("Failed to Add GameObject To Layer : MiniMap");
+            return E_FAIL;
+        }
+    }
+
+    // MapSelect (상점 대신 띄우는 맵 정보 + 스폰 선택 창)
+    {
+        CMapSelect::MAPSELECT_DESC desc;
+        // 화면 중앙에 큼직하게 배치 (1280x720 기준)
+        desc.fX = 340.f;   desc.fY = 90.f;
+        desc.fSizeX = 600.f;   desc.fSizeY = 540.f;
+        desc.fDepth = 0.4f;
+        desc.vColor = _float4(0.05f, 0.06f, 0.10f, 0.85f); // 어두운 반투명 배경
+
+        // 보여줄 맵 영역: 나중에 여기(중심/범위)만 바꾸면 어느 부분이든 보여줄 수 있음 ▼▼
+        desc.vCenterWorld = _float2(0.f, 0.f);  // 창 중심에 올 월드 (x, z)
+        desc.fWorldRange = 60.f;               // 중심에서 ±60유닛 (작을수록 확대)
+        // ----------------------------------------------------------------▲▲
+
+        desc.iMapLevelIndex = LEVEL_GAMEPLAY;
+        desc.strMapLayerTag = L"Layer_Map";
+
+        desc.fHeightMin = -5.f;                  // 맵 실제 최저~최고에 맞춰 조정
+        desc.fHeightMax = 20.f;
+        // vColorLow/High, fBlipScale, fMarkerSize 등은 기본값으로 충분
+
+        if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
+            LEVEL_STATIC, L"Prototype_GameObject_MapSelect",
+            LEVEL_GAMEPLAY, L"Layer_UI_MapSelect", &desc)))
+        {
+            MSG_BOX("Failed to Add GameObject To Layer : MapSelect");
+            return E_FAIL;
+        }
+
+        // 생성 직후엔 꺼둔다 (스코어보드부터 시작 → 맵선택 단계에서 켜짐)
+        list<CGameObject*> msObjs = m_pGameInstance->Get_List(LEVEL_GAMEPLAY, L"Layer_UI_MapSelect");
+        for (auto* p : msObjs)
             if (p) p->SetOnOff(false);
     }
 

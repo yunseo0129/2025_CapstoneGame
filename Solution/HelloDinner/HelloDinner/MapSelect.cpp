@@ -1,0 +1,326 @@
+#include "MapSelect.h"
+#include "GameInstance.h"
+#include "VIBuffer_Rect.h"
+
+namespace
+{
+    inline _float Clamp01(_float v)
+    {
+        return (v < 0.f) ? 0.f : (v > 1.f ? 1.f : v);
+    }
+    inline _float4 Lerp4(const _float4& a, const _float4& b, _float t)
+    {
+        return _float4(
+            a.x + (b.x - a.x) * t,
+            a.y + (b.y - a.y) * t,
+            a.z + (b.z - a.z) * t,
+            a.w + (b.w - a.w) * t);
+    }
+}
+
+CMapSelect::CMapSelect(EngineContext* _pContext)
+    : CUIObject(_pContext)
+{
+}
+
+CMapSelect::CMapSelect(const CMapSelect& Prototype)
+    : CUIObject(Prototype)
+    , m_pVIBufferCom(Prototype.m_pVIBufferCom)
+{
+    Safe_AddRef(m_pVIBufferCom);
+}
+
+HRESULT CMapSelect::Initialize_Prototype()
+{
+    return S_OK;
+}
+
+HRESULT CMapSelect::Initialize(void* pArg)
+{
+    if (nullptr == pArg)
+        return E_FAIL;
+
+    MAPSELECT_DESC* pDesc = static_cast<MAPSELECT_DESC*>(pArg);
+    m_vCenterWorld = pDesc->vCenterWorld;
+    m_fWorldRange = pDesc->fWorldRange;
+    m_iMapLevelIndex = pDesc->iMapLevelIndex;
+    m_strMapLayerTag = pDesc->strMapLayerTag;
+    m_fHeightMin = pDesc->fHeightMin;
+    m_fHeightMax = pDesc->fHeightMax;
+    m_vColorLow = pDesc->vColorLow;
+    m_vColorHigh = pDesc->vColorHigh;
+    m_fBlipScale = pDesc->fBlipScale;
+    m_fBlipMinPx = pDesc->fBlipMinPx;
+    m_fMarkerSize = pDesc->fMarkerSize;
+    m_vMarkerColor = pDesc->vMarkerColor;
+
+    // 베이스(CUIObject)가 위치/크기/배경색(m_vColor)/화면크기 셋업
+    if (FAILED(__super::Initialize(pArg)))
+        return E_FAIL;
+
+    if (FAILED(Ready_Components()))
+        return E_FAIL;
+
+    return S_OK;
+}
+
+void CMapSelect::Update(_float fTimeDelta)
+{
+    __super::Update(fTimeDelta);
+
+    // 보일 때만 클릭을 받는다. (창이 꺼져 있으면 선택 처리 안 함)
+    if (m_bVisible && GetOnOff())
+        Handle_Click();
+}
+
+void CMapSelect::Render(ID3D12GraphicsCommandList* _commandList)
+{
+    if (nullptr == m_pVIBufferCom)
+        return;
+
+    // UI 파이프라인 (알파 블렌딩 / 깊이 X)
+    m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::UI);
+
+    // -----------------------------------------------------------------
+    // 1) 배경 (베이스가 갱신해 둔 m_matNDCWorld 사용, 단색)
+    // -----------------------------------------------------------------
+    Bind_NDCWorld(_commandList);
+    Bind_UIColor(_commandList, false);
+    m_pVIBufferCom->Render(_commandList);
+
+    // -----------------------------------------------------------------
+    // 2) 맵 조각 높이맵 (고정 영역 / 회전 없음)
+    // -----------------------------------------------------------------
+    const _float scale = (m_fW * 0.5f) / m_fWorldRange; // 월드유닛 -> 픽셀
+    list<CGameObject*> MapObjs = m_pGameInstance->Get_List(m_iMapLevelIndex, m_strMapLayerTag);
+    const _float hRange = (m_fHeightMax - m_fHeightMin);
+
+    for (auto& pObj : MapObjs)
+    {
+        if (nullptr == pObj)
+            continue;
+
+        _float3 c; _float r;
+        if (!pObj->Get_WorldBoundingSphere(c, r))
+            continue;
+
+        // 보여줄 영역(중심 기준 사각 범위) 밖이면 스킵
+        const _float dx = c.x - m_vCenterWorld.x;
+        const _float dz = c.z - m_vCenterWorld.y;
+        if (dx < -m_fWorldRange || dx > m_fWorldRange ||
+            dz < -m_fWorldRange || dz > m_fWorldRange)
+            continue;
+
+        _float bx, by;
+        World_To_Pixel(c.x, c.z, bx, by);
+
+        // 높이 -> 색
+        _float t = (hRange > 0.f) ? (c.y - m_fHeightMin) / hRange : 0.f;
+        t = Clamp01(t);
+        const _float4 col = Lerp4(m_vColorLow, m_vColorHigh, t);
+
+        // blip 크기 (최소치 보장)
+        _float sz = r * scale * 2.f * m_fBlipScale;
+        if (sz < m_fBlipMinPx) sz = m_fBlipMinPx;
+
+        _float4x4 matBlip = Make_PixelRectNDC(bx - sz * 0.5f, by - sz * 0.5f, sz, sz);
+        Draw_Solid(_commandList, m_pVIBufferCom, matBlip, col);
+    }
+
+    // -----------------------------------------------------------------
+    // 3) 선택 마커 (선택했을 때만)
+    // -----------------------------------------------------------------
+    if (m_bHasSelection)
+    {
+        _float mx, my;
+        World_To_Pixel(m_vSelectedWorld.x, m_vSelectedWorld.z, mx, my);
+        _float4x4 matMarker = Make_PixelRectNDC(
+            mx - m_fMarkerSize * 0.5f, my - m_fMarkerSize * 0.5f,
+            m_fMarkerSize, m_fMarkerSize);
+        Draw_Solid(_commandList, m_pVIBufferCom, matMarker, m_vMarkerColor);
+    }
+}
+
+// =====================================================================
+//  좌표 변환 (회전 없음)
+//   화면 오른쪽(+X 픽셀) = 월드 +X,  화면 위(-Y 픽셀) = 월드 +Z
+// =====================================================================
+void CMapSelect::World_To_Pixel(_float wx, _float wz, _float& outPx, _float& outPy) const
+{
+    const _float cxPx = m_fX + m_fW * 0.5f;
+    const _float cyPx = m_fY + m_fH * 0.5f;
+    const _float scale = (m_fW * 0.5f) / m_fWorldRange;
+
+    const _float dx = wx - m_vCenterWorld.x;
+    const _float dz = wz - m_vCenterWorld.y;
+
+    outPx = cxPx + dx * scale;   // +X 월드 -> 오른쪽
+    outPy = cyPx - dz * scale;   // +Z 월드 -> 위쪽(-Y)
+}
+
+void CMapSelect::Pixel_To_World(_float px, _float py, _float& outWx, _float& outWz) const
+{
+    const _float cxPx = m_fX + m_fW * 0.5f;
+    const _float cyPx = m_fY + m_fH * 0.5f;
+    const _float scale = (m_fW * 0.5f) / m_fWorldRange; // 0 나눗셈은 range>0 보장으로 회피
+
+    const _float dPx = px - cxPx;
+    const _float dPy = py - cyPx;
+
+    outWx = m_vCenterWorld.x + dPx / scale;   // 오른쪽 -> +X
+    outWz = m_vCenterWorld.y - dPy / scale;   // 위쪽(-Y) -> +Z
+}
+
+// =====================================================================
+//  클릭 처리: 창 내부 좌클릭 -> 선택 위치 저장 (+ 그 지점 맵 높이 추정)
+// =====================================================================
+void CMapSelect::Handle_Click()
+{
+    // 좌클릭(누른 순간)만 처리
+    if (!m_pGameInstance->Mouse_Down(Engine::DIM_LB))
+        return;
+
+    // ---- 1) 절대 커서 위치 -> 클라이언트 픽셀 ----
+    POINT pt;
+    if (!GetCursorPos(&pt))
+        return;
+    if (g_hWnd != nullptr)
+        ScreenToClient(g_hWnd, &pt);
+
+    // ---- 2) 클라이언트 픽셀 -> 디자인(1280x720) 좌표로 스케일 ----
+    //  (UI 좌표가 1280x720 기준이므로, 실제 창 크기와 다르면 비율 환산)
+    _float fDesignX = (_float)pt.x;
+    _float fDesignY = (_float)pt.y;
+    if (g_hWnd != nullptr)
+    {
+        RECT rc;
+        if (GetClientRect(g_hWnd, &rc))
+        {
+            const _float fClientW = (_float)(rc.right - rc.left);
+            const _float fClientH = (_float)(rc.bottom - rc.top);
+            if (fClientW > 0.f && fClientH > 0.f)
+            {
+                fDesignX = (_float)pt.x * ((_float)Client::g_iWinSizeX / fClientW);
+                fDesignY = (_float)pt.y * ((_float)Client::g_iWinSizeY / fClientH);
+            }
+        }
+    }
+
+    // ---- 3) 창(사각형) 안을 눌렀는지 검사 ----
+    if (fDesignX < m_fX || fDesignX > m_fX + m_fW ||
+        fDesignY < m_fY || fDesignY > m_fY + m_fH)
+        return; // 창 밖 클릭은 무시
+
+    // ---- 4) 픽셀 -> 월드 (x,z) ----
+    _float wx, wz;
+    Pixel_To_World(fDesignX, fDesignY, wx, wz);
+
+    // ---- 5) 그 지점에서 가장 가까운 맵 조각의 높이를 y 로 채택(없으면 0) ----
+    _float fBestY = 0.f;
+    _float fBestDistSq = FLT_MAX;
+    list<CGameObject*> MapObjs = m_pGameInstance->Get_List(m_iMapLevelIndex, m_strMapLayerTag);
+    for (auto& pObj : MapObjs)
+    {
+        if (nullptr == pObj)
+            continue;
+        _float3 c; _float r;
+        if (!pObj->Get_WorldBoundingSphere(c, r))
+            continue;
+        const _float ddx = c.x - wx;
+        const _float ddz = c.z - wz;
+        const _float distSq = ddx * ddx + ddz * ddz;
+        if (distSq < fBestDistSq)
+        {
+            fBestDistSq = distSq;
+            fBestY = c.y;
+        }
+    }
+
+    m_vSelectedWorld = _float3(wx, fBestY, wz);
+    m_bHasSelection = true;
+}
+
+// =====================================================================
+//  임의 픽셀 사각형 -> NDC world (CUIObject::Compute_NDCWorld 와 동일 수식)
+// =====================================================================
+_float4x4 CMapSelect::Make_PixelRectNDC(_float fX, _float fY, _float fW, _float fH) const
+{
+    const _float vw = (m_fViewportW > 0.f) ? m_fViewportW : (_float)Client::g_iWinSizeX;
+    const _float vh = (m_fViewportH > 0.f) ? m_fViewportH : (_float)Client::g_iWinSizeY;
+
+    const _float sx = 2.f * fW / vw;
+    const _float sy = -2.f * fH / vh;
+    const _float tx = 2.f * fX / vw - 1.f;
+    const _float ty = 1.f - 2.f * fY / vh;
+
+    _float4x4 m;
+    m._11 = sx;  m._12 = 0.f; m._13 = 0.f; m._14 = 0.f;
+    m._21 = 0.f; m._22 = sy;  m._23 = 0.f; m._24 = 0.f;
+    m._31 = 0.f; m._32 = 0.f; m._33 = 1.f; m._34 = 0.f;
+    m._41 = tx;  m._42 = ty;  m._43 = 0.f; m._44 = 1.f;
+    return m;
+}
+
+void CMapSelect::Draw_Solid(ID3D12GraphicsCommandList* _commandList, CVIBuffer* pBuffer,
+    const _float4x4& matNDC, const _float4& vColor)
+{
+    if (nullptr == pBuffer)
+        return;
+
+    // b1 : 위치/크기 (NDC world)
+    _commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &matNDC, 0);
+
+    // b4 : 색 rgba(4) + param(4). useTexture=0(단색)
+    _float fParams[8];
+    fParams[0] = vColor.x;
+    fParams[1] = vColor.y;
+    fParams[2] = vColor.z;
+    fParams[3] = vColor.w;
+    fParams[4] = 0.f; // useTexture = false
+    fParams[5] = 0.f;
+    fParams[6] = 0.f;
+    fParams[7] = 0.f;
+    _commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::UIColor, 8, fParams, 0);
+
+    pBuffer->Render(_commandList);
+}
+
+HRESULT CMapSelect::Ready_Components()
+{
+    // 공용 단위 사각형 버퍼 (Loader 에서 LEVEL_STATIC 에 등록되어 있음)
+    if (FAILED(Add_Component(LEVEL_STATIC, L"Prototype_Component_VIBuffer_Rect",
+        TEXT("Com_VIBuffer"), reinterpret_cast<CComponent**>(&m_pVIBufferCom))))
+    {
+        MSG_BOX("Failed to Add Component : VIBuffer_Rect in CMapSelect");
+        return E_FAIL;
+    }
+    return S_OK;
+}
+
+CMapSelect* CMapSelect::Create(EngineContext* _pContext)
+{
+    CMapSelect* pInstance = new CMapSelect(_pContext);
+    if (FAILED(pInstance->Initialize_Prototype()))
+    {
+        Safe_Release(pInstance);
+        MSG_BOX("Failed to Create : CMapSelect");
+    }
+    return pInstance;
+}
+
+CGameObject* CMapSelect::Clone(void* pArg)
+{
+    CMapSelect* pInstance = new CMapSelect(*this);
+    if (FAILED(pInstance->Initialize(pArg)))
+    {
+        Safe_Release(pInstance);
+        MSG_BOX("Failed to Clone : CMapSelect");
+    }
+    return pInstance;
+}
+
+void CMapSelect::Free()
+{
+    Safe_Release(m_pVIBufferCom);
+    __super::Free();
+}

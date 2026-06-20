@@ -77,7 +77,11 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
 
 void CPlayer_1rd::Priority_Update(_float fTimeDelta)
 {
-    Resolve_Movement(fTimeDelta);
+    // 포물선 비행 중에는 충돌 없는 탄도 적분만 수행(이동/중력 처리 대체).
+    if (m_bLaunching)
+        Update_Launch(fTimeDelta);
+    else
+        Resolve_Movement(fTimeDelta);
 
     // 1인칭 모델 동기화
     XMMATRIX matFps = m_pTransformCom->Get_WorldMatrix();
@@ -211,6 +215,10 @@ void CPlayer_1rd::ShadowRender(ID3D12GraphicsCommandList* _commandList)
 
 void CPlayer_1rd::Move(_float _fLook, _float _fRight, _float _val)
 {
+    // 비행(포물선) 중에는 이동 입력을 무시한다. (시점 회전은 허용)
+    if (m_bLaunching)
+        return;
+
     // 실제 이동/충돌은 Resolve_Movement()에서 한 번에 처리.
     // 여기서는 이번 프레임 입력만 누적한다.
     m_fMoveLook = _fLook;
@@ -313,6 +321,82 @@ void CPlayer_1rd::Jump(_float _val)
         m_fVerticalVelocity = JUMP_SPEED;
         m_bIsGrounded = false;
     }
+}
+
+// =====================================================================
+//  포물선 낙하(스폰)
+//   - 목표(vTarget)까지의 수평 거리를, "정점까지 솟구쳤다 떨어지는" 총 비행
+//     시간 동안 등속으로 이동하도록 수평 속도를 잡는다.
+//   - 정점 높이 = max(현재y, 목표y) + fArcHeight.
+//   - 착지 기준 y(fLandY) = 목표 높이. 하강 중 이 값 이하로 내려오면 멈춤.
+// =====================================================================
+void CPlayer_1rd::Launch_To(const _float3& vTarget, _float fArcHeight)
+{
+    _float3 vPos;
+    XMStoreFloat3(&vPos, m_pTransformCom->Get_State(CTransform::STATE_POSITION));
+
+    const _float g = -GRAVITY;                 // 양수 중력 가속도(크기)
+    if (g <= 0.f)
+        return;
+
+    // 착지 목표 높이 + 정점 높이
+    m_fLaunchLandY = vTarget.y;
+    const _float fApexY = ((vPos.y > vTarget.y) ? vPos.y : vTarget.y) + fArcHeight;
+
+    // 1) 정점까지 필요한 초기 상승 속도:  v0y = sqrt(2 g (apex - y0))
+    const _float fRiseH = (fApexY > vPos.y) ? (fApexY - vPos.y) : 0.f;
+    const _float v0y = sqrtf(2.f * g * fRiseH);
+
+    // 2) 상승 시간 + 정점에서 착지높이까지의 하강 시간 = 총 비행 시간
+    const _float tUp = v0y / g;
+    const _float fDropH = (fApexY > m_fLaunchLandY) ? (fApexY - m_fLaunchLandY) : 0.f;
+    const _float tDown = sqrtf(2.f * fDropH / g);
+    _float tTotal = tUp + tDown;
+    if (tTotal < 1e-3f)
+        tTotal = 1e-3f; // 0 나눗셈 방지
+
+    // 3) 수평 속도 = 수평 변위 / 총 시간 (등속)
+    const _float vx = (vTarget.x - vPos.x) / tTotal;
+    const _float vz = (vTarget.z - vPos.z) / tTotal;
+
+    m_vLaunchVel = _float3(vx, v0y, vz);
+    m_bLaunching = true;
+    m_bLaunchDescending = false;
+
+    // 비행 시작: 점프/지면 상태 초기화 + 기존 수직속도 무시
+    m_bIsGrounded = false;
+    m_fVerticalVelocity = 0.f;
+    m_fMoveLook = 0.f;
+    m_fMoveRight = 0.f;
+}
+
+void CPlayer_1rd::Update_Launch(_float fTimeDelta)
+{
+    // 충돌 없는 단순 탄도 적분.
+    m_vLaunchVel.y += GRAVITY * fTimeDelta; // GRAVITY 는 음수
+    if (m_vLaunchVel.y < 0.f)
+        m_bLaunchDescending = true;         // 정점 지나 하강 시작
+
+    _float3 vPos;
+    XMStoreFloat3(&vPos, m_pTransformCom->Get_State(CTransform::STATE_POSITION));
+
+    vPos.x += m_vLaunchVel.x * fTimeDelta;
+    vPos.y += m_vLaunchVel.y * fTimeDelta;
+    vPos.z += m_vLaunchVel.z * fTimeDelta;
+
+    // 하강 중 목표 높이 이하로 내려오면 그 지점에서 착지 종료.
+    if (m_bLaunchDescending && vPos.y <= m_fLaunchLandY)
+    {
+        vPos.y = m_fLaunchLandY;     // 미리 정한 y 에 도달하면 멈춤
+        m_bLaunching = false;
+        m_bLaunchDescending = false;
+        m_vLaunchVel = _float3(0.f, 0.f, 0.f);
+        m_fVerticalVelocity = 0.f;
+        m_bIsGrounded = true;        // 착지 후 정상 이동/중력 재개
+    }
+
+    m_pTransformCom->Set_State(CTransform::STATE_POSITION,
+        XMVectorSet(vPos.x, vPos.y, vPos.z, 1.f));
 }
 
 void CPlayer_1rd::Crouch(_float _val)

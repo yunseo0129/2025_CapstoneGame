@@ -6,6 +6,8 @@
 #include "UI_Panel.h"
 #include "Controller.h"
 #include "Player_1rd.h"
+#include "CharSelect_Pig.h"
+#include "MapSelect.h"
 
 IMPLEMENT_SINGLETON(CGame_Manager)
 
@@ -61,9 +63,12 @@ void CGame_Manager::Start_Match()
     // 상점 무기 슬롯(클릭 → 무기 교체) 생성
     Ready_ShopSlots();
 
+    // 맵 선택 창 포인터 확보(상점 대신 사용). Level_Gameplay 가 미리 생성해 둠.
+    Cache_MapSelect();
+
     // 첫 라운드는 스코어보드 화면부터 시작
-    m_ePhase = GAME_PHASE::PHASE_END; // Enter_Phase가 동작하도록 다른 값으로
-    Enter_Phase(GAME_PHASE::PHASE_SCOREBOARD);
+    m_ePhase = GAME_PHASE::PHASE_END;
+    Enter_Phase(GAME_PHASE::PHASE_CHARSELECT);
 }
 
 // =====================================================================
@@ -73,6 +78,9 @@ void CGame_Manager::Update(_float fTimeDelta)
 {
     switch (m_ePhase)
     {
+    case GAME_PHASE::PHASE_CHARSELECT: 
+        Update_CharSelect(fTimeDelta); 
+        break;
     case GAME_PHASE::PHASE_SCOREBOARD:
         Update_Scoreboard(fTimeDelta);
         break;
@@ -102,12 +110,35 @@ void CGame_Manager::Enter_Phase(GAME_PHASE eNext)
 
     switch (eNext)
     {
+    case GAME_PHASE::PHASE_CHARSELECT: OnEnter_CharSelect(); break;
     case GAME_PHASE::PHASE_SCOREBOARD: OnEnter_Scoreboard(); break;
     case GAME_PHASE::PHASE_SHOP:       OnEnter_Shop();       break;
     case GAME_PHASE::PHASE_PLAYING:    OnEnter_Playing();    break;
     case GAME_PHASE::PHASE_GAMEOVER:   OnEnter_GameOver();   break;
     default: break;
     }
+}
+
+void CGame_Manager::OnEnter_CharSelect()
+{
+    Ready_CharSelect();   // 프리뷰 + 선택 UI 생성(최초 1회)
+
+    // 실제 액터/HUD/스코어보드 숨기고 선택 화면만 보이기
+    Set_LayerVisible(L"Layer_Player", false);  // 1인칭 플레이어(카메라 동기화도 멈춤)
+    Set_LayerVisible(L"Layer_Other_Player", false);  // 3인칭 더미 돼지들
+    Set_LayerVisible(L"Layer_UI_Scoreboard", false);
+    Set_LayerVisible(L"Layer_UI_Shop", false);
+    Set_LayerVisible(L"Layer_UI_HUD", false);
+    Set_LayerVisible(L"Layer_UI", false);  // 미니맵
+    Set_LayerVisible(L"Layer_CharSelect_Preview", true);
+    Set_LayerVisible(L"Layer_CharSelect_UI", true);
+
+    ShowCursor(TRUE);
+    if (CController* p = m_pGameInstance->Get_Controller())
+        p->Set_BlockInput(true);
+
+    m_bCSReady = false;
+    Refresh_CharSelectFaces();
 }
 
 void CGame_Manager::OnEnter_Scoreboard()
@@ -133,14 +164,31 @@ void CGame_Manager::OnEnter_Shop()
     m_fShopTimer = SHOP_DURATION;
     m_bShopOpen = true; // 진입 시 구매창을 띄운 상태로 시작
 
-    GM_Log(L"Round %d - SHOP (상품 구매) | %.0f초", m_iRound, SHOP_DURATION);
+    if (USE_SHOP)
+    {
+        GM_Log(L"Round %d - SHOP (상품 구매) | %.0f초", m_iRound, SHOP_DURATION);
 
-    // 스코어보드 OFF, 상점 ON (게임은 뒤에서 계속)
-    Set_LayerVisible(L"Layer_UI_Scoreboard", false);
-    Set_LayerVisible(L"Layer_UI_Shop", true);
-    Set_LayerVisible(L"Layer_UI_MiniMap", false);
-    Set_LayerVisible(L"Layer_UI_HUD", false);
+        // 스코어보드 OFF, 상점 ON (게임은 뒤에서 계속)
+        Set_LayerVisible(L"Layer_UI_Scoreboard", false);
+        Set_LayerVisible(L"Layer_UI_Shop", true);
+        Set_LayerVisible(L"Layer_UI_MiniMap", false);
+        Set_LayerVisible(L"Layer_UI_HUD", false);
+    }
+    else
+    {
+        GM_Log(L"Round %d - MAP SELECT (스폰 위치 선택) | %.0f초", m_iRound, SHOP_DURATION);
 
+        // 스코어보드/상점 OFF, 맵 선택 창 ON
+        Set_LayerVisible(L"Layer_UI_Scoreboard", false);
+        Set_LayerVisible(L"Layer_UI_Shop", false);
+        Set_LayerVisible(L"Layer_UI_MapSelect", true);
+        Set_LayerVisible(L"Layer_UI_MiniMap", false);
+        Set_LayerVisible(L"Layer_UI_HUD", false);
+
+        // 이번 라운드 선택 초기화(이전 라운드 선택이 남지 않게)
+        if (m_pMapSelect != nullptr)
+            m_pMapSelect->Clear_Selection();
+    }
     // 상점에서는 클릭을 위해 커서를 보이게 하고, 플레이어 입력을 막는다.
     Set_ShopUIMode(true);
 }
@@ -155,11 +203,17 @@ void CGame_Manager::OnEnter_Playing()
     // 전체화면 UI 모두 OFF, 인게임 HUD ON
     Set_LayerVisible(L"Layer_UI_Scoreboard", false);
     Set_LayerVisible(L"Layer_UI_Shop", false);
+    Set_LayerVisible(L"Layer_UI_MapSelect", false);
     Set_LayerVisible(L"Layer_UI_MiniMap", true);
     Set_LayerVisible(L"Layer_UI_HUD", true);
 
     // 플레이 중에는 커서를 숨기고(조준 모드) 입력을 허용한다.
     Set_ShopUIMode(false);
+
+    // 맵 선택 창을 썼다면, 선택(또는 기본) 위치로 플레이어를 포물선 발사.
+    //  (요구사항: 창이 닫히고 PLAYING 진입 시 날아간다. 비행 중에도 타이머/게임은 진행)
+    if (!USE_SHOP)
+        Apply_SpawnLaunch();
 
     // 라운드 점수/생존 박스 최신화
     Refresh_HUD();
@@ -180,6 +234,28 @@ void CGame_Manager::OnEnter_GameOver()
 // =====================================================================
 //  단계별 갱신
 // =====================================================================
+
+void CGame_Manager::Update_CharSelect(_float fTimeDelta)
+{
+    if (m_bCSReady)
+    {
+        // 복구 → 실제 게임 시작
+        Set_LayerVisible(L"Layer_Player", true);
+        Set_LayerVisible(L"Layer_Other_Player", true);
+        Set_LayerVisible(L"Layer_CharSelect_Preview", false);
+        Set_LayerVisible(L"Layer_CharSelect_UI", false);
+        Set_LayerVisible(L"Layer_UI", true);
+
+        ShowCursor(FALSE);
+        if (CController* p = m_pGameInstance->Get_Controller())
+            p->Set_BlockInput(false);
+
+        Enter_Phase(GAME_PHASE::PHASE_SCOREBOARD);   // 스코어보드부터 정상 진행
+        return;
+    }
+    Handle_CharSelectClick();
+}
+
 void CGame_Manager::Update_Scoreboard(_float fTimeDelta)
 {
     m_fScoreboardTimer += fTimeDelta;
@@ -193,19 +269,21 @@ void CGame_Manager::Update_Scoreboard(_float fTimeDelta)
 
 void CGame_Manager::Update_Shop(_float fTimeDelta)
 {
-    // E키로 구매창 토글 (게임은 계속 진행 중이라는 컨셉)
-    if (m_pGameInstance->Key_Down(DIK_E))
+    if (USE_SHOP)
     {
-        m_bShopOpen = !m_bShopOpen;
-        GM_Log(L"Shop %s", m_bShopOpen ? L"OPEN" : L"CLOSE");
-        Set_LayerVisible(L"Layer_UI_Shop", m_bShopOpen);
-        Set_ShopUIMode(m_bShopOpen); // 커서 표시 + 입력 차단 동기화
+        // E키로 구매창 토글 (게임은 계속 진행 중이라는 컨셉)
+        if (m_pGameInstance->Key_Down(DIK_E))
+        {
+            m_bShopOpen = !m_bShopOpen;
+            GM_Log(L"Shop %s", m_bShopOpen ? L"OPEN" : L"CLOSE");
+            Set_LayerVisible(L"Layer_UI_Shop", m_bShopOpen);
+            Set_ShopUIMode(m_bShopOpen); // 커서 표시 + 입력 차단 동기화
+        }
+
+        // 구매창이 열려 있으면 슬롯 클릭으로 무기 교체
+        if (m_bShopOpen)
+            Handle_ShopClick();
     }
-
-    // 구매창이 열려 있으면 슬롯 클릭으로 무기 교체
-    if (m_bShopOpen)
-        Handle_ShopClick();
-
     // 구매 시간 카운트다운 → 게임 플레이로
     m_fShopTimer -= fTimeDelta;
     if (m_fShopTimer <= 0.f)
@@ -353,6 +431,127 @@ void CGame_Manager::Set_LayerVisible(const _wstring& strLayerTag, _bool bVisible
     {
         if (pObj != nullptr)
             pObj->SetOnOff(bVisible);
+    }
+}
+// =====================================================================
+//  UI 텍스트 (캐릭터 선택)
+// =====================================================================
+HRESULT CGame_Manager::Ready_CharSelect()
+{
+    if (m_bCSBuilt) return S_OK;
+    m_bCSBuilt = true;
+
+    const _uint PROTO_UI = LEVEL_STATIC;
+    const _uint LV = LEVEL_GAMEPLAY;
+    const _wstring PV = L"Layer_CharSelect_Preview";
+    const _wstring UI = L"Layer_CharSelect_UI";
+
+    // ---- 3D 프리뷰 (Add_Camera 시점과 위치를 함께 맞출 것!) ----
+    auto MakePig = [&](float x) -> CCharSelect_Pig*
+        {
+            CCharSelect_Pig::CHARSELECT_PIG_DESC d;
+            d.vPos = _float3(x, 0.f, 0.f);
+            d.vRotation = _float3(0.f, XM_PI, 0.f);   // 카메라 보도록
+            d.vScale = _float3(1.f, 1.f, 1.f);
+            d.strModelTag = L"Prototype_Component_Pig_3rd";
+            d.iModelLevelIndex = LEVEL_GAMEPLAY;
+            d.iAnimIndex = 0;
+            return static_cast<CCharSelect_Pig*>(
+                m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
+                    LV, L"Prototype_GameObject_CharSelect_Pig", LV, PV, &d));
+        };
+    m_pCSPreviewMe = MakePig(0.f);   // 중앙 = 나(토글)
+    MakePig(-2.5f);                  // 좌 = 팀원1 더미
+    MakePig(2.5f);                  // 우 = 팀원2 더미
+
+    auto AddText = [&](float x, float y, const _wstring& s, float scale)
+        {
+            CUI_Text::UI_TEXT_DESC d;
+            d.fX = x; d.fY = y; d.fDepth = 0.2f;
+            d.strText = s; d.strFontTag = L"Font_Default";
+            d.vColor = _float4(1, 1, 1, 1); d.fTextScale = scale; d.bCentered = true;
+            m_pGameInstance->Add_GameObject_ToLayer(PROTO_UI, L"Prototype_GameObject_UI_Text", LV, UI, &d);
+        };
+    auto AddPanel = [&](float x, float y, float w, float h, _float4 col, float depth) -> CUI_Panel*
+        {
+            CUI_Panel::UI_PANEL_DESC d;
+            d.fX = x; d.fY = y; d.fSizeX = w; d.fSizeY = h; d.fDepth = depth; d.vColor = col;
+            return static_cast<CUI_Panel*>(
+                m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(PROTO_UI, L"Prototype_GameObject_UI_Panel", LV, UI, &d));
+        };
+
+    AddText(640.f, 44.f, L"Character Select", 1.4f);
+    AddText(360.f, 540.f, L"Team Member 1", 0.9f);
+    AddText(640.f, 540.f, L"Me", 0.9f);
+    AddText(920.f, 540.f, L"Team Member 2", 0.9f);
+
+    const float FW = 84.f, FH = 84.f, FGAP = 24.f, FY = 596.f;
+    const float FTOT = 3 * FW + 2 * FGAP;
+    const float FX0 = (1280.f - FTOT) * 0.5f;
+    auto FaceX = [&](int i) { return FX0 + i * (FW + FGAP); };
+
+    AddPanel(FX0 - 20.f, FY - 20.f, FTOT + 40.f, FH + 40.f, _float4(0.08f, 0.10f, 0.14f, 0.78f), 0.7f); // 바 배경
+    const _wstring caps[3] = {L"Pig", L"Blank", L"Blank"};
+    for (int i = 0; i < 3; ++i)
+    {
+        m_pCSFacePanel[i] = AddPanel(FaceX(i), FY, FW, FH, _float4(0.4f, 0.4f, 0.42f, 0.95f), 0.4f);
+        m_vCSFaceRect[i] = _float4(FaceX(i), FY, FW, FH);
+        AddText(FaceX(i) + FW * 0.5f, FY + FH + 12.f, caps[i], 0.7f);
+    }
+
+    const float RW = 200.f, RH = 56.f, RX = 1280.f - RW - 40.f, RY = 720.f - RH - 40.f;
+    AddPanel(RX, RY, RW, RH, _float4(40 / 255.f, 130 / 255.f, 80 / 255.f, 0.95f), 0.5f);
+    m_vCSReadyRect = _float4(RX, RY, RW, RH);
+    AddText(RX + RW * 0.5f, RY + RH * 0.5f - 2.f, L"Ready", 0.95f);
+
+    return S_OK;
+}
+
+void CGame_Manager::Handle_CharSelectClick()
+{
+    if (!m_pGameInstance->Mouse_Down(Engine::DIM_LB))
+        return;
+
+    POINT pt;
+    if (!GetCursorPos(&pt)) return;
+    if (g_hWnd != nullptr) ScreenToClient(g_hWnd, &pt);
+
+    _float mx = (_float)pt.x, my = (_float)pt.y;   // 클라이언트 → 1280x720 환산 (상점과 동일)
+    if (g_hWnd != nullptr)
+    {
+        RECT rc;
+        if (GetClientRect(g_hWnd, &rc))
+        {
+            const _float cw = (_float)(rc.right - rc.left), ch = (_float)(rc.bottom - rc.top);
+            if (cw > 0.f && ch > 0.f) { mx = (_float)pt.x * (1280.f / cw); my = (_float)pt.y * (720.f / ch); }
+        }
+    }
+
+    auto In = [&](const _float4& r) { return mx >= r.x && mx <= r.x + r.z && my >= r.y && my <= r.y + r.w; };
+
+    for (int i = 0; i < 3; ++i)
+        if (In(m_vCSFaceRect[i]))
+        {
+            m_iCSMyCharacter = i;
+            if (m_pCSPreviewMe) m_pCSPreviewMe->SetOnOff(i == 0);   // 돼지(0)만 표시
+            Refresh_CharSelectFaces();
+            return;
+        }
+
+    if (In(m_vCSReadyRect))
+        m_bCSReady = true;   // Update_CharSelect 에서 전환
+}
+
+void CGame_Manager::Refresh_CharSelectFaces()
+{
+    for (int i = 0; i < 3; ++i)
+    {
+        if (!m_pCSFacePanel[i]) continue;
+        const bool sel = (i == m_iCSMyCharacter);
+        _float4 c;
+        if (i == 0) c = sel ? _float4(235 / 255.f, 170 / 255.f, 180 / 255.f, 1.f) : _float4(150 / 255.f, 110 / 255.f, 120 / 255.f, 0.95f);
+        else      c = sel ? _float4(150 / 255.f, 155 / 255.f, 170 / 255.f, 1.f) : _float4(80 / 255.f, 85 / 255.f, 95 / 255.f, 0.95f);
+        m_pCSFacePanel[i]->Set_Color(c);
     }
 }
 
@@ -733,6 +932,46 @@ void CGame_Manager::Set_ShopUIMode(_bool bOpen)
 }
 
 // =====================================================================
+//  맵 선택 창 (상점 대신 사용)
+// =====================================================================
+void CGame_Manager::Cache_MapSelect()
+{
+    // Level_Gameplay 에서 Layer_UI_MapSelect 로 만들어 둔 CMapSelect 를 찾는다.
+    m_pMapSelect = nullptr;
+    list<CGameObject*> objs = m_pGameInstance->Get_List(LEVEL_GAMEPLAY, L"Layer_UI_MapSelect");
+    for (auto* pObj : objs)
+    {
+        CMapSelect* pMS = dynamic_cast<CMapSelect*>(pObj);
+        if (pMS != nullptr)
+        {
+            m_pMapSelect = pMS;
+            break;
+        }
+    }
+}
+
+void CGame_Manager::Apply_SpawnLaunch()
+{
+    // 컨트롤러에서 내 플레이어를 받는다.
+    CController* pController = m_pGameInstance->Get_Controller();
+    CPlayer_1rd* pPlayer = pController ? pController->Get_Player() : nullptr;
+    if (pPlayer == nullptr)
+        return;
+
+    // 선택된 위치가 있으면 그곳, 없으면 코드에서 정한 기본 스폰 위치.
+    _float3 vTarget = m_vDefaultSpawn;
+    if (m_pMapSelect != nullptr && m_pMapSelect->Has_Selection())
+        vTarget = m_pMapSelect->Get_SelectedWorld();
+
+    // 현재 위치 → 목표까지 공을 던지듯 포물선 발사. (비행 중 충돌 없음/이동 무시)
+    pPlayer->Launch_To(vTarget, SPAWN_ARC_HEIGHT);
+
+    GM_Log(L"Spawn launch → (%.1f, %.1f, %.1f) %s",
+        vTarget.x, vTarget.y, vTarget.z,
+        (m_pMapSelect && m_pMapSelect->Has_Selection()) ? L"[선택]" : L"[기본]");
+}
+
+// =====================================================================
 CGame_Manager* CGame_Manager::Create()
 {
     CGame_Manager* pInstance = new CGame_Manager();
@@ -762,6 +1001,13 @@ void CGame_Manager::Free()
     // 상점 슬롯도 레이어 소유. 참조만 끊는다.
     for (_int i = 0; i < SHOP_SLOT_COUNT; ++i)
         m_pShopSlot[i] = nullptr;
+
+    // 맵 선택 창도 레이어 소유. 참조만 끊는다.
+    m_pMapSelect = nullptr;
+
+    // 캐릭터 선택 UI 도 레이어 소유. 참조만 끊는다.
+    m_pCSPreviewMe = nullptr;
+    for (_int i = 0; i < 3; ++i) m_pCSFacePanel[i] = nullptr;
 
     m_vStats.clear();
     Safe_Release(m_pGameInstance);
