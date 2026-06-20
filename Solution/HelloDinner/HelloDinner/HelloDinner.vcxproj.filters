@@ -769,6 +769,12 @@
     <ClCompile Include="CharSelect_Chick.cpp">
       <Filter>소스 파일\02. Game\01. Levels\05. Charselect\list</Filter>
     </ClCompile>
+    <ClCompile Include="NetPlayer.cpp">
+      <Filter>소스 파일\03. Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Bullets.cpp">
+      <Filter>소스 파일\02. Game\GameObject\03. Bullet</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="HelloDinner.rc">

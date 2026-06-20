@@ -74,6 +74,11 @@ void SessionManager::ProcessPacket(int c_id, char* packet)
         RoomManager::GetInstance()->LeaveRoom(c_id);
         break;
     }
+    case CS_SELECT_SEAT: {
+        CS_SELECT_SEAT_PACKET* p = reinterpret_cast<CS_SELECT_SEAT_PACKET*>(packet);
+        RoomManager::GetInstance()->SelectSeat(c_id, p->team, p->slot);
+        break;
+    }
     case CS_START_GAME: {
         // 방장 c_id의 방 코드를 역참조하기 위해 RoomManager 내부에서 처리
         // StartRoom은 내부에서 host 검증 후 멤버 목록 반환

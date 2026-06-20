@@ -220,87 +220,112 @@ void CLobbyWindow::OnCreate(HWND hWnd)
     // 정지 이미지면 타이머 불필요 (한 번만 그림)
 }
 
-// 4자리 방 코드 입력을 받는 간단한 팝업 다이얼로그
-// 성공 시 code에 값 저장 후 true 반환, 취소 시 false 반환
+// 방 코드 입력 다이얼로그에서 공유하는 상태
+struct RoomCodeDlgData {
+    HWND hEdit  = nullptr;
+    int  outcome = 0;   // 0=대기, IDOK, IDCANCEL
+    int  code    = 0;   // 검증된 코드 (outcome==IDOK 시)
+};
+
+// WndProc: WM_COMMAND를 직접 처리하고 PostMessage로 루프에 신호를 보냄
+// (DefWindowProc만 쓰면 버튼 클릭이 SendMessage → 동기 처리되어 GetMessage에 안 들어옴)
+static LRESULT CALLBACK RoomCodeDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    if (WM_NCCREATE == msg)
+        SetWindowLongPtr(hWnd, GWLP_USERDATA,
+            (LONG_PTR)((CREATESTRUCT*)lParam)->lpCreateParams);
+
+    auto* d = reinterpret_cast<RoomCodeDlgData*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+
+    if (WM_COMMAND == msg && d) {
+        WORD id = LOWORD(wParam);
+        if (id == IDOK) {
+            TCHAR buf[8] = {};
+            GetWindowText(d->hEdit, buf, 8);
+            int code = _ttoi(buf);
+            if (code < 1000 || code > 9999) {
+                MessageBox(hWnd, TEXT("1000~9999 사이의 4자리 숫자를 입력하세요."),
+                           TEXT("오류"), MB_OK | MB_ICONWARNING);
+                return 0;  // 창 유지, 다시 입력
+            }
+            d->code    = code;
+            d->outcome = IDOK;
+            PostMessage(hWnd, WM_APP, 0, 0);  // GetMessage 루프 깨우기
+            return 0;
+        }
+        if (id == IDCANCEL) {
+            d->outcome = IDCANCEL;
+            PostMessage(hWnd, WM_APP, 0, 0);
+            return 0;
+        }
+    }
+    if (WM_CLOSE == msg && d) {
+        d->outcome = IDCANCEL;
+        PostMessage(hWnd, WM_APP, 0, 0);
+        return 0;
+    }
+    return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+
+// 4자리 방 코드 입력 팝업. 성공 시 out_code에 값 저장 후 true 반환.
 static bool PromptRoomCode(HWND hParent, int& out_code)
 {
-    // 다이얼로그 윈도우 클래스 등록
+    static const TCHAR* CLASS_NAME = TEXT("RoomCodeInputDlg");
     static bool s_registered = false;
-    static const TCHAR* CLASS_NAME = TEXT("RoomCodeDlg");
+    HINSTANCE hInst = GetModuleHandle(nullptr);
     if (!s_registered) {
         WNDCLASSEX wc = {};
         wc.cbSize        = sizeof(WNDCLASSEX);
-        wc.lpfnWndProc   = DefWindowProc;
-        wc.hInstance     = GetModuleHandle(nullptr);
+        wc.lpfnWndProc   = RoomCodeDlgProc;  // 올바른 WndProc 등록
+        wc.hInstance     = hInst;
         wc.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
         wc.lpszClassName = CLASS_NAME;
         RegisterClassEx(&wc);
         s_registered = true;
     }
 
-    const int DLG_W = 320, DLG_H = 150;
+    RoomCodeDlgData dlgData;
+
+    const int DLG_W = 300, DLG_H = 140;
     int x = (GetSystemMetrics(SM_CXSCREEN) - DLG_W) / 2;
     int y = (GetSystemMetrics(SM_CYSCREEN) - DLG_H) / 2;
 
+    // lpCreateParams로 dlgData 포인터 전달 → WM_NCCREATE에서 GWLP_USERDATA에 저장
     HWND hDlg = CreateWindowEx(WS_EX_DLGMODALFRAME, CLASS_NAME, TEXT("방 코드 입력"),
         WS_POPUP | WS_CAPTION | WS_SYSMENU,
-        x, y, DLG_W, DLG_H, hParent, nullptr, GetModuleHandle(nullptr), nullptr);
+        x, y, DLG_W, DLG_H, hParent, nullptr, hInst, &dlgData);
     if (!hDlg) return false;
 
-    // 안내 문구
-    CreateWindowEx(0, TEXT("STATIC"), TEXT("방 코드 4자리를 입력하세요:"),
-        WS_CHILD | WS_VISIBLE,
-        20, 20, 280, 24, hDlg, nullptr, GetModuleHandle(nullptr), nullptr);
+    CreateWindowEx(0, TEXT("STATIC"), TEXT("방 코드(4자리)를 입력하세요:"),
+        WS_CHILD | WS_VISIBLE, 20, 18, 260, 22, hDlg, nullptr, hInst, nullptr);
 
-    // 숫자 전용 EDIT 컨트롤
-    HWND hEdit = CreateWindowEx(WS_EX_CLIENTEDGE, TEXT("EDIT"), TEXT(""),
+    dlgData.hEdit = CreateWindowEx(WS_EX_CLIENTEDGE, TEXT("EDIT"), TEXT(""),
         WS_CHILD | WS_VISIBLE | ES_NUMBER | ES_CENTER,
-        80, 52, 160, 28, hDlg, (HMENU)100, GetModuleHandle(nullptr), nullptr);
-    SendMessage(hEdit, EM_SETLIMITTEXT, 4, 0);
+        75, 48, 150, 26, hDlg, (HMENU)100, hInst, nullptr);
+    SendMessage(dlgData.hEdit, EM_SETLIMITTEXT, 4, 0);
 
-    // 확인 버튼
-    HWND hOK = CreateWindowEx(0, TEXT("BUTTON"), TEXT("확인"),
+    CreateWindowEx(0, TEXT("BUTTON"), TEXT("확인"),
         WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
-        80, 96, 80, 30, hDlg, (HMENU)IDOK, GetModuleHandle(nullptr), nullptr);
-    // 취소 버튼
+        75, 88, 70, 28, hDlg, (HMENU)IDOK, hInst, nullptr);
     CreateWindowEx(0, TEXT("BUTTON"), TEXT("취소"),
         WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-        170, 96, 80, 30, hDlg, (HMENU)IDCANCEL, GetModuleHandle(nullptr), nullptr);
+        155, 88, 70, 28, hDlg, (HMENU)IDCANCEL, hInst, nullptr);
 
-    SetFocus(hEdit);
+    SetFocus(dlgData.hEdit);
     ShowWindow(hDlg, SW_SHOW);
     UpdateWindow(hDlg);
 
-    bool confirmed = false;
+    // WndProc이 PostMessage(WM_APP)로 신호를 보낼 때까지 메시지를 처리
     MSG msg;
     while (GetMessage(&msg, nullptr, 0, 0) > 0) {
-        if (msg.message == WM_COMMAND) {
-            WORD id = LOWORD(msg.wParam);
-            if (id == IDOK || (msg.hwnd == hEdit && HIWORD(msg.wParam) == EN_CHANGE)) {
-                if (id == IDOK) {
-                    TCHAR buf[8] = {};
-                    GetWindowText(hEdit, buf, 8);
-                    int code = _ttoi(buf);
-                    if (code >= 1000 && code <= 9999) {
-                        out_code  = code;
-                        confirmed = true;
-                        break;
-                    } else {
-                        MessageBox(hDlg, TEXT("1000~9999 사이의 4자리 숫자를 입력하세요."),
-                                   TEXT("오류"), MB_OK | MB_ICONWARNING);
-                    }
-                }
-            } else if (id == IDCANCEL) {
-                break;
-            }
-        }
-        if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE) break;
         TranslateMessage(&msg);
         DispatchMessage(&msg);
+        if (msg.message == WM_APP && msg.hwnd == hDlg) break;
     }
 
+    out_code = dlgData.code;
     DestroyWindow(hDlg);
-    return confirmed;
+    return (dlgData.outcome == IDOK);
 }
 
 void CLobbyWindow::OnCommand(_uint iCtrlID)

@@ -56,10 +56,10 @@ private:
     _int        m_iRoomCode = 0;    // 방 코드 (스텁)
 
     // ---- 내가 고른 팀/번호 ----
-    //  iTeam   : 0 = RED, 1 = BLUE
-    //  iNumber : 1~3 (팀 내 번호)
-    _int        m_iSelTeam = 0;
-    _int        m_iSelNumber = 1;
+    //  iTeam   : 0=RED, 1=BLUE, -1=미선택
+    //  iNumber : 1~3 (팀 내 번호), 0=미선택
+    _int        m_iSelTeam = -1;
+    _int        m_iSelNumber = 0;
 
     // ---- 팀/번호 블럭 격자 히트박스 (RECT, 클라이언트 좌표) ----
     //  [team][number-1] 로 인덱싱. OnPaint 에서 채우고 OnLButtonDown 에서 사용.
@@ -68,7 +68,7 @@ private:
     void* m_pBackBuffer = nullptr; // Gdiplus::Bitmap* (더블버퍼)
 
     // ── 서버 방 상태 캐시 (WM_TIMER 폴링으로 갱신) ──
-    struct RoomMemberCache { int id; char name[20]; };
+    struct RoomMemberCache { int id; char name[20]; unsigned char team; unsigned char slot; };
     std::vector<RoomMemberCache> m_cachedMembers;
     int  m_cachedHostId = -1;
 

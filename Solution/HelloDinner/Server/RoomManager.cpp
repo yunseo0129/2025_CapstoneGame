@@ -28,6 +28,8 @@ int RoomManager::CreateRoom(int host_c_id)
         m_player_room.erase(it);
     }
 
+    m_seat_map.erase(host_c_id);  // 이전 방 시트 정보 초기화
+
     int code = GenerateUniqueCode();
     WaitingRoom room;
     room.code       = code;
@@ -66,6 +68,7 @@ ROOM_JOIN_RESULT RoomManager::JoinRoom(int code, int c_id)
             old_room.members.end());
         if (old_room.members.empty())
             m_rooms.erase(old_code);
+        m_seat_map.erase(c_id);  // 이전 방 시트 초기화
     }
 
     room.members.push_back(c_id);
@@ -85,6 +88,7 @@ void RoomManager::LeaveRoom(int c_id)
 
     int code = pit->second;
     m_player_room.erase(pit);
+    m_seat_map.erase(c_id);
 
     auto rit = m_rooms.find(code);
     if (rit == m_rooms.end()) return;
@@ -118,11 +122,19 @@ void RoomManager::LeaveRoom(int c_id)
     pkt.code         = broadcast_code;
     pkt.host_id      = host_id;
     pkt.member_count = (unsigned char)members_copy.size();
-    memset(pkt.member_ids,   -1, sizeof(pkt.member_ids));
-    memset(pkt.member_names, 0,  sizeof(pkt.member_names));
+    memset(pkt.member_ids,   -1,   sizeof(pkt.member_ids));
+    memset(pkt.member_names, 0,    sizeof(pkt.member_names));
+    memset(pkt.member_teams, 0xFF, sizeof(pkt.member_teams));
+    memset(pkt.member_slots, 0,    sizeof(pkt.member_slots));
     for (int i = 0; i < (int)members_copy.size(); ++i) {
-        pkt.member_ids[i] = members_copy[i];
-        strcpy_s(pkt.member_names[i], sm->GetClient(members_copy[i]).m_player.name);
+        int mid = members_copy[i];
+        pkt.member_ids[i] = mid;
+        strcpy_s(pkt.member_names[i], sm->GetClient(mid).m_player.name);
+        auto sit = m_seat_map.find(mid);
+        if (sit != m_seat_map.end()) {
+            pkt.member_teams[i] = sit->second.first;
+            pkt.member_slots[i] = sit->second.second;
+        }
     }
     for (int id : members_copy)
         sm->GetClient(id).Send(&pkt);
@@ -171,8 +183,10 @@ bool RoomManager::StartByHost(int host_c_id, int& out_code, vector<int>& out_mem
     out_code      = code;
     out_members   = room.members;
 
-    for (int id : room.members)
+    for (int id : room.members) {
         m_player_room.erase(id);
+        m_seat_map.erase(id);
+    }
     m_rooms.erase(rit);
 
     cout << "[Room] Room " << code << " started with " << out_members.size() << " players\n";
@@ -195,12 +209,80 @@ void RoomManager::BroadcastRoomUpdate(int code)
     pkt.code         = code;
     pkt.host_id      = room.host_c_id;
     pkt.member_count = (unsigned char)room.members.size();
-    memset(pkt.member_ids,   -1, sizeof(pkt.member_ids));
-    memset(pkt.member_names, 0,  sizeof(pkt.member_names));
+    memset(pkt.member_ids,   -1,   sizeof(pkt.member_ids));
+    memset(pkt.member_names, 0,    sizeof(pkt.member_names));
+    memset(pkt.member_teams, 0xFF, sizeof(pkt.member_teams));
+    memset(pkt.member_slots, 0,    sizeof(pkt.member_slots));
     for (int i = 0; i < (int)room.members.size(); ++i) {
-        pkt.member_ids[i] = room.members[i];
-        strcpy_s(pkt.member_names[i], sm->GetClient(room.members[i]).m_player.name);
+        int mid = room.members[i];
+        pkt.member_ids[i] = mid;
+        strcpy_s(pkt.member_names[i], sm->GetClient(mid).m_player.name);
+        auto sit = m_seat_map.find(mid);
+        if (sit != m_seat_map.end()) {
+            pkt.member_teams[i] = sit->second.first;
+            pkt.member_slots[i] = sit->second.second;
+        }
     }
     for (int id : room.members)
         sm->GetClient(id).Send(&pkt);
+}
+
+bool RoomManager::SelectSeat(int c_id, unsigned char team, unsigned char slot)
+{
+    lock_guard<mutex> ll(m_lock);
+
+    auto pit = m_player_room.find(c_id);
+    if (pit == m_player_room.end()) return false;
+
+    int code = pit->second;
+
+    if (team == 0xFF || slot == 0) {
+        // 선택 해제
+        m_seat_map.erase(c_id);
+    } else {
+        // 같은 방의 다른 멤버가 이미 같은 {team, slot}을 점유하면 거부
+        auto rit = m_rooms.find(code);
+        if (rit != m_rooms.end()) {
+            for (int mid : rit->second.members) {
+                if (mid == c_id) continue;
+                auto sit = m_seat_map.find(mid);
+                if (sit != m_seat_map.end() &&
+                    sit->second.first == team && sit->second.second == slot)
+                    return false;
+            }
+        }
+        m_seat_map[c_id] = { team, slot };
+    }
+
+    // 방 전체에 갱신 브로드캐스트
+    auto rit = m_rooms.find(code);
+    if (rit == m_rooms.end()) return true;
+
+    const WaitingRoom& room = rit->second;
+    auto* sm = SessionManager::GetInstance();
+
+    SC_ROOM_UPDATE_PACKET pkt{};
+    pkt.size         = sizeof(SC_ROOM_UPDATE_PACKET);
+    pkt.type         = SC_ROOM_UPDATE;
+    pkt.code         = code;
+    pkt.host_id      = room.host_c_id;
+    pkt.member_count = (unsigned char)room.members.size();
+    memset(pkt.member_ids,   -1,   sizeof(pkt.member_ids));
+    memset(pkt.member_names, 0,    sizeof(pkt.member_names));
+    memset(pkt.member_teams, 0xFF, sizeof(pkt.member_teams));
+    memset(pkt.member_slots, 0,    sizeof(pkt.member_slots));
+    for (int i = 0; i < (int)room.members.size(); ++i) {
+        int mid = room.members[i];
+        pkt.member_ids[i] = mid;
+        strcpy_s(pkt.member_names[i], sm->GetClient(mid).m_player.name);
+        auto sit = m_seat_map.find(mid);
+        if (sit != m_seat_map.end()) {
+            pkt.member_teams[i] = sit->second.first;
+            pkt.member_slots[i] = sit->second.second;
+        }
+    }
+    for (int id : room.members)
+        sm->GetClient(id).Send(&pkt);
+
+    return true;
 }

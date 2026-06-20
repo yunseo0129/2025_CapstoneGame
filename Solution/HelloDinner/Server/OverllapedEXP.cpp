@@ -10,9 +10,10 @@ OverllapedEXP::OverllapedEXP()
 
 OverllapedEXP::OverllapedEXP(char* packet)
 {
-	m_wsabuf.len = packet[0];
+	unsigned char pkt_size = static_cast<unsigned char>(packet[0]);
+	m_wsabuf.len = pkt_size;
 	m_wsabuf.buf = m_send_buf;
 	ZeroMemory(&m_over, sizeof(m_over));
 	m_comp_type = OP_SEND;
-	memcpy(m_send_buf, packet, packet[0]);
+	memcpy(m_send_buf, packet, pkt_size);
 }

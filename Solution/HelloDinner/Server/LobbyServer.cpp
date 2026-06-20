@@ -142,7 +142,7 @@ void LobbyServer::WorkerThread()
             int remain_data = num_bytes + client.m_prev_remain;
             char* p = ex_over->m_send_buf;
             while (remain_data > 0) {
-                int packet_size = p[0];
+                int packet_size = static_cast<unsigned char>(p[0]);
                 if (packet_size <= remain_data) {
                     sm->ProcessPacket(static_cast<int>(key), p);
                     p = p + packet_size;

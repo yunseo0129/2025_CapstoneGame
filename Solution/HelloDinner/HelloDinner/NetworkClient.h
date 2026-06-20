@@ -58,6 +58,7 @@ public:
     void Send_StartGame();
     void Send_LeaveRoom();
     void Send_QuickMatch();
+    void Send_SelectSeat(unsigned char team, unsigned char slot);
 
     void Disconnect();
 
@@ -74,7 +75,12 @@ public:
     int GetQueueSize()  const { return m_iQueueSize; }
 
     // ── 방 상태 조회 (스레드 안전) ──────────────────────────────────────
-    struct RoomMember { int id; char name[20]; };
+    struct RoomMember {
+        int           id;
+        char          name[20];
+        unsigned char team = 0xFF; // 0=RED, 1=BLUE, 0xFF=미선택
+        unsigned char slot = 0;    // 1~3, 0=미선택
+    };
     struct RoomSnapshot {
         int                    code     = 0;
         int                    host_id  = -1;

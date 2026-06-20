@@ -241,7 +241,11 @@ void CRoomWindow::OnPollTimer()
                 || (snap.host_id != m_cachedHostId);
     if (!changed) {
         for (int i = 0; i < (int)snap.members.size(); ++i) {
-            if (snap.members[i].id != m_cachedMembers[i].id) { changed = true; break; }
+            if (snap.members[i].id   != m_cachedMembers[i].id   ||
+                snap.members[i].team != m_cachedMembers[i].team ||
+                snap.members[i].slot != m_cachedMembers[i].slot) {
+                changed = true; break;
+            }
         }
     }
     if (changed) {
@@ -249,9 +253,22 @@ void CRoomWindow::OnPollTimer()
         m_cachedMembers.clear();
         for (auto& m : snap.members) {
             RoomMemberCache c;
-            c.id = m.id;
+            c.id   = m.id;
             strcpy_s(c.name, m.name);
+            c.team = m.team;
+            c.slot = m.slot;
             m_cachedMembers.push_back(c);
+        }
+        // 서버 확인된 내 선택을 동기화
+        int myId = NetworkClient::GetInstance()->GetMyId();
+        m_iSelTeam   = -1;
+        m_iSelNumber = 0;
+        for (auto& m : m_cachedMembers) {
+            if (m.id == myId) {
+                m_iSelTeam   = (m.team == 0xFF) ? -1 : (int)m.team;
+                m_iSelNumber = (int)m.slot;
+                break;
+            }
         }
         // 방 코드 업데이트 (참가자의 경우 JOIN 후 수신)
         if (snap.code != 0)
@@ -262,29 +279,46 @@ void CRoomWindow::OnPollTimer()
 
 void CRoomWindow::OnLButtonDown(int x, int y)
 {
-    // 팀/번호 블럭 격자 히트테스트. 6개 블럭 중 하나를 누르면
-    //  내 팀(team)과 번호(number)가 동시에 정해진다.
     POINT pt = {(LONG)x, (LONG)y};
+    int myId = NetworkClient::GetInstance()->GetMyId();
+
     for (int t = 0; t < 2; ++t)
     {
         for (int n = 0; n < 3; ++n)
         {
-            if (PtInRect(&m_rcBlock[t][n], pt))
-            {
-                m_iSelTeam = t;
-                m_iSelNumber = n + 1;
+            if (!PtInRect(&m_rcBlock[t][n], pt)) continue;
+
+            // 다른 플레이어가 이미 점유한 칸은 선택 불가
+            for (auto& m : m_cachedMembers) {
+                if (m.id != myId && (int)m.team == t && (int)m.slot == n + 1)
+                    return;  // 막힘
+            }
+
+            // 내가 이미 선택한 칸을 다시 클릭 → 선택 해제
+            if (m_iSelTeam == t && m_iSelNumber == n + 1) {
+                m_iSelTeam   = -1;
+                m_iSelNumber = 0;
+                NetworkClient::GetInstance()->Send_SelectSeat(0xFF, 0);
                 InvalidateRect(m_hWnd, nullptr, FALSE);
                 return;
             }
+
+            // 새 슬롯 선택
+            m_iSelTeam   = t;
+            m_iSelNumber = n + 1;
+            NetworkClient::GetInstance()->Send_SelectSeat(
+                (unsigned char)t, (unsigned char)(n + 1));
+            InvalidateRect(m_hWnd, nullptr, FALSE);
+            return;
         }
     }
 }
 
 void CRoomWindow::Commit_Selection()
 {
-    // 게임플레이(CGame_Manager)가 읽어갈 전역 캐리어에 기록.
-    g_MatchSetup.iTeam = m_iSelTeam;
-    g_MatchSetup.iNumber = m_iSelNumber;
+    // 미선택 시 RED팀 1번으로 기본 처리
+    g_MatchSetup.iTeam   = (m_iSelTeam   >= 0) ? m_iSelTeam   : 0;
+    g_MatchSetup.iNumber = (m_iSelNumber >= 1) ? m_iSelNumber : 1;
 }
 
 void CRoomWindow::OnPaint(HWND hWnd)
@@ -368,11 +402,12 @@ void CRoomWindow::OnPaint(HWND hWnd)
             g.DrawString(teamName[t], -1, &hdrF, RectF(colX[t], gridTop, colW, hdrH), &sfCC, &hb);
         }
 
-        // 내 슬롯(선택된 팀/번호)인지 판정용
         Gdiplus::Font blkF(&ff, 18, FontStyleBold, UnitPixel);
         Gdiplus::Font blkSubF(&ff, 14, FontStyleRegular, UnitPixel);
 
         const REAL blocksTop = gridTop + hdrH + 8.f;
+        int myId = NetworkClient::GetInstance()->GetMyId();
+
         for (int t = 0; t < 2; ++t)
         {
             for (int n = 0; n < 3; ++n)
@@ -380,39 +415,67 @@ void CRoomWindow::OnPaint(HWND hWnd)
                 REAL bx = colX[t];
                 REAL by = blocksTop + n * (blockH + blockGap);
 
-                // 히트박스 저장 (클라이언트 좌표, 정수)
-                m_rcBlock[t][n].left = (LONG)bx;
-                m_rcBlock[t][n].top = (LONG)by;
-                m_rcBlock[t][n].right = (LONG)(bx + colW);
+                m_rcBlock[t][n].left   = (LONG)bx;
+                m_rcBlock[t][n].top    = (LONG)by;
+                m_rcBlock[t][n].right  = (LONG)(bx + colW);
                 m_rcBlock[t][n].bottom = (LONG)(by + blockH);
 
-                const bool bMine = (t == m_iSelTeam) && (n + 1 == m_iSelNumber);
+                // 서버 확인 점유자 탐색
+                const RoomMemberCache* pOcc = nullptr;
+                for (auto& m : m_cachedMembers) {
+                    if ((int)m.team == t && (int)m.slot == n + 1) { pOcc = &m; break; }
+                }
 
-                // 블럭 배경: 선택되면 팀색으로 진하게, 아니면 어둡게.
-                Color fill = bMine
-                    ? ((t == 0) ? Color(255, 120, 40, 44) : Color(255, 40, 64, 120))
-                    : Color(255, 30, 33, 44);
+                bool bMine  = (pOcc && pOcc->id == myId);
+                bool bOther = (pOcc && !bMine);
+                // 서버 확인 전 낙관적 표시: 로컬 선택이 이 칸이고 아직 서버 미반영
+                if (!pOcc && m_iSelTeam == t && m_iSelNumber == n + 1)
+                    bMine = true;
+
+                // ── 배경 ──
+                Color fill;
+                if      (bMine)  fill = (t == 0) ? Color(255, 120, 40, 44)  : Color(255, 40, 64, 120);
+                else if (bOther) fill = (t == 0) ? Color(255, 72, 26, 28)   : Color(255, 26, 40, 80);
+                else             fill = Color(255, 30, 33, 44);
                 SolidBrush bbg(fill);
                 g.FillRectangle(&bbg, bx, by, colW, blockH);
 
-                // 테두리: 선택되면 밝은 팀색.
-                Color edge = bMine
-                    ? ((t == 0) ? Color(255, 240, 120, 120) : Color(255, 130, 180, 255))
-                    : Color(255, 60, 64, 80);
-                Pen ep(edge, bMine ? 3.f : 1.5f);
+                // ── 테두리 ──
+                Color edge;
+                float edgeW;
+                if      (bMine)  { edge = (t == 0) ? Color(255, 240, 120, 120) : Color(255, 130, 180, 255); edgeW = 3.f; }
+                else if (bOther) { edge = (t == 0) ? Color(255, 180, 80,  80)  : Color(255, 80, 130, 200);  edgeW = 2.f; }
+                else             { edge = Color(255, 60, 64, 80); edgeW = 1.5f; }
+                Pen ep(edge, edgeW);
                 g.DrawRectangle(&ep, bx, by, colW, blockH);
 
-                // 왼쪽: 번호 라벨
+                // ── 번호 라벨 (좌측) ──
                 SolidBrush numBr(Color(255, 235, 240, 248));
                 _tchar szNo[8]; swprintf_s(szNo, L"%d", n + 1);
-                StringFormat sfL; sfL.SetAlignment(StringAlignmentNear); sfL.SetLineAlignment(StringAlignmentCenter);
+                StringFormat sfL;
+                sfL.SetAlignment(StringAlignmentNear);
+                sfL.SetLineAlignment(StringAlignmentCenter);
                 g.DrawString(szNo, -1, &blkF, RectF(bx + 16.f, by, 30.f, blockH), &sfL, &numBr);
 
-                // 가운데: 점유 상태("ME" / "빈 자리"). 네트워크 연동 시 다른 이름 표시.
-                const _tchar* szWho = bMine ? L"ME" : L"빈 자리";
-                Color whoCol = bMine ? Color(255, 255, 255, 255) : Color(255, 120, 126, 140);
+                // ── 닉네임 / 상태 (가운데) ──
+                _tchar szWho[NAME_SIZE + 4] = {};
+                Color whoCol;
+                if (bMine) {
+                    swprintf_s(szWho, L"ME");
+                    whoCol = Color(255, 255, 255, 255);
+                } else if (bOther) {
+                    WCHAR wname[NAME_SIZE] = {};
+                    MultiByteToWideChar(CP_ACP, 0, pOcc->name, -1, wname, NAME_SIZE);
+                    swprintf_s(szWho, L"%s", wname);
+                    whoCol = (t == 0) ? Color(255, 255, 180, 180) : Color(255, 160, 200, 255);
+                } else {
+                    swprintf_s(szWho, L"빈 자리");
+                    whoCol = Color(255, 90, 96, 112);
+                }
                 SolidBrush whoBr(whoCol);
-                StringFormat sfW; sfW.SetAlignment(StringAlignmentCenter); sfW.SetLineAlignment(StringAlignmentCenter);
+                StringFormat sfW;
+                sfW.SetAlignment(StringAlignmentCenter);
+                sfW.SetLineAlignment(StringAlignmentCenter);
                 g.DrawString(szWho, -1, &blkF, RectF(bx + 46.f, by, colW - 46.f, blockH), &sfW, &whoBr);
             }
         }
