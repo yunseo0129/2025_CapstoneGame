@@ -70,6 +70,8 @@ void CGame_Manager::Start_Match()
     // 맵 선택 창 포인터 확보(상점 대신 사용). Level_Gameplay 가 미리 생성해 둠.
     Cache_MapSelect();
 
+    Ready_Timer();
+
     // 선택 구간 글로벌 타이머 시작(캐릭터+상황판+스폰을 30초로 묶음)
     m_fSelectTimer = SELECT_TOTAL_DURATION;
     m_bSelectExpired = false;
@@ -121,6 +123,8 @@ void CGame_Manager::Update(_float fTimeDelta)
     default:
         break;
     }
+
+    Refresh_Timer();
 }
 
 // =====================================================================
@@ -132,6 +136,8 @@ void CGame_Manager::Enter_Phase(GAME_PHASE eNext)
         return;
 
     m_ePhase = eNext;
+
+    Apply_PhaseVisibility(eNext);
 
     switch (eNext)
     {
@@ -151,17 +157,6 @@ void CGame_Manager::OnEnter_CharSelect()
     // 내 플레이어(1인칭 액터)를 시작 지점에 미리 세워 둔다.
     //  → Ready 로 1인칭 전환될 때 이 위치 그대로 시작.
     Place_PlayerAt_Spot();
-
-    // 실제 액터/HUD/스코어보드 숨기고 선택 화면만 보이기
-    Set_LayerVisible(L"Layer_Player", false);  // 1인칭 플레이어(카메라 동기화도 멈춤)
-    Set_LayerVisible(L"Layer_Other_Player", false);  // 3인칭 더미 돼지들
-    Set_LayerVisible(L"Layer_UI_Scoreboard", false);
-    Set_LayerVisible(L"Layer_UI_Shop", false);
-    Set_LayerVisible(L"Layer_UI_HUD", false);
-    Set_LayerVisible(L"Layer_UI", false);  // 미니맵
-    Set_LayerVisible(L"Layer_CharSelect_Preview", true);
-    Set_LayerVisible(L"Layer_CharSelect_UI", true);
-    Set_LayerVisible(L"Layer_UI_Crosshair", false);
 
     ShowCursor(TRUE);
     if (CController* p = m_pGameInstance->Get_Controller())
@@ -186,13 +181,6 @@ void CGame_Manager::OnEnter_Scoreboard()
     GM_Log(L"Round %d/%d - SCOREBOARD (현재 게임 상황) | Score %d : %d",
         m_iRound, MAX_ROUND, m_iTeamScore[0], m_iTeamScore[1]);
 
-    // 스코어보드 UI ON, 나머지 OFF
-    Set_LayerVisible(L"Layer_UI_Scoreboard", true);
-    Set_LayerVisible(L"Layer_UI_Shop", false);
-    Set_LayerVisible(L"Layer_UI_MiniMap", false);
-    Set_LayerVisible(L"Layer_UI_HUD", false);
-    Set_LayerVisible(L"Layer_UI_Crosshair", false);
-
     // 최신 상태를 텍스트에 반영
     Refresh_Scoreboard();
 }
@@ -202,33 +190,16 @@ void CGame_Manager::OnEnter_Shop()
     m_fShopTimer = SHOP_DURATION;
     m_bShopOpen = true; // 진입 시 구매창을 띄운 상태로 시작
 
-    if (USE_SHOP)
+    /*if (USE_SHOP)
     {
         GM_Log(L"Round %d - SHOP (상품 구매) | %.0f초", m_iRound, SHOP_DURATION);
+    }*/
 
-        // 스코어보드 OFF, 상점 ON (게임은 뒤에서 계속)
-        Set_LayerVisible(L"Layer_UI_Scoreboard", false);
-        Set_LayerVisible(L"Layer_UI_Shop", true);
-        Set_LayerVisible(L"Layer_UI_MiniMap", false);
-        Set_LayerVisible(L"Layer_UI_HUD", false);
-        Set_LayerVisible(L"Layer_UI_Crosshair", false);
-    }
-    else
-    {
-        GM_Log(L"Round %d - MAP SELECT (스폰 위치 선택) | %.0f초", m_iRound, SHOP_DURATION);
+    if (!USE_SHOP && m_pMapSelect != nullptr)
+        m_pMapSelect->Clear_Selection();   // 이전 라운드 선택 초기화
+    
+    GM_Log(L"Round %d - SPAWN SELECT | %.0f초", m_iRound, SHOP_DURATION);
 
-        // 스코어보드/상점 OFF, 맵 선택 창 ON
-        Set_LayerVisible(L"Layer_UI_Scoreboard", false);
-        Set_LayerVisible(L"Layer_UI_Shop", false);
-        Set_LayerVisible(L"Layer_UI_MapSelect", true);
-        Set_LayerVisible(L"Layer_UI_MiniMap", false);
-        Set_LayerVisible(L"Layer_UI_HUD", false);
-        Set_LayerVisible(L"Layer_UI_Crosshair", false);
-
-        // 이번 라운드 선택 초기화(이전 라운드 선택이 남지 않게)
-        if (m_pMapSelect != nullptr)
-            m_pMapSelect->Clear_Selection();
-    }
     // 상점에서는 클릭을 위해 커서를 보이게 하고, 플레이어 입력을 막는다.
     Set_ShopUIMode(true);
 }
@@ -238,15 +209,7 @@ void CGame_Manager::OnEnter_Playing()
     m_bShopOpen = false;
     m_fRoundTimer = ROUND_DURATION;   // 라운드 제한 시간 시작
 
-    GM_Log(L"Round %d - PLAYING (게임 진행)", m_iRound);
-
-    // 전체화면 UI 모두 OFF, 인게임 HUD ON
-    Set_LayerVisible(L"Layer_UI_Scoreboard", false);
-    Set_LayerVisible(L"Layer_UI_Shop", false);
-    Set_LayerVisible(L"Layer_UI_MapSelect", false);
-    Set_LayerVisible(L"Layer_UI_MiniMap", true);
-    Set_LayerVisible(L"Layer_UI_HUD", true);
-    Set_LayerVisible(L"Layer_UI_Crosshair", true);
+    GM_Log(L"Round %d - PLAYING", m_iRound);
 
     // 플레이 중에는 커서를 숨기고(조준 모드) 입력을 허용한다.
     Set_ShopUIMode(false);
@@ -280,13 +243,6 @@ void CGame_Manager::Update_CharSelect(_float fTimeDelta)
 {
     if (m_bCSReady)
     {
-        // 복구 → 실제 게임 시작
-        Set_LayerVisible(L"Layer_Player", true);
-        Set_LayerVisible(L"Layer_Other_Player", true);
-        Set_LayerVisible(L"Layer_CharSelect_Preview", false);
-        Set_LayerVisible(L"Layer_CharSelect_UI", false);
-        Set_LayerVisible(L"Layer_UI", true);
-
         ShowCursor(FALSE);
         if (CController* p = m_pGameInstance->Get_Controller())
             p->Set_BlockInput(false);
@@ -344,6 +300,7 @@ void CGame_Manager::Update_Shop(_float fTimeDelta)
             m_bShopOpen = !m_bShopOpen;
             GM_Log(L"MapSelect %s", m_bShopOpen ? L"SHOW" : L"HIDE");
             Set_LayerVisible(L"Layer_UI_MapSelect", m_bShopOpen);
+            Set_LayerVisible(L"Layer_UI_Crosshair", !m_bShopOpen);
             Set_ShopUIMode(m_bShopOpen); // 창이 보일 때만 커서 표시 + 입력 차단
         }
     }
@@ -503,6 +460,95 @@ void CGame_Manager::Set_LayerVisible(const _wstring& strLayerTag, _bool bVisible
             pObj->SetOnOff(bVisible);
     }
 }
+
+// =====================================================================
+//  Phase 별 레이어 가시성 (손토글 전부 여기로 일원화)
+// =====================================================================
+void CGame_Manager::Apply_PhaseVisibility(GAME_PHASE ePhase)
+{
+    const _bool bCharSel = (ePhase == GAME_PHASE::PHASE_CHARSELECT);
+    const _bool bScore = (ePhase == GAME_PHASE::PHASE_SCOREBOARD);
+    const _bool bSpawn = (ePhase == GAME_PHASE::PHASE_SHOP);     // 스폰(맵) 선택
+    const _bool bPlaying = (ePhase == GAME_PHASE::PHASE_PLAYING);
+
+    // 실제 액터(1인칭/3인칭): 캐릭터 선택 때만 프리뷰로 대체하여 숨김.
+    const _bool bWorldActors = !bCharSel;
+    Set_LayerVisible(L"Layer_Player", bWorldActors);
+    Set_LayerVisible(L"Layer_Other_Player", bWorldActors);
+
+    // 캐릭터 선택 화면
+    Set_LayerVisible(L"Layer_CharSelect_Preview", bCharSel);
+    Set_LayerVisible(L"Layer_CharSelect_UI", bCharSel);
+
+    // 상황판(스코어보드)
+    Set_LayerVisible(L"Layer_UI_Scoreboard", bScore);
+
+    // 스폰(맵) 선택 창 — 진입 시 ON. 이후 E 키로 런타임 토글(Update_Shop).
+    Set_LayerVisible(L"Layer_UI_MapSelect", bSpawn);
+
+    // 인게임 HUD / 미니맵 — 플레이 중에만
+    Set_LayerVisible(L"Layer_UI_HUD", bPlaying);
+    Set_LayerVisible(L"Layer_UI_MiniMap", bPlaying);
+
+    // 에임: 플레이 중엔 항상 ON. 스폰 선택 단계에선 "창이 꺼졌을 때만" 보이므로
+    //  여기선 OFF 로 두고, 창 토글(Update_Shop)에서 창과 반대로 켠다.
+    Set_LayerVisible(L"Layer_UI_Crosshair", bPlaying);
+
+    // 레거시 상점(USE_SHOP=false): 항상 OFF.
+    Set_LayerVisible(L"Layer_UI_Shop", false);
+
+    // Layer_UI_Timer 는 항상 ON: 여기서 건드리지 않는다.
+}
+
+// =====================================================================
+//  통합 타이머 (모든 Phase 공통)
+//   - 위치/색은 기존 HUD 중앙 타이머와 동일하게 잡아 PLAYING 화면을 유지.
+//   - 내용만 Phase 에 따라 선택타이머 / 라운드타이머로 바꿔 끼운다.
+// =====================================================================
+HRESULT CGame_Manager::Ready_Timer()
+{
+    const _uint PROTO = LEVEL_STATIC;
+    const _uint LV = LEVEL_GAMEPLAY;
+    const _wstring TM = L"Layer_UI_Timer";
+
+    CUI_Text::UI_TEXT_DESC d;
+    d.fX = 640.f; d.fY = 30.f;           // 상단 중앙(기존 HUD 타이머 자리)
+    d.fDepth = 0.2f;
+    d.strText = Make_SelectTimerString();
+    d.strFontTag = L"Font_Default";
+    d.vColor = _float4(1.f, 1.f, 1.f, 1.f);
+    d.fTextScale = 0.85f;
+    d.bCentered = true;
+    m_pTimerText = static_cast<CUI_Text*>(
+        m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
+            PROTO, L"Prototype_GameObject_UI_Text", LV, TM, &d));
+
+    return S_OK;   // 항상 ON. Apply_PhaseVisibility 에서 끄지 않는다.
+}
+
+void CGame_Manager::Refresh_Timer()
+{
+    if (m_pTimerText == nullptr)
+        return;
+
+    _wstring s;
+    switch (m_ePhase)
+    {
+    case GAME_PHASE::PHASE_CHARSELECT:
+    case GAME_PHASE::PHASE_SCOREBOARD:
+    case GAME_PHASE::PHASE_SHOP:        // 스폰 선택 (게임 시작 전 30초 구간)
+        s = Make_SelectTimerString();
+        break;
+    case GAME_PHASE::PHASE_PLAYING:     // 라운드 시간 (100초 = 1:40)
+        s = Make_TimerString();
+        break;
+    default:                            // GAMEOVER 등
+        s = Make_TimerString();
+        break;
+    }
+    m_pTimerText->Set_Text(s);
+}
+
 // =====================================================================
 //  UI 텍스트 (캐릭터 선택)
 // =====================================================================
@@ -569,11 +615,7 @@ HRESULT CGame_Manager::Ready_CharSelect()
                 m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(PROTO_UI, L"Prototype_GameObject_UI_Panel", LV, UI, &d));
         };
 
-    AddText(640.f, 44.f, L"Character Select", 1.4f);
-
-    // 화면 위 "남은 시간"(신규). 글로벌 타이머가 매 프레임 갱신.
-    m_pSelTimerText_CS = static_cast<CUI_Text*>(
-        AddText(640.f, 96.f, Make_SelectTimerString(), 1.0f));
+    AddText(640.f, 70.f, L"Character Select", 1.4f);
 
     // 중앙 라벨(나)
     AddText(640.f, 540.f, L"Me", 0.9f);
@@ -684,9 +726,6 @@ HRESULT CGame_Manager::Ready_ScoreboardText()
         d.vColor = _float4(1.f, 0.95f, 0.6f, 1.f);
         d.fTextScale = 0.85f;
         d.bCentered = true;
-        m_pSelTimerText_SB = static_cast<CUI_Text*>(
-            m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
-                PROTO, L"Prototype_GameObject_UI_Text", LV, SB, &d));
     }
 
     // ---- 플레이어 행 텍스트 6명 (슬롯 인덱스 = 배열 인덱스) ----
@@ -788,9 +827,6 @@ HRESULT CGame_Manager::Ready_HUD()
         d.vColor = _float4(1.f, 1.f, 1.f, 1.f);
         d.fTextScale = 0.85f;
         d.bCentered = true;
-        m_pHUDTimerText = static_cast<CUI_Text*>(
-            m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
-                PROTO, L"Prototype_GameObject_UI_Text", LV, HUD, &d));
     }
 
     // ---- 팀 승수 (타이머 좌우) ----
@@ -860,9 +896,6 @@ HRESULT CGame_Manager::Ready_HUD()
 
 void CGame_Manager::Refresh_HUD()
 {
-    // 중앙 타이머 갱신
-    if (m_pHUDTimerText != nullptr)
-        m_pHUDTimerText->Set_Text(Make_TimerString());
 
     // 팀 승수 갱신
     for (_int t = 0; t < 2; ++t)
@@ -1074,9 +1107,6 @@ void CGame_Manager::Cache_MapSelect()
         d.vColor = _float4(1.f, 0.95f, 0.6f, 1.f);
         d.fTextScale = 0.85f;
         d.bCentered = true;
-        m_pSelTimerText_MS = static_cast<CUI_Text*>(
-            m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
-                PROTO, L"Prototype_GameObject_UI_Text", LV, MS, &d));
 
         CUI_Text::UI_TEXT_DESC h;
         h.fX = 640.f; h.fY = 690.f;
@@ -1151,12 +1181,6 @@ void CGame_Manager::Tick_SelectTimer(_float fTimeDelta)
         if (m_fSelectTimer < 0.f)
             m_fSelectTimer = 0.f;
     }
-
-    // 세 화면의 "남은 시간" 텍스트를 모두 같은 값으로 갱신.
-    const _wstring s = Make_SelectTimerString();
-    if (m_pSelTimerText_CS) m_pSelTimerText_CS->Set_Text(s);
-    if (m_pSelTimerText_SB) m_pSelTimerText_SB->Set_Text(s);
-    if (m_pSelTimerText_MS) m_pSelTimerText_MS->Set_Text(s);
 }
 
 _wstring CGame_Manager::Make_SelectTimerString() const
@@ -1178,19 +1202,11 @@ void CGame_Manager::Force_StartPlaying()
     m_bSelectExpired = true;
     m_iCSMyCharacter = 0;   // PIG 고정
 
-    // 캐릭터 선택 화면이 떠 있던 상태일 수 있으니 선택 UI/입력 상태를 정리.
-    Set_LayerVisible(L"Layer_Player", true);
-    Set_LayerVisible(L"Layer_Other_Player", true);
-    Set_LayerVisible(L"Layer_CharSelect_Preview", false);
-    Set_LayerVisible(L"Layer_CharSelect_UI", false);
-    Set_LayerVisible(L"Layer_UI_Scoreboard", false);
-    Set_LayerVisible(L"Layer_UI_MapSelect", false);
-
     ShowCursor(FALSE);
     if (CController* p = m_pGameInstance->Get_Controller())
         p->Set_BlockInput(false);
 
-    GM_Log(L"Select timer expired → FORCE PLAYING (char=PIG, spawn=default)");
+    GM_Log(L"Select timer expired → FORCE PLAYING");
     Enter_Phase(GAME_PHASE::PHASE_PLAYING);
 }
 
@@ -1215,7 +1231,6 @@ void CGame_Manager::Free()
         m_pPlayerRowText[i] = nullptr;
 
     // HUD 도 레이어 소유. 참조만 끊는다.
-    m_pHUDTimerText = nullptr;
     m_pHUDTeamScoreText[0] = nullptr;
     m_pHUDTeamScoreText[1] = nullptr;
     for (_int i = 0; i < MAX_PLAYER; ++i)
@@ -1233,9 +1248,7 @@ void CGame_Manager::Free()
     for (_int i = 0; i < 3; ++i) m_pCSFacePanel[i] = nullptr;
 
     // 선택 구간 타이머 텍스트도 레이어 소유. 참조만 끊는다.
-    m_pSelTimerText_CS = nullptr;
-    m_pSelTimerText_SB = nullptr;
-    m_pSelTimerText_MS = nullptr;
+    m_pTimerText = nullptr;
 
     m_vStats.clear();
     Safe_Release(m_pGameInstance);

@@ -105,6 +105,14 @@ private:
     // 레이어의 모든 UI 오브젝트를 켜고/끈다 (SetOnOff)
     void    Set_LayerVisible(const _wstring& strLayerTag, _bool bVisible);
 
+    // ---- UI: 통합 타이머 (모든 Phase 공통, Layer_UI_Timer, 항상 표시) ----
+    HRESULT  Ready_Timer();      // 단일 타이머 텍스트 1개 생성(항상 ON)
+    void     Refresh_Timer();    // 현재 Phase 에 맞는 남은 시간 문자열로 갱신
+
+    // ---- Phase 별 레이어 가시성 일괄 적용 ----
+    void     Apply_PhaseVisibility(GAME_PHASE ePhase);
+
+
     // ---- UI 캐릭터선택 ----
     HRESULT Ready_CharSelect();
     void    Handle_CharSelectClick();
@@ -186,10 +194,10 @@ private:
     _float      m_fSelectTimer = 0.f;
     _bool       m_bSelectExpired = false;   // 타임아웃으로 강제 진행됐는지
 
-    // 세 화면 상단에 띄우는 "남은 시간" 텍스트(각 레이어 소유, 참조만 보관).
-    class CUI_Text* m_pSelTimerText_CS = nullptr;   // 캐릭터 선택
-    class CUI_Text* m_pSelTimerText_SB = nullptr;   // 상황판(스코어보드)
-    class CUI_Text* m_pSelTimerText_MS = nullptr;   // 맵/스폰 선택
+    //  모든 Phase 공통 "남은 시간". Layer_UI_Timer 에 단 하나만 둔다.
+    //  내용만 Phase 에 따라 바꿔 끼운다(선택구간=선택타이머 / 플레이=라운드타이머).
+    class CUI_Text* m_pTimerText = nullptr;
+
 
     // 더미 플레이어 스탯
     vector<PLAYER_STAT> m_vStats;
@@ -203,7 +211,6 @@ private:
     // ---- 인게임 HUD 포인터 ----
     //  중앙 상단 바: [팀A 생존박스] [팀A 승수] [타이머] [팀B 승수] [팀B 생존박스]
     //  생존=흰색 박스 / 사망=검정 박스. 박스 인덱스 = 슬롯(= m_vStats 인덱스).
-    class CUI_Text* m_pHUDTimerText = nullptr;            // 중앙: 남은 시간
     class CUI_Text* m_pHUDTeamScoreText[2] = {nullptr}; // [0]=팀A 승수, [1]=팀B 승수
     class CUI_Panel* m_pHUDPlayerBox[MAX_PLAYER] = {nullptr};
 
