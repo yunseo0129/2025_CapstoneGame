@@ -692,6 +692,18 @@ bool CGameInstance::CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& out
     return m_pCollision_Manager->CheckMove(me, move, outSlide, outHits);
 }
 
+void CGameInstance::Set_Bullets(class CBullets* _p) {
+    return m_pCollision_Manager->Set_Bullets(_p);
+}
+
+class CBullets* CGameInstance::Get_Bullets() {
+    return m_pCollision_Manager->Get_Bullets();
+}
+
+void CGameInstance::NewBullet(_vector _look, _vector _pos) {
+    return m_pCollision_Manager->NewBullet(_look, _pos);
+}
+
 //BVH
 void  CGameInstance::Build_StaticBVH() { if (m_pCollision_Manager) m_pCollision_Manager->Build_StaticBVH(); }
 void  CGameInstance::Invalidate_StaticBVH() { if (m_pCollision_Manager) m_pCollision_Manager->Invalidate_StaticBVH(); }

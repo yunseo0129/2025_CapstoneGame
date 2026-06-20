@@ -125,6 +125,9 @@ public: /* For.Collision_Manager */
     bool CollisionCheck_with_Collider(class CCollider* _pMyCollider, class CCollider* _pOtherCollider);
     bool CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide);
     bool CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide, vector<class CCollider*>* outHits);
+    void Set_Bullets(class CBullets* _p);
+    class CBullets* Get_Bullets();
+    void NewBullet(_vector _look, _vector _pos);
 
     //BVH
     void  Build_StaticBVH();

@@ -519,7 +519,7 @@ void CPlayer_1rd::Shoot(_float _val)
 
         _vector look = m_pTransformCom->Get_State(CTransform::STATE_LOOK);
         _vector pos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
-
+        m_pGameInstance->NewBullet(look, pos);
     }
 }
 

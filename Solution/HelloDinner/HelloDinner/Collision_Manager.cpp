@@ -5,6 +5,7 @@
 #include "Bounding_OBB.h"
 #include "Bounding_Sphere.h"
 #include "Map.h"
+#include "Bullets.h"
 
 
 IMPLEMENT_SINGLETON(CCollision_Manager)
@@ -139,6 +140,21 @@ bool CCollision_Manager::CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3
     }
     outSlide = finalMove;
     return bHit;
+}
+
+void CCollision_Manager::Set_Bullets(CBullets* _p)
+{
+    m_pBullets = _p;
+}
+
+void CCollision_Manager::NewBullet(_vector _look, _vector _pos)
+{
+    CBullets::BULLET b;
+    b.vLook = _look;
+    b.vPos = _pos;
+    b.isOn = true;
+    b.iLifeTime = 0.2f;
+    m_pBullets->NewBullet(b);
 }
 
 bool CCollision_Manager::IsCollidingAfterMove(CCollider* me, CCollider* other, const XMFLOAT3& move)

@@ -13,6 +13,8 @@ public:
         _vector vLook;
         _vector vPos;
         _vector vTarget;
+        _float   iLifeTime;
+        _bool   isOn = false;
     };
 private:
     CBullets(EngineContext* pContext);
@@ -27,11 +29,13 @@ public:
     virtual void		Late_Update(_float fTimeDelta) override;
     virtual void		Render(ID3D12GraphicsCommandList* _commandList) override;
 
+    void                NewBullet(BULLET _bullet);
+
 private:
     virtual HRESULT				Ready_Components();
 
 private:
-    vector<BULLET> vBullets;
+    vector<BULLET> m_vBullets;
 
 public:
     static CBullets* Create(EngineContext* pContext);

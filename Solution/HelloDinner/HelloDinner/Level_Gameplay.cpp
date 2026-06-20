@@ -23,6 +23,7 @@
 #include "UI_Panel.h"
 #include "MiniMap.h"
 #include "MapSelect.h"
+#include "Bullets.h"
 
 CLevel_GamePlay::CLevel_GamePlay(EngineContext* pContext)
     : CLevel {pContext}
@@ -174,6 +175,15 @@ HRESULT CLevel_GamePlay::Ready_Layer()
     {
         MSG_BOX("Failed to Add GameObject To Layer : Skybox");
         return E_FAIL;
+    }
+
+    // Bullets
+    {
+        CBullets::BULLET_DESC cdesc;
+        CGameObject* pBullets = m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Bullets"),
+            LEVEL_GAMEPLAY, TEXT("Layer_Bullets"), &cdesc);
+
+        m_pGameInstance->Set_Bullets(static_cast<CBullets*>(pBullets));
     }
 
     // Player_1rd
