@@ -258,6 +258,9 @@
     <Filter Include="소스 파일\02. Game\01. Levels\05. Charselect\list">
       <UniqueIdentifier>{1472c0f7-70be-4e6f-8765-409bc0366dab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\02. Game\GameObject\03. Bullet">
+      <UniqueIdentifier>{35ce7a07-8910-4a59-ae1d-319be16d9f89}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -512,6 +515,9 @@
     <ClInclude Include="CharSelect_Chick.h">
       <Filter>소스 파일\02. Game\01. Levels\05. Charselect\list</Filter>
     </ClInclude>
+    <ClInclude Include="Bullets.h">
+      <Filter>소스 파일\02. Game\GameObject\03. Bullet</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -759,6 +765,9 @@
     </ClCompile>
     <ClCompile Include="CharSelect_Chick.cpp">
       <Filter>소스 파일\02. Game\01. Levels\05. Charselect\list</Filter>
+    </ClCompile>
+    <ClCompile Include="Bullets.cpp">
+      <Filter>소스 파일\02. Game\GameObject\03. Bullet</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
