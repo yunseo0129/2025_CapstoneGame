@@ -92,7 +92,10 @@ void CPlayer_1rd::Priority_Update(_float fTimeDelta)
     matFps.r[0] = XMVector3TransformNormal(vRight, RotationMatrix);
     matFps.r[1] = XMVector3TransformNormal(vUp, RotationMatrix);
     matFps.r[2] = XMVector3TransformNormal(vLook, RotationMatrix);
-    matFps *= XMMatrixTranslation(0.f, 1.39f, 0.f);
+    if (m_isCrouch && 11 != m_pModelCom->Get_LowerAnimNum())
+        matFps *= XMMatrixTranslation(0.f, 1.f, 0.f);
+    else
+        matFps *= XMMatrixTranslation(0.f, 1.39f, 0.f);
     XMStoreFloat4x4(&m_matFPSModel, matFps);
     // 카메라 동기화
     m_pCamera->Set_WorldMatrix(m_matFPSModel);
@@ -106,12 +109,7 @@ void CPlayer_1rd::Update(_float fTimeDelta)
     {
         if (m_pModelCom->Play_Animation(fTimeDelta, true))
         {
-            if (11 == m_pModelCom->Get_UpperAnimNum())
-            {
-                m_pModelCom->Change_Animation(0, 5.f, true, true);
-                m_pModelCom->Change_Animation(0, 5.f, true, false);
-            }
-            else if (12 == m_pFPSModelCom->Get_AnimNum())
+            if (12 == m_pModelCom->Get_UpperAnimNum())
             {
                 m_isReloading = false;
                 m_iAmmo = 30;
@@ -122,6 +120,26 @@ void CPlayer_1rd::Update(_float fTimeDelta)
     }
     else
         m_pModelCom->Blend_Animation(fTimeDelta, true);
+
+    if (!m_pModelCom->Get_LowerBlend())
+    {
+        if (m_pModelCom->Play_Animation(fTimeDelta, false))
+        {
+            if (11 == m_pModelCom->Get_LowerAnimNum())
+            {
+                m_pModelCom->Change_Animation(0, 0.f, true, false);
+            }
+        }
+    }
+    else
+        m_pModelCom->Blend_Animation(fTimeDelta, false);
+
+    if (m_pGameInstance->Get_DIKeyState(DIK_F))
+    {
+        m_pModelCom->Get_LowerAnimNum();
+        m_pModelCom->Get_UpperAnimNum();
+    }
+    Anima();
 
     m_pModelCom->Merge_UpperLower();
 
@@ -161,6 +179,7 @@ void CPlayer_1rd::Late_Update(_float fTimeDelta)
     __super::Late_Update(fTimeDelta);
     m_isCrouch = false;
     m_isRun = false;
+    m_isMove = false;
 }
 
 void CPlayer_1rd::Render(ID3D12GraphicsCommandList* _commandList)
@@ -223,6 +242,8 @@ void CPlayer_1rd::Move(_float _fLook, _float _fRight, _float _val)
     // 여기서는 이번 프레임 입력만 누적한다.
     m_fMoveLook = _fLook;
     m_fMoveRight = _fRight;
+    if (m_fMoveLook)
+        m_isMove = true;
 }
 
 void CPlayer_1rd::Resolve_Movement(_float fTimeDelta)
@@ -300,8 +321,49 @@ void CPlayer_1rd::Resolve_Movement(_float fTimeDelta)
     m_pTransformCom->Set_State(CTransform::STATE_POSITION, vPos);
 
     // ---- 7) 입력 소비 ----
+    if (m_fMoveLook)
+        m_fMoveLook = 0.f;
     m_fMoveLook = 0.f;
     m_fMoveRight = 0.f;
+}
+
+void CPlayer_1rd::Anima()
+{
+    _uint anim = m_pModelCom->Get_LowerAnimNum();
+    if (anim != 11)
+    {
+        if (m_isMove)
+        {
+            if (m_isCrouch)
+            {
+                if (5 != anim)
+                    m_pModelCom->Change_Animation(5, 2.f, true, false);
+            }
+            else if (m_isRun)
+            {
+                if (10 != anim)
+                    m_pModelCom->Change_Animation(10, 2.f, true, false);
+            }
+            else
+            {
+                if (8 != anim)
+                    m_pModelCom->Change_Animation(8, 2.f, true, false);
+            }
+        }
+        else
+        {
+            if (m_isCrouch)
+            {
+                if (4 != anim)
+                    m_pModelCom->Change_Animation(4, 10.f, true, false);
+            }
+            else
+            {
+                if (0 != anim)
+                    m_pModelCom->Change_Animation(0, 10.f, true, false);
+            }
+        }
+    }
 }
 
 void CPlayer_1rd::TurnYaw(_float _val)
@@ -320,6 +382,8 @@ void CPlayer_1rd::Jump(_float _val)
     {
         m_fVerticalVelocity = JUMP_SPEED;
         m_bIsGrounded = false;
+        m_isCrouch = false;
+        m_pModelCom->Change_Animation(11, 0.f, false, false);
     }
 }
 
@@ -402,7 +466,11 @@ void CPlayer_1rd::Update_Launch(_float fTimeDelta)
 void CPlayer_1rd::Crouch(_float _val)
 {
     // 웅크리기
-    m_isCrouch = true;
+    _uint anim = m_pModelCom->Get_LowerAnimNum();
+    if (11 != anim)
+    {
+        m_isCrouch = true;
+    }
 }
 
 void CPlayer_1rd::Run(_float _val)
@@ -434,6 +502,13 @@ void CPlayer_1rd::Shoot(_float _val)
         m_pFPSModelCom->Change_Animation(2, 0.f, false);
         --m_iAmmo;
     }
+}
+
+void CPlayer_1rd::Die(_float _val)
+{
+    m_isDie = true;
+    m_pModelCom->Change_Animation(9, 10.f, false, true);
+    m_pModelCom->Change_Animation(9, 10.f, false, false);
 }
 
 void CPlayer_1rd::Set_Weapon(_int iIndex)
@@ -495,6 +570,8 @@ HRESULT CPlayer_1rd::Ready_Components()
         MSG_BOX("Failed to Add Component : Model in CPlayer_1rd");
         return E_FAIL;
     }
+
+    m_pModelCom->Set_SpineBoneIndex(m_pModelCom->Get_BoneIndex("spine"));
 
     // FPS Model 컴포넌트 생성
     if (FAILED(Add_Component(m_iModelLevelIndex, TEXT("Prototype_Component_Player_Pig_fps"),

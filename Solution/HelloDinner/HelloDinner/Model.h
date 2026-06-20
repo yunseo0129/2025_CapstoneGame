@@ -83,6 +83,10 @@ public:
     {
         return m_iCurrentUpperAnimIndex;
     }
+    _uint Get_LowerAnimNum()
+    {
+        return m_iCurrentLowerAnimIndex;
+    }
 
 	const _float4x4* Get_BoneMatrix(const _char* pBoneName) const;
 
