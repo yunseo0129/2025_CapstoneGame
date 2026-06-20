@@ -50,6 +50,9 @@ private:
     // material file을 읽어 존재하는 texture 파일명을 저장
     unordered_map<std::string, MATERIAL_INFO> m_MaterialInfos;
 
+    // 텍스처(dds) 공통 경로 프리픽스. Palette 등 공유 텍스처도 동일 폴더에 위치.
+    const _wstring m_strTextureDir = L"Resources/NonAnim/Map/dds/";
+
 public:
     static CLoader_Map* Create(EngineContext* pContext);
     virtual void Free() override;

@@ -1,37 +1,577 @@
 {
     "materials": [
         {
-            "materialName": "Floor_Concrete",
-            "albedoTexture": "Floor_Concrete_BaseColor.dds",
-            "normalTexture": "Floor_Concrete_Normal.dds",
+            "id": "Kitchen_86d6da1f",
+            "materialName": "Kitchen",
+            "shaderName": "Universal Render Pipeline/Lit",
+            "albedoTexture": "Palette.dds",
+            "normalTexture": "",
+            "metallicGlossTexture": "",
+            "occlusionTexture": "",
+            "emissionTexture": "Palette.dds",
             "baseColor": {
-                "r": 0.9117646813392639,
-                "g": 0.9117646813392639,
-                "b": 0.9117646813392639,
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
                 "a": 1.0
-            }
+            },
+            "emissionColor": {
+                "r": 0.3679245114326477,
+                "g": 0.3679245114326477,
+                "b": 0.3679245114326477,
+                "a": 1.0
+            },
+            "metallic": 0.0,
+            "smoothness": 0.0,
+            "bumpScale": 1.0,
+            "occlusionStrength": 1.0,
+            "cutoff": 0.5,
+            "surfaceType": 0,
+            "blendMode": 0,
+            "cullMode": 2,
+            "alphaClip": false,
+            "emissionEnabled": true
         },
         {
-            "materialName": "Wall_Brickwall_Red",
-            "albedoTexture": "Wall_Brickwall_Red_BaseColor.dds",
-            "normalTexture": "Wall_Brickwall_Red_Normal.dds",
+            "id": "Gold_311f1da8",
+            "materialName": "Gold",
+            "shaderName": "Universal Render Pipeline/Lit",
+            "albedoTexture": "",
+            "normalTexture": "",
+            "metallicGlossTexture": "",
+            "occlusionTexture": "",
+            "emissionTexture": "",
             "baseColor": {
-                "r": 0.8308823704719544,
-                "g": 0.8308823704719544,
-                "b": 0.8308823704719544,
+                "r": 1.0,
+                "g": 0.9277034401893616,
+                "b": 0.3254716396331787,
                 "a": 1.0
-            }
+            },
+            "emissionColor": {
+                "r": 0.4433962106704712,
+                "g": 0.2729946970939636,
+                "b": 0.17359378933906556,
+                "a": 1.0
+            },
+            "metallic": 0.8299999833106995,
+            "smoothness": 0.4129999876022339,
+            "bumpScale": 1.0,
+            "occlusionStrength": 1.0,
+            "cutoff": 0.5,
+            "surfaceType": 0,
+            "blendMode": 0,
+            "cullMode": 2,
+            "alphaClip": false,
+            "emissionEnabled": true
         },
         {
-            "materialName": "Midwall_ConcreteDirty",
-            "albedoTexture": "Midwall_ConcreteDirty_BaseColor.dds",
-            "normalTexture": "Midwall_ConcreteDirty_Normal.dds",
+            "id": "Kitchen_smooth_25f3edc2",
+            "materialName": "Kitchen_smooth",
+            "shaderName": "Universal Render Pipeline/Lit",
+            "albedoTexture": "Palette.dds",
+            "normalTexture": "",
+            "metallicGlossTexture": "",
+            "occlusionTexture": "",
+            "emissionTexture": "Palette.dds",
             "baseColor": {
-                "r": 0.8235294222831726,
-                "g": 0.8235294222831726,
-                "b": 0.8235294222831726,
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
                 "a": 1.0
-            }
+            },
+            "emissionColor": {
+                "r": 0.3679245114326477,
+                "g": 0.3679245114326477,
+                "b": 0.3679245114326477,
+                "a": 1.0
+            },
+            "metallic": 0.0,
+            "smoothness": 0.5680000185966492,
+            "bumpScale": 1.0,
+            "occlusionStrength": 1.0,
+            "cutoff": 0.5,
+            "surfaceType": 0,
+            "blendMode": 0,
+            "cullMode": 2,
+            "alphaClip": false,
+            "emissionEnabled": true
+        },
+        {
+            "id": "Base_656d8588",
+            "materialName": "Base",
+            "shaderName": "Universal Render Pipeline/Lit",
+            "albedoTexture": "",
+            "normalTexture": "",
+            "metallicGlossTexture": "",
+            "occlusionTexture": "",
+            "emissionTexture": "",
+            "baseColor": {
+                "r": 1.0,
+                "g": 0.9969136118888855,
+                "b": 0.9952829480171204,
+                "a": 1.0
+            },
+            "emissionColor": {
+                "r": 0.07547169923782349,
+                "g": 0.07547169923782349,
+                "b": 0.07547169923782349,
+                "a": 1.0
+            },
+            "metallic": 0.0,
+            "smoothness": 0.5,
+            "bumpScale": 1.0,
+            "occlusionStrength": 1.0,
+            "cutoff": 0.5,
+            "surfaceType": 0,
+            "blendMode": 0,
+            "cullMode": 2,
+            "alphaClip": false,
+            "emissionEnabled": true
+        },
+        {
+            "id": "Metal_2_80b09b4c",
+            "materialName": "Metal_2",
+            "shaderName": "Universal Render Pipeline/Lit",
+            "albedoTexture": "",
+            "normalTexture": "",
+            "metallicGlossTexture": "",
+            "occlusionTexture": "",
+            "emissionTexture": "",
+            "baseColor": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+            },
+            "emissionColor": {
+                "r": 0.3935564160346985,
+                "g": 0.40018343925476076,
+                "b": 0.4150943160057068,
+                "a": 1.0
+            },
+            "metallic": 0.8840000033378601,
+            "smoothness": 0.3109999895095825,
+            "bumpScale": 1.0,
+            "occlusionStrength": 1.0,
+            "cutoff": 0.5,
+            "surfaceType": 0,
+            "blendMode": 0,
+            "cullMode": 2,
+            "alphaClip": false,
+            "emissionEnabled": true
+        },
+        {
+            "id": "Metal_1_e8c5abb9",
+            "materialName": "Metal_1",
+            "shaderName": "Universal Render Pipeline/Lit",
+            "albedoTexture": "",
+            "normalTexture": "",
+            "metallicGlossTexture": "",
+            "occlusionTexture": "",
+            "emissionTexture": "",
+            "baseColor": {
+                "r": 0.7588109374046326,
+                "g": 0.7618693113327026,
+                "b": 0.7924528121948242,
+                "a": 1.0
+            },
+            "emissionColor": {
+                "r": 0.322401225566864,
+                "g": 0.32356932759284975,
+                "b": 0.33018869161605837,
+                "a": 1.0
+            },
+            "metallic": 0.5879999995231628,
+            "smoothness": 0.7009999752044678,
+            "bumpScale": 1.0,
+            "occlusionStrength": 1.0,
+            "cutoff": 0.5,
+            "surfaceType": 0,
+            "blendMode": 0,
+            "cullMode": 2,
+            "alphaClip": false,
+            "emissionEnabled": true
+        },
+        {
+            "id": "Paintings_ab53d97c",
+            "materialName": "Paintings",
+            "shaderName": "Universal Render Pipeline/Lit",
+            "albedoTexture": "Paintings.dds",
+            "normalTexture": "",
+            "metallicGlossTexture": "",
+            "occlusionTexture": "",
+            "emissionTexture": "",
+            "baseColor": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+            },
+            "emissionColor": {
+                "r": 0.35849058628082278,
+                "g": 0.35849058628082278,
+                "b": 0.35849058628082278,
+                "a": 1.0
+            },
+            "metallic": 0.0,
+            "smoothness": 0.6370000243186951,
+            "bumpScale": 1.0,
+            "occlusionStrength": 1.0,
+            "cutoff": 0.5,
+            "surfaceType": 0,
+            "blendMode": 0,
+            "cullMode": 2,
+            "alphaClip": false,
+            "emissionEnabled": true
+        },
+        {
+            "id": "Kitchen_alpha_9f234a25",
+            "materialName": "Kitchen_alpha",
+            "shaderName": "Universal Render Pipeline/Lit",
+            "albedoTexture": "Palette.dds",
+            "normalTexture": "",
+            "metallicGlossTexture": "",
+            "occlusionTexture": "",
+            "emissionTexture": "Palette.dds",
+            "baseColor": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+            },
+            "emissionColor": {
+                "r": 0.23584908246994019,
+                "g": 0.23584908246994019,
+                "b": 0.23584908246994019,
+                "a": 1.0
+            },
+            "metallic": 0.0,
+            "smoothness": 0.0,
+            "bumpScale": 1.0,
+            "occlusionStrength": 1.0,
+            "cutoff": 0.5,
+            "surfaceType": 1,
+            "blendMode": 0,
+            "cullMode": 2,
+            "alphaClip": false,
+            "emissionEnabled": true
+        },
+        {
+            "id": "Glass_2_a6caef2f",
+            "materialName": "Glass_2",
+            "shaderName": "Universal Render Pipeline/Lit",
+            "albedoTexture": "",
+            "normalTexture": "",
+            "metallicGlossTexture": "",
+            "occlusionTexture": "",
+            "emissionTexture": "",
+            "baseColor": {
+                "r": 0.9292452931404114,
+                "g": 0.9764984250068665,
+                "b": 1.0,
+                "a": 0.5803921818733215
+            },
+            "emissionColor": {
+                "r": 0.31132078170776369,
+                "g": 0.31132078170776369,
+                "b": 0.31132078170776369,
+                "a": 1.0
+            },
+            "metallic": 0.0,
+            "smoothness": 0.5410000085830689,
+            "bumpScale": 1.0,
+            "occlusionStrength": 1.0,
+            "cutoff": 0.5,
+            "surfaceType": 1,
+            "blendMode": 0,
+            "cullMode": 2,
+            "alphaClip": false,
+            "emissionEnabled": true
+        },
+        {
+            "id": "Kitchen_71d0c647",
+            "materialName": "Kitchen",
+            "shaderName": "Universal Render Pipeline/Lit",
+            "albedoTexture": "Palette.dds",
+            "normalTexture": "",
+            "metallicGlossTexture": "",
+            "occlusionTexture": "",
+            "emissionTexture": "",
+            "baseColor": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+            },
+            "emissionColor": {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 1.0
+            },
+            "metallic": 0.0,
+            "smoothness": 0.3272727131843567,
+            "bumpScale": 1.0,
+            "occlusionStrength": 1.0,
+            "cutoff": 0.5,
+            "surfaceType": 0,
+            "blendMode": 0,
+            "cullMode": 2,
+            "alphaClip": false,
+            "emissionEnabled": false
+        },
+        {
+            "id": "Emission_f67fac86",
+            "materialName": "Emission",
+            "shaderName": "Universal Render Pipeline/Lit",
+            "albedoTexture": "Palette.dds",
+            "normalTexture": "",
+            "metallicGlossTexture": "",
+            "occlusionTexture": "",
+            "emissionTexture": "Palette.dds",
+            "baseColor": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 0.46666666865348818
+            },
+            "emissionColor": {
+                "r": 0.43614277243614199,
+                "g": 0.5077081918716431,
+                "b": 0.7641509771347046,
+                "a": 1.0
+            },
+            "metallic": 0.0,
+            "smoothness": 0.0,
+            "bumpScale": 1.0,
+            "occlusionStrength": 1.0,
+            "cutoff": 0.0,
+            "surfaceType": 1,
+            "blendMode": 0,
+            "cullMode": 2,
+            "alphaClip": false,
+            "emissionEnabled": true
+        },
+        {
+            "id": "Glass_window_36949764",
+            "materialName": "Glass_window",
+            "shaderName": "Universal Render Pipeline/Lit",
+            "albedoTexture": "",
+            "normalTexture": "",
+            "metallicGlossTexture": "",
+            "occlusionTexture": "",
+            "emissionTexture": "",
+            "baseColor": {
+                "r": 0.7735849022865295,
+                "g": 0.7735849022865295,
+                "b": 0.7735849022865295,
+                "a": 1.0
+            },
+            "emissionColor": {
+                "r": 0.5047169923782349,
+                "g": 0.7703985571861267,
+                "b": 1.0,
+                "a": 1.0
+            },
+            "metallic": 0.0,
+            "smoothness": 0.0,
+            "bumpScale": 1.0,
+            "occlusionStrength": 1.0,
+            "cutoff": 0.5,
+            "surfaceType": 0,
+            "blendMode": 0,
+            "cullMode": 2,
+            "alphaClip": false,
+            "emissionEnabled": true
+        },
+        {
+            "id": "KitchenEquipment_LowPolyMaterial_3ce874f2",
+            "materialName": "KitchenEquipment_LowPolyMaterial",
+            "shaderName": "Universal Render Pipeline/Lit",
+            "albedoTexture": "ColorPalette.dds",
+            "normalTexture": "",
+            "metallicGlossTexture": "",
+            "occlusionTexture": "",
+            "emissionTexture": "",
+            "baseColor": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+            },
+            "emissionColor": {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 1.0
+            },
+            "metallic": 0.0,
+            "smoothness": 0.5,
+            "bumpScale": 1.0,
+            "occlusionStrength": 1.0,
+            "cutoff": 0.5,
+            "surfaceType": 0,
+            "blendMode": 0,
+            "cullMode": 2,
+            "alphaClip": false,
+            "emissionEnabled": false
+        },
+        {
+            "id": "Floor_310b9005",
+            "materialName": "Floor",
+            "shaderName": "Universal Render Pipeline/Lit",
+            "albedoTexture": "Palette.dds",
+            "normalTexture": "",
+            "metallicGlossTexture": "",
+            "occlusionTexture": "",
+            "emissionTexture": "Palette.dds",
+            "baseColor": {
+                "r": 0.698113203048706,
+                "g": 0.698113203048706,
+                "b": 0.698113203048706,
+                "a": 1.0
+            },
+            "emissionColor": {
+                "r": 0.5094339847564697,
+                "g": 0.5094339847564697,
+                "b": 0.5094339847564697,
+                "a": 1.0
+            },
+            "metallic": 0.0,
+            "smoothness": 0.0,
+            "bumpScale": 1.0,
+            "occlusionStrength": 1.0,
+            "cutoff": 0.5,
+            "surfaceType": 0,
+            "blendMode": 0,
+            "cullMode": 2,
+            "alphaClip": false,
+            "emissionEnabled": true
+        },
+        {
+            "id": "Plant_a43731db",
+            "materialName": "Plant",
+            "shaderName": "Universal Render Pipeline/Lit",
+            "albedoTexture": "Palette.dds",
+            "normalTexture": "",
+            "metallicGlossTexture": "",
+            "occlusionTexture": "",
+            "emissionTexture": "Palette.dds",
+            "baseColor": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+            },
+            "emissionColor": {
+                "r": 0.3080722987651825,
+                "g": 0.35849058628082278,
+                "b": 0.18431827425956727,
+                "a": 1.0
+            },
+            "metallic": 0.0,
+            "smoothness": 0.5519999861717224,
+            "bumpScale": 1.0,
+            "occlusionStrength": 1.0,
+            "cutoff": 0.5,
+            "surfaceType": 0,
+            "blendMode": 0,
+            "cullMode": 2,
+            "alphaClip": false,
+            "emissionEnabled": true
+        },
+        {
+            "id": "Glass_86b1ea92",
+            "materialName": "Glass",
+            "shaderName": "Universal Render Pipeline/Lit",
+            "albedoTexture": "Palette.dds",
+            "normalTexture": "",
+            "metallicGlossTexture": "",
+            "occlusionTexture": "",
+            "emissionTexture": "Palette.dds",
+            "baseColor": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 0.4901960790157318
+            },
+            "emissionColor": {
+                "r": 0.6650943756103516,
+                "g": 0.8021012544631958,
+                "b": 1.0,
+                "a": 1.0
+            },
+            "metallic": 0.0,
+            "smoothness": 0.0,
+            "bumpScale": 1.0,
+            "occlusionStrength": 1.0,
+            "cutoff": 0.5,
+            "surfaceType": 1,
+            "blendMode": 0,
+            "cullMode": 2,
+            "alphaClip": false,
+            "emissionEnabled": true
+        },
+        {
+            "id": "Metal_6141d396",
+            "materialName": "Metal",
+            "shaderName": "Universal Render Pipeline/Lit",
+            "albedoTexture": "",
+            "normalTexture": "",
+            "metallicGlossTexture": "",
+            "occlusionTexture": "",
+            "emissionTexture": "",
+            "baseColor": {
+                "r": 0.6234342455863953,
+                "g": 0.5170670747756958,
+                "b": 0.3557499051094055,
+                "a": 1.0
+            },
+            "emissionColor": {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 1.0
+            },
+            "metallic": 0.0,
+            "smoothness": 0.6351011395454407,
+            "bumpScale": 1.0,
+            "occlusionStrength": 1.0,
+            "cutoff": 0.5,
+            "surfaceType": 0,
+            "blendMode": 0,
+            "cullMode": 2,
+            "alphaClip": false,
+            "emissionEnabled": false
+        }
+    ],
+    "textures": [
+        {
+            "sourceName": "Palette",
+            "ddsName": "Palette.dds",
+            "recommendedFormat": "BC3_UNORM_SRGB",
+            "hasPartialAlpha": true,
+            "isSRGB": true,
+            "width": 2048,
+            "height": 2048
+        },
+        {
+            "sourceName": "Paintings",
+            "ddsName": "Paintings.dds",
+            "recommendedFormat": "BC1_UNORM_SRGB",
+            "hasPartialAlpha": false,
+            "isSRGB": true,
+            "width": 1024,
+            "height": 1024
+        },
+        {
+            "sourceName": "ColorPalette",
+            "ddsName": "ColorPalette.dds",
+            "recommendedFormat": "BC3_UNORM_SRGB",
+            "hasPartialAlpha": true,
+            "isSRGB": true,
+            "width": 2048,
+            "height": 2048
         }
     ]
 }

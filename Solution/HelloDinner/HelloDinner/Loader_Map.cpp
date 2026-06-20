@@ -4,7 +4,6 @@
 #include "Map.h"
 #include "Texture.h"
 
-#include <unordered_set>
 #include <fstream>
 #include "json.hpp"
 using json = nlohmann::json;
@@ -44,33 +43,26 @@ HRESULT CLoader_Map::Load_MaterialData(const string& strJsonPath)
     file >> matJson;
     file.close();
 
-    unordered_set<string> registeredTextures;
-
+    // [Palette 대응] 과거에는 머티리얼마다 albedo 가 1:1 로 존재했지만,
+    //   현재는 다수 머티리얼이 하나의 Palette(아틀라스) 텍스처를 공유한다.
+    //   => 파일명 기준 중복 제거를 하면 "Palette 를 두 번째 이후로 참조한"
+    //      머티리얼들이 빈 경로가 되어 검정으로 렌더링된다.
+    //   매핑 테이블(materialName -> 파일 경로)은 모든 머티리얼에 대해 채우고,
+    //   실제 텍스처 중복 로딩 방지는 CTexture 캐시 단계에서 처리한다.
     for (auto& mat : matJson["materials"])
     {
         string matName = mat["materialName"].get<string>();
-        string albedoFile = mat["albedoTexture"].get<string>();
-        string normalFile = mat["normalTexture"].get<string>();
+        string albedoFile = mat.contains("albedoTexture") ? mat["albedoTexture"].get<string>() : "";
+        string normalFile = mat.contains("normalTexture") ? mat["normalTexture"].get<string>() : "";
+
+        // 같은 materialName 이 중복되면(예: "Kitchen" 2개) 동일 경로로 덮어쓰므로 무해.
+        MATERIAL_INFO& info = m_MaterialInfos[matName];
 
         if (!albedoFile.empty())
-        {
-            if (registeredTextures.find(albedoFile) == registeredTextures.end())
-            {
-                _wstring strPath = L"Resources/NonAnim/Map/dds/" + _wstring(albedoFile.begin(), albedoFile.end());
-                registeredTextures.insert(albedoFile);
-                m_MaterialInfos[matName].strAlbedoFile = strPath;
-            }
-        }
+            info.strAlbedoFile = m_strTextureDir + _wstring(albedoFile.begin(), albedoFile.end());
 
         if (!normalFile.empty())
-        {
-            if (registeredTextures.find(normalFile) == registeredTextures.end())
-            {
-                _wstring strPath = L"Resources/NonAnim/Map/dds/" + _wstring(normalFile.begin(), normalFile.end());
-                registeredTextures.insert(normalFile);
-                m_MaterialInfos[matName].strNormalFile = strPath;
-            }
-        }
+            info.strNormalFile = m_strTextureDir + _wstring(normalFile.begin(), normalFile.end());
     }
     return S_OK;
 }
