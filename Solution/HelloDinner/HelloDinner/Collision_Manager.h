@@ -30,6 +30,12 @@ public:
     bool CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide);
     bool CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide, vector<class CCollider*>* outHits);
 
+    // 총알관련
+    void Set_Bullets(class CBullets* _p);
+    class CBullets* Get_Bullets() {
+        return m_pBullets;
+    }
+    void NewBullet(_vector _look, _vector _pos);
 
     //BVH
     void Build_StaticBVH();
@@ -66,6 +72,8 @@ private:
     class CGameInstance* m_pGameInstance = nullptr;
     vector<class CCollider*>	m_Colliders[GROUP_END]; // 그룹마다 따로 콜라이더 넣어주기
     _bool						m_CollisionMatrix[GROUP_END][GROUP_END]; // 왼쪽 그룹이 오른쪽 그룹과 충돌처리 여부(왼쪽이 메인)
+
+    class CBullets* m_pBullets;
 
     //BVH
     CBVH                  m_StaticBVH;

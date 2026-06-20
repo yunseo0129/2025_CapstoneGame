@@ -23,7 +23,9 @@
 #include "UI_Panel.h"
 #include "MiniMap.h"
 #include "MapSelect.h"
+#include "Bullets.h"
 
+#include "UI_Crosshair.h"
 CLevel_GamePlay::CLevel_GamePlay(EngineContext* pContext)
     : CLevel {pContext}
 {
@@ -154,6 +156,15 @@ HRESULT CLevel_GamePlay::Ready_Layer()
     {
         MSG_BOX("Failed to Add GameObject To Layer : Skybox");
         return E_FAIL;
+    }
+
+    // Bullets
+    {
+        CBullets::BULLET_DESC cdesc;
+        CGameObject* pBullets = m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Bullets"),
+            LEVEL_GAMEPLAY, TEXT("Layer_Bullets"), &cdesc);
+
+        m_pGameInstance->Set_Bullets(static_cast<CBullets*>(pBullets));
     }
 
     // Player_1rd
@@ -398,6 +409,32 @@ HRESULT CLevel_GamePlay::Ready_UI()
             if (p) p->SetOnOff(false);
     }
 
+    // Crosshair (에임)
+    {
+        CUI_Crosshair::CROSSHAIR_DESC desc;
+        desc.fSizeX = 64.f;   desc.fSizeY = 64.f;   // 기본 크기 (fX/fY 는 내부에서 중앙 보정)
+        desc.fDepth = 0.2f;                          // 미니맵(0.3)보다 앞
+        desc.vColor = _float4(1.f, 1.f, 1.f, 1.f);
+
+        desc.strTextureProtoTag = L"Prototype_Component_Texture_Crosshair";
+        desc.iTextureLevelIndex = LEVEL_GAMEPLAY;
+        desc.fExpandScale = 1.8f;    // 발사 시 1.8배까지 확장
+        desc.fRecoverTime = 0.25f;   // 0.25초에 걸쳐 복귀
+
+        CGameObject* pCrosshair = m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
+            LEVEL_STATIC, L"Prototype_GameObject_UI_Crosshair",
+            LEVEL_GAMEPLAY, L"Layer_UI_Crosshair", &desc);
+
+        if (nullptr == pCrosshair)
+        {
+            MSG_BOX("Failed to Add GameObject To Layer : Crosshair");
+            return E_FAIL;
+        }
+
+        // 컨트롤러에 연결 (발사 성공 시 On_Fire 호출용)
+        m_pGameInstance->Get_Controller()->Set_Crosshair(
+            static_cast<CUI_Crosshair*>(pCrosshair));
+    }
     return S_OK;
 }
 

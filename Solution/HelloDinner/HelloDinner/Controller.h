@@ -16,7 +16,7 @@ public:
     void Clear_OtherPlayers();
 	enum KEYS { KEYS_A, KEYS_S, KEYS_D, KEYS_W, KEYS_SPACE, KEYS_CTRL, KEYS_SHIFT, KEYS_R, KEYS_END };
     enum MOUSE { MOUSE_LB, MOUSE_RB, MOUSE_MB, MOUSE_END };
-
+    void Set_Crosshair(class CUI_Crosshair* _pCrosshair);
     class CPlayer_1rd* Get_Player() const { return m_pPlayer; }     // 상점에서 무기 교체 시 사용
 
     // 상점 창 열었을 때 움직임 없게 하려고 만듦.(키보드/마우스 입력 무시)
@@ -40,6 +40,7 @@ private:
 private:
     class CGameInstance*    m_pGameInstance = nullptr;
     class CPlayer_1rd*      m_pPlayer = nullptr;
+    class CUI_Crosshair* m_pCrosshair = nullptr;
     _float                  m_fMouseSensitive = 2.f;
     _bool                   m_isKeyboardInput[KEYS_END] = {};
 

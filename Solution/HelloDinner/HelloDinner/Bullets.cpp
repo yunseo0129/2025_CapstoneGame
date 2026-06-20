@@ -26,6 +26,8 @@ HRESULT CBullets::Initialize_Prototype()
 
 HRESULT CBullets::Initialize(void* pArg)
 {
+    m_vBullets.resize(100);
+
     if (nullptr == pArg)
         return E_FAIL;
 
@@ -43,6 +45,15 @@ HRESULT CBullets::Initialize(void* pArg)
 void CBullets::Priority_Update(_float fTimeDelta)
 {
     __super::Priority_Update(fTimeDelta);
+    for (BULLET& b : m_vBullets)
+    {
+        if (b.isOn)
+        {
+            b.iLifeTime -= fTimeDelta;
+            if (b.iLifeTime <= 0.f)
+                b.isOn = false;
+        }
+    }
 }
 
 void CBullets::Update(_float fTimeDelta)
@@ -70,6 +81,22 @@ void CBullets::Render(ID3D12GraphicsCommandList* _commandList)
     //    m_pFPSModelCom->Bind_BoneMatrices(_commandList, i);
     //    m_pFPSModelCom->Render(_commandList, i);
     //}
+}
+
+void CBullets::NewBullet(BULLET _bullet)
+{
+    for (BULLET& b : m_vBullets)
+    {
+        if (!b.isOn)
+        {
+            b = _bullet;
+            return;
+        }
+    }
+
+    // 한도 초과시
+    BULLET b = _bullet;
+    m_vBullets.push_back(b);
 }
 
 HRESULT CBullets::Ready_Components()
