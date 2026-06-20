@@ -7,6 +7,7 @@
 #include "Controller.h"
 #include "Player_1rd.h"
 #include "CharSelect_Pig.h"
+#include "CharSelect_Chick.h"
 #include "MapSelect.h"
 
 IMPLEMENT_SINGLETON(CGame_Manager)
@@ -166,6 +167,13 @@ void CGame_Manager::OnEnter_CharSelect()
         p->Set_BlockInput(true);
 
     m_bCSReady = false;
+
+    // 진입 시에는 아무 캐릭터도 선택되지 않은 상태(둘 다 숨김).
+    //  유저가 칸을 클릭해야 해당 프리뷰가 나타난다.
+    m_iCSMyCharacter = -1;
+    if (m_pCSPreviewMe)    m_pCSPreviewMe->SetOnOff(false);
+    if (m_pCSPreviewChick) m_pCSPreviewChick->SetOnOff(false);
+
     Refresh_CharSelectFaces();
 }
 
@@ -517,7 +525,28 @@ HRESULT CGame_Manager::Ready_CharSelect()
         m_pCSPreviewMe = static_cast<CCharSelect_Pig*>(
             m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
                 LV, L"Prototype_GameObject_CharSelect_Pig", LV, PV, &d));
+        if (m_pCSPreviewMe) m_pCSPreviewMe->SetOnOff(false);   // 진입 시 선택값에 맞춰 표시
     }
+
+    // ---- 3D 프리뷰 (Chick, 같은 자리) ----
+    //  Chick 칸(1번) 클릭 시에만 보이도록 시작은 숨김 처리.
+    {
+        CCharSelect_Chick::CHARSELECT_CHICK_DESC d;
+        d.vPos = m_vMySpot;
+        d.vRotation = _float3(0.f, XM_PI, 0.f);
+        d.vScale = _float3(1.f, 1.f, 1.f);
+        d.strModelTag = L"Prototype_Component_Chick_3rd";
+        d.iModelLevelIndex = LEVEL_GAMEPLAY;
+        d.iAnimIndex = 8;   // 닭 idle
+        m_pCSPreviewChick = static_cast<CCharSelect_Chick*>(
+            m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
+                LV, L"Prototype_GameObject_CharSelect_Chick", LV, PV, &d));
+    }
+
+    // 시작 표시 상태를 명시: 기본 선택은 Pig(0) → Pig 만 보이고 Chick 은 숨김.
+    m_iCSMyCharacter = 0;
+    if (m_pCSPreviewMe)    m_pCSPreviewMe->SetOnOff(true);
+    if (m_pCSPreviewChick) m_pCSPreviewChick->SetOnOff(false);
 
     auto AddText = [&](float x, float y, const _wstring& s, float scale)
         {
@@ -550,7 +579,7 @@ HRESULT CGame_Manager::Ready_CharSelect()
     auto FaceX = [&](int i) { return FX0 + i * (FW + FGAP); };
 
     AddPanel(FX0 - 20.f, FY - 20.f, FTOT + 40.f, FH + 40.f, _float4(0.08f, 0.10f, 0.14f, 0.78f), 0.7f); // 바 배경
-    const _wstring caps[3] = {L"Pig", L"Blank", L"Blank"};
+    const _wstring caps[3] = {L"Pig", L"Chick", L"Blank"};
     for (int i = 0; i < 3; ++i)
     {
         m_pCSFacePanel[i] = AddPanel(FaceX(i), FY, FW, FH, _float4(0.4f, 0.4f, 0.42f, 0.95f), 0.4f);
@@ -592,7 +621,9 @@ void CGame_Manager::Handle_CharSelectClick()
         if (In(m_vCSFaceRect[i]))
         {
             m_iCSMyCharacter = i;
-            if (m_pCSPreviewMe) m_pCSPreviewMe->SetOnOff(i == 0);   // 돼지(0)만 표시
+            // 0 = Pig, 1 = Chick. 선택한 칸의 프리뷰만 표시.
+            if (m_pCSPreviewMe)    m_pCSPreviewMe->SetOnOff(i == 0);
+            if (m_pCSPreviewChick) m_pCSPreviewChick->SetOnOff(i == 1);
             Refresh_CharSelectFaces();
             return;
         }

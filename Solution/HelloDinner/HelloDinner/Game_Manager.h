@@ -149,7 +149,8 @@ private:
     _int        m_iRound = 1;
 
     // 캐릭터 선택창에 필요한 정보
-    class CCharSelect_Pig* m_pCSPreviewMe = nullptr;   // 중앙(나) 프리뷰
+    class CCharSelect_Pig* m_pCSPreviewMe = nullptr;   // 중앙(나) 프리뷰 (Pig)
+    class CCharSelect_Chick* m_pCSPreviewChick = nullptr;   // 중앙(나) 프리뷰 (Chick)
     class CUI_Panel* m_pCSFacePanel[3] = {nullptr, nullptr, nullptr};
     _float4 m_vCSFaceRect[3] = {};   // (x,y,w,h) 픽셀
     _float4 m_vCSReadyRect = {};

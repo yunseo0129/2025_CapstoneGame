@@ -25,6 +25,7 @@
 
 #include "VIBuffer_Triangle.h"
 #include "CharSelect_Pig.h"
+#include "CharSelect_Chick.h"
 
 CLoader::CLoader(EngineContext* pContext)
     : m_pContext {pContext}
@@ -109,7 +110,7 @@ HRESULT CLoader::Loading_Level_GamePlay()
 {
     Set_LoadingText(TEXT("텍스처를 로딩중입니다."));
     // 텍스쳐 로드
-    {      
+    {
         // Prototype_Component_Texture_Cube
         if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, L"Prototype_Component_Texture_Cube",
             CTexture::Create(m_pContext, L"Resources/Textures/Rock.dds", 1))))
@@ -242,9 +243,9 @@ HRESULT CLoader::Loading_Level_GamePlay()
         return E_FAIL;
 
     if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_GameObject_UI_Panel",
-        CUI_Panel::Create(m_pContext))) )
+        CUI_Panel::Create(m_pContext))))
         return E_FAIL;
-    
+
     // Prototype_GameObject_MiniMap
     if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_GameObject_MiniMap",
         CMiniMap::Create(m_pContext))))
@@ -256,7 +257,7 @@ HRESULT CLoader::Loading_Level_GamePlay()
         return E_FAIL;
 
     if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_GameObject_UI_Text",
-        CUI_Text::Create(m_pContext))) )
+        CUI_Text::Create(m_pContext))))
         return E_FAIL;
 
     // Prototype_GameObject_Ketchup_Gun
@@ -272,6 +273,11 @@ HRESULT CLoader::Loading_Level_GamePlay()
     // Prototype_GameObject_CharSelect_Pig
     if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_CharSelect_Pig"),
         CCharSelect_Pig::Create(m_pContext))))
+        return E_FAIL;
+
+    // Prototype_GameObject_CharSelect_Chick
+    if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_CharSelect_Chick"),
+        CCharSelect_Chick::Create(m_pContext))))
         return E_FAIL;
 
     // Prototype_GameObject_Pig_3rd
@@ -309,7 +315,7 @@ CLoader* CLoader::Create(EngineContext* pContext, LEVELID eNextLevelID)
 
 void CLoader::Free()
 {
-    
+
     Safe_Release(m_pGameInstance);
 
     __super::Free();
