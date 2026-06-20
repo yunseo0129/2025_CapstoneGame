@@ -509,7 +509,7 @@ void CPlayer_1rd::Reload(_float _val)
     }
 }
 
-void CPlayer_1rd::Shoot(_float _val)
+_bool CPlayer_1rd::Shoot(_float _val)
 {
     if (m_iAmmo && !m_isReloading)
     {
@@ -520,7 +520,9 @@ void CPlayer_1rd::Shoot(_float _val)
         _vector look = m_pTransformCom->Get_State(CTransform::STATE_LOOK);
         _vector pos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
 
+        return true;
     }
+    return false;
 }
 
 void CPlayer_1rd::Die(_float _val)

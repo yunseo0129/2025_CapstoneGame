@@ -13,6 +13,7 @@ private:
 public:
 	void Update_Controller(_float fTimeDelta);
 	void Set_Player(class CPlayer_1rd* _pPlayer);
+    void Set_Crosshair(class CUI_Crosshair* _pCrosshair);
     class CPlayer_1rd* Get_Player() const { return m_pPlayer; }     // 상점에서 무기 교체 시 사용
 	void Set_MouseSensitive(_float _val)
 	{
@@ -31,6 +32,7 @@ private:
 private:
 	class CGameInstance*	m_pGameInstance = nullptr;
 	class CPlayer_1rd*		m_pPlayer = nullptr;
+    class CUI_Crosshair* m_pCrosshair = nullptr;
 	_float					m_fMouseSensitive = 2.f;
 	_bool					m_isKeyboardInput[KEYS_END];
     _bool                   m_isMouseInput[MOUSE_END];

@@ -161,6 +161,7 @@ void CGame_Manager::OnEnter_CharSelect()
     Set_LayerVisible(L"Layer_UI", false);  // 미니맵
     Set_LayerVisible(L"Layer_CharSelect_Preview", true);
     Set_LayerVisible(L"Layer_CharSelect_UI", true);
+    Set_LayerVisible(L"Layer_UI_Crosshair", false);
 
     ShowCursor(TRUE);
     if (CController* p = m_pGameInstance->Get_Controller())
@@ -190,6 +191,7 @@ void CGame_Manager::OnEnter_Scoreboard()
     Set_LayerVisible(L"Layer_UI_Shop", false);
     Set_LayerVisible(L"Layer_UI_MiniMap", false);
     Set_LayerVisible(L"Layer_UI_HUD", false);
+    Set_LayerVisible(L"Layer_UI_Crosshair", false);
 
     // 최신 상태를 텍스트에 반영
     Refresh_Scoreboard();
@@ -209,6 +211,7 @@ void CGame_Manager::OnEnter_Shop()
         Set_LayerVisible(L"Layer_UI_Shop", true);
         Set_LayerVisible(L"Layer_UI_MiniMap", false);
         Set_LayerVisible(L"Layer_UI_HUD", false);
+        Set_LayerVisible(L"Layer_UI_Crosshair", false);
     }
     else
     {
@@ -220,6 +223,7 @@ void CGame_Manager::OnEnter_Shop()
         Set_LayerVisible(L"Layer_UI_MapSelect", true);
         Set_LayerVisible(L"Layer_UI_MiniMap", false);
         Set_LayerVisible(L"Layer_UI_HUD", false);
+        Set_LayerVisible(L"Layer_UI_Crosshair", false);
 
         // 이번 라운드 선택 초기화(이전 라운드 선택이 남지 않게)
         if (m_pMapSelect != nullptr)
@@ -242,6 +246,7 @@ void CGame_Manager::OnEnter_Playing()
     Set_LayerVisible(L"Layer_UI_MapSelect", false);
     Set_LayerVisible(L"Layer_UI_MiniMap", true);
     Set_LayerVisible(L"Layer_UI_HUD", true);
+    Set_LayerVisible(L"Layer_UI_Crosshair", true);
 
     // 플레이 중에는 커서를 숨기고(조준 모드) 입력을 허용한다.
     Set_ShopUIMode(false);

@@ -1,6 +1,7 @@
 #include "Controller.h"
 #include "Player_1rd.h"
 #include "GameInstance.h"
+#include "UI_Crosshair.h"
 
 IMPLEMENT_SINGLETON(CController)
 
@@ -22,6 +23,12 @@ void CController::Set_Player(CPlayer_1rd* _pPlayer)
         Safe_Release(m_pPlayer);
 	m_pPlayer = _pPlayer;
 	Safe_AddRef(m_pPlayer);
+}
+
+void CController::Set_Crosshair(CUI_Crosshair* _pCrosshair)
+{
+    // 크로스헤어는 Object_Manager 가 소유/해제하므로 여기선 AddRef 하지 않는다.
+    m_pCrosshair = _pCrosshair;
 }
 
 void CController::Input_Player(_float fTimeDelta)
@@ -67,7 +74,11 @@ void CController::Input_Player(_float fTimeDelta)
         }
         if (m_isMouseInput[MOUSE_LB] && !m_isPreMouseInput[MOUSE_LB])
         {
-            m_pPlayer->Shoot(fTimeDelta);
+            if (m_pPlayer->Shoot(fTimeDelta))
+            {
+                if (m_pCrosshair != nullptr)
+                    m_pCrosshair->On_Fire();
+            }
         }
 	}
 }

@@ -26,6 +26,7 @@
 #include "VIBuffer_Triangle.h"
 #include "CharSelect_Pig.h"
 #include "CharSelect_Chick.h"
+#include "UI_Crosshair.h"
 
 CLoader::CLoader(EngineContext* pContext)
     : m_pContext {pContext}
@@ -125,6 +126,10 @@ HRESULT CLoader::Loading_Level_GamePlay()
             if (FAILED(pPS->Load_ParticleTexture()))
                 return E_FAIL;
         }
+
+        if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, L"Prototype_Component_Texture_Crosshair",
+            CTexture::Create(m_pContext, L"Resources/Textures/Crosshair.png", 1))))
+            return E_FAIL;
     }
 
     Set_LoadingText(TEXT("폰트를 로딩중입니다."));
@@ -255,6 +260,9 @@ HRESULT CLoader::Loading_Level_GamePlay()
     if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_GameObject_MapSelect",
         CMapSelect::Create(m_pContext))))
         return E_FAIL;
+
+    m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_GameObject_UI_Crosshair",
+        CUI_Crosshair::Create(m_pContext));
 
     if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_GameObject_UI_Text",
         CUI_Text::Create(m_pContext))))
