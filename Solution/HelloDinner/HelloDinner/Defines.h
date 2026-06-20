@@ -5,12 +5,35 @@
 //-------------------------------------------------------------
 namespace Client
 {
-	constexpr int g_iWinSizeX = 1280;
-	constexpr int g_iWinSizeY = 720;
+    constexpr int g_iWinSizeX = 1280;
+    constexpr int g_iWinSizeY = 720;
 }
 
 extern HINSTANCE g_hInst;
 extern HWND g_hWnd;
+
+//-------------------------------------------------------------
+// 대기방(Room)에서 고른 팀/번호를 게임플레이로 넘기기 위한 전역 캐리어.
+//  - Room 은 엔진이 켜지기 전(별도 Win32 창)에 도므로, 싱글톤 대신
+//    이 작은 전역 구조체에 선택값을 담아 둔다.
+//  - CGame_Manager::Start_Match() 가 이 값을 읽어 본인 슬롯을 배치한다.
+//  - iTeam : 0 = RED, 1 = BLUE  /  iNumber : 1~3 (팀 내 번호)
+//  - 선택 지점 월드 좌표:  x = (iNumber-1) * 5,  y = (iTeam==0 ? 0 : 10),  z = 0
+//-------------------------------------------------------------
+struct MATCH_SETUP
+{
+    int iTeam = 0;     // 0: RED, 1: BLUE
+    int iNumber = 1;   // 1, 2, 3
+
+    // 선택 지점 월드 좌표를 계산해 돌려준다(팀/번호 → 위치 규칙을 한 곳에 둠).
+    XMFLOAT3 Get_SpawnSpot() const
+    {
+        return XMFLOAT3(static_cast<float>((iNumber - 1) * 5),
+            (iTeam == 0) ? 0.f : 10.f,
+            0.f);
+    }
+};
+extern MATCH_SETUP g_MatchSetup;
 
 namespace DescriptorRange
 {
@@ -28,86 +51,86 @@ namespace Engine
 
 struct KEYFRAME
 {
-	XMFLOAT3		vScale;
-	XMFLOAT4		vRotation;
-	XMFLOAT3		vPosition;
-	float			fKeyFramePosition;
+    XMFLOAT3		vScale;
+    XMFLOAT4		vRotation;
+    XMFLOAT3		vPosition;
+    float			fKeyFramePosition;
 };
 
 // 수정 필요
-enum LEVELID { LEVEL_STATIC, LEVEL_LOADING, LEVEL_LOGO, LEVEL_GAMEPLAY, LEVEL_MAPLOADING ,LEVEL_END };
+enum LEVELID { LEVEL_STATIC, LEVEL_LOADING, LEVEL_LOGO, LEVEL_GAMEPLAY, LEVEL_MAPLOADING, LEVEL_END };
 
 // Texture data 저장하는 srv 만들 때 VIEW_DIMENSION 설정용
 enum TEXTURE_TYPE {
-	TEX_2D ,
-	TEX_CUBE ,
-	TEX_ARRAY ,
+    TEX_2D,
+    TEX_CUBE,
+    TEX_ARRAY,
 };
 
 // Camera
 enum CAMERA_TYPE
 {
-	CAMERA_FPV ,
-	CAMERA_TPV ,
-	CAMERA_UI  ,
-	CAMERA_END
+    CAMERA_FPV,
+    CAMERA_TPV,
+    CAMERA_UI,
+    CAMERA_END
 };
 
 // Root Signature의 Root Parameter 슬롯 설정용
 enum RootParameterIndex
 {
-	Camera,
-	GameObject,
-	TEXTURE_Diffuse,
-	TEXTURE_Normal,
-	BoneMatrix,
-	Light,
-	ShadowMap,
+    Camera,
+    GameObject,
+    TEXTURE_Diffuse,
+    TEXTURE_Normal,
+    BoneMatrix,
+    Light,
+    ShadowMap,
     UIColor,
-	// 후에 Material, BoneMatrix 등등 추가할 수 있음
-	End
+    // 후에 Material, BoneMatrix 등등 추가할 수 있음
+    End
 };
 
 // Input Layout과 PSO 설정용
 enum PSO_TYPE
 {
-	DEFAULT ,        // 일반 물체 (Static Mesh / Opaque)
-	SKYBOX ,         // 스카이박스 (TextureCube / DepthFunc LessEqual)
-	ANIM ,           // 캐릭터 (Skeletal Mesh / Opaque)
-	ALPHA_BLEND ,    // 반투명 이펙트 (Static Mesh / Transparent)
-	UI ,             // 2D UI (UI Mesh / Transparent / No Depth)
-	SHADOW_STATIC ,  // 그림자 생성용 (Static Mesh / Depth Only)
-	SHADOW_ANIM ,    // 그림자 생성용 (Skeletal Mesh / Depth Only)
+    DEFAULT,        // 일반 물체 (Static Mesh / Opaque)
+    SKYBOX,         // 스카이박스 (TextureCube / DepthFunc LessEqual)
+    ANIM,           // 캐릭터 (Skeletal Mesh / Opaque)
+    ALPHA_BLEND,    // 반투명 이펙트 (Static Mesh / Transparent)
+    UI,             // 2D UI (UI Mesh / Transparent / No Depth)
+    SHADOW_STATIC,  // 그림자 생성용 (Static Mesh / Depth Only)
+    SHADOW_ANIM,    // 그림자 생성용 (Skeletal Mesh / Depth Only)
     DEFAULT_INSTANCED, // 인스턴싱용
     SHADOW_STATIC_INSTANCED,
-	END
+    END
 };
 
 //Texture Type
 enum TextureType
 {
-	TextureType_NONE = 0,
-	TextureType_DIFFUSE = 1,
-	TextureType_SPECULAR = 2,
-	TextureType_AMBIENT = 3,
-	TextureType_EMISSIVE = 4,
-	TextureType_HEIGHT = 5,
-	TextureType_NORMALS = 6,
-	TextureType_SHININESS = 7,
-	TextureType_OPACITY = 8,
-	TextureType_DISPLACEMENT = 9,
-	TextureType_LIGHTMAP = 10,
-	TextureType_REFLECTION = 11,
-	TextureType_BASE_COLOR = 12,
-	TextureType_NORMAL_CAMERA = 13,
-	TextureType_EMISSION_COLOR = 14,
-	TextureType_METALNESS = 15,
-	TextureType_DIFFUSE_ROUGHNESS = 16,
-	TextureType_AMBIENT_OCCLUSION = 17,
-	TextureType_UNKNOWN = 18,
+    TextureType_NONE = 0,
+    TextureType_DIFFUSE = 1,
+    TextureType_SPECULAR = 2,
+    TextureType_AMBIENT = 3,
+    TextureType_EMISSIVE = 4,
+    TextureType_HEIGHT = 5,
+    TextureType_NORMALS = 6,
+    TextureType_SHININESS = 7,
+    TextureType_OPACITY = 8,
+    TextureType_DISPLACEMENT = 9,
+    TextureType_LIGHTMAP = 10,
+    TextureType_REFLECTION = 11,
+    TextureType_BASE_COLOR = 12,
+    TextureType_NORMAL_CAMERA = 13,
+    TextureType_EMISSION_COLOR = 14,
+    TextureType_METALNESS = 15,
+    TextureType_DIFFUSE_ROUGHNESS = 16,
+    TextureType_AMBIENT_OCCLUSION = 17,
+    TextureType_UNKNOWN = 18,
 
 #ifndef SWIG
-	TextureType_Force32Bit = INT_MAX
+    TextureType_Force32Bit = INT_MAX
 #endif
 };
 #define AI_TEXTURE_TYPE_MAX  TextureType_UNKNOWN
@@ -132,21 +155,21 @@ struct EngineContext
 
 typedef struct
 {
-	HINSTANCE		hInstance;
-	HWND			hWnd;
-	bool			isWindowed;
-	unsigned int	iNumLevels;
-	unsigned int	iViewportWidth;
-	unsigned int	iViewportHeight;
+    HINSTANCE		hInstance;
+    HWND			hWnd;
+    bool			isWindowed;
+    unsigned int	iNumLevels;
+    unsigned int	iViewportWidth;
+    unsigned int	iViewportHeight;
 }ENGINE_DESC;
 
 typedef struct tagKeyState
 {
-	bool bPress = false;
-	bool bDown = false;
-	bool bUp = false;
+    bool bPress = false;
+    bool bDown = false;
+    bool bUp = false;
 
-	tagKeyState() : bPress(false), bDown(false), bUp(false) {}
+    tagKeyState(): bPress(false), bDown(false), bUp(false) {}
 }KEYSTATE, * PKEYSTATE;
 
 
@@ -155,49 +178,49 @@ typedef struct tagKeyState
 // Camera에서 사용할 카메라 정보 구조체
 typedef struct
 {
-	XMFLOAT4X4						m_xmf4x4View;
-	XMFLOAT4X4						m_xmf4x4Proj;
-	XMFLOAT3						m_xmf3Position;
-	float							m_fPadding; // 16바이트 정렬을 위한 패딩
+    XMFLOAT4X4						m_xmf4x4View;
+    XMFLOAT4X4						m_xmf4x4Proj;
+    XMFLOAT3						m_xmf3Position;
+    float							m_fPadding; // 16바이트 정렬을 위한 패딩
 }CB_VS_CAMERA;
 
 // BoneMatrix에서 사용할 본 매트릭스 상수 버퍼 구조체
 typedef struct
 {
-	XMFLOAT4X4						m_BoneMatrices[512];
+    XMFLOAT4X4						m_BoneMatrices[512];
 }CB_BONE_MATRICES;
 
 // Light
 typedef struct
 {
-	XMFLOAT4 vDirection;
-	XMFLOAT4 vPosition;
-	XMFLOAT4 vDiffuse;
-	XMFLOAT4 vAmbient;
-	XMFLOAT4 vSpecular;
-	float    fRange;
-	XMFLOAT3 vPadding;
+    XMFLOAT4 vDirection;
+    XMFLOAT4 vPosition;
+    XMFLOAT4 vDiffuse;
+    XMFLOAT4 vAmbient;
+    XMFLOAT4 vSpecular;
+    float    fRange;
+    XMFLOAT3 vPadding;
 
-	XMFLOAT4X4 matLightTransform;
+    XMFLOAT4X4 matLightTransform;
 }CB_LIGHT;
 
 // InputLayout에서 사용할 정점 구조체
 typedef struct
 {
-	XMFLOAT3		vPosition;		// 12bytes
-	XMFLOAT3		vNormal;		// 12bytes
-	XMFLOAT2		vTexcoord;		// 8bytes
-	XMFLOAT3		vTangent;		// 12bytes
+    XMFLOAT3		vPosition;		// 12bytes
+    XMFLOAT3		vNormal;		// 12bytes
+    XMFLOAT2		vTexcoord;		// 8bytes
+    XMFLOAT3		vTangent;		// 12bytes
 }VTXMESH;
 
 typedef struct
 {
-	XMFLOAT3		vPosition;		// 12bytes
-	XMFLOAT3		vNormal;		// 12bytes
-	XMFLOAT2		vTexcoord;		// 8bytes
-	XMFLOAT3		vTangent;		// 12bytes
-	XMUINT4			vBlendIndices;	// 16bytes
-	XMFLOAT4		vBlendWeights;	// 16bytes
+    XMFLOAT3		vPosition;		// 12bytes
+    XMFLOAT3		vNormal;		// 12bytes
+    XMFLOAT2		vTexcoord;		// 8bytes
+    XMFLOAT3		vTangent;		// 12bytes
+    XMUINT4			vBlendIndices;	// 16bytes
+    XMFLOAT4		vBlendWeights;	// 16bytes
 }VTXANIMMESH;
 
 

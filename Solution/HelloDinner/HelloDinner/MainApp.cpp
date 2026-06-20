@@ -34,12 +34,12 @@ HRESULT CMainApp::Initialize()
 
 	m_pGameInstance->ResetCmdList ();
 
-	if (FAILED(SetUp_StartLevel(LEVEL_GAMEPLAY)))
-		return E_FAIL;
+    if (FAILED(SetUp_StartLevel(LEVEL_GAMEPLAY)))
+        return E_FAIL;
 
-	m_pGameInstance->CloseCmdList ();
+    m_pGameInstance->CloseCmdList();
 
-	m_pGameInstance->ReleaseUploadBuffers (LEVEL_GAMEPLAY);
+    m_pGameInstance->ReleaseUploadBuffers(LEVEL_GAMEPLAY);
 
 	return S_OK;
 }

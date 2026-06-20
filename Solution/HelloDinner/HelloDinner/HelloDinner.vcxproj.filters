@@ -252,6 +252,12 @@
     <Filter Include="소스 파일\01. Engine\99. GameInstance\00. Lobby">
       <UniqueIdentifier>{d93e0ef8-18c4-4d64-833b-8866a1e3e9b8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\02. Game\01. Levels\05. Charselect">
+      <UniqueIdentifier>{a1decd99-6cb5-4a51-9d47-70ac83e1a6a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\01. Levels\05. Charselect\list">
+      <UniqueIdentifier>{1472c0f7-70be-4e6f-8765-409bc0366dab}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -494,6 +500,18 @@
     <ClInclude Include="VIBuffer_Triangle.h">
       <Filter>소스 파일\01. Engine\04. Components\04. VIbuffer</Filter>
     </ClInclude>
+    <ClInclude Include="CharSelect_Pig.h">
+      <Filter>소스 파일\02. Game\01. Levels\05. Charselect\list</Filter>
+    </ClInclude>
+    <ClInclude Include="MapSelect.h">
+      <Filter>소스 파일\02. Game\GameObject\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Player_Chick.h">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd\01. Chick_3rd</Filter>
+    </ClInclude>
+    <ClInclude Include="CharSelect_Chick.h">
+      <Filter>소스 파일\02. Game\01. Levels\05. Charselect\list</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -729,6 +747,18 @@
     </ClCompile>
     <ClCompile Include="VIBuffer_Triangle.cpp">
       <Filter>소스 파일\01. Engine\04. Components\04. VIbuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="CharSelect_Pig.cpp">
+      <Filter>소스 파일\02. Game\01. Levels\05. Charselect\list</Filter>
+    </ClCompile>
+    <ClCompile Include="MapSelect.cpp">
+      <Filter>소스 파일\02. Game\GameObject\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Player_Chick.cpp">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd\01. Chick_3rd</Filter>
+    </ClCompile>
+    <ClCompile Include="CharSelect_Chick.cpp">
+      <Filter>소스 파일\02. Game\01. Levels\05. Charselect\list</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

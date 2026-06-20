@@ -34,7 +34,7 @@ void CController::Input_Player(_float fTimeDelta)
     if (m_bBlockInput)
         return;
 
-	if (m_pPlayer != nullptr && !m_pPlayer->IsDead())
+	if (m_pPlayer != nullptr && !m_pPlayer->IsDead() && !m_pPlayer->Get_Die())
 	{
         _long      MouseMove = {};
         if (MouseMove = m_pGameInstance->Get_DIMouseMove(Engine::DIMS_X))

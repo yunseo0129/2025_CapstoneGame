@@ -2,6 +2,7 @@
 #include "RoomWindow.h"
 
 #include <gdiplus.h>
+#include <windowsx.h>
 #include <cstdlib>
 #include <cstdio>
 
@@ -116,6 +117,10 @@ LRESULT CALLBACK CRoomWindow::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
         if (pSelf) pSelf->OnPaint(hWnd);
         return 0;
 
+    case WM_LBUTTONDOWN:
+        if (pSelf) pSelf->OnLButtonDown(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+        return 0;
+
     case WM_ERASEBKGND:
         return 1;
 
@@ -168,6 +173,7 @@ void CRoomWindow::OnCreate(HWND hWnd)
         if (m_hBtnPrimary) SendMessage(m_hBtnPrimary, WM_SETFONT, (WPARAM)m_hFontBtn, TRUE);
         if (m_hBtnLeave)   SendMessage(m_hBtnLeave, WM_SETFONT, (WPARAM)m_hFontBtn, TRUE);
     }
+    // 팀/번호는 OnPaint 의 블럭 격자를 클릭해서 고른다(OnLButtonDown).
 }
 
 void CRoomWindow::OnCommand(_uint iCtrlID)
@@ -182,7 +188,8 @@ void CRoomWindow::OnCommand(_uint iCtrlID)
     case IDC_BTN_PRIMARY:
         if (m_bIsHost)
         {
-            // 방장: 게임 시작
+            // 방장: 게임 시작 — 고른 팀/번호를 전역에 기록하고 게임으로
+            Commit_Selection();
             m_eResult = ROOM_START_GAME;
             PostMessage(m_hWnd, WM_NULL, 0, 0);
         }
@@ -198,6 +205,33 @@ void CRoomWindow::OnCommand(_uint iCtrlID)
     default:
         break;
     }
+}
+
+void CRoomWindow::OnLButtonDown(int x, int y)
+{
+    // 팀/번호 블럭 격자 히트테스트. 6개 블럭 중 하나를 누르면
+    //  내 팀(team)과 번호(number)가 동시에 정해진다.
+    POINT pt = {(LONG)x, (LONG)y};
+    for (int t = 0; t < 2; ++t)
+    {
+        for (int n = 0; n < 3; ++n)
+        {
+            if (PtInRect(&m_rcBlock[t][n], pt))
+            {
+                m_iSelTeam = t;
+                m_iSelNumber = n + 1;
+                InvalidateRect(m_hWnd, nullptr, FALSE);
+                return;
+            }
+        }
+    }
+}
+
+void CRoomWindow::Commit_Selection()
+{
+    // 게임플레이(CGame_Manager)가 읽어갈 전역 캐리어에 기록.
+    g_MatchSetup.iTeam = m_iSelTeam;
+    g_MatchSetup.iNumber = m_iSelNumber;
 }
 
 void CRoomWindow::OnPaint(HWND hWnd)
@@ -251,75 +285,117 @@ void CRoomWindow::OnPaint(HWND hWnd)
             g.DrawString(szCode, -1, &hCode, RectF(0, 24, (REAL)W - 28, 30), &sfR, &cbr);
         }
 
-        // ---- 플레이어 슬롯 리스트 ----
-        const REAL listX = 28.f;
-        const REAL listY = 100.f;
-        const REAL rowW = (REAL)W - 56.f;
-        const REAL rowH = 64.f;
-        const REAL rowGap = 12.f;
+        // ===== 팀/번호 블럭 격자 =====
+        //  레이아웃:
+        //      RED        BLUE
+        //    [1번블럭]  [1번블럭]
+        //    [2번블럭]  [2번블럭]
+        //    [3번블럭]  [3번블럭]
+        //  6개 블럭 중 하나를 클릭하면 내 팀+번호가 동시에 정해진다(선택=하이라이트).
+        const REAL gridTop = 96.f;
+        const REAL colGap = 28.f;
+        const REAL colW = ((REAL)W - 56.f - colGap) * 0.5f; // 좌우 28px 여백
+        const REAL colXR = 28.f;                              // RED 열 시작 X
+        const REAL colXB = 28.f + colW + colGap;              // BLUE 열 시작 X
+        const REAL colX[2] = {colXR, colXB};
 
-        Gdiplus::Font slotName(&ff, 20, FontStyleBold, UnitPixel);
-        Gdiplus::Font slotSub(&ff, 15, FontStyleRegular, UnitPixel);
+        const REAL hdrH = 36.f;       // 팀 헤더 높이
+        const REAL blockH = 56.f;     // 블럭 높이
+        const REAL blockGap = 12.f;   // 블럭 세로 간격
 
-        for (_uint i = 0; i < MAX_SLOT; ++i)
+        // 팀 헤더 (RED / BLUE)
+        Gdiplus::Font hdrF(&ff, 22, FontStyleBold, UnitPixel);
+        StringFormat sfCC; sfCC.SetAlignment(StringAlignmentCenter); sfCC.SetLineAlignment(StringAlignmentCenter);
+
+        const Color teamHdr[2] = {Color(255, 220, 80, 80), Color(255, 90, 140, 230)};
+        const _tchar* teamName[2] = {L"RED", L"BLUE"};
+        for (int t = 0; t < 2; ++t)
         {
-            REAL ry = listY + i * (rowH + rowGap);
+            SolidBrush hb(teamHdr[t]);
+            g.DrawString(teamName[t], -1, &hdrF, RectF(colX[t], gridTop, colW, hdrH), &sfCC, &hb);
+        }
 
-            bool bOccupied = (i == 0); // 지금은 본인만 입장 (네트워크 연동 시 채워짐)
+        // 내 슬롯(선택된 팀/번호)인지 판정용
+        Gdiplus::Font blkF(&ff, 18, FontStyleBold, UnitPixel);
+        Gdiplus::Font blkSubF(&ff, 14, FontStyleRegular, UnitPixel);
 
-            // 행 배경
-            Color rowColor = bOccupied ? Color(255, 38, 44, 60) : Color(255, 28, 30, 40);
-            SolidBrush rowBg(rowColor);
-            g.FillRectangle(&rowBg, listX, ry, rowW, rowH);
-
-            // 좌측 인덱스 원
-            Color circleCol = bOccupied ? Color(255, 70, 130, 200) : Color(255, 60, 64, 78);
-            SolidBrush cb(circleCol);
-            REAL cd = 40.f;
-            g.FillEllipse(&cb, listX + 14, ry + (rowH - cd) / 2, cd, cd);
-
-            SolidBrush idxBr(Color(255, 235, 240, 248));
-            Gdiplus::Font idxF(&ff, 18, FontStyleBold, UnitPixel);
-            StringFormat sfC; sfC.SetAlignment(StringAlignmentCenter); sfC.SetLineAlignment(StringAlignmentCenter);
-            _tchar szIdx[8]; swprintf_s(szIdx, L"%u", i + 1);
-            g.DrawString(szIdx, -1, &idxF, RectF(listX + 14, ry + (rowH - cd) / 2, cd, cd), &sfC, &idxBr);
-
-            if (bOccupied)
+        const REAL blocksTop = gridTop + hdrH + 8.f;
+        for (int t = 0; t < 2; ++t)
+        {
+            for (int n = 0; n < 3; ++n)
             {
-                // 이름
-                SolidBrush nameBr(Color(255, 240, 244, 250));
-                const _tchar* szName = m_bIsHost ? L"나 (방장)" : L"나";
-                g.DrawString(szName, -1, &slotName, PointF(listX + 70, ry + 12), &nameBr);
+                REAL bx = colX[t];
+                REAL by = blocksTop + n * (blockH + blockGap);
 
-                // 상태 뱃지 (우측)
-                bool bReadyState = m_bIsHost ? true : m_bReady;
-                Color badgeBg = bReadyState ? Color(255, 46, 160, 90) : Color(255, 120, 100, 50);
-                const _tchar* szState = bReadyState ? L"준비 완료" : L"대기 중";
+                // 히트박스 저장 (클라이언트 좌표, 정수)
+                m_rcBlock[t][n].left = (LONG)bx;
+                m_rcBlock[t][n].top = (LONG)by;
+                m_rcBlock[t][n].right = (LONG)(bx + colW);
+                m_rcBlock[t][n].bottom = (LONG)(by + blockH);
 
-                REAL badgeW = 110.f, badgeH = 32.f;
-                REAL bx = listX + rowW - badgeW - 16;
-                REAL by = ry + (rowH - badgeH) / 2;
-                SolidBrush bbg(badgeBg);
-                g.FillRectangle(&bbg, bx, by, badgeW, badgeH);
-                SolidBrush btx(Color(255, 245, 248, 252));
-                StringFormat sfM; sfM.SetAlignment(StringAlignmentCenter); sfM.SetLineAlignment(StringAlignmentCenter);
-                g.DrawString(szState, -1, &slotSub, RectF(bx, by, badgeW, badgeH), &sfM, &btx);
-            }
-            else
-            {
-                SolidBrush emptyBr(Color(255, 120, 126, 140));
-                g.DrawString(L"빈 자리", -1, &slotName, PointF(listX + 70, ry + 16), &emptyBr);
+                const bool bMine = (t == m_iSelTeam) && (n + 1 == m_iSelNumber);
+
+                // 블럭 배경: 선택되면 팀색으로 진하게, 아니면 어둡게.
+                Color fill = bMine
+                    ? ((t == 0) ? Color(255, 120, 40, 44) : Color(255, 40, 64, 120))
+                    : Color(255, 30, 33, 44);
+                SolidBrush bbg(fill);
+                g.FillRectangle(&bbg, bx, by, colW, blockH);
+
+                // 테두리: 선택되면 밝은 팀색.
+                Color edge = bMine
+                    ? ((t == 0) ? Color(255, 240, 120, 120) : Color(255, 130, 180, 255))
+                    : Color(255, 60, 64, 80);
+                Pen ep(edge, bMine ? 3.f : 1.5f);
+                g.DrawRectangle(&ep, bx, by, colW, blockH);
+
+                // 왼쪽: 번호 라벨
+                SolidBrush numBr(Color(255, 235, 240, 248));
+                _tchar szNo[8]; swprintf_s(szNo, L"%d", n + 1);
+                StringFormat sfL; sfL.SetAlignment(StringAlignmentNear); sfL.SetLineAlignment(StringAlignmentCenter);
+                g.DrawString(szNo, -1, &blkF, RectF(bx + 16.f, by, 30.f, blockH), &sfL, &numBr);
+
+                // 가운데: 점유 상태("ME" / "빈 자리"). 네트워크 연동 시 다른 이름 표시.
+                const _tchar* szWho = bMine ? L"ME" : L"빈 자리";
+                Color whoCol = bMine ? Color(255, 255, 255, 255) : Color(255, 120, 126, 140);
+                SolidBrush whoBr(whoCol);
+                StringFormat sfW; sfW.SetAlignment(StringAlignmentCenter); sfW.SetLineAlignment(StringAlignmentCenter);
+                g.DrawString(szWho, -1, &blkF, RectF(bx + 46.f, by, colW - 46.f, blockH), &sfW, &whoBr);
             }
         }
 
-        // ---- 안내 문구 ----
+        // ===== 대기자들 =====
+        //  아직 팀/번호를 못(안) 정한 사람들이 모이는 영역.
+        //  네트워크 연동 전이라 지금은 빈 박스만 그려둔다.
+        const REAL waitTop = blocksTop + 3 * (blockH + blockGap) + 14.f;
+        const REAL waitX = 28.f;
+        const REAL waitW = (REAL)W - 56.f;
+        const REAL waitH = 70.f;
+        {
+            Gdiplus::Font wF(&ff, 15, FontStyleBold, UnitPixel);
+            SolidBrush wlbl(Color(220, 210, 216, 230));
+            g.DrawString(L"대기자들", -1, &wF, PointF(waitX, waitTop - 24.f), &wlbl);
+
+            SolidBrush wbg(Color(255, 26, 28, 38));
+            g.FillRectangle(&wbg, waitX, waitTop, waitW, waitH);
+            Pen wpen(Color(255, 56, 60, 74), 1.5f);
+            g.DrawRectangle(&wpen, waitX, waitTop, waitW, waitH);
+
+            // (네트워크 연동 전) 안내 텍스트
+            SolidBrush wtx(Color(255, 110, 116, 130));
+            StringFormat sfWC; sfWC.SetAlignment(StringAlignmentCenter); sfWC.SetLineAlignment(StringAlignmentCenter);
+            g.DrawString(L"(네트워크 연동 후 표시)", -1, &blkSubF,
+                RectF(waitX, waitTop, waitW, waitH), &sfWC, &wtx);
+        }
+
+        // ---- 하단 안내 문구 (버튼 위) ----
         {
             Gdiplus::Font noteF(&ff, 14, FontStyleRegular, UnitPixel);
-            SolidBrush noteBr(Color(160, 150, 156, 170));
+            SolidBrush noteBr(Color(180, 168, 174, 188));
             const _tchar* szNote = m_bIsHost
-                ? L"※ 네트워크 연동 전 단계입니다. [게임 시작]을 누르면 게임 화면으로 넘어갑니다."
-                : L"※ 네트워크 연동 전 단계입니다. 방장이 시작하면 게임이 시작됩니다.";
-            g.DrawString(szNote, -1, &noteF, PointF(28, (REAL)H - 96), &noteBr);
+                ? L"※ 블럭을 눌러 팀/번호를 고른 뒤 [게임 시작]을 누르세요."
+                : L"※ 블럭을 눌러 자리를 고르세요. 방장이 시작하면 게임이 시작됩니다.";
+            g.DrawString(szNote, -1, &noteF, PointF(28, (REAL)H - 76.f - 18.f), &noteBr);
         }
 
     }

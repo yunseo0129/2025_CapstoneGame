@@ -14,14 +14,18 @@
 #include "Obj_CollisionTest.h"
 #include "Ketchup_Gun.h"
 #include "Player_Pig.h"
+#include "Player_Chick.h"
 #include "Particle_System.h"
 #include "VIBuffer_Rect.h"
 #include "UI_Panel.h"
 #include "Font_Manager.h"
 #include "UI_Text.h"
 #include "MiniMap.h"
+#include "MapSelect.h"
 
 #include "VIBuffer_Triangle.h"
+#include "CharSelect_Pig.h"
+#include "CharSelect_Chick.h"
 
 CLoader::CLoader(EngineContext* pContext)
     : m_pContext {pContext}
@@ -106,7 +110,7 @@ HRESULT CLoader::Loading_Level_GamePlay()
 {
     Set_LoadingText(TEXT("텍스처를 로딩중입니다."));
     // 텍스쳐 로드
-    {      
+    {
         // Prototype_Component_Texture_Cube
         if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, L"Prototype_Component_Texture_Cube",
             CTexture::Create(m_pContext, L"Resources/Textures/Rock.dds", 1))))
@@ -171,6 +175,14 @@ HRESULT CLoader::Loading_Level_GamePlay()
             return E_FAIL;
     }
 
+    // Prototype_Component_Chick_3rd
+    {
+        _matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(1.f, 1.f, 1.f);
+        if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Chick_3rd"),
+            CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/chick/Prototype_Component_chicken.txt", PreTransformMatrix))))
+            return E_FAIL;
+    }
+
     // Prototype_Component_Pig_3rd
     {
         _matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(1.f, 1.f, 1.f);
@@ -231,16 +243,21 @@ HRESULT CLoader::Loading_Level_GamePlay()
         return E_FAIL;
 
     if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_GameObject_UI_Panel",
-        CUI_Panel::Create(m_pContext))) )
+        CUI_Panel::Create(m_pContext))))
         return E_FAIL;
-    
+
     // Prototype_GameObject_MiniMap
     if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_GameObject_MiniMap",
         CMiniMap::Create(m_pContext))))
         return E_FAIL;
 
+    // Prototype_GameObject_MapSelect (상점 대신 쓰는 맵 정보/스폰 선택 창)
+    if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_GameObject_MapSelect",
+        CMapSelect::Create(m_pContext))))
+        return E_FAIL;
+
     if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_GameObject_UI_Text",
-        CUI_Text::Create(m_pContext))) )
+        CUI_Text::Create(m_pContext))))
         return E_FAIL;
 
     // Prototype_GameObject_Ketchup_Gun
@@ -253,9 +270,24 @@ HRESULT CLoader::Loading_Level_GamePlay()
         CPlayer_1rd::Create(m_pContext))))
         return E_FAIL;
 
+    // Prototype_GameObject_CharSelect_Pig
+    if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_CharSelect_Pig"),
+        CCharSelect_Pig::Create(m_pContext))))
+        return E_FAIL;
+
+    // Prototype_GameObject_CharSelect_Chick
+    if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_CharSelect_Chick"),
+        CCharSelect_Chick::Create(m_pContext))))
+        return E_FAIL;
+
     // Prototype_GameObject_Pig_3rd
     if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_Pig"),
         CPlayer_Pig::Create(m_pContext))))
+        return E_FAIL;
+
+    // Prototype_GameObject_Pig_3rd
+    if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_Chick"),
+        CPlayer_Chick::Create(m_pContext))))
         return E_FAIL;
 
     Set_LoadingText(TEXT("로딩이 완료되었습니다."));
@@ -283,7 +315,7 @@ CLoader* CLoader::Create(EngineContext* pContext, LEVELID eNextLevelID)
 
 void CLoader::Free()
 {
-    
+
     Safe_Release(m_pGameInstance);
 
     __super::Free();

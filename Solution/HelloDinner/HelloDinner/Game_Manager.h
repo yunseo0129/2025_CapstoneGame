@@ -23,6 +23,7 @@
 // 라운드 화면(단계)
 enum class GAME_PHASE
 {
+    PHASE_CHARSELECT,   // 캐릭터 선택 화면
     PHASE_SCOREBOARD,   // 현재 게임 상황 화면
     PHASE_SHOP,         // 상품 구매 화면
     PHASE_PLAYING,      // 게임 플레이 화면
@@ -66,6 +67,9 @@ public:
     _bool       Is_ShopOpen()      const { return m_bShopOpen; }         // 상점창이 떠 있는지
     _int        Get_TeamScore(_int iTeam) const;                        // 팀 라운드 승수
 
+    // 캐릭터 선택 카메라가 바라볼 내 시작 지점(레벨에서 사용).
+    _float3     Get_MySpot()       const { return m_vMySpot; }
+
     const vector<PLAYER_STAT>& Get_Stats() const { return m_vStats; }
     vector<PLAYER_STAT>& Get_Stats_Mutable() { return m_vStats; } // 더미 조작용
 
@@ -81,12 +85,14 @@ public:
 private:
     // ---- 단계 진입(한 번) ----
     void    Enter_Phase(GAME_PHASE eNext);
+    void    OnEnter_CharSelect();
     void    OnEnter_Scoreboard();
     void    OnEnter_Shop();
     void    OnEnter_Playing();
     void    OnEnter_GameOver();
 
     // ---- 단계별 매 프레임 ----
+    void    Update_CharSelect(_float fTimeDelta);
     void    Update_Scoreboard(_float fTimeDelta);
     void    Update_Shop(_float fTimeDelta);
     void    Update_Playing(_float fTimeDelta);
@@ -98,6 +104,18 @@ private:
 
     // 레이어의 모든 UI 오브젝트를 켜고/끈다 (SetOnOff)
     void    Set_LayerVisible(const _wstring& strLayerTag, _bool bVisible);
+
+    // ---- UI 캐릭터선택 ----
+    HRESULT Ready_CharSelect();
+    void    Handle_CharSelectClick();
+    void    Refresh_CharSelectFaces();
+
+    // ---- 선택 구간 글로벌 타이머 ----
+    void     Tick_SelectTimer(_float fTimeDelta);   // 감소 + 세 화면 텍스트 갱신
+    void     Force_StartPlaying();                  // 타임아웃: 기본값으로 PLAYING 강제 진입
+    _wstring Make_SelectTimerString() const;        // "TIME  nn" 포맷
+    void     Set_MySpot_From_Setup();               // g_MatchSetup → 팀/번호/시작 지점
+    void     Place_PlayerAt_Spot();                 // 내 플레이어 transform 을 시작 지점에 세움
 
     // ---- UI 텍스트 (스코어보드) ----
     HRESULT Ready_ScoreboardText();         // 점수판/플레이어 행 텍스트 생성 + 포인터 보관
@@ -117,11 +135,36 @@ private:
     // 상점 창 표시/숨김에 맞춰 커서 표시 + 플레이어 입력 차단을 함께 처리
     void     Set_ShopUIMode(_bool bOpen);
 
+    // ---- UI: 맵 선택 창 (상점 대신 사용. 클릭 → 스폰 위치 선택) ----
+    //  실제 창(CMapSelect)은 Level_Gameplay 에서 Layer_UI_MapSelect 로 생성한다.
+    //  여기서는 그 창을 찾아 보관하고, 단계 전환/스폰 위치 확정에 사용한다.
+    void     Cache_MapSelect();             // Layer_UI_MapSelect 에서 창 포인터 확보
+    void     Apply_SpawnLaunch();           // 선택(또는 기본) 위치로 플레이어 포물선 발사
+
 private:
     class CGameInstance* m_pGameInstance = nullptr;
 
-    GAME_PHASE  m_ePhase = GAME_PHASE::PHASE_SCOREBOARD;
+    GAME_PHASE  m_ePhase = GAME_PHASE::PHASE_CHARSELECT;
+
     _int        m_iRound = 1;
+
+    // 캐릭터 선택창에 필요한 정보
+    class CCharSelect_Pig* m_pCSPreviewMe = nullptr;   // 중앙(나) 프리뷰 (Pig)
+    class CCharSelect_Chick* m_pCSPreviewChick = nullptr;   // 중앙(나) 프리뷰 (Chick)
+    class CUI_Panel* m_pCSFacePanel[3] = {nullptr, nullptr, nullptr};
+    _float4 m_vCSFaceRect[3] = {};   // (x,y,w,h) 픽셀
+    _float4 m_vCSReadyRect = {};
+    _int    m_iCSMyCharacter = 0;
+    _bool   m_bCSReady = false;
+    _bool   m_bCSBuilt = false;
+
+    // ---- 내 팀/번호 + 시작 지점 (대기방 g_MatchSetup 에서 읽어옴) ----
+    //  iMyTeam   : 0 = RED, 1 = BLUE
+    //  iMyNumber : 1~3
+    //  vMySpot   : 캐릭터 선택~1인칭 시작 시 내가 서 있을 월드 좌표
+    _int    m_iMyTeam = 0;
+    _int    m_iMyNumber = 1;
+    _float3 m_vMySpot = _float3(0.f, 0.f, 0.f);
 
     // 팀 라운드 승수 (인덱스 0: 팀A, 1: 팀B)
     _int        m_iTeamScore[2] = {0, 0};
@@ -135,6 +178,18 @@ private:
 
     // 스코어보드 단계 타임아웃(모두 로드 안 끝나도 강제 진행)
     _float      m_fScoreboardTimer = 0.f;
+
+    // ---- 선택 구간 글로벌 카운트다운 ----
+    //  캐릭터 선택 → 상황판 → 스폰(맵) 선택을 하나의 30초 타이머로 묶는다.
+    //  CharSelect 진입 시 시작, 세 단계 동안 리셋 없이 계속 감소.
+    //  0 이 되면 어느 단계든 즉시 PLAYING 으로 강제 진입(미선택은 기본값 처리).
+    _float      m_fSelectTimer = 0.f;
+    _bool       m_bSelectExpired = false;   // 타임아웃으로 강제 진행됐는지
+
+    // 세 화면 상단에 띄우는 "남은 시간" 텍스트(각 레이어 소유, 참조만 보관).
+    class CUI_Text* m_pSelTimerText_CS = nullptr;   // 캐릭터 선택
+    class CUI_Text* m_pSelTimerText_SB = nullptr;   // 상황판(스코어보드)
+    class CUI_Text* m_pSelTimerText_MS = nullptr;   // 맵/스폰 선택
 
     // 더미 플레이어 스탯
     vector<PLAYER_STAT> m_vStats;
@@ -159,11 +214,30 @@ private:
     class CUI_Panel* m_pShopSlot[SHOP_SLOT_COUNT] = {nullptr};
     _float4          m_vShopSlotRect[SHOP_SLOT_COUNT] = {}; // (x, y, w, h) 픽셀
 
+    // ---- 맵 선택 창 ----
+    //  상점 대신 띄우는 맵 정보/스폰 선택 창. (Level_Gameplay 에서 생성)
+    class CMapSelect* m_pMapSelect = nullptr;
+
+    // 아무 곳도 클릭 안 하고 시간이 끝났을 때 사용할 기본 스폰 위치(코드에서 지정).
+    _float3          m_vDefaultSpawn = _float3(0.f, 0.f, 0.f);
+
+    // 스폰 발사 시 포물선 정점 추가 높이(현재/목표 중 높은 y + 이 값).
+    static constexpr _float SPAWN_ARC_HEIGHT = 3.f;
+
+    // 상점 단계를 쓸지 여부. (false = 맵 선택 창 사용 / true = 예전 상점 사용)
+    //  나중에 상점을 되살리려면 이 값을 true 로 바꾸면 된다.
+    static constexpr _bool USE_SHOP = false;
+
     // ---- 상수 ----
     static constexpr _int   MAX_ROUND = 10;
     static constexpr _float SHOP_DURATION = 15.f;  // 구매 시간(초)
     static constexpr _float SCOREBOARD_TIMEOUT = 8.f;   // 스코어보드 최대 대기(초)
     static constexpr _float ROUND_DURATION = 100.f; // 한 라운드 제한 시간(초)
+
+    // 선택 구간(캐릭터+상황판+스폰) 전체 제한 시간. 0 이 되면 강제 시작.
+    static constexpr _float SELECT_TOTAL_DURATION = 30.f;
+    // 상황판(스코어보드) 자동 전환 시간(E키로 즉시 넘길 수도 있음).
+    static constexpr _float SCOREBOARD_AUTO = 3.f;
 
 public:
     static CGame_Manager* Create();
