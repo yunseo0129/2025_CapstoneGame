@@ -1,5 +1,6 @@
 #include "Player_Pig.h"
 #include "GameInstance.h"
+#include <cmath>
 #include "Transform.h"
 #include "Ketchup_Gun.h"
 #include "Bounding_AABB.h"
@@ -67,6 +68,8 @@ void CPlayer_Pig::Priority_Update(_float fTimeDelta)
 
 void CPlayer_Pig::Update(_float fTimeDelta)
 {
+    Update_DeadReckoning(fTimeDelta);
+
     if (!m_pModelCom->Get_UpperBlend())
     {
         if (m_pModelCom->Play_Animation(fTimeDelta, true))
@@ -530,15 +533,74 @@ bool CPlayer_Pig::Get_WorldBoundingSphere(_float3& outCenter, _float& outRadius)
 
 void CPlayer_Pig::Apply_NetworkMatrix(const float* pMatrix, unsigned short keyInput)
 {
-    XMFLOAT4X4 mat;
-    memcpy(&mat, pMatrix, sizeof(float) * 16);
-    m_pTransformCom->Set_WorldMatrix(mat);
+    XMFLOAT4X4 newMat;
+    memcpy(&newMat, pMatrix, sizeof(float) * 16);
+
+    if (!m_drHasData)
+    {
+        m_drCurrentMat = newMat;
+        m_drTargetMat  = newMat;
+        m_drHasData    = true;
+    }
+    else if (m_drTimeSince > 0.001f)
+    {
+        float invT = 1.f / m_drTimeSince;
+        m_drVelocity.x = (newMat.m[3][0] - m_drTargetMat.m[3][0]) * invT;
+        m_drVelocity.y = (newMat.m[3][1] - m_drTargetMat.m[3][1]) * invT;
+        m_drVelocity.z = (newMat.m[3][2] - m_drTargetMat.m[3][2]) * invT;
+        m_drInterval   = m_drInterval * 0.8f + m_drTimeSince * 0.2f;
+    }
+
+    m_drTargetMat  = newMat;
+    m_drTimeSince  = 0.f;
+
     m_prevKeyInput = m_keyInput;
     m_keyInput     = keyInput;
 
-    // 착지 감지: Y가 바닥 근처에 오면 공중 플래그 해제
-    if (m_bIsJumping && pMatrix[13] < 0.05f)
+    // 착지 감지: 서버 권위 Y값 기준
+    if (m_bIsJumping && newMat.m[3][1] < 0.05f)
         m_bIsJumping = false;
+}
+
+void CPlayer_Pig::Update_DeadReckoning(float fTimeDelta)
+{
+    if (!m_drHasData) return;
+
+    m_drTimeSince += fTimeDelta;
+
+    // 속도로 위치 외삽 (최대 2 패킷 구간까지만)
+    float t = (m_drTimeSince < m_drInterval * 2.f) ? m_drTimeSince : m_drInterval * 2.f;
+    XMFLOAT4X4 predicted = m_drTargetMat;
+    predicted.m[3][0] += m_drVelocity.x * t;
+    predicted.m[3][1] += m_drVelocity.y * t;
+    predicted.m[3][2] += m_drVelocity.z * t;
+
+    // 너무 멀면 즉시 텔레포트 (스폰 직후 등 대점프 방지)
+    float dx = predicted.m[3][0] - m_drCurrentMat.m[3][0];
+    float dz = predicted.m[3][2] - m_drCurrentMat.m[3][2];
+    if (dx * dx + dz * dz > 9.f)
+    {
+        m_drCurrentMat = predicted;
+    }
+    else
+    {
+        // 지수 평활: rate가 클수록 빠르게 수렴
+        const float posRate = 15.f;
+        const float rotRate = 10.f;
+        float posAlpha = 1.f - expf(-posRate * fTimeDelta);
+        float rotAlpha = 1.f - expf(-rotRate * fTimeDelta);
+
+        // 위치 보간 (row 3)
+        for (int j = 0; j < 3; ++j)
+            m_drCurrentMat.m[3][j] += (predicted.m[3][j] - m_drCurrentMat.m[3][j]) * posAlpha;
+
+        // 회전 보간 (3x3 부분, rows 0-2 cols 0-2)
+        for (int i = 0; i < 3; ++i)
+            for (int j = 0; j < 3; ++j)
+                m_drCurrentMat.m[i][j] += (predicted.m[i][j] - m_drCurrentMat.m[i][j]) * rotAlpha;
+    }
+
+    m_pTransformCom->Set_WorldMatrix(m_drCurrentMat);
 }
 
 CPlayer_Pig* CPlayer_Pig::Create(EngineContext* _pcontext)

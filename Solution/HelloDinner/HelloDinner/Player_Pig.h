@@ -51,6 +51,15 @@ private:
     unsigned short      m_keyInput     = 0;
     unsigned short      m_prevKeyInput = 0;
 
+    // Dead reckoning
+    void                Update_DeadReckoning(float fTimeDelta);
+    XMFLOAT4X4          m_drCurrentMat = {};
+    XMFLOAT4X4          m_drTargetMat  = {};
+    XMFLOAT3            m_drVelocity   = {};
+    float               m_drTimeSince  = 0.f;
+    float               m_drInterval   = 0.05f;
+    bool                m_drHasData    = false;
+
 public:
 	void Apply_NetworkMatrix(const float* pMatrix, unsigned short keyInput = 0);
 
