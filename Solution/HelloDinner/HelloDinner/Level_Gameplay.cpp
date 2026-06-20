@@ -61,9 +61,15 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
     //  카메라가 "선택 시점"에 고정된다. (준비완료로 phase가 바뀌면 자동으로 플레이어가 다시 가져감)
     if (m_pGameManager && m_pGameManager->Get_Phase() == GAME_PHASE::PHASE_CHARSELECT)
     {
-        // 선택 시점 — eye에서 at을 바라봄. 프리뷰 위치(Game_Manager::Ready_CharSelect)와 함께 조정.
-        const XMVECTOR eye = XMVectorSet(0.f, 1.25f, -6.5f, 1.f);
-        const XMVECTOR at = XMVectorSet(0.f, 0.95f, 0.f, 1.f);
+        // 선택 시점 — 내 시작 지점(팀/번호) 기준으로 정면에서 바라본다.
+        //  프리뷰 돼지(Game_Manager::Ready_CharSelect)도 같은 지점에 서 있다.
+        _float3 spot = m_pGameManager->Get_MySpot();
+        const XMVECTOR vSpot = XMVectorSet(spot.x, spot.y, spot.z, 0.f);
+
+        const XMVECTOR eyeOff = XMVectorSet(0.f, 1.25f, -6.5f, 1.f);
+        const XMVECTOR atOff = XMVectorSet(0.f, 0.95f, 0.f, 1.f);
+        const XMVECTOR eye = XMVectorAdd(vSpot, eyeOff);
+        const XMVECTOR at = XMVectorAdd(vSpot, atOff);
         const XMVECTOR up = XMVectorSet(0.f, 1.f, 0.f, 0.f);
 
         // 카메라 월드 = 뷰의 역행렬 (뷰 = inverse(world)이므로)

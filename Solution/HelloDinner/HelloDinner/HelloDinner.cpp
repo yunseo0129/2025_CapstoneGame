@@ -20,6 +20,7 @@
 // 전역 변수:
 HINSTANCE           g_hInst;                                  // 현재 인스턴스입니다.
 HWND                g_hWnd;
+MATCH_SETUP         g_MatchSetup;                             // 대기방에서 고른 팀/번호(게임플레이로 전달)
 WCHAR               szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR               szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
 
@@ -49,7 +50,12 @@ static bool RunFrontend(HINSTANCE hInstance)
         if (LOBBY_EXIT == eLobby)
             return false;                         // 프로그램 종료
         if (LOBBY_START_GAME == eLobby)
+        {
+            // 대기방을 건너뛴 빠른 시작: 기본값 RED / 1번.
+            g_MatchSetup.iTeam = 0;
+            g_MatchSetup.iNumber = 1;
             return true;                          // 곧바로 게임 시작
+        }
 
         // [방 만들기] / [방 들어가기] → 대기방
         bool bIsHost = (LOBBY_CREATE_ROOM == eLobby);

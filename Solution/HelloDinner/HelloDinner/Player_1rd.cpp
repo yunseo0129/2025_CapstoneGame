@@ -16,7 +16,7 @@ namespace {
 }
 
 CPlayer_1rd::CPlayer_1rd(EngineContext* _pcontext)
-    : CContainerObj{ _pcontext }
+    : CContainerObj {_pcontext}
 {
 
 }
@@ -432,6 +432,21 @@ void CPlayer_1rd::Launch_To(const _float3& vTarget, _float fArcHeight)
     m_fVerticalVelocity = 0.f;
     m_fMoveLook = 0.f;
     m_fMoveRight = 0.f;
+}
+
+void CPlayer_1rd::Set_Position(const _float3& vPos)
+{
+    // 즉시 텔레포트. 비행/이동 상태를 정지시켜 다음 프레임에 끌려가지 않게 한다.
+    m_pTransformCom->Set_State(CTransform::STATE_POSITION,
+        XMVectorSet(vPos.x, vPos.y, vPos.z, 1.f));
+
+    m_bLaunching = false;
+    m_bLaunchDescending = false;
+    m_vLaunchVel = _float3(0.f, 0.f, 0.f);
+    m_fVerticalVelocity = 0.f;
+    m_fMoveLook = 0.f;
+    m_fMoveRight = 0.f;
+    m_bIsGrounded = true;
 }
 
 void CPlayer_1rd::Update_Launch(_float fTimeDelta)

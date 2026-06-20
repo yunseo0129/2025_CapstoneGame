@@ -20,7 +20,7 @@ class CRoomWindow final: public CBase
 {
 public:
     static const _uint WIDTH = 760;
-    static const _uint HEIGHT = 560;
+    static const _uint HEIGHT = 620;
     static const _uint MAX_SLOT = 4;   // 최대 인원 (네트워크 연동 시 조정)
 
 private:
@@ -39,6 +39,11 @@ private:
     void OnPaint(HWND hWnd);
     void OnCommand(_uint iCtrlID);
 
+    // 좌클릭 시 블럭 격자 히트테스트 → 팀/번호 선택
+    void OnLButtonDown(int x, int y);
+    // 현재 선택을 전역 캐리어(g_MatchSetup)에 기록 (게임 시작 직전 호출)
+    void Commit_Selection();
+
 private:
     HWND        m_hWnd = nullptr;
     HINSTANCE   m_hInstance = nullptr;
@@ -47,6 +52,16 @@ private:
     _bool       m_bIsHost = true;   // true: 방 만들기(방장), false: 방 들어가기(참가자)
     _bool       m_bReady = false;  // 참가자 준비 상태 (현재는 표시용)
     _int        m_iRoomCode = 0;    // 방 코드 (스텁)
+
+    // ---- 내가 고른 팀/번호 ----
+    //  iTeam   : 0 = RED, 1 = BLUE
+    //  iNumber : 1~3 (팀 내 번호)
+    _int        m_iSelTeam = 0;
+    _int        m_iSelNumber = 1;
+
+    // ---- 팀/번호 블럭 격자 히트박스 (RECT, 클라이언트 좌표) ----
+    //  [team][number-1] 로 인덱싱. OnPaint 에서 채우고 OnLButtonDown 에서 사용.
+    RECT        m_rcBlock[2][3] = {};
 
     void* m_pBackBuffer = nullptr; // Gdiplus::Bitmap* (더블버퍼)
 

@@ -67,6 +67,9 @@ public:
     _bool       Is_ShopOpen()      const { return m_bShopOpen; }         // 상점창이 떠 있는지
     _int        Get_TeamScore(_int iTeam) const;                        // 팀 라운드 승수
 
+    // 캐릭터 선택 카메라가 바라볼 내 시작 지점(레벨에서 사용).
+    _float3     Get_MySpot()       const { return m_vMySpot; }
+
     const vector<PLAYER_STAT>& Get_Stats() const { return m_vStats; }
     vector<PLAYER_STAT>& Get_Stats_Mutable() { return m_vStats; } // 더미 조작용
 
@@ -106,6 +109,13 @@ private:
     HRESULT Ready_CharSelect();
     void    Handle_CharSelectClick();
     void    Refresh_CharSelectFaces();
+
+    // ---- 선택 구간 글로벌 타이머 ----
+    void     Tick_SelectTimer(_float fTimeDelta);   // 감소 + 세 화면 텍스트 갱신
+    void     Force_StartPlaying();                  // 타임아웃: 기본값으로 PLAYING 강제 진입
+    _wstring Make_SelectTimerString() const;        // "TIME  nn" 포맷
+    void     Set_MySpot_From_Setup();               // g_MatchSetup → 팀/번호/시작 지점
+    void     Place_PlayerAt_Spot();                 // 내 플레이어 transform 을 시작 지점에 세움
 
     // ---- UI 텍스트 (스코어보드) ----
     HRESULT Ready_ScoreboardText();         // 점수판/플레이어 행 텍스트 생성 + 포인터 보관
@@ -147,6 +157,14 @@ private:
     _bool   m_bCSReady = false;
     _bool   m_bCSBuilt = false;
 
+    // ---- 내 팀/번호 + 시작 지점 (대기방 g_MatchSetup 에서 읽어옴) ----
+    //  iMyTeam   : 0 = RED, 1 = BLUE
+    //  iMyNumber : 1~3
+    //  vMySpot   : 캐릭터 선택~1인칭 시작 시 내가 서 있을 월드 좌표
+    _int    m_iMyTeam = 0;
+    _int    m_iMyNumber = 1;
+    _float3 m_vMySpot = _float3(0.f, 0.f, 0.f);
+
     // 팀 라운드 승수 (인덱스 0: 팀A, 1: 팀B)
     _int        m_iTeamScore[2] = {0, 0};
 
@@ -159,6 +177,18 @@ private:
 
     // 스코어보드 단계 타임아웃(모두 로드 안 끝나도 강제 진행)
     _float      m_fScoreboardTimer = 0.f;
+
+    // ---- 선택 구간 글로벌 카운트다운 ----
+    //  캐릭터 선택 → 상황판 → 스폰(맵) 선택을 하나의 30초 타이머로 묶는다.
+    //  CharSelect 진입 시 시작, 세 단계 동안 리셋 없이 계속 감소.
+    //  0 이 되면 어느 단계든 즉시 PLAYING 으로 강제 진입(미선택은 기본값 처리).
+    _float      m_fSelectTimer = 0.f;
+    _bool       m_bSelectExpired = false;   // 타임아웃으로 강제 진행됐는지
+
+    // 세 화면 상단에 띄우는 "남은 시간" 텍스트(각 레이어 소유, 참조만 보관).
+    class CUI_Text* m_pSelTimerText_CS = nullptr;   // 캐릭터 선택
+    class CUI_Text* m_pSelTimerText_SB = nullptr;   // 상황판(스코어보드)
+    class CUI_Text* m_pSelTimerText_MS = nullptr;   // 맵/스폰 선택
 
     // 더미 플레이어 스탯
     vector<PLAYER_STAT> m_vStats;
@@ -202,6 +232,11 @@ private:
     static constexpr _float SHOP_DURATION = 15.f;  // 구매 시간(초)
     static constexpr _float SCOREBOARD_TIMEOUT = 8.f;   // 스코어보드 최대 대기(초)
     static constexpr _float ROUND_DURATION = 100.f; // 한 라운드 제한 시간(초)
+
+    // 선택 구간(캐릭터+상황판+스폰) 전체 제한 시간. 0 이 되면 강제 시작.
+    static constexpr _float SELECT_TOTAL_DURATION = 30.f;
+    // 상황판(스코어보드) 자동 전환 시간(E키로 즉시 넘길 수도 있음).
+    static constexpr _float SCOREBOARD_AUTO = 3.f;
 
 public:
     static CGame_Manager* Create();
