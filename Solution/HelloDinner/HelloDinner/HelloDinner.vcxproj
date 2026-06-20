@@ -148,6 +148,7 @@
     <ClInclude Include="Bounding_AABB.h" />
     <ClInclude Include="Bounding_OBB.h" />
     <ClInclude Include="Bounding_Sphere.h" />
+    <ClInclude Include="Bullets.h" />
     <ClInclude Include="BVH.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Camera_FPV.h">
@@ -250,6 +251,7 @@
     <ClCompile Include="Camera.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Bullets.cpp" />
     <ClCompile Include="Channel.cpp" />
     <ClCompile Include="CharSelect_Chick.cpp" />
     <ClCompile Include="CharSelect_Pig.cpp" />

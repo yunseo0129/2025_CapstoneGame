@@ -580,6 +580,10 @@ void CPlayer_1rd::Shoot(_float _val)
         m_pModelCom->Change_Animation(3, 0.f, false, true);
         m_pFPSModelCom->Change_Animation(2, 0.f, false);
         --m_iAmmo;
+
+        _vector look = m_pTransformCom->Get_State(CTransform::STATE_LOOK);
+        _vector pos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+
     }
 }
 
