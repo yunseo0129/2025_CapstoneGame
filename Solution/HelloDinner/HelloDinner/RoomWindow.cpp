@@ -207,14 +207,26 @@ void CRoomWindow::OnCommand(_uint iCtrlID)
     case IDC_BTN_PRIMARY:
         if (m_bIsHost)
         {
-            // 방장: 서버에 게임 시작 요청 — SC_REDIRECT를 받으면 OnPollTimer가 창을 닫음
+            // 비방장 멤버 전원이 준비 완료인지 확인
+            int myId = NetworkClient::GetInstance()->GetMyId();
+            bool allReady = !m_cachedMembers.empty();
+            for (auto& m : m_cachedMembers) {
+                if (m.id == myId) continue;  // 방장 자신은 제외
+                if (!m.ready) { allReady = false; break; }
+            }
+            if (!allReady) {
+                MessageBox(m_hWnd, TEXT("모든 플레이어가 준비 완료 상태여야 시작할 수 있습니다."),
+                           TEXT("게임 시작 불가"), MB_OK | MB_ICONWARNING);
+                break;
+            }
             Commit_Selection();
             NetworkClient::GetInstance()->Send_StartGame();
         }
         else
         {
-            // 참가자: 준비 토글 (표시용)
+            // 참가자: 준비 토글 → 서버에 패킷 전송
             m_bReady = !m_bReady;
+            NetworkClient::GetInstance()->Send_PlayerReady(m_bReady);
             SetWindowText(m_hBtnPrimary, m_bReady ? TEXT("준비 완료") : TEXT("준비"));
             InvalidateRect(m_hWnd, nullptr, FALSE);
         }
@@ -230,6 +242,7 @@ void CRoomWindow::OnPollTimer()
     // 게임 시작 신호 감지 (SC_REDIRECT 수신 후 NetworkClient가 세움)
     if (NetworkClient::GetInstance()->IsGameStarting()) {
         KillTimer(m_hWnd, TIMER_POLL);
+        Commit_Selection();  // 게스트도 g_MatchSetup 반드시 기록
         m_eResult = ROOM_START_GAME;
         PostMessage(m_hWnd, WM_NULL, 0, 0);
         return;
@@ -248,18 +261,25 @@ void CRoomWindow::OnPollTimer()
             }
         }
     }
+    // ready 변화도 감지
+    if (!changed) {
+        for (int i = 0; i < (int)snap.members.size(); ++i) {
+            if (snap.members[i].ready != m_cachedMembers[i].ready) { changed = true; break; }
+        }
+    }
     if (changed) {
         m_cachedHostId = snap.host_id;
         m_cachedMembers.clear();
         for (auto& m : snap.members) {
             RoomMemberCache c;
-            c.id   = m.id;
+            c.id    = m.id;
             strcpy_s(c.name, m.name);
-            c.team = m.team;
-            c.slot = m.slot;
+            c.team  = m.team;
+            c.slot  = m.slot;
+            c.ready = m.ready;
             m_cachedMembers.push_back(c);
         }
-        // 서버 확인된 내 선택을 동기화
+        // 서버 확인된 내 선택 및 준비 상태 동기화
         int myId = NetworkClient::GetInstance()->GetMyId();
         m_iSelTeam   = -1;
         m_iSelNumber = 0;
@@ -267,6 +287,11 @@ void CRoomWindow::OnPollTimer()
             if (m.id == myId) {
                 m_iSelTeam   = (m.team == 0xFF) ? -1 : (int)m.team;
                 m_iSelNumber = (int)m.slot;
+                if (!m_bIsHost) {
+                    m_bReady = m.ready;
+                    if (m_hBtnPrimary)
+                        SetWindowText(m_hBtnPrimary, m_bReady ? TEXT("준비 완료") : TEXT("준비"));
+                }
                 break;
             }
         }
@@ -504,15 +529,24 @@ void CRoomWindow::OnPaint(HWND hWnd)
                 Gdiplus::Font mF(&ff, 14, FontStyleRegular, UnitPixel);
                 const REAL itemW = waitW / ROOM_MAX_PLAYER;
                 for (int i = 0; i < (int)m_cachedMembers.size(); ++i) {
-                    bool isHost = (m_cachedMembers[i].id == m_cachedHostId);
-                    Color col = isHost ? Color(255, 255, 220, 80) : Color(255, 200, 210, 230);
+                    bool isHost  = (m_cachedMembers[i].id == m_cachedHostId);
+                    bool isReady = m_cachedMembers[i].ready || isHost; // 방장은 항상 준비
+                    Color col = isHost
+                        ? Color(255, 255, 220,  80)   // 방장: 노란색
+                        : (isReady
+                            ? Color(255, 100, 220, 120) // 준비완료: 초록색
+                            : Color(255, 160, 168, 180)); // 미준비: 회색
                     SolidBrush mb(col);
-                    // 이름을 wchar로 변환
                     WCHAR wname[NAME_SIZE] = {};
                     MultiByteToWideChar(CP_ACP, 0, m_cachedMembers[i].name, -1, wname, NAME_SIZE);
                     StringFormat sfC; sfC.SetAlignment(StringAlignmentCenter); sfC.SetLineAlignment(StringAlignmentCenter);
-                    _tchar disp[NAME_SIZE + 8] = {};
-                    swprintf_s(disp, isHost ? L"[방장]\n%s" : L"%s", wname);
+                    _tchar disp[NAME_SIZE + 16] = {};
+                    if (isHost)
+                        swprintf_s(disp, L"[방장]\n%s", wname);
+                    else if (isReady)
+                        swprintf_s(disp, L"[준비완료]\n%s", wname);
+                    else
+                        swprintf_s(disp, L"[대기중]\n%s", wname);
                     g.DrawString(disp, -1, &mF,
                         RectF(waitX + i * itemW, waitTop, itemW, waitH), &sfC, &mb);
                 }

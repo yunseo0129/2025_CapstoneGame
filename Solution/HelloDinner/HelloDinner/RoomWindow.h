@@ -68,7 +68,7 @@ private:
     void* m_pBackBuffer = nullptr; // Gdiplus::Bitmap* (더블버퍼)
 
     // ── 서버 방 상태 캐시 (WM_TIMER 폴링으로 갱신) ──
-    struct RoomMemberCache { int id; char name[20]; unsigned char team; unsigned char slot; };
+    struct RoomMemberCache { int id; char name[20]; unsigned char team; unsigned char slot; bool ready = false; };
     std::vector<RoomMemberCache> m_cachedMembers;
     int  m_cachedHostId = -1;
 

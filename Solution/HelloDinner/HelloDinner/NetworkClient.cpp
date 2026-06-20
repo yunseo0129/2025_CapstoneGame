@@ -211,6 +211,15 @@ void NetworkClient::Send_SelectSeat(unsigned char team, unsigned char slot)
     Send(&p, p.size);
 }
 
+void NetworkClient::Send_PlayerReady(bool ready)
+{
+    CS_PLAYER_READY_PACKET p{};
+    p.size  = sizeof(CS_PLAYER_READY_PACKET);
+    p.type  = CS_PLAYER_READY;
+    p.ready = ready ? 1 : 0;
+    Send(&p, p.size);
+}
+
 NetworkClient::RoomSnapshot NetworkClient::GetRoomSnapshot()
 {
     std::lock_guard<std::mutex> lk(m_roomLock);
@@ -408,10 +417,11 @@ void NetworkClient::ProcessLobbyPacket(char* packet)
         m_roomMembers.clear();
         for (int i = 0; i < (int)p->member_count && i < ROOM_MAX_PLAYER; ++i) {
             RoomMember m{};
-            m.id   = p->member_ids[i];
+            m.id    = p->member_ids[i];
             strcpy_s(m.name, p->member_names[i]);
-            m.team = p->member_teams[i];
-            m.slot = p->member_slots[i];
+            m.team  = p->member_teams[i];
+            m.slot  = p->member_slots[i];
+            m.ready = (p->member_ready[i] != 0);
             m_roomMembers.push_back(m);
         }
         break;

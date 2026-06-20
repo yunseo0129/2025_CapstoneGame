@@ -32,6 +32,7 @@ constexpr char CS_START_GAME     = 7;  // 방장: 게임 시작
 constexpr char CS_LEAVE_ROOM     = 8;  // 대기방 나가기
 constexpr char CS_QUICK_MATCH    = 9;  // 빠른 매칭 옵트인
 constexpr char CS_SELECT_SEAT    = 10; // 팀/번호 선택 (0xFF/0 = 해제)
+constexpr char CS_PLAYER_READY   = 11; // 준비/준비해제 토글
 
 // 패킷 ID (서버 → 클라)
 constexpr char SC_LOGIN_INFO = 0;
@@ -108,6 +109,7 @@ struct CS_SELECT_SEAT_PACKET    {
     unsigned char team; // 0=RED, 1=BLUE, 0xFF=선택 해제
     unsigned char slot; // 1~3, 0=선택 해제
 };
+struct CS_PLAYER_READY_PACKET   { unsigned char size; char type; unsigned char ready; }; // 1=준비, 0=해제
 
 struct SC_ROOM_CREATED_PACKET   { unsigned char size; char type; int code; };
 struct SC_ROOM_JOIN_RESULT_PACKET {
@@ -124,7 +126,8 @@ struct SC_ROOM_UPDATE_PACKET {
     char          member_names[ROOM_MAX_PLAYER][NAME_SIZE];
     unsigned char member_teams[ROOM_MAX_PLAYER]; // 0=RED, 1=BLUE, 0xFF=미선택
     unsigned char member_slots[ROOM_MAX_PLAYER]; // 1~3, 0=미선택
-};  // 1+1+4+4+1+24+120+6+6 = 167B
+    unsigned char member_ready[ROOM_MAX_PLAYER]; // 1=준비완료, 0=미준비
+};  // 1+1+4+4+1+24+120+6+6+6 = 173B
 
 struct SC_LOGIN_INFO_PACKET {
     unsigned char size;

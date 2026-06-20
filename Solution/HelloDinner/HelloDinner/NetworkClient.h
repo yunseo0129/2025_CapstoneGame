@@ -59,6 +59,7 @@ public:
     void Send_LeaveRoom();
     void Send_QuickMatch();
     void Send_SelectSeat(unsigned char team, unsigned char slot);
+    void Send_PlayerReady(bool ready);
 
     void Disconnect();
 
@@ -78,8 +79,9 @@ public:
     struct RoomMember {
         int           id;
         char          name[20];
-        unsigned char team = 0xFF; // 0=RED, 1=BLUE, 0xFF=미선택
-        unsigned char slot = 0;    // 1~3, 0=미선택
+        unsigned char team  = 0xFF; // 0=RED, 1=BLUE, 0xFF=미선택
+        unsigned char slot  = 0;    // 1~3, 0=미선택
+        bool          ready = false;
     };
     struct RoomSnapshot {
         int                    code     = 0;

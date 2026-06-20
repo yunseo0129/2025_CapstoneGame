@@ -26,6 +26,7 @@ public:
     // 팀/번호 선택 (team: 0=RED/1=BLUE/0xFF=해제, slot: 1~3/0=해제)
     // 충돌 시(다른 멤버가 동일 슬롯 점유) false 반환
     bool             SelectSeat(int c_id, unsigned char team, unsigned char slot);
+    void             SetReady(int c_id, bool ready);
 
 private:
     RoomManager() = default;
@@ -39,4 +40,5 @@ private:
     unordered_map<int, WaitingRoom> m_rooms;        // code → 방
     unordered_map<int, int>         m_player_room;  // c_id → code
     unordered_map<int, pair<unsigned char, unsigned char>> m_seat_map; // c_id → {team, slot}
+    unordered_map<int, bool> m_ready_map; // c_id → 준비 여부
 };

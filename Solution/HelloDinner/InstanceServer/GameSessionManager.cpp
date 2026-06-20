@@ -67,30 +67,10 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
 
         auto& session = m_clients[c_id];
         session.m_player.keyInput = p->keyInput;
-
-        unsigned int serverNow = GameSession::GetServerTimestamp();
-        float fTimeDelta = 0.f;
-        if (session.m_lastServerTimestamp != 0) {
-            fTimeDelta = (serverNow - session.m_lastServerTimestamp) / 1000.f;
-            if (fTimeDelta > 0.1f) fTimeDelta = 0.1f;
-        }
         session.UpdateTimestamp(p->timestamp);
 
-        // 클라이언트 rotation(Right/Up/Look) 동기화 — 서버가 독립적으로 회전을 누적하면
-        // 클라이언트와 Look 방향이 어긋나 이동 방향이 틀어지므로 클라이언트 값을 신뢰한다
-        memcpy(session.m_worldMatrix.m, p->worldMatrix, sizeof(float) * 12);
-
-        session.m_worldMatrix.CalculateMovement(
-            p->keyInput,
-            0.f,          // rotation은 위에서 이미 동기화, TurnY 불필요
-            session.m_player.speedPerSec,
-            session.m_player.rotationPerSec,
-            fTimeDelta
-        );
-
-        if (!session.m_worldMatrix.IsPositionClose(p->worldMatrix)) {
-            cout << "[Instance] Client [" << c_id << "] position mismatch detected." << endl;
-        }
+        // 클라이언트 worldMatrix 전체(회전+위치)를 신뢰하고 그대로 저장
+        memcpy(session.m_worldMatrix.m, p->worldMatrix, sizeof(float) * 16);
 
         int room_id = session.m_room_id;
         if (room_id == -1) break;
