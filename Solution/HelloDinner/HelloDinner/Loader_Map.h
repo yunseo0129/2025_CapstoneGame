@@ -16,11 +16,16 @@ private:
         //   팔레트의 올바른 색을 직접 가리킴). 'Paintings' 만 별도 Paintings 팔레트 사용.
         string   strMaterialName {};
 
-        // [방식 가 - 레거시] 팔레트 crop UV 재매핑: finalUV = meshUV * uvScale + uvOffset.
+        // [UV - 레거시] 팔레트 crop UV 재매핑: finalUV = meshUV * uvScale + uvOffset.
         //   팔레트 직접 매핑으로 전환하면 메시 원본 UV 를 그대로 쓰므로 사실상 미사용
         //   (기본값 0,0 / 1,1 = 변환 없음). 호환을 위해 필드는 유지.
         _float2  vUVOffset {0.f, 0.f};
         _float2  vUVScale {1.f, 1.f};
+
+        // [투명] Unity 머티리얼에서 가져온 표면타입/알파 (없으면 Opaque/1.0).
+        //   iSurfaceType: 0=Opaque, 1=Transparent, 2=Cutout (셰이더 g_fSurfaceType 와 일치).
+        _int     iSurfaceType {0};
+        _float   fAlpha {1.f};   // baseColor.a
     };
 private:
     CLoader_Map(EngineContext* pContext);

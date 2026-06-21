@@ -139,7 +139,7 @@ void CPlayer_1rd::Update(_float fTimeDelta)
     else
         m_pModelCom->Blend_Animation(fTimeDelta, false);
 
-    
+
     Anima();
 
     m_pModelCom->Merge_UpperLower();
@@ -435,6 +435,7 @@ void CPlayer_1rd::Launch_To(const _float3& vTarget, _float fArcHeight)
     m_vLaunchVel = _float3(vx, v0y, vz);
     m_bLaunching = true;
     m_bLaunchDescending = false;
+    m_bLaunchFalling = false;
 
     // 비행 시작: 점프/지면 상태 초기화 + 기존 수직속도 무시
     m_bIsGrounded = false;
@@ -459,6 +460,7 @@ void CPlayer_1rd::Set_Position(const _float3& vPos)
 
     m_bLaunching = false;
     m_bLaunchDescending = false;
+    m_bLaunchFalling = false;
     m_vLaunchVel = _float3(0.f, 0.f, 0.f);
     m_fVerticalVelocity = 0.f;
     m_fMoveLook = 0.f;
@@ -466,26 +468,102 @@ void CPlayer_1rd::Set_Position(const _float3& vPos)
     m_bIsGrounded = true;
 }
 
+void CPlayer_1rd::Set_Facing(_float fYaw)
+{
+    // 항등 기준 yaw 회전으로 바라보는 방향을 맞춘다(피치는 1인칭 카메라가 별도 관리).
+    m_pTransformCom->RotationQuaternion(0.f, fYaw, 0.f);
+    m_fPitchRot = 0.f;
+
+    // 카메라(1인칭 시점)도 즉시 동기화해 다음 프레임 전에 방향이 반영되게 한다.
+    XMMATRIX matFps = m_pTransformCom->Get_WorldMatrix();
+    matFps *= XMMatrixTranslation(0.f, 1.39f, 0.f);
+    XMStoreFloat4x4(&m_matFPSModel, matFps);
+    if (m_pCamera)
+        m_pCamera->Set_WorldMatrix(m_matFPSModel);
+}
+
 void CPlayer_1rd::Update_Launch(_float fTimeDelta)
 {
-    // 충돌 없는 단순 탄도 적분.
+    // 탄도 적분 + 충돌 검사.
     m_vLaunchVel.y += GRAVITY * fTimeDelta; // GRAVITY 는 음수
+    if (m_vLaunchVel.y < -TERMINAL_VEL)
+        m_vLaunchVel.y = -TERMINAL_VEL;
     if (m_vLaunchVel.y < 0.f)
         m_bLaunchDescending = true;         // 정점 지나 하강 시작
+
+    // 이번 프레임 이동량(월드).
+    //  - 충돌로 추락 중이면 수평 속도는 이미 0 이라 수직 성분만 남는다.
+    _float3 vMove = _float3(
+        m_vLaunchVel.x * fTimeDelta,
+        m_vLaunchVel.y * fTimeDelta,
+        m_vLaunchVel.z * fTimeDelta);
+
+    // ---- 충돌 검사 (콜라이더당 CheckMove) ----
+    _bool bBlocked = false;
+    vector<CCollider*> vHitColliders;
+    {
+        _vector vMoveVec = XMLoadFloat3(&vMove);
+        for (CCollider* pCollider : m_vMapColliderComs)
+        {
+            if (pCollider == nullptr) continue;
+
+            _float3 vOffset; XMStoreFloat3(&vOffset, vMoveVec);
+            _float3 vSlide;
+            if (m_pGameInstance->CheckMove(pCollider, vOffset, vSlide, &vHitColliders))
+            {
+                bBlocked = true;
+                vMoveVec = XMLoadFloat3(&vSlide);
+            }
+        }
+        XMStoreFloat3(&vMove, vMoveVec);
+    }
+
+    // 충돌한 부서지는 맵 처리
+    for (CCollider* pHit : vHitColliders)
+    {
+        if (pHit == nullptr) continue;
+        CMap* pMap = dynamic_cast<CMap*>(pHit->Get_Owner());
+        if (pMap && pMap->Is_Breakable())
+            pMap->Break();
+    }
+
+    // 비행(아치) 도중 처음으로 막히면 → 그 자리에서 수직 추락으로 전환.
+    if (bBlocked && !m_bLaunchFalling)
+    {
+        m_bLaunchFalling = true;
+        m_vLaunchVel.x = 0.f;
+        m_vLaunchVel.z = 0.f;
+        m_bLaunchDescending = true;
+    }
 
     _float3 vPos;
     XMStoreFloat3(&vPos, m_pTransformCom->Get_State(CTransform::STATE_POSITION));
 
-    vPos.x += m_vLaunchVel.x * fTimeDelta;
-    vPos.y += m_vLaunchVel.y * fTimeDelta;
-    vPos.z += m_vLaunchVel.z * fTimeDelta;
+    vPos.x += vMove.x;
+    vPos.y += vMove.y;
+    vPos.z += vMove.z;
 
-    // 하강 중 목표 높이 이하로 내려오면 그 지점에서 착지 종료.
-    if (m_bLaunchDescending && vPos.y <= m_fLaunchLandY)
+    // 종료 조건:
+    //  (A) 수직 추락 중 바닥에 막히면(=아래로 가려는데 안 내려감) 그 자리에서 정지.
+    //  (B) 정상 아치 비행 시, 하강 중 목표 높이 이하로 내려오면 그 지점에서 정지.
+    _bool bLanded = false;
+    if (m_bLaunchFalling)
+    {
+        // 추락 중인데 이번 프레임 수직 이동이 막혔다 → 착지
+        if (m_vLaunchVel.y < 0.f && vMove.y > m_vLaunchVel.y * fTimeDelta - 1e-4f)
+            bLanded = true;
+    }
+    else if (m_bLaunchDescending && vPos.y <= m_fLaunchLandY)
     {
         vPos.y = m_fLaunchLandY;     // 미리 정한 y 에 도달하면 멈춤
+        bLanded = true;
+    }
+
+    if (bLanded)
+    {
         m_bLaunching = false;
         m_bLaunchDescending = false;
+        m_bLaunchFalling = false;
         m_vLaunchVel = _float3(0.f, 0.f, 0.f);
         m_fVerticalVelocity = 0.f;
         m_bIsGrounded = true;        // 착지 후 정상 이동/중력 재개

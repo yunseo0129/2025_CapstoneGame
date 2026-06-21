@@ -43,7 +43,7 @@ HRESULT CLoader_Map::Load_MaterialData(const string& strJsonPath)
     file >> matJson;
     file.close();
 
-    // [방식 가] 새 MaterialData 구조:
+    // [UV] 새 MaterialData 구조:
     //   - 머티리얼이 슬롯(서브메시) 단위로 분리되어 각자 고유 텍스처(textureKey)를 가짐.
     //   - 키는 더 이상 Unity 머티리얼 이름이 아니라 "textureKey"({fbx}_mat{slot}_Texture).
     //     MapData 의 materialNames[i] 가 이 키를 직접 가리킨다.
@@ -78,6 +78,16 @@ HRESULT CLoader_Map::Load_MaterialData(const string& strJsonPath)
         if (mat.contains("uvOffsetY")) info.vUVOffset.y = mat["uvOffsetY"].get<float>();
         if (mat.contains("uvScaleX"))  info.vUVScale.x = mat["uvScaleX"].get<float>();
         if (mat.contains("uvScaleY"))  info.vUVScale.y = mat["uvScaleY"].get<float>();
+
+        // [투명] 표면타입/알파 (없으면 기본 Opaque/1.0 → 기존 맵 JSON 그대로 동작).
+        if (mat.contains("surfaceType"))
+        {
+            string st = mat["surfaceType"].get<string>();
+            if (st == "Transparent")   info.iSurfaceType = 1;
+            else if (st == "Cutout")   info.iSurfaceType = 2;
+            else                       info.iSurfaceType = 0; // Opaque
+        }
+        if (mat.contains("alpha")) info.fAlpha = mat["alpha"].get<float>();
     }
     return S_OK;
 }
@@ -116,7 +126,7 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
         // [Fracture] 파괴 가능 벽 판별(현재는 모델 이름 기반). anim 이라고 모두 파괴 가능한 건
         //   아니므로 분리 판별. 파괴 모델이 늘면 이 조건만 확장(이름 집합/별도 플래그)하면 된다.
         string baseName = fbxName.substr(0, fbxName.find_last_of('.'));
-        bool bBreakable = (_stricmp(baseName.c_str(), "Fractured_Wall") == 0);
+        bool bBreakable = (_stricmp(baseName.c_str(), "Brread") == 0);
 
         char szDbgLoad[256];
         sprintf_s(szDbgLoad, "[LoadMap] %s : %s, breakable=%d\n",
@@ -159,33 +169,48 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
             const int iModelMatCount = (int)pModel->Get_NumMaterials();
 
             int iLoadedTex = 0;
+            int iBlendSlots = 0;   // [투명] 진단용: Transparent 슬롯 수
             for (int i = 0; i < iModelMatCount; ++i)
             {
-                // 이 슬롯이 어느 팔레트를 쓰는지: JSON 에 슬롯 i 정보가 있으면 그 머티리얼
-                // 이름으로 판정, 없으면(익스포트 슬롯 수 < 모델 슬롯 수) 기본 팔레트.
-                const _wstring* pPalette = &m_strPaletteDefault;
+                // 이 슬롯의 JSON 머티리얼 정보(있으면 한 번만 룩업). 슬롯 i 정보가 없으면
+                // (익스포트 슬롯 수 < 모델 슬롯 수) 기본값(Palette/Opaque/1.0) 사용.
+                const MATERIAL_INFO* pInfo = nullptr;
                 if (i < (int)materialNames.size())
                 {
                     auto it = m_MaterialInfos.find(materialNames[i]);
-                    if (it != m_MaterialInfos.end() &&
-                        it->second.strMaterialName == "Paintings")
-                    {
-                        pPalette = &m_strPalettePaintings;
-                    }
+                    if (it != m_MaterialInfos.end())
+                        pInfo = &it->second;
                 }
+
+                // 팔레트 선택: 'Paintings' 만 별도, 그 외 공용 Palette.
+                const _wstring* pPalette =
+                    (pInfo && pInfo->strMaterialName == "Paintings")
+                    ? &m_strPalettePaintings : &m_strPaletteDefault;
 
                 if (SUCCEEDED(pModel->Ready_MapMaterial(pPalette->c_str(), i, TextureType_DIFFUSE)))
                     ++iLoadedTex;
 
-                // [레거시] UV 재매핑은 더 이상 쓰지 않는다(메시 원본 UV 사용).
-                //   호환을 위해 기본값(변환 없음)으로 명시.
+                // [레거시] UV 재매핑 미사용 → 기본값(변환 없음) 명시.
                 pModel->Set_MapMaterialUV(i, _float2(0.f, 0.f), _float2(1.f, 1.f));
+
+                // [투명] 표면타입/알파 전달(슬롯 정보 없으면 Opaque/1.0).
+                _int   iSurface = pInfo ? pInfo->iSurfaceType : 0;
+                _float fAlpha = pInfo ? pInfo->fAlpha : 1.f;
+
+                // [투명] Transparent 인데 알파가 사실상 1.0 이면(예: Kitchen_alpha) 블렌딩할
+                //   게 없고(공유 팔레트 불투명), 블렌드 패스 Z-Write Off 로 정렬 아티팩트만
+                //   생긴다 → 불투명으로 격하해 불투명 패스에서 솔리드로 그린다.
+                if (iSurface == 1 && fAlpha >= 0.99f)
+                    iSurface = 0;
+
+                pModel->Set_MapMaterialBlend(i, iSurface, fAlpha);
+                if (iSurface == 1) ++iBlendSlots;
             }
             // [진단] paletteBound 가 modelMats 와 같아야 정상(모든 슬롯에 팔레트 바인딩됨).
             {
                 char szLog[256];
-                sprintf_s(szLog, "[LoadMap] %s : modelMats=%d, jsonMats=%zu, paletteBound=%d\n",
-                    fbxName.c_str(), iModelMatCount, materialNames.size(), iLoadedTex);
+                sprintf_s(szLog, "[LoadMap] %s : modelMats=%d, jsonMats=%zu, paletteBound=%d, blendSlots=%d\n",
+                    fbxName.c_str(), iModelMatCount, materialNames.size(), iLoadedTex, iBlendSlots);
                 OutputDebugStringA(szLog);
             }
 

@@ -174,6 +174,7 @@ private:
     _int    m_iMyTeam = 0;
     _int    m_iMyNumber = 1;
     _float3 m_vMySpot = _float3(0.f, 0.f, 0.f);
+    _float  m_fMyYaw = 0.f;     // 스폰 시 바라볼 yaw(원점 방향, 라디안)
 
     // 팀 라운드 승수 (인덱스 0: 팀A, 1: 팀B)
     _int        m_iTeamScore[2] = {0, 0};
@@ -249,7 +250,7 @@ private:
 
 
 private:
-        _bool m_bMouseCaptured = false;
+    _bool m_bMouseCaptured = false;
 public:
     void Set_MouseCaptured(_bool bCaptured); // 플레이=true(숨김+가둠), 메뉴=false
     void Update_MouseClip();                 // 매 프레임 호출(포커스 변화 자가 복구)

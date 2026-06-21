@@ -5,6 +5,7 @@
 #include "Bounding_OBB.h"
 #include "Bounding_Sphere.h"
 #include "Map.h"
+#include "Model.h"
 #include "Bullets.h"
 #include "Particle_System.h"
 
@@ -362,6 +363,10 @@ void CCollision_Manager::Cull_StaticBVH(const BoundingFrustum* pMainFrustum, con
                 else {
                     m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, owner);
                 }
+                // [투명] 맵에 유리 메시가 있으면 블렌드 패스(RG_BLEND)에도 제출(비인스턴싱).
+                CMap* pMapB = dynamic_cast<CMap*>(owner);
+                if (pMapB && pMapB->Get_Model() && pMapB->Get_Model()->Has_BlendMesh())
+                    m_pGameInstance->Add_RenderObject(CRenderer::RG_BLEND, owner);
             }
         }
         m_pGameInstance->Add_CullStat_Main_Bulk((_int)results.size(), iTotal);
@@ -378,6 +383,10 @@ void CCollision_Manager::Cull_StaticBVH(const BoundingFrustum* pMainFrustum, con
                 else {
                     m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, owner);
                 }
+                // [투명] 맵에 유리 메시가 있으면 블렌드 패스(RG_BLEND)에도 제출(비인스턴싱).
+                CMap* pMapB = dynamic_cast<CMap*>(owner);
+                if (pMapB && pMapB->Get_Model() && pMapB->Get_Model()->Has_BlendMesh())
+                    m_pGameInstance->Add_RenderObject(CRenderer::RG_BLEND, owner);
             }
         }
         m_pGameInstance->Add_CullStat_Main_Bulk(iTotal, iTotal);
@@ -411,10 +420,10 @@ void CCollision_Manager::Cull_StaticBVH(const BoundingFrustum* pMainFrustum, con
                 if (m_pGameInstance->Is_InstancingEnabled()) {
                     CMap* pMap = dynamic_cast<CMap*>(owner);
                     if (pMap) m_pGameInstance->Add_ShadowInstancedRenderObject(pMap->Get_ModelTag(), owner);
-                    else      m_pGameInstance->Add_ShadowRenderObject(CRenderer::RG_NONBLEND, owner);
+                    else      m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, owner);
                 }
                 else {
-                    m_pGameInstance->Add_ShadowRenderObject(CRenderer::RG_NONBLEND, owner);
+                    m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, owner);
                 }
             }
         }

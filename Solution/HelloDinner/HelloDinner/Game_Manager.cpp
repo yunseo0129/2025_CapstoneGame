@@ -1219,16 +1219,17 @@ void CGame_Manager::Set_MySpot_From_Setup()
     if (m_iMyNumber < 1) m_iMyNumber = 1;
     if (m_iMyNumber > 3) m_iMyNumber = 3;
 
-    XMFLOAT3 spot = g_MatchSetup.Get_SpawnSpot();   // x=(번호-1)*5, y=팀, z=0
+    XMFLOAT3 spot = g_MatchSetup.Get_SpawnSpot();   // RED=(100,100,0), BLUE=(-100,100,0)
     m_vMySpot = _float3(spot.x, spot.y, spot.z);
+    m_fMyYaw = g_MatchSetup.Get_SpawnYaw();         // 원점을 바라보는 yaw
 
     // 기본 스폰(스폰 선택 안 했을 때 날아갈 위치)도 시작 지점으로 맞춰 둔다.
     //  (원하면 맵별 기본 스폰으로 따로 지정 가능)
     m_vDefaultSpawn = m_vMySpot;
 
-    GM_Log(L"MatchSetup → Team %s, No.%d, Spot(%.1f, %.1f, %.1f)",
+    GM_Log(L"MatchSetup → Team %s, No.%d, Spot(%.1f, %.1f, %.1f), Yaw %.2f",
         (m_iMyTeam == 0) ? L"RED" : L"BLUE", m_iMyNumber,
-        m_vMySpot.x, m_vMySpot.y, m_vMySpot.z);
+        m_vMySpot.x, m_vMySpot.y, m_vMySpot.z, m_fMyYaw);
 }
 
 void CGame_Manager::Place_PlayerAt_Spot()
@@ -1237,7 +1238,10 @@ void CGame_Manager::Place_PlayerAt_Spot()
     CController* pController = m_pGameInstance->Get_Controller();
     CPlayer_1rd* pPlayer = pController ? pController->Get_Player() : nullptr;
     if (pPlayer != nullptr)
+    {
         pPlayer->Set_Position(m_vMySpot);
+        pPlayer->Set_Facing(m_fMyYaw);   // 원점을 바라보도록
+    }
 }
 
 void CGame_Manager::Tick_SelectTimer(_float fTimeDelta)
