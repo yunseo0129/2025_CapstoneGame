@@ -102,6 +102,7 @@ float CalcShadowFactor(float4 shadowPos)
 // 일반/애니메이션 메쉬 공통 사용
 float4 PS_Main_Lit(VS_OUT In) : SV_TARGET
 {
+    
     float4 normalMapColor = g_NormalTextures.Sample(g_samWrap, In.vUV);
     float x = normalMapColor.r * 2.0f - 1.0f;
     float y = normalMapColor.g * 2.0f - 1.0f;

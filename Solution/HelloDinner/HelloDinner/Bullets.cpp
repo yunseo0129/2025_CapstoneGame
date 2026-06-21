@@ -49,8 +49,8 @@ void CBullets::Priority_Update(_float fTimeDelta)
     {
         if (b.isOn)
         {
-            b.iLifeTime -= fTimeDelta;
-            if (b.iLifeTime <= 0.f)
+            b.fLifeTime -= fTimeDelta;
+            if (b.fLifeTime <= 0.f)
                 b.isOn = false;
         }
     }
@@ -69,6 +69,15 @@ void CBullets::Late_Update(_float fTimeDelta)
 
 void CBullets::Render(ID3D12GraphicsCommandList* _commandList)
 {
+    for (BULLET& b : m_vBullets)
+    {
+        if (b.isOn)
+        {
+            // 여기서 렌더
+            b.vTarget; // 렌더 되어야할 위치
+        }
+    }
+
     //_commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &m_matFPSModel, 0);
 
     //// 2. PSO 설정

@@ -51,7 +51,28 @@ float4 PS_Main_UI(VS_OUT_UI In) : SV_TARGET
     if (g_vUIParam.x > 0.5f)
         baseColor = g_DiffuseTextures.Sample(g_samClamp, In.vUV);
 
+    // [3] 컬러 그레이딩: 라이브 화면 -> "지도" 느낌 (탈채도 + 따뜻한 틴트)
+    //  g_vUIParam.w = grade strength (0=원본, 1=최대)
+    if (g_vUIParam.w > 0.001f)
+    {
+        float g = dot(baseColor.rgb, float3(0.299f, 0.587f, 0.114f));
+        float3 graded = lerp(baseColor.rgb, g.xxx, 0.35f); // 35% 탈채도
+        graded *= float3(1.06f, 0.99f, 0.88f); // 따뜻한 톤
+        baseColor.rgb = lerp(baseColor.rgb, graded, saturate(g_vUIParam.w));
+    }
+
     float4 outColor = baseColor * g_vUIColor;
+
+    // [1] 원형 마스크 + 가장자리 페더 (레이더 느낌)
+    //  g_vUIParam.y = shapeMode (1=원형), g_vUIParam.z = feather(0~0.5)
+    if (g_vUIParam.y > 0.5f)
+    {
+        float2 c = In.vUV - 0.5f;
+        float d = length(c) * 2.0f; // 0(중심)~1(가장자리)
+        float fw = max(g_vUIParam.z, 0.0001f);
+        float edge = 1.0f - smoothstep(1.0f - fw, 1.0f, d);
+        outColor.a *= edge; // 원 밖 자연 페이드
+    }
 
     if (outColor.a <= 0.001f)
         discard;

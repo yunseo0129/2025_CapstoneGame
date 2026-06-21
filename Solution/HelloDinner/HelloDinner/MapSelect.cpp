@@ -1,6 +1,9 @@
 #include "MapSelect.h"
 #include "GameInstance.h"
 #include "VIBuffer_Rect.h"
+#include "Map.h"
+#include "Collider.h"
+#include <cmath>
 
 namespace
 {
@@ -45,6 +48,8 @@ HRESULT CMapSelect::Initialize(void* pArg)
     m_fWorldRange = pDesc->fWorldRange;
     m_iMapLevelIndex = pDesc->iMapLevelIndex;
     m_strMapLayerTag = pDesc->strMapLayerTag;
+    m_strTableModelTag = pDesc->strTableModelTag;
+    m_fSpawnTopOffset = pDesc->fSpawnTopOffset;
     m_fHeightMin = pDesc->fHeightMin;
     m_fHeightMax = pDesc->fHeightMax;
     m_vColorLow = pDesc->vColorLow;
@@ -53,6 +58,10 @@ HRESULT CMapSelect::Initialize(void* pArg)
     m_fBlipMinPx = pDesc->fBlipMinPx;
     m_fMarkerSize = pDesc->fMarkerSize;
     m_vMarkerColor = pDesc->vMarkerColor;
+    m_fRadarEdgePx = pDesc->fRadarEdgePx;
+    m_fRingThickness = pDesc->fRingThickness;
+    m_vRingColor = pDesc->vRingColor;
+    m_fGradeStrength = pDesc->fGradeStrength;
 
     // 베이스(CUIObject)가 위치/크기/배경색(m_vColor)/화면크기 셋업
     if (FAILED(__super::Initialize(pArg)))
@@ -68,9 +77,23 @@ void CMapSelect::Update(_float fTimeDelta)
 {
     __super::Update(fTimeDelta);
 
-    // 보일 때만 클릭을 받는다. (창이 꺼져 있으면 선택 처리 안 함)
-    if (m_bVisible && GetOnOff())
+    const _bool bShown = (m_bVisible && GetOnOff());
+
+    // [맵 RTT] 보일 때만 탑다운 맵 텍스처를 그리도록 활성화 + 카메라 영역 설정.
+    //  중심 = vCenterWorld(x,z), 반경 = fWorldRange, 위쪽 = 북쪽(+Z 고정, 회전 없음).
+    if (bShown)
+    {
+        // [식탁 영역] 최초 표시 시 1회: 중심/반지름 자동 확보 (맵 로드 이후 보이므로 안전)
+        Resolve_TableRegion();
+
+        m_pGameInstance->Set_MapRTView(
+            _float3(m_vCenterWorld.x, 0.f, m_vCenterWorld.y),
+            m_fWorldRange,
+            _float3(0.f, 0.f, 1.f));
+        m_pGameInstance->Set_MapRTActive(true);
+
         Handle_Click();
+    }
 }
 
 void CMapSelect::Render(ID3D12GraphicsCommandList* _commandList)
@@ -82,53 +105,37 @@ void CMapSelect::Render(ID3D12GraphicsCommandList* _commandList)
     m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::UI);
 
     // -----------------------------------------------------------------
-    // 1) 배경 (베이스가 갱신해 둔 m_matNDCWorld 사용, 단색)
+    // 1) 배경 = 탑다운 맵 RTT 텍스처. 네모 패널에 그대로(불투명·선명) 출력.
     // -----------------------------------------------------------------
     Bind_NDCWorld(_commandList);
-    Bind_UIColor(_commandList, false);
+
+    const _uint iRTIndex = m_pGameInstance->Get_MapRT_SRVIndex();
+
+    if (iRTIndex != 0)
+    {
+        // b4 : 흰색 곱(선명) + [3]컬러 그레이딩. 사각이라 shapeMode=0(원형 마스크 끔).
+        //  rgba(흰색) / x=useTexture, y=shapeMode, z=feather, w=gradeStrength
+        _float fParams[8] = {
+            1.f, 1.f, 1.f, 1.f,   // 흰색 틴트 (풀 밝기)
+            1.f,                  // useTexture
+            0.f,                  // shapeMode = 사각 (마스크 없음)
+            0.f,                  // feather (미사용)
+            m_fGradeStrength      // grade strength
+        };
+        _commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::UIColor, 8, fParams, 0);
+
+        CD3DX12_GPU_DESCRIPTOR_HANDLE hGpu = m_pGameInstance->Get_GPUHandle(iRTIndex);
+        _commandList->SetGraphicsRootDescriptorTable((_uint)RootParameterIndex::TEXTURE_Diffuse, hGpu);
+    }
+    else
+    {
+        // RTT 미준비 시 단색 폴백
+        Bind_UIColor(_commandList, false);
+    }
     m_pVIBufferCom->Render(_commandList);
 
     // -----------------------------------------------------------------
-    // 2) 맵 조각 높이맵 (고정 영역 / 회전 없음)
-    // -----------------------------------------------------------------
-    const _float scale = (m_fW * 0.5f) / m_fWorldRange; // 월드유닛 -> 픽셀
-    list<CGameObject*> MapObjs = m_pGameInstance->Get_List(m_iMapLevelIndex, m_strMapLayerTag);
-    const _float hRange = (m_fHeightMax - m_fHeightMin);
-
-    for (auto& pObj : MapObjs)
-    {
-        if (nullptr == pObj)
-            continue;
-
-        _float3 c; _float r;
-        if (!pObj->Get_WorldBoundingSphere(c, r))
-            continue;
-
-        // 보여줄 영역(중심 기준 사각 범위) 밖이면 스킵
-        const _float dx = c.x - m_vCenterWorld.x;
-        const _float dz = c.z - m_vCenterWorld.y;
-        if (dx < -m_fWorldRange || dx > m_fWorldRange ||
-            dz < -m_fWorldRange || dz > m_fWorldRange)
-            continue;
-
-        _float bx, by;
-        World_To_Pixel(c.x, c.z, bx, by);
-
-        // 높이 -> 색
-        _float t = (hRange > 0.f) ? (c.y - m_fHeightMin) / hRange : 0.f;
-        t = Clamp01(t);
-        const _float4 col = Lerp4(m_vColorLow, m_vColorHigh, t);
-
-        // blip 크기 (최소치 보장)
-        _float sz = r * scale * 2.f * m_fBlipScale;
-        if (sz < m_fBlipMinPx) sz = m_fBlipMinPx;
-
-        _float4x4 matBlip = Make_PixelRectNDC(bx - sz * 0.5f, by - sz * 0.5f, sz, sz);
-        Draw_Solid(_commandList, m_pVIBufferCom, matBlip, col);
-    }
-
-    // -----------------------------------------------------------------
-    // 3) 선택 마커 (선택했을 때만)
+    // 2) 선택 마커 (스폰 지점을 선택했을 때만)
     // -----------------------------------------------------------------
     if (m_bHasSelection)
     {
@@ -172,6 +179,47 @@ void CMapSelect::Pixel_To_World(_float px, _float py, _float& outWx, _float& out
 }
 
 // =====================================================================
+//  식탁(원형) 영역 자동 확보 (최초 1회)
+//   - Layer_Map 에서 식탁 모델 태그를 가진 CMap 을 찾고
+//   - 콜라이더 AABB 의 월드 중심/반칸을 읽어
+//   - 뷰/선택 중심 = (cx, cz), 선택 반지름 = min(ex, ez) 로 세팅.
+//   (맵 콜라이더는 런타임에 월드행렬 재변환이 없어 AABB = 로드값 그대로다)
+// =====================================================================
+void CMapSelect::Resolve_TableRegion()
+{
+    if (m_bTableResolved)
+        return;
+
+    list<CGameObject*> MapObjs = m_pGameInstance->Get_List(m_iMapLevelIndex, m_strMapLayerTag);
+    for (auto& pObj : MapObjs)
+    {
+        CMap* pMap = dynamic_cast<CMap*>(pObj);
+        if (nullptr == pMap)
+            continue;
+        if (pMap->Get_ModelTag() != m_strTableModelTag)
+            continue;
+
+        CCollider* pCol = dynamic_cast<CCollider*>(pMap->Find_Component(TEXT("Com_Collider")));
+        if (nullptr == pCol)
+            break;
+
+        _float3 vCenter, vExtents;
+        if (!pCol->Get_AABBBound(vCenter, vExtents))
+            break;
+
+        // 뷰 중심 = 선택 원 중심 = 식탁 중심(XZ)
+        m_vCenterWorld = _float2(vCenter.x, vCenter.z);
+        // 원형 식탁: 작은 반칸을 반지름으로 → 선택 원이 식탁 안에 완전히 포함
+        m_fSelectRadius = fminf(fabsf(vExtents.x), fabsf(vExtents.z));
+        // 식탁 윗면 높이 = 콜라이더 AABB 상단 (스폰을 여기에 올린다)
+        m_fTableTopY = vCenter.y + fabsf(vExtents.y);
+
+        m_bTableResolved = true;
+        break;
+    }
+}
+
+// =====================================================================
 //  클릭 처리: 창 내부 좌클릭 -> 선택 위치 저장 (+ 그 지점 맵 높이 추정)
 // =====================================================================
 void CMapSelect::Handle_Click()
@@ -210,33 +258,36 @@ void CMapSelect::Handle_Click()
     if (fDesignX < m_fX || fDesignX > m_fX + m_fW ||
         fDesignY < m_fY || fDesignY > m_fY + m_fH)
         return; // 창 밖 클릭은 무시
+    // (맵이 네모 패널 전체에 출력되므로 원형 제한 없음 — 사각형 안 어디든 클릭 가능)
 
     // ---- 4) 픽셀 -> 월드 (x,z) ----
     _float wx, wz;
     Pixel_To_World(fDesignX, fDesignY, wx, wz);
 
-    // ---- 5) 그 지점에서 가장 가까운 맵 조각의 높이를 y 로 채택(없으면 0) ----
-    _float fBestY = 0.f;
-    _float fBestDistSq = FLT_MAX;
-    list<CGameObject*> MapObjs = m_pGameInstance->Get_List(m_iMapLevelIndex, m_strMapLayerTag);
-    for (auto& pObj : MapObjs)
+    // ---- 4b) 식탁(원형) 영역 밖 클릭은 무시 ----
+    if (m_fSelectRadius > 0.f)
     {
-        if (nullptr == pObj)
-            continue;
-        _float3 c; _float r;
-        if (!pObj->Get_WorldBoundingSphere(c, r))
-            continue;
-        const _float ddx = c.x - wx;
-        const _float ddz = c.z - wz;
-        const _float distSq = ddx * ddx + ddz * ddz;
-        if (distSq < fBestDistSq)
-        {
-            fBestDistSq = distSq;
-            fBestY = c.y;
-        }
+        const _float ddx = wx - m_vCenterWorld.x;
+        const _float ddz = wz - m_vCenterWorld.y;
+        if (ddx * ddx + ddz * ddz > m_fSelectRadius * m_fSelectRadius)
+            return; // 식탁 반지름 밖 → 선택 무시
     }
 
-    m_vSelectedWorld = _float3(wx, fBestY, wz);
+    // ---- 5) 스폰 높이(y) 결정 ----
+    _float fSpawnY;
+    if (m_fSelectRadius > 0.f)
+    {
+        // [정상] 식탁 확보됨 → 식탁 윗면에 올린다.
+        fSpawnY = m_fTableTopY + m_fSpawnTopOffset;
+    }
+    else
+    {
+        fSpawnY = m_fTableTopY + m_fSpawnTopOffset;
+        wx = 0.f; // 식탁 영역 확보 실패 → 월드 중심에 스폰
+        wz = 0.f;
+    }
+
+    m_vSelectedWorld = _float3(wx, fSpawnY, wz);
     m_bHasSelection = true;
 }
 
@@ -259,6 +310,31 @@ _float4x4 CMapSelect::Make_PixelRectNDC(_float fX, _float fY, _float fW, _float 
     m._31 = 0.f; m._32 = 0.f; m._33 = 1.f; m._34 = 0.f;
     m._41 = tx;  m._42 = ty;  m._43 = 0.f; m._44 = 1.f;
     return m;
+}
+
+// =====================================================================
+//  blip 사각형을 원(레이더) 안으로 잘라낸다.
+//   원의 외접 정사각형과 교차시켜 위젯 밖으로 절대 나가지 않게 한다.
+// =====================================================================
+bool CMapSelect::Clip_RectToCircle(_float inX, _float inY, _float inW, _float inH,
+    _float cx, _float cy, _float rad,
+    _float& outX, _float& outY, _float& outW, _float& outH) const
+{
+    if (rad <= 0.f)
+        return false;
+
+    _float l = inX, t = inY, r = inX + inW, b = inY + inH;
+
+    const _float bl = cx - rad, bt = cy - rad, br = cx + rad, bb = cy + rad;
+    if (l < bl) l = bl;
+    if (t < bt) t = bt;
+    if (r > br) r = br;
+    if (b > bb) b = bb;
+    if (r <= l || b <= t)
+        return false;
+
+    outX = l; outY = t; outW = r - l; outH = b - t;
+    return true;
 }
 
 void CMapSelect::Draw_Solid(ID3D12GraphicsCommandList* _commandList, CVIBuffer* pBuffer,

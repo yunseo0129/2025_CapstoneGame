@@ -55,3 +55,14 @@ VS_OUT_Shadow VS_Main_Shadow_Instanced(VS_IN_Instanced In)
 
     return Out;
 }
+
+// =====================================================================
+//  [맵 RTT] 탑다운 맵 전용 PS — 조명/그림자 없이 디퓨즈 텍스처를 그대로 출력.
+//   탑다운 뷰에선 면이 위를 보므로 NdotL 이 0에 가까워 어두워지고, 게임용
+//   그림자 팩터까지 곱해져 식별이 안 된다. 여기선 풀 밝기로 평면 표시한다.
+// =====================================================================
+float4 PS_Main_MapRT(VS_OUT In) : SV_TARGET
+{
+    float4 diffuseColor = g_DiffuseTextures.Sample(g_samWrap, In.vUV);
+    return float4(diffuseColor.rgb, diffuseColor.a);
+}

@@ -28,9 +28,9 @@ struct MATCH_SETUP
     // 선택 지점 월드 좌표를 계산해 돌려준다(팀/번호 → 위치 규칙을 한 곳에 둠).
     XMFLOAT3 Get_SpawnSpot() const
     {
-        return XMFLOAT3(static_cast<float>((iNumber - 1) * 5),
-            (iTeam == 0) ? 0.f : 10.f,
-            0.f);
+        return XMFLOAT3(static_cast<float>((iNumber - 1) * 5 + 100),
+            (iTeam == 0) ? 125.f : 130.f,
+            100.f);
     }
 };
 extern MATCH_SETUP g_MatchSetup;
@@ -87,6 +87,7 @@ enum RootParameterIndex
     Light,
     ShadowMap,
     UIColor,
+    MapUV,      // [방식 가] 팔레트 crop UV 재매핑 (b5: float2 offset + float2 scale)
     // 후에 Material, BoneMatrix 등등 추가할 수 있음
     End
 };
@@ -103,6 +104,7 @@ enum PSO_TYPE
     SHADOW_ANIM,    // 그림자 생성용 (Skeletal Mesh / Depth Only)
     DEFAULT_INSTANCED, // 인스턴싱용
     SHADOW_STATIC_INSTANCED,
+    MAPRT_INSTANCED,   // [맵 RTT] 탑다운 맵 렌더용 (DEFAULT_INSTANCED + CullMode None)
     END
 };
 

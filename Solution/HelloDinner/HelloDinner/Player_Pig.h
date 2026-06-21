@@ -12,7 +12,7 @@ public:
 		_float3				vRotation = {};
 		_wstring			strModelTag = L"";
 	};
-	enum PLAYER_1RD_COLLIDER_TYPE { COLLIDER_MAIN, COLLIDER_HEAD, COLLIDER_ARM_UP_L, COLLIDER_ARM_UP_R, COLLIDER_ARM_LOW_L, COLLIDER_ARM_LOW_R, COLLIDER_THIGH_L, COLLIDER_THIGH_R, COLLIDER_SHIN_L, COLLIDER_SHIN_R, COLLIDER_BODY, COLLIDER_END };
+	enum PLAYER_1RD_COLLIDER_TYPE { COLLIDER_HEAD, COLLIDER_ARM_UP_L, COLLIDER_ARM_UP_R, COLLIDER_ARM_LOW_L, COLLIDER_ARM_LOW_R, COLLIDER_THIGH_L, COLLIDER_THIGH_R, COLLIDER_SHIN_L, COLLIDER_SHIN_R, COLLIDER_BODY, COLLIDER_END };
 
 private:
 	CPlayer_Pig(EngineContext* pContext);
@@ -28,6 +28,7 @@ public:
 	virtual void		Render(ID3D12GraphicsCommandList* _commandList) override;
 	virtual void		ShadowRender(ID3D12GraphicsCommandList* _commandList) override;
     virtual bool        Get_WorldBoundingSphere(_float3& outCenter, _float& outRadius) const override;
+    virtual void        Die(_float _val);
 
 	//CCollider* Get_CollisionCom() const { return m_pColliderCom; }
 	//virtual void TakeDamage(int iDamage) PURE;

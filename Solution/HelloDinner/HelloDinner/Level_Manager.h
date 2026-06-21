@@ -29,6 +29,15 @@ public:
     void  Update_Shadows(_float fTimeDelta);
     void  Begin_ShadowPass(ID3D12GraphicsCommandList* cmdList);
     void  End_ShadowPass(ID3D12GraphicsCommandList* cmdList);
+
+    // [맵 RTT] 탑다운 맵 렌더 패스 포워딩
+    _bool Begin_MapRTPass(ID3D12GraphicsCommandList* cmdList);
+    _bool Is_MapRTActive() const;
+    void  Render_MapRT(ID3D12GraphicsCommandList* cmdList);
+    void  End_MapRTPass(ID3D12GraphicsCommandList* cmdList);
+    _uint Get_MapRT_SRVIndex() const;
+    void  Set_MapRTView(const _float3& vCenterXZ, _float fHalfExtent, const _float3& vUpDirXZ);
+    void  Set_MapRTActive(_bool b);
     _bool Get_ShadowLightVP(_float4x4& outView, _float4x4& outProj) const;   // [파편 그림자]
     _bool IsSphereInShadowFrustum(const _float3& vCenter, _float fRadius);
 

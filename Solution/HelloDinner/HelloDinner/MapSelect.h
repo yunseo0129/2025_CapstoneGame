@@ -37,6 +37,14 @@ public:
         _uint    iMapLevelIndex = 3 /*LEVEL_GAMEPLAY*/;
         _wstring strMapLayerTag = L"Layer_Map";
 
+        // ---- 스폰 선택 영역(식탁) ----
+        //  이 모델 태그를 가진 Layer_Map 오브젝트(식탁)를 런타임에 찾아,
+        //  콜라이더 AABB로부터 [뷰/선택 중심]과 [선택 반지름]을 자동 결정한다.
+        _wstring strTableModelTag = L"Prototype_Component_Model_Table_1";
+
+        // 스폰을 식탁 윗면 위로 얼마나 띄울지 (0 = 윗면에 딱). 드롭인 효과 주려면 키우기.
+        _float   fSpawnTopOffset = 5.f;
+
         // ---- 높이 -> 색 매핑 ----
         _float   fHeightMin = -5.f;
         _float   fHeightMax = 20.f;
@@ -50,6 +58,13 @@ public:
         // ---- 선택 마커 ----
         _float   fMarkerSize = 14.f;
         _float4  vMarkerColor = _float4(0.2f, 1.f, 0.3f, 1.f);
+
+        // ---- 레이더(원형) 표시: 원 밖으로 새는 점/클릭을 잘라낸다 ----
+        _float   fRadarEdgePx = 2.f;
+        _float   fRingThickness = 2.f;
+        _float4  vRingColor = _float4(0.35f, 0.9f, 0.45f, 0.8f);
+
+        _float   fGradeStrength = 1.0f;
     };
 
 private:
@@ -84,8 +99,16 @@ private:
     // 클릭 처리: 창 내부 좌클릭 -> 선택 위치 저장
     void      Handle_Click();
 
+    // 식탁(원형) 영역을 런타임에 1회 확보: 중심(XZ) + 반지름(min half-extent)
+    void      Resolve_TableRegion();
+
     // 임의의 픽셀 사각형 -> NDC world 행렬
     _float4x4 Make_PixelRectNDC(_float fX, _float fY, _float fW, _float fH) const;
+
+    // blip 사각형을 레이더 원(중심 cx,cy / 반지름 rad) 안으로 잘라낸다.
+    bool Clip_RectToCircle(_float inX, _float inY, _float inW, _float inH,
+        _float cx, _float cy, _float rad,
+        _float& outX, _float& outY, _float& outW, _float& outH) const;
 
     // 단색 도형 그리기
     void      Draw_Solid(ID3D12GraphicsCommandList* _commandList, class CVIBuffer* pBuffer,
@@ -100,6 +123,13 @@ private:
     _uint    m_iMapLevelIndex = 3;
     _wstring m_strMapLayerTag = L"Layer_Map";
 
+    // 식탁 기반 스폰 영역 (런타임 1회 자동 확보)
+    _wstring m_strTableModelTag = L"Prototype_Component_Model_Table_1";
+    _bool    m_bTableResolved = false;
+    _float   m_fSelectRadius = 0.f;   // 0 = 미확보(제한 없음)
+    _float   m_fTableTopY = 0.f;      // 식탁 윗면 월드 높이 (스폰 y 기준)
+    _float   m_fSpawnTopOffset = 0.f; // 윗면 위 추가 오프셋
+
     _float   m_fHeightMin = -5.f;
     _float   m_fHeightMax = 20.f;
     _float4  m_vColorLow = _float4(0.10f, 0.15f, 0.45f, 1.f);
@@ -110,6 +140,12 @@ private:
 
     _float   m_fMarkerSize = 14.f;
     _float4  m_vMarkerColor = _float4(0.2f, 1.f, 0.3f, 1.f);
+
+    _float   m_fRadarEdgePx = 2.f;
+    _float   m_fRingThickness = 2.f;
+    _float4  m_vRingColor = _float4(0.35f, 0.9f, 0.45f, 0.8f);
+
+    _float   m_fGradeStrength = 1.0f;
 
     // 선택 상태
     _bool    m_bHasSelection = false;

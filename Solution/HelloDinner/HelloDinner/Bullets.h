@@ -13,7 +13,8 @@ public:
         _vector vLook;
         _vector vPos;
         _vector vTarget;
-        _float   iLifeTime;
+        _float  fLifeTime;
+        _bool   isHit = false;
         _bool   isOn = false;
     };
 private:
@@ -30,6 +31,7 @@ public:
     virtual void		Render(ID3D12GraphicsCommandList* _commandList) override;
 
     void                NewBullet(BULLET _bullet);
+    vector<BULLET>      Get_Bullets() { return m_vBullets; }
 
 private:
     virtual HRESULT				Ready_Components();

@@ -36,6 +36,8 @@ public:
 	void			SetDead() { m_bDead = true; }
     bool			GetOnOff() { return m_bOnOff; }
     void            SetOnOff(bool _is) { m_bOnOff = _is; }
+    void            TakeDamage(_uint _val);
+    virtual void    Die(_float _val);
 
 protected:
 	HRESULT				Add_Component(_uint iPrototypeLevelIndex, const _wstring& strPrototypeTag, const _wstring& strComponentTag, CComponent** ppOut, void* pArg = nullptr);
@@ -52,6 +54,8 @@ protected:
 	_uint										m_iData = {};
 	bool										m_bDead = false;
 	bool										m_bOnOff = true;
+    _int                                        m_ihealth = 100;
+    _bool                                       m_isDie = false;
 
 public:
 	virtual CGameObject* Clone(void* pArg) = 0;

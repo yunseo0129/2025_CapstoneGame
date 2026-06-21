@@ -51,6 +51,18 @@ public:
         // 내 플레이어 마커 (중앙 고정)
         _float   fMarkerSize = 12.f;
         _float4  vMarkerColor = _float4(0.2f, 1.f, 0.3f, 1.f);
+
+        // 레이더(원형) 표시: 원 밖으로 새는 점을 잘라낸다.
+        //  fRadarEdgePx: 위젯 반지름에서 안쪽으로 줄일 여백(테두리). 0이면 위젯에 꽉 참.
+        _float   fRadarEdgePx = 2.f;
+        // 테두리 링 그리기 (레이더 느낌). 두께 0이면 안 그림.
+        _float   fRingThickness = 2.f;
+        _float4  vRingColor = _float4(0.35f, 0.9f, 0.45f, 0.8f);
+
+        // [1] 원형 레이더 가장자리 페더 (0~0.5, 클수록 부드럽게 사라짐)
+        _float   fRadarFeather = 0.12f;
+        // [3] 컬러 그레이딩 강도 (0=원본, 1=최대)
+        _float   fGradeStrength = 1.0f;
     };
 
 private:
@@ -61,6 +73,7 @@ private:
 public:
     virtual HRESULT Initialize_Prototype() override;
     virtual HRESULT Initialize(void* pArg) override;
+    virtual void    Update(_float fTimeDelta) override;
     virtual void    Render(ID3D12GraphicsCommandList* _commandList) override;
 
 public:
@@ -74,6 +87,12 @@ private:
 
     // 임의의 픽셀 사각형(좌상단 fX,fY / 크기 fW,fH) -> NDC world 행렬
     _float4x4 Make_PixelRectNDC(_float fX, _float fY, _float fW, _float fH) const;
+
+    // blip 사각형을 레이더 원(중심 cx,cy / 반지름 rad) 안으로 잘라낸다.
+    //  반환 false 면 원 밖이라 그릴 게 없음. true 면 (outX,outY,outW,outH)에 잘린 사각형.
+    bool Clip_RectToCircle(_float inX, _float inY, _float inW, _float inH,
+        _float cx, _float cy, _float rad,
+        _float& outX, _float& outY, _float& outW, _float& outH) const;
 
     // 단색 도형 그리기 (b1=위치, b4=색/단색, 지정 버퍼 렌더)
     void      Draw_Solid(ID3D12GraphicsCommandList* _commandList, class CVIBuffer* pBuffer,
@@ -102,6 +121,13 @@ private:
 
     _float   m_fMarkerSize = 12.f;
     _float4  m_vMarkerColor = _float4(0.2f, 1.f, 0.3f, 1.f);
+
+    _float   m_fRadarEdgePx = 2.f;
+    _float   m_fRingThickness = 2.f;
+    _float4  m_vRingColor = _float4(0.35f, 0.9f, 0.45f, 0.8f);
+
+    _float   m_fRadarFeather = 0.12f;
+    _float   m_fGradeStrength = 1.0f;
 
 public:
     static CMiniMap* Create(EngineContext* _pContext);

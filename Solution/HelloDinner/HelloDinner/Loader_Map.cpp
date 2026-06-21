@@ -4,7 +4,6 @@
 #include "Map.h"
 #include "Texture.h"
 
-#include <unordered_set>
 #include <fstream>
 #include "json.hpp"
 using json = nlohmann::json;
@@ -44,33 +43,36 @@ HRESULT CLoader_Map::Load_MaterialData(const string& strJsonPath)
     file >> matJson;
     file.close();
 
-    unordered_set<string> registeredTextures;
-
+    // [방식 가] 새 MaterialData 구조:
+    //   - 머티리얼이 슬롯(서브메시) 단위로 분리되어 각자 고유 텍스처(textureKey)를 가짐.
+    //   - 키는 더 이상 Unity 머티리얼 이름이 아니라 "textureKey"({fbx}_mat{slot}_Texture).
+    //     MapData 의 materialNames[i] 가 이 키를 직접 가리킨다.
+    //   - albedo 가 슬롯마다 고유하므로 파일명 중복 제거(dedup)를 하지 않는다.
+    //     (과거 Palette 공유 시절의 registeredTextures 로직은 제거)
+    //   - uvOffset/uvScale 을 함께 읽어 셰이더 UV 재매핑에 사용한다.
     for (auto& mat : matJson["materials"])
     {
-        string matName = mat["materialName"].get<string>();
-        string albedoFile = mat["albedoTexture"].get<string>();
-        string normalFile = mat["normalTexture"].get<string>();
+        // textureKey 우선, 구버전 호환을 위해 없으면 materialName 으로 폴백.
+        string key;
+        if (mat.contains("textureKey"))      key = mat["textureKey"].get<string>();
+        else if (mat.contains("materialName")) key = mat["materialName"].get<string>();
+        else continue;
+
+        string albedoFile = mat.contains("albedoTexture") ? mat["albedoTexture"].get<string>() : "";
+        string normalFile = mat.contains("normalTexture") ? mat["normalTexture"].get<string>() : "";
+
+        MATERIAL_INFO& info = m_MaterialInfos[key];
 
         if (!albedoFile.empty())
-        {
-            if (registeredTextures.find(albedoFile) == registeredTextures.end())
-            {
-                _wstring strPath = L"Resources/NonAnim/Map/dds/" + _wstring(albedoFile.begin(), albedoFile.end());
-                registeredTextures.insert(albedoFile);
-                m_MaterialInfos[matName].strAlbedoFile = strPath;
-            }
-        }
-
+            info.strAlbedoFile = m_strTextureDir + _wstring(albedoFile.begin(), albedoFile.end());
         if (!normalFile.empty())
-        {
-            if (registeredTextures.find(normalFile) == registeredTextures.end())
-            {
-                _wstring strPath = L"Resources/NonAnim/Map/dds/" + _wstring(normalFile.begin(), normalFile.end());
-                registeredTextures.insert(normalFile);
-                m_MaterialInfos[matName].strNormalFile = strPath;
-            }
-        }
+            info.strNormalFile = m_strTextureDir + _wstring(normalFile.begin(), normalFile.end());
+
+        // UV 재매핑 파라미터(없으면 기본값 유지: 변환 없음).
+        if (mat.contains("uvOffsetX")) info.vUVOffset.x = mat["uvOffsetX"].get<float>();
+        if (mat.contains("uvOffsetY")) info.vUVOffset.y = mat["uvOffsetY"].get<float>();
+        if (mat.contains("uvScaleX"))  info.vUVScale.x = mat["uvScaleX"].get<float>();
+        if (mat.contains("uvScaleY"))  info.vUVScale.y = mat["uvScaleY"].get<float>();
     }
     return S_OK;
 }
@@ -161,6 +163,10 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
                 }
                 if (!matInfo.strNormalFile.empty())
                     pModel->Ready_MapMaterial(matInfo.strNormalFile.c_str(), i, TextureType_NORMALS);
+
+                // [방식 가] 슬롯 i 의 팔레트 crop UV 재매핑값을 모델(머티리얼)에 전달.
+                //   렌더 시 셰이더 cbuffer 로 넘겨 finalUV = meshUV*uvScale + uvOffset 적용.
+                pModel->Set_MapMaterialUV(i, matInfo.vUVOffset, matInfo.vUVScale);
             }
             // [진단] diffuseLoaded=0 이면 검정 원인(머티리얼 매칭 실패 / MaterialData 미로딩 등)
             {
@@ -194,12 +200,12 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
                 desc.iWallId = iFractureWallId++;
             }
 
-            desc.vPosition.x = inst["position"]["x"].get<float>();
-            desc.vPosition.y = inst["position"]["y"].get<float>() - 1.5f;
-            desc.vPosition.z = inst["position"]["z"].get<float>();
+            desc.vPosition.x = inst["position"]["x"].get<float>() * 100.f;
+            desc.vPosition.y = inst["position"]["y"].get<float>() * 100.f;
+            desc.vPosition.z = inst["position"]["z"].get<float>() * 100.f;
 
             desc.vRotation.x = XMConvertToRadians(inst["rotation"]["x"].get<float>());
-            desc.vRotation.y = XMConvertToRadians(inst["rotation"]["y"].get<float>() + 180);
+            desc.vRotation.y = XMConvertToRadians(inst["rotation"]["y"].get<float>() + 180.f);
             desc.vRotation.z = XMConvertToRadians(inst["rotation"]["z"].get<float>());
 
             desc.vScale.x = inst["scale"]["x"].get<float>();
@@ -217,14 +223,14 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
                 desc.eColliderType = CCollider::TYPE_SPHERE;
             else
                 desc.eColliderType = CCollider::TYPE_END;
+            desc.vCenterCollider.x = colliderNode["center"]["x"].get<float>() * 100.f;
+            desc.vCenterCollider.y = colliderNode["center"]["y"].get<float>() * 100.f;
+            desc.vCenterCollider.z = colliderNode["center"]["z"].get<float>() * 100.f;
 
-            desc.vCenterCollider.x = colliderNode["center"]["x"].get<float>();
-            desc.vCenterCollider.y = colliderNode["center"]["y"].get<float>() - 1.5f;
-            desc.vCenterCollider.z = colliderNode["center"]["z"].get<float>();
 
-            desc.vExtentsCollider.x = colliderNode["extents"]["x"].get<float>();
-            desc.vExtentsCollider.y = colliderNode["extents"]["y"].get<float>();
-            desc.vExtentsCollider.z = colliderNode["extents"]["z"].get<float>();
+            desc.vExtentsCollider.x = colliderNode["extents"]["x"].get<float>() * 100.f;
+            desc.vExtentsCollider.y = colliderNode["extents"]["y"].get<float>() * 100.f;
+            desc.vExtentsCollider.z = colliderNode["extents"]["z"].get<float>() * 100.f;
 
             desc.vRotationCollider.x = XMConvertToRadians(colliderNode["rotation"]["x"].get<float>());
             desc.vRotationCollider.y = XMConvertToRadians(colliderNode["rotation"]["y"].get<float>() + 180.f);

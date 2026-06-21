@@ -17,16 +17,16 @@ CCollision_Manager::CCollision_Manager(): m_pGameInstance {CGameInstance::GetIns
 
 void CCollision_Manager::Update_Collision()
 {
-	for (int i = 0; i < GROUP_END; ++i)
-	{
-		for (int j = i; j < GROUP_END; ++j)
-		{
-			// 초기 설정 확인
-			if (!m_CollisionMatrix[i][j]) continue;
+	//for (int i = 0; i < GROUP_END; ++i)
+	//{
+	//	for (int j = i; j < GROUP_END; ++j)
+	//	{
+	//		// 초기 설정 확인
+	//		if (!m_CollisionMatrix[i][j]) continue;
 
-			// 충돌 처리
-		}
-	}
+	//		// 충돌 처리
+	//	}
+	//}
 }
 
 void CCollision_Manager::Clear_CollisionGroup()
@@ -142,18 +142,114 @@ bool CCollision_Manager::CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3
     return bHit;
 }
 
+CCollision_Manager::RAY_HIT CCollision_Manager::RayCast(_vector rayPos, _vector rayDir, COLLISION_GROUP group, CGameObject* pShooter)
+{
+    RAY_HIT result;
+
+    rayDir = XMVector3Normalize(rayDir);
+
+    for (auto collider : m_Colliders[group])
+    {
+        if (!collider->Get_Enable())
+            continue;
+
+        if (pShooter != nullptr && collider->Get_Owner() == pShooter)
+        {
+            continue;
+        }
+
+        float dist;
+
+        if (collider->IntersectsRay(rayPos, rayDir, dist))
+        {
+            if (dist < result.distance)
+            {
+                result.hit = true;
+                result.distance = dist;
+                result.pCollider = collider;
+                result.pTarget = collider->Get_Owner();
+            }
+        }
+    }
+
+    return result;
+}
+
 void CCollision_Manager::Set_Bullets(CBullets* _p)
 {
     m_pBullets = _p;
 }
 
-void CCollision_Manager::NewBullet(_vector _look, _vector _pos)
+void CCollision_Manager::NewBullet(_vector _look, _vector _pos, CGameObject* pShooter)
 {
     CBullets::BULLET b;
-    b.vLook = _look;
+
+    b.vLook = XMVector3Normalize(_look);
     b.vPos = _pos;
-    b.isOn = true;
-    b.iLifeTime = 0.2f;
+    b.fLifeTime = 1.f;
+
+    RAY_HIT playerHit =
+        RayCast(b.vPos, b.vLook, GROUP_PLAYER, pShooter);
+
+    RAY_HIT mapHit =
+        RayCast(b.vPos, b.vLook, GROUP_MAP);
+
+    if (mapHit.hit &&
+        (!playerHit.hit || mapHit.distance < playerHit.distance))
+    {
+        b.vTarget =
+            XMVectorMultiplyAdd(
+                b.vLook,
+                XMVectorReplicate(mapHit.distance),
+                b.vPos);
+        b.isHit = true;
+        b.isOn = true;
+    }
+    else if (playerHit.hit)
+    {
+        b.vTarget =
+            XMVectorMultiplyAdd(
+                b.vLook,
+                XMVectorReplicate(playerHit.distance),
+                b.vPos);
+        b.isHit = true;
+        b.isOn = true;
+
+        switch (playerHit.pCollider->Get_PartNum())
+        {
+        case 0: // COLLIDER_HEAD
+            playerHit.pTarget->TakeDamage(50);
+            break;
+        case 1: // COLLIDER_ARM_UP_L
+            playerHit.pTarget->TakeDamage(20);
+            break;
+        case 2: // COLLIDER_ARM_UP_R
+            playerHit.pTarget->TakeDamage(20);
+            break;
+        case 3: // COLLIDER_ARM_LOW_L
+            playerHit.pTarget->TakeDamage(20);
+            break;
+        case 4: // COLLIDER_ARM_LOW_R
+            playerHit.pTarget->TakeDamage(20);
+            break;
+        case 5: // COLLIDER_THIGH_L
+            playerHit.pTarget->TakeDamage(15);
+            break;
+        case 6: // COLLIDER_THIGH_R
+            playerHit.pTarget->TakeDamage(15);
+            break;
+        case 7: // COLLIDER_SHIN_L
+            playerHit.pTarget->TakeDamage(15);
+            break;
+        case 8: // COLLIDER_SHIN_R
+            playerHit.pTarget->TakeDamage(15);
+            break;
+        case 9: // COLLIDER_BODY
+            playerHit.pTarget->TakeDamage(30);
+            break;
+        }
+    }
+
     m_pBullets->NewBullet(b);
 }
 

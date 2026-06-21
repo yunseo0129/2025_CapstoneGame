@@ -23,6 +23,7 @@
 #include "UI_Panel.h"
 #include "MiniMap.h"
 #include "MapSelect.h"
+#include "MapRenderTarget.h"
 #include "Bullets.h"
 
 #include "UI_Crosshair.h"
@@ -33,8 +34,6 @@ CLevel_GamePlay::CLevel_GamePlay(EngineContext* pContext)
 
 HRESULT CLevel_GamePlay::Initialize()
 {
-    NetworkClient::GetInstance()->EnableOfflineMode();
-
     Add_Camera();
 
     if (FAILED(Ready_Light()))
@@ -44,6 +43,9 @@ HRESULT CLevel_GamePlay::Initialize()
         return E_FAIL;
 
     if (FAILED(Ready_UI()))
+        return E_FAIL;
+
+    if (FAILED(Ready_MapRT()))
         return E_FAIL;
 
     // 시작 시점에 사용할 카메라
@@ -59,9 +61,6 @@ HRESULT CLevel_GamePlay::Initialize()
 void CLevel_GamePlay::Update(_float fTimeDelta)
 {
     __super::Update(fTimeDelta);
-
-    if (m_pGameManager)
-        m_pGameManager->Update(fTimeDelta);
 
     // [캐릭터 선택 카메라 고정]
     //  플레이어가 Priority_Update에서 카메라를 자기 위치로 동기화한다(그게 먼저 돈다).
@@ -89,7 +88,32 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 
     //Process_NetworkEvents();
 
-   
+    // 네트워크 이벤트 처리: 플레이어 추가/제거/이동
+    NetworkClient* pNetwork = NetworkClient::GetInstance();
+    if (!pNetwork->IsConnected())
+        return;
+
+    std::vector<NetworkClient::NetEvent> events;
+    pNetwork->PopAllEvents(events);
+
+    if (m_pGameManager) m_pGameManager->Update(fTimeDelta);
+
+    for (auto& evt : events) {
+        switch (evt.type) {
+        case NetworkClient::NetEventType::PLAYER_ADD: {
+            // TODO: evt.id 플레이어 생성 + evt.cameraPos 위치에 배치 + evt.name 이름 설정
+            break;
+        }
+        case NetworkClient::NetEventType::PLAYER_REMOVE: {
+            // TODO: evt.id 플레이어 제거
+            break;
+        }
+        case NetworkClient::NetEventType::PLAYER_MOVE: {
+            // TODO: 해당 id 플레이어의 Transform 갱신
+            break;
+        }
+        }
+    }
 }
 
 HRESULT CLevel_GamePlay::Render()
@@ -107,7 +131,7 @@ void CLevel_GamePlay::Add_Camera()
     tDesc.fFovy = XMConvertToRadians(60.f);
     tDesc.fAspect = 1280.f / 720.f;
     tDesc.fNear = 0.1f;
-    tDesc.fFar = 100.f;
+    tDesc.fFar = 400.f;
     tDesc.fCamMouseSensor = 1.f;
     tDesc.fCamSpeedPerSec = 1.f;
     tDesc.fRotationPerSec = 1.f;
@@ -125,7 +149,7 @@ HRESULT CLevel_GamePlay::Ready_Light()
     ZeroMemory(&LightDesc, sizeof LightDesc);
 
     LightDesc.eType = CLight::LIGHT_DESC::TYPE_DIRECTIONAL;
-    LightDesc.vDirection = _float4(1.f, -1.f, 1.f, 0.f);
+    LightDesc.vDirection = _float4(0.2f, -1.f, 0.2f, 0.f);
     LightDesc.vDiffuse = _float4(1.0f, 1.0f, 0.95f, 1.f);
     LightDesc.vAmbient = _float4(0.15f, 0.15f, 0.2f, 1.f);
     LightDesc.vSpecular = _float4(1.f, 1.f, 1.f, 1.f);
@@ -142,6 +166,55 @@ HRESULT CLevel_GamePlay::Ready_Light()
     m_pLights.push_back(pLight);
 
     return S_OK;
+}
+
+// =====================================================================
+//  [맵 RTT] 탑다운 맵 렌더 타겟
+// =====================================================================
+HRESULT CLevel_GamePlay::Ready_MapRT()
+{
+    // 256x256 컬러 타겟. 클리어색 투명(맵이 없는 영역은 패널 배경이 비침).
+    m_pMapRT = CMapRenderTarget::Create(m_pContext, 256, 256, _float4(0.f, 0.f, 0.f, 0.f));
+    if (nullptr == m_pMapRT)
+        return E_FAIL;
+
+    // 초기 뷰: 원점 중심, 반경 5000유닛(≈50m, ×100 스케일), 북쪽 고정
+    m_pMapRT->Set_View(_float3(0.f, 0.f, 0.f), 100.f, _float3(0.f, 0.f, 1.f));
+    m_bMapRTActive = false;
+    return S_OK;
+}
+
+void CLevel_GamePlay::Set_MapRTView(const _float3& vCenterXZ, _float fHalfExtent, const _float3& vUpDirXZ)
+{
+    if (m_pMapRT)
+        m_pMapRT->Set_View(vCenterXZ, fHalfExtent, vUpDirXZ);
+}
+
+_bool CLevel_GamePlay::Begin_MapRTPass(ID3D12GraphicsCommandList* cmdList)
+{
+    if (!m_pMapRT || !m_bMapRTActive)
+        return false;
+    m_pMapRT->Begin_Pass(cmdList);
+    return true;
+}
+
+void CLevel_GamePlay::Render_MapRT(ID3D12GraphicsCommandList* cmdList)
+{
+    if (!m_pMapRT) return;
+    m_pMapRT->Render_MapLayer(cmdList, LEVEL_GAMEPLAY, L"Layer_Map");
+}
+
+void CLevel_GamePlay::End_MapRTPass(ID3D12GraphicsCommandList* cmdList)
+{
+    if (!m_pMapRT) return;
+    m_pMapRT->End_Pass(cmdList);
+    // 한 프레임용으로 자동 비활성화. 보이는 UI 가 매 프레임 다시 켠다(Update 에서).
+    m_bMapRTActive = false;
+}
+
+_uint CLevel_GamePlay::Get_MapRT_SRVIndex() const
+{
+    return m_pMapRT ? m_pMapRT->Get_SRVIndex() : 0;
 }
 
 HRESULT CLevel_GamePlay::Ready_Layer()
@@ -180,31 +253,6 @@ HRESULT CLevel_GamePlay::Ready_Layer()
             LEVEL_GAMEPLAY, TEXT("Layer_Player"), &cdesc);
 
         m_pGameInstance->Get_Controller()->Set_Player(static_cast<CPlayer_1rd*>(pPlayer));
-    }
-
-    // 충돌 파괴 테스트
-    {
-        CMiniMap::MINIMAP_DESC desc;
-        desc.fX = 1060.f;  desc.fY = 20.f;
-        desc.fSizeX = 200.f;   desc.fSizeY = 200.f;
-        desc.fDepth = 0.3f;
-        desc.vColor = _float4(0.f, 0.f, 0.f, 0.5f); // 단색 배경(반투명 검정)
-
-        desc.fViewRange = 40.f;            // 플레이어 주변 ±40유닛 (작을수록 확대)
-        desc.iMapLevelIndex = LEVEL_GAMEPLAY;
-        desc.strMapLayerTag = L"Layer_Map";
-
-        desc.fHeightMin = -5.f;                // 맵의 실제 최저~최고에 맞춰 조정
-        desc.fHeightMax = 20.f;
-        // vColorLow/High, fBlipScale, fMarkerSize 등은 기본값으로 충분
-
-        if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
-            LEVEL_STATIC, L"Prototype_GameObject_MiniMap",
-            LEVEL_GAMEPLAY, L"Layer_UI_MiniMap", &desc)))
-        {
-            MSG_BOX("Failed to Add GameObject To Layer : MiniMap");
-            return E_FAIL;
-        }
     }
 
     // Chick_3rd
@@ -357,7 +405,7 @@ HRESULT CLevel_GamePlay::Ready_UI()
         desc.fDepth = 0.3f;
         desc.vColor = _float4(0.f, 0.f, 0.f, 0.5f); // 단색 배경(반투명 검정)
 
-        desc.fViewRange = 40.f;            // 플레이어 주변 ±40유닛 (작을수록 확대)
+        desc.fViewRange = 10.f;            // 내 주위 반경 10m (맵 크기와 무관하게 고정)
         desc.iMapLevelIndex = LEVEL_GAMEPLAY;
         desc.strMapLayerTag = L"Layer_Map";
 
@@ -383,13 +431,16 @@ HRESULT CLevel_GamePlay::Ready_UI()
         desc.fDepth = 0.4f;
         desc.vColor = _float4(0.05f, 0.06f, 0.10f, 0.85f); // 어두운 반투명 배경
 
-        // 보여줄 맵 영역: 나중에 여기(중심/범위)만 바꾸면 어느 부분이든 보여줄 수 있음 ▼▼
-        desc.vCenterWorld = _float2(0.f, 0.f);  // 창 중심에 올 월드 (x, z)
-        desc.fWorldRange = 60.f;               // 중심에서 ±60유닛 (작을수록 확대)
-        // ----------------------------------------------------------------▲▲
+        // 보여줄 맵 영역. 맵이 ×100 스케일이라 "반경 50m" = 5000 월드유닛.
+        //  (오브젝트 1개가 ~50유닛이므로 50 으로는 한 오브젝트도 화면에 안 들어왔음)
+        //  맵 전체가 안 보이면 이 값을 키우고, 너무 작게 보이면 줄인다. 
+       // 중심은 런타임에 식탁(Table_1)으로 자동 설정되므로 이 값은 초기/폴백용.
+        desc.vCenterWorld = _float2(0.f, 0.f);
+        desc.fWorldRange = 70.f;   // 줌(반경). 식탁이 패널 폭의 ~60%로 보임.
 
         desc.iMapLevelIndex = LEVEL_GAMEPLAY;
         desc.strMapLayerTag = L"Layer_Map";
+        desc.strTableModelTag = L"Prototype_Component_Model_Table_1"; // 식탁 모델 태그
 
         desc.fHeightMin = -5.f;                  // 맵 실제 최저~최고에 맞춰 조정
         desc.fHeightMax = 20.f;
@@ -440,30 +491,7 @@ HRESULT CLevel_GamePlay::Ready_UI()
 
 void CLevel_GamePlay::Process_NetworkEvents()
 {
-    // 네트워크 이벤트 처리: 플레이어 추가/제거/이동
-    NetworkClient* pNetwork = NetworkClient::GetInstance();
-    if (!pNetwork->IsConnected() && !pNetwork->IsOfflineMode())
-        return;
-
-    std::vector<NetworkClient::NetEvent> events;
-    //pNetwork->PopAllEvents(events);
-
-    //for (auto& evt : events) {
-    //    switch (evt.type) {
-    //    case NetworkClient::NetEventType::PLAYER_ADD: {
-    //        // TODO: evt.id 플레이어 생성 + evt.cameraPos 위치에 배치 + evt.name 이름 설정
-    //        break;
-    //    }
-    //    case NetworkClient::NetEventType::PLAYER_REMOVE: {
-    //        // TODO: evt.id 플레이어 제거
-    //        break;
-    //    }
-    //    case NetworkClient::NetEventType::PLAYER_MOVE: {
-    //        // TODO: 해당 id 플레이어의 Transform 갱신
-    //        break;
-    //    }
-    //    }
-    //}
+    // Update()에서 매 프레임마다 네트워크 이벤트를 처리하는 함수 여기로 옮기기
 }
 
 CLevel_GamePlay* CLevel_GamePlay::Create(EngineContext* pContext)
@@ -484,6 +512,7 @@ void CLevel_GamePlay::Free()
     for (auto& pLight : m_pLights)
         Safe_Release(pLight);
     m_pLights.clear();
+    Safe_Release(m_pMapRT);
     Safe_Release(m_pGameManager);
     __super::Free();
 }

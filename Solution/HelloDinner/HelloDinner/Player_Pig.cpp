@@ -248,20 +248,6 @@ HRESULT CPlayer_Pig::Ready_Components()
 			}
 		}
 
-		// COLLIDER_MAIN
-		{
-			CBounding_AABB::BOUND_AABB_DESC ColliderDesc;
-			ColliderDesc.vExtents = _float3(0.41f, 0.82f, 0.41f);
-			ColliderDesc.vCenter = _float3(0.0f, 0.82f, 0.0f);
-			ColliderDesc.pSocketMatrix = m_pModelCom->Get_BoneMatrix("origin");
-			ColliderDesc.pParentMatrix = m_pTransformCom->Get_WorldFloat4x4_Ptr();
-			if (FAILED(Add_Component(m_iModelLevelIndex, TEXT("Prototype_Component_AABB"),
-				TEXT("Com_Collider0"), reinterpret_cast<CComponent**>(&m_vColliderComs[COLLIDER_MAIN]), &ColliderDesc)))
-			{
-				MSG_BOX("Failed to Add Component : Collider in Player_3rd");
-				return E_FAIL;
-			}
-		}
 		// COLLIDER_HEAD
 		{
 			CBounding_Sphere::BOUND_SPHERE_DESC HeadColliderDesc;
@@ -402,6 +388,14 @@ HRESULT CPlayer_Pig::Ready_Components()
 				return E_FAIL;
 			}
 		}
+
+        _uint i = 0;
+        for (CCollider* c : m_vColliderComs)
+        {
+            m_pGameInstance->Add_CollisionGroup(1, c);
+            c->Set_PartNum(i);
+            ++i;
+        }
 	}
 
 	return S_OK;
@@ -526,9 +520,16 @@ void CPlayer_Pig::Anim_Test()
 
 bool CPlayer_Pig::Get_WorldBoundingSphere(_float3& outCenter, _float& outRadius) const
 {
-    if (m_vColliderComs.empty() || !m_vColliderComs[COLLIDER_MAIN])
+    if (m_vColliderComs.empty() || !m_vColliderComs[0])
         return false;
-    return m_vColliderComs[COLLIDER_MAIN]->Get_SphereBound(outCenter, outRadius);
+    return m_vColliderComs[0]->Get_SphereBound(outCenter, outRadius);
+}
+
+void CPlayer_Pig::Die(_float _val)
+{
+    m_isDie = true;
+    m_pModelCom->Change_Animation(9, 5.f, false, true);
+    m_pModelCom->Change_Animation(9, 5.f, false, false);
 }
 
 void CPlayer_Pig::Apply_NetworkMatrix(const float* pMatrix, unsigned short keyInput)

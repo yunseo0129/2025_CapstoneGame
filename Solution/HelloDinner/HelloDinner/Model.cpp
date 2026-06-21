@@ -19,6 +19,8 @@ CModel::CModel(const CModel& Prototype)
     , m_Meshes {Prototype.m_Meshes}
     , m_iNumMaterials {Prototype.m_iNumMaterials}
     , m_Materials {Prototype.m_Materials}
+    , m_MaterialUVOffset {Prototype.m_MaterialUVOffset}
+    , m_MaterialUVScale {Prototype.m_MaterialUVScale}
     , m_PreTransformMatrix {Prototype.m_PreTransformMatrix}
 {
     // Bone은 인스턴스마다 애니메이션 상태가 다르므로 깊은 복사
@@ -32,9 +34,9 @@ CModel::CModel(const CModel& Prototype)
     for (auto& pBone : Prototype.m_Bones)
         m_BonesLower.push_back(pBone->Clone());
 
-	// Animation도 깊은 복사
-	for (auto& pAnim : Prototype.m_Animations)
-		m_Animations.push_back(pAnim->Clone());
+    // Animation도 깊은 복사
+    for (auto& pAnim : Prototype.m_Animations)
+        m_Animations.push_back(pAnim->Clone());
 
     // 애님 모델이면 본 매트릭스 업로드 버퍼 생성
     if (TYPE_ANIM == m_eModelType)
@@ -111,6 +113,19 @@ HRESULT CModel::Render(ID3D12GraphicsCommandList* _commandList, _uint iMeshIndex
 
         if (iMaterialIndex < m_iNumMaterials)
         {
+            // [방식 가] 슬롯별 팔레트 crop UV 재매핑값을 b5(MapUV)로 push.
+            //   순서: [offset.x, offset.y, scale.x, scale.y] = 4 float.
+            //   비-맵 모델은 기본값(0,0)/(1,1)이라 변환 없음과 동일.
+            if (iMaterialIndex < m_MaterialUVOffset.size() &&
+                iMaterialIndex < m_MaterialUVScale.size())
+            {
+                _float fUV[4] = {
+                    m_MaterialUVOffset[iMaterialIndex].x, m_MaterialUVOffset[iMaterialIndex].y,
+                    m_MaterialUVScale[iMaterialIndex].x, m_MaterialUVScale[iMaterialIndex].y
+                };
+                _commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::MapUV, 4, fUV, 0);
+            }
+
             // 텍스처가 실제로 있는지 확인
             CTexture* pTex = m_Materials[iMaterialIndex]->Get_Texture((TextureType)TextureType_DIFFUSE, 0);
             if (pTex == nullptr)
@@ -241,7 +256,7 @@ HRESULT CModel::Ready_Bones()
         m_BonesLower.push_back(pBone->Clone());
     }
 
-	return S_OK;
+    return S_OK;
 }
 
 HRESULT CModel::Ready_Animations()
@@ -286,6 +301,10 @@ HRESULT CModel::Ready_Materials(const wchar_t* pModelFilePath, MATERIAL_LOAD_MOD
     m_pGameInstance->Read_File(m_iNumMaterials);
 
     m_Materials.resize(m_iNumMaterials);
+
+    // [방식 가] UV 재매핑 기본값(변환 없음)으로 초기화. 맵 로더가 슬롯별로 덮어쓴다.
+    m_MaterialUVOffset.assign(m_iNumMaterials, _float2(0.f, 0.f));
+    m_MaterialUVScale.assign(m_iNumMaterials, _float2(1.f, 1.f));
 
     for (size_t i = 0; i < m_iNumMaterials; i++)
     {
@@ -454,7 +473,7 @@ _bool CModel::Blend_Animation(_float fTimeDelta)
 
     if (m_isFinished)
         m_isBlend = false;
-	return m_isFinished;
+    return m_isFinished;
 }
 
 void CModel::Change_Animation(_uint iAnimIndex, _float fLinearDurationTime, _bool isLoop, bool _isUpper)
@@ -659,6 +678,17 @@ HRESULT CModel::Ready_MapMaterial(const wchar_t* pModelFilePath, int _nMaterial,
         return E_FAIL;
     }
     return S_OK;
+}
+
+// [방식 가] 슬롯별 팔레트 crop UV 재매핑값 저장. Render 에서 b5 로 push 된다.
+void CModel::Set_MapMaterialUV(int _nMaterial, const _float2& vOffset, const _float2& vScale)
+{
+    if (_nMaterial < 0 || _nMaterial >= (int)m_iNumMaterials)
+        return;
+    if ((int)m_MaterialUVOffset.size() <= _nMaterial) m_MaterialUVOffset.resize(_nMaterial + 1, _float2(0.f, 0.f));
+    if ((int)m_MaterialUVScale.size() <= _nMaterial) m_MaterialUVScale.resize(_nMaterial + 1, _float2(1.f, 1.f));
+    m_MaterialUVOffset[_nMaterial] = vOffset;
+    m_MaterialUVScale[_nMaterial] = vScale;
 }
 
 // ============================================================================

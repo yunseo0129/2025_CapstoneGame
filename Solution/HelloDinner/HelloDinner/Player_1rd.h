@@ -14,7 +14,7 @@ public:
         _wstring			strModelTag = L"";
         class CCamera_FPV* pCamera = nullptr;
     };
-    enum PLAYER_1RD_COLLIDER_TYPE { COLLIDER_MAIN, COLLIDER_HEAD, COLLIDER_ARM_UP_L, COLLIDER_ARM_UP_R, COLLIDER_ARM_LOW_L, COLLIDER_ARM_LOW_R, COLLIDER_THIGH_L, COLLIDER_THIGH_R, COLLIDER_SHIN_L, COLLIDER_SHIN_R, COLLIDER_BODY, COLLIDER_END };
+    enum PLAYER_1RD_COLLIDER_TYPE { COLLIDER_HEAD, COLLIDER_ARM_UP_L, COLLIDER_ARM_UP_R, COLLIDER_ARM_LOW_L, COLLIDER_ARM_LOW_R, COLLIDER_THIGH_L, COLLIDER_THIGH_R, COLLIDER_SHIN_L, COLLIDER_SHIN_R, COLLIDER_BODY, COLLIDER_END };
     enum PLAYER_1RD_ANIMATION_UPPER { UPPER_DEFAULT, UPPER_IDLE, UPPER_SHOOT, UPPER_RELOAD, UPPER_JUMP, UPPER_DIE, UPPER_END };
     enum PLAYER_1RD_ANIMATION_LOWER { LOWER_DEFAULT, LOWER_IDLE, LOWER_WALK, LOWER_RUN, LOWER_SIT, LOWER_SITWALK, LOWER_JUMP, LOWER_DIE, LOWER_END };
 private:
@@ -94,7 +94,6 @@ private:
     _bool               m_isCrouch = false;
     _bool               m_isRun = false;
     _bool               m_isMove = false;
-    _bool               m_isDie = false;
 
     // 현재 무기 인덱스 (0: 케첩건, 1: 마요건)
     _int                m_iWeapon = 0;

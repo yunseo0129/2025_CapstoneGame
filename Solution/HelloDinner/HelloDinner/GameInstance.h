@@ -74,6 +74,11 @@ public: /* for.Level_Manager */
     void Add_CullStat_Main_Bulk(_int r, _int t);
     void Add_CullStat_Shadow_Bulk(_int r, _int t);
 
+    // [맵 RTT] 현재 레벨의 탑다운 맵 렌더 타겟 제어 (MapSelect/MiniMap 이 호출)
+    void  Set_MapRTView(const _float3& vCenterXZ, _float fHalfExtent, const _float3& vUpDirXZ);
+    void  Set_MapRTActive(_bool b);
+    _uint Get_MapRT_SRVIndex() const;
+
 public: /* for.Frustum_Culling */
     _bool IsSphereInFrustum(const _float3& vCenter, _float fRadius);
     _bool IsSphereInShadowFrustum(const _float3& vCenter, _float fRadius);
@@ -127,7 +132,7 @@ public: /* For.Collision_Manager */
     bool CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide, vector<class CCollider*>* outHits);
     void Set_Bullets(class CBullets* _p);
     class CBullets* Get_Bullets();
-    void NewBullet(_vector _look, _vector _pos);
+    void NewBullet(_vector _look, _vector _pos, CGameObject* pShooter);
 
     //BVH
     void  Build_StaticBVH();

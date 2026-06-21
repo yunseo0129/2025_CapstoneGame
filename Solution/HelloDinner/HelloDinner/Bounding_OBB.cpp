@@ -51,6 +51,14 @@ _bool CBounding_OBB::Intersect(CCollider::COLLIDERTYPE eType, CBounding* pTarget
 	return m_isColl;
 }
 
+bool CBounding_OBB::IntersectsRay(FXMVECTOR rayOrigin, FXMVECTOR rayDir, float& distance)
+{
+    return m_pBoundDesc->Intersects(
+        rayOrigin,
+        rayDir,
+        distance);
+}
+
 _bool CBounding_OBB::Intersect_Offset(CCollider::COLLIDERTYPE eType, CBounding* pTargetBounding, const _float3& vOffset)
 {
 	m_isColl = false;

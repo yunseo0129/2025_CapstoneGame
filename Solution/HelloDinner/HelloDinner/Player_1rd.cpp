@@ -557,7 +557,6 @@ void CPlayer_1rd::Run(_float _val)
     if (!m_isCrouch)
     {
         m_isRun = true;
-
     }
 }
 
@@ -583,7 +582,10 @@ _bool CPlayer_1rd::Shoot(_float _val)
 
         _vector look = m_pTransformCom->Get_State(CTransform::STATE_LOOK);
         _vector pos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
-        m_pGameInstance->NewBullet(look, pos);
+
+        //m_pGameInstance.
+
+        m_pGameInstance->NewBullet(look, pos, this);
 
         return true;
     }
@@ -700,20 +702,6 @@ HRESULT CPlayer_1rd::Ready_Components()
             }
         }
 
-        // COLLIDER_MAIN
-        {
-            CBounding_AABB::BOUND_AABB_DESC ColliderDesc;
-            ColliderDesc.vExtents = _float3(0.41f, 0.82f, 0.41f);
-            ColliderDesc.vCenter = _float3(0.0f, 0.82f, 0.0f);
-            ColliderDesc.pSocketMatrix = m_pModelCom->Get_BoneMatrix("origin");
-            ColliderDesc.pParentMatrix = m_pTransformCom->Get_WorldFloat4x4_Ptr();
-            if (FAILED(Add_Component(m_iModelLevelIndex, TEXT("Prototype_Component_AABB"),
-                TEXT("Com_Collider0"), reinterpret_cast<CComponent**>(&m_vColliderComs[COLLIDER_MAIN]), &ColliderDesc)))
-            {
-                MSG_BOX("Failed to Add Component : Collider in Player_3rd");
-                return E_FAIL;
-            }
-        }
         // COLLIDER_HEAD
         {
             CBounding_Sphere::BOUND_SPHERE_DESC HeadColliderDesc;
@@ -853,6 +841,14 @@ HRESULT CPlayer_1rd::Ready_Components()
                 MSG_BOX("Failed to Add Component : Head Collider in Player_3rd");
                 return E_FAIL;
             }
+        }
+
+        _uint i = 0;
+        for (CCollider* c : m_vColliderComs)
+        {
+            m_pGameInstance->Add_CollisionGroup(1, c);
+            c->Set_PartNum(i);
+            ++i;
         }
     }
 
