@@ -101,12 +101,8 @@ public:
     //  업로드가 로딩 펜스(WaitForGpuComplete)로 완료 보장된다. (Loader::Loading_Level_GamePlay 에서 호출)
     HRESULT Load_ParticleTexture();
 
-    // 테스트 입자 배치 방식: true = 첫 프레임에 카메라 정면에 구름 생성(어떤 씬에서도 보이게).
-    void    Set_TestSpawnInFront(_bool b) { m_bSpawnInFront = b; }
-    void    Set_TestCount(_uint n) { m_iTestCount = (n > MAX_PARTICLES) ? MAX_PARTICLES : n; }
-
 private:
-    HRESULT Create_ParticleBuffer();   // DEFAULT 구조화버퍼 + UPLOAD 스테이징
+    HRESULT Create_ParticleBuffer();   // DEFAULT 힙 구조화버퍼(입자 풀)
     HRESULT Create_ParticleSRV();      // 글로벌 힙에 SRV (인덱스 기록)
     HRESULT Create_RootSignature();    // 전용 그래픽 RS (b0 CBV + t0 SRV table)
     HRESULT Create_PSO();              // 전용 알파블렌드 PSO (입력레이아웃 없음)
@@ -124,7 +120,6 @@ private:
 
     ID3DBlob* Compile_Shader(const wstring& strPath, const char* strEntry, const char* strTarget);
 
-    _bool   Fill_TestParticles_CPU();  // 스테이징 채움. 카메라 유효 시 true / 아직 미준비(특이행렬)면 false
     void    Update_FrameCB(_uint iFrame); // 현재 카메라 -> 매핑된 CB
 
 private:
@@ -163,10 +158,8 @@ private:
     ID3D12Device* m_pDevice = {nullptr};
     CGameInstance* m_pGameInstance = {nullptr}; // raw 참조(AddRef 안 함: GameInstance가 본 객체를 소유)
 
-    // 입자 풀(영속 단일 버퍼) + 초기 업로드 스테이징
+    // 입자 풀(영속 단일 버퍼)
     ComPtr<ID3D12Resource> m_pParticleBuffer;            // DEFAULT, ALLOW_UNORDERED_ACCESS
-    ComPtr<ID3D12Resource> m_pUploadBuffer;              // UPLOAD 스테이징(테스트 입자)
-    PARTICLE* m_pUploadMapped = {nullptr};
 
     _uint m_iSrvIndex = {0};  // 글로벌 SRV 힙에서의 인덱스
     // 2단계: _uint m_iUavIndex = { 0 };
@@ -204,12 +197,10 @@ private:
     ComPtr<ID3D12CommandSignature> m_pCommandSignature;    // DrawInstanced 간접 시그니처
     _bool                         m_bArgsValid = {false}; // 첫 컴퓨트 패스 완료(ExecuteIndirect 안전) 여부
 
-    _uint   m_iAliveCount = {0};     // 1단계: 테스트 입자 수
-    _uint   m_iTestCount = {4096};  // 초기 테스트 입자 개수
+    _uint   m_iAliveCount = {0};     // 현재 살아있는 입자 수
     _float  m_fDeltaTime = {0.f};
     _float  m_fGravityY = {-5.f};  // 2단계: 중력(케첩이 아래로 떨어지는 느낌). 게임 스케일에 맞춰 조절
-    _bool   m_bUploaded = {false}; // 1회 업로드 완료 여부
-    _bool   m_bSpawnInFront = {true};  // 카메라 정면 구름 배치
+    _bool   m_bUploaded = {false}; // 첫 프레임 준비(카메라 유효) 완료 여부
 
 public:
     static CParticle_System* Create(EngineContext* pContext);

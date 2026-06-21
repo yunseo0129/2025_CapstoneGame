@@ -131,7 +131,7 @@ void CLevel_GamePlay::Add_Camera()
     tDesc.fFovy = XMConvertToRadians(60.f);
     tDesc.fAspect = 1280.f / 720.f;
     tDesc.fNear = 0.1f;
-    tDesc.fFar = 10000.f;
+    tDesc.fFar = 400.f;
     tDesc.fCamMouseSensor = 1.f;
     tDesc.fCamSpeedPerSec = 1.f;
     tDesc.fRotationPerSec = 1.f;
@@ -149,7 +149,7 @@ HRESULT CLevel_GamePlay::Ready_Light()
     ZeroMemory(&LightDesc, sizeof LightDesc);
 
     LightDesc.eType = CLight::LIGHT_DESC::TYPE_DIRECTIONAL;
-    LightDesc.vDirection = _float4(1.f, -1.f, 1.f, 0.f);
+    LightDesc.vDirection = _float4(0.2f, -1.f, 0.2f, 0.f);
     LightDesc.vDiffuse = _float4(1.0f, 1.0f, 0.95f, 1.f);
     LightDesc.vAmbient = _float4(0.15f, 0.15f, 0.2f, 1.f);
     LightDesc.vSpecular = _float4(1.f, 1.f, 1.f, 1.f);
@@ -433,13 +433,14 @@ HRESULT CLevel_GamePlay::Ready_UI()
 
         // 보여줄 맵 영역. 맵이 ×100 스케일이라 "반경 50m" = 5000 월드유닛.
         //  (오브젝트 1개가 ~50유닛이므로 50 으로는 한 오브젝트도 화면에 안 들어왔음)
-        //  맵 전체가 안 보이면 이 값을 키우고, 너무 작게 보이면 줄인다. ▼▼
-        desc.vCenterWorld = _float2(0.f, 0.f);  // 원점 중심
-        desc.fWorldRange = 100.f;             // 원점에서 반경 5000유닛 (≈50m)
-        // ----------------------------------------------------------------▲▲
+        //  맵 전체가 안 보이면 이 값을 키우고, 너무 작게 보이면 줄인다. 
+       // 중심은 런타임에 식탁(Table_1)으로 자동 설정되므로 이 값은 초기/폴백용.
+        desc.vCenterWorld = _float2(0.f, 0.f);
+        desc.fWorldRange = 70.f;   // 줌(반경). 식탁이 패널 폭의 ~60%로 보임.
 
         desc.iMapLevelIndex = LEVEL_GAMEPLAY;
         desc.strMapLayerTag = L"Layer_Map";
+        desc.strTableModelTag = L"Prototype_Component_Model_Table_1"; // 식탁 모델 태그
 
         desc.fHeightMin = -5.f;                  // 맵 실제 최저~최고에 맞춰 조정
         desc.fHeightMax = 20.f;

@@ -150,7 +150,7 @@ HRESULT CParticle_System::Initialize()
 }
 
 // ----------------------------------------------------------------------------
-// DEFAULT 힙 구조화버퍼(입자 풀) + UPLOAD 스테이징
+// DEFAULT 힙 구조화버퍼(입자 풀)
 // ----------------------------------------------------------------------------
 HRESULT CParticle_System::Create_ParticleBuffer()
 {
@@ -175,28 +175,6 @@ HRESULT CParticle_System::Create_ParticleBuffer()
         D3D12_RESOURCE_STATE_COMMON,       // 버퍼는 항상 COMMON으로 생성됨(InitialState 무시 경고 방지)
         nullptr, IID_PPV_ARGS(&m_pParticleBuffer))))
         return E_FAIL;
-
-    // --- UPLOAD 스테이징 (테스트 입자 수만큼; 0이면 생략) ---
-    if (m_iTestCount > 0)
-    {
-        const _uint stagingSize = m_iTestCount * sizeof(PARTICLE);
-
-        D3D12_HEAP_PROPERTIES heapUpload = {};
-        heapUpload.Type = D3D12_HEAP_TYPE_UPLOAD;
-
-        D3D12_RESOURCE_DESC udesc = desc;
-        udesc.Width = stagingSize;
-        udesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-
-        if (FAILED(m_pDevice->CreateCommittedResource(
-            &heapUpload, D3D12_HEAP_FLAG_NONE, &udesc,
-            D3D12_RESOURCE_STATE_GENERIC_READ,
-            nullptr, IID_PPV_ARGS(&m_pUploadBuffer))))
-            return E_FAIL;
-
-        if (FAILED(m_pUploadBuffer->Map(0, nullptr, reinterpret_cast<void**>(&m_pUploadMapped))))
-            return E_FAIL;
-    }
 
     return S_OK;
 }
@@ -520,70 +498,6 @@ ID3DBlob* CParticle_System::Compile_Shader(const wstring& strPath, const char* s
 }
 
 // ----------------------------------------------------------------------------
-// 첫 Compute 에서 스테이징 채움: 카메라 정면에 입자 구름 생성(어떤 씬에서도 보이게)
-// ----------------------------------------------------------------------------
-_bool CParticle_System::Fill_TestParticles_CPU()
-{
-    // 카메라 월드 행렬 = inverse(view) 에서 정면/위치 추출
-    _float3 vCenter = {0.f, 0.f, 8.f};
-
-    if (m_bSpawnInFront)
-    {
-        XMFLOAT4X4 v = m_pGameInstance->Get_CurrentCameraView();
-        XMMATRIX matView = XMLoadFloat4x4(&v);
-
-        XMVECTOR det;
-        XMMATRIX matInvView = XMMatrixInverse(&det, matView);
-
-        // 로딩 직후 첫 프레임엔 FPV 뷰가 0행렬(특이행렬)이라 역행렬이 NaN/Inf가 된다.
-        // 그 경우 false -> Compute 가 이번 프레임 업로드를 건너뛰고 다음 프레임에 재시도.
-        float fDet = XMVectorGetX(det);
-        if (fDet != fDet || (fDet > -1e-8f && fDet < 1e-8f)) // NaN(자기비교 실패) 또는 0
-            return false;
-
-        XMFLOAT4X4 iv; XMStoreFloat4x4(&iv, matInvView);
-        XMFLOAT3 camPos = {iv._41, iv._42, iv._43};
-        XMFLOAT3 fwd = {iv._31, iv._32, iv._33}; // 카메라 전방(LH +Z)
-
-        if (camPos.x != camPos.x) // 안전장치: 그래도 NaN이면 재시도
-            return false;
-
-        XMVECTOR vf = XMVector3Normalize(XMLoadFloat3(&fwd));
-        XMStoreFloat3(&fwd, vf);
-
-        vCenter = {camPos.x + fwd.x * 8.f,
-            camPos.y + fwd.y * 8.f,
-            camPos.z + fwd.z * 8.f};
-    }
-
-    for (_uint i = 0; i < m_iTestCount; ++i)
-    {
-        PARTICLE p;
-        p.vPos = {vCenter.x + RandRange(-2.5f, 2.5f),
-            vCenter.y + RandRange(-2.5f, 2.5f),
-            vCenter.z + RandRange(-2.5f, 2.5f)};
-        p.vVel = {0.f, 0.f, 0.f};
-        p.fLife = RandRange(3.f, 6.f); // 2단계 낙하 관찰용 수명(3~6초). 다 되면 사라짐
-        p.fSize = 0.12f;   // 빌보드 반경
-        p.vColor = {RandRange(0.7f, 1.0f),  // 케첩 느낌 붉은 톤
-            RandRange(0.1f, 0.3f),
-            RandRange(0.1f, 0.2f),
-            1.f};
-
-        // [6단계] 테스트 구름도 종류/곡선 기준값 필요(미설정 시 거동 테이블 OOB/쓰레기값)
-        p.iType = KETCHUP_SPRAY;
-        p.fMaxLife = p.fLife;
-        p.fSpawnSize = p.fSize;
-        // [7b] 외형 패킹(슬라이스/회전/플립). 테스트 구름은 케첩 외형.
-        p.uPacked = PackAppearance(g_SpriteRanges[KETCHUP_SPRAY]);
-
-        m_pUploadMapped[i] = p;
-    }
-
-    return true;
-}
-
-// ----------------------------------------------------------------------------
 // 3단계 방출 시드용 UPLOAD 스테이징 (영속 매핑)
 // ----------------------------------------------------------------------------
 HRESULT CParticle_System::Create_EmitStaging()
@@ -853,34 +767,10 @@ void CParticle_System::Compute(ID3D12GraphicsCommandList* pCmd)
     //  올라와 있다(텍스처는 명시 전이 후 decay 없음). 따라서 Compute 시점의 1회 업로드 로직은 불필요.
 
     // 첫 준비: 카메라 뷰가 유효(비특이행렬)해질 때까지 대기(빌보드 축/배치 NaN 방지).
-    // 유효한 첫 프레임에 (옵션) 테스트 구름을 1회 업로드하고 준비 완료로 표시한다.
     if (!m_bUploaded)
     {
-        if (m_iTestCount > 0)
-        {
-            if (!Fill_TestParticles_CPU())   // 카메라 미준비면 false -> 다음 프레임 재시도
-                return;
-
-            m_iAliveCount = m_iTestCount;
-
-            pCmd->CopyBufferRegion(           // COMMON -> COPY_DEST (버퍼 자동 승격)
-                m_pParticleBuffer.Get(), 0,
-                m_pUploadBuffer.Get(), 0,
-                (UINT64)m_iTestCount * sizeof(PARTICLE));
-
-            D3D12_RESOURCE_BARRIER barrier = {};
-            barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-            barrier.Transition.pResource = m_pParticleBuffer.Get();
-            barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-            barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-            barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-            pCmd->ResourceBarrier(1, &barrier);
-        }
-        else
-        {
-            if (!Is_CameraReady())            // 테스트 구름이 없어도 카메라 준비는 기다림
-                return;
-        }
+        if (!Is_CameraReady())            // 카메라 준비를 기다림
+            return;
 
         m_bUploaded = true;
         return;   // 준비 프레임엔 디스패치 생략 -> 다음 프레임부터 컴퓨트로 갱신
@@ -1031,13 +921,6 @@ void CParticle_System::Free()
         }
         m_pFrameCB[i].Reset();
     }
-
-    if (m_pUploadBuffer && m_pUploadMapped)
-    {
-        m_pUploadBuffer->Unmap(0, nullptr);
-        m_pUploadMapped = nullptr;
-    }
-    m_pUploadBuffer.Reset();
 
     if (m_pEmitStaging && m_pEmitStagingMapped)
     {
