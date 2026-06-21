@@ -270,6 +270,9 @@
     <Filter Include="소스 파일\02. Game\GameObject\02. Player\Player_3rd\03. Fish_3rd">
       <UniqueIdentifier>{422a488b-3849-4ad8-98e4-73e113c98ba5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\01. Engine\14. Sound">
+      <UniqueIdentifier>{1da240d7-861c-4971-a032-467e84f666d7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -536,6 +539,9 @@
     <ClInclude Include="Player_Fish.h">
       <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd\03. Fish_3rd</Filter>
     </ClInclude>
+    <ClInclude Include="SoundManager.h">
+      <Filter>소스 파일\01. Engine\14. Sound</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -795,6 +801,9 @@
     </ClCompile>
     <ClCompile Include="Player_Fish.cpp">
       <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd\03. Fish_3rd</Filter>
+    </ClCompile>
+    <ClCompile Include="SoundManager.cpp">
+      <Filter>소스 파일\01. Engine\14. Sound</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

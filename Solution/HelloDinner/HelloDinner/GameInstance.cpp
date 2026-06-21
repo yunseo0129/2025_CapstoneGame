@@ -16,6 +16,7 @@
 #include "Particle_System.h"
 #include "Fracture_System.h"
 #include "Font_Manager.h"
+#include "SoundManager.h"
 //#include "Player_1rd.h"
 
 IMPLEMENT_SINGLETON(CGameInstance)
@@ -87,6 +88,9 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, EngineCo
     m_pLoad_Manager = CLoad_Manager::Create();
     if (nullptr == m_pLoad_Manager)
         return E_FAIL;
+
+    m_pSoundManager = new SoundManager;
+    m_pSoundManager->Initialize(EngineDesc.hWnd);
 
     // 테스트용
     // Camera.h 변경해야할 것들
@@ -682,6 +686,66 @@ void CGameInstance::Font_End()
     if (m_pFont_Manager)
         m_pFont_Manager->End();
 }
+
+// ------------------------------------------------------------------------
+// Sound_Manager
+// ------------------------------------------------------------------------
+
+bool CGameInstance::SoundInitialize(HWND hwnd)
+{
+    return m_pSoundManager->Initialize(hwnd);
+}
+
+void CGameInstance::Shutdown()
+{
+    m_pSoundManager->Shutdown();
+}
+
+bool CGameInstance::LoadSound(const std::string& soundName, const std::string& filename)
+{
+    return m_pSoundManager->LoadSound(soundName, filename);
+}
+
+void CGameInstance::PlaySounds(const std::string& soundName, bool loop)
+{
+    m_pSoundManager->PlaySound(soundName, loop);
+}
+
+void CGameInstance::StopSound(const std::string& soundName)
+{
+    m_pSoundManager->StopSound(soundName);
+}
+
+void CGameInstance::SetSoundVolume(const std::string& soundName, float volume)
+{
+    m_pSoundManager->SetSoundVolume(soundName, volume);
+}
+
+void CGameInstance::UpdateSoundVolumeByDistance(const std::string& soundName, _float3 vListner, _float3 vSoundPos)
+{
+    m_pSoundManager->UpdateSoundVolumeByDistance(soundName, vListner.x, vListner.y, vListner.z, vSoundPos.x, vSoundPos.y, vSoundPos.z);
+}
+
+void CGameInstance::UpdateSoundVolumeByPlayer(const std::string& soundName, _float3 soundpos)
+{
+    m_pSoundManager->UpdateSoundVolumeByPlayer(soundName, soundpos);
+}
+
+void CGameInstance::Set_PlayerPos(_float3* pos)
+{
+    m_pSoundManager->Set_PlayerPos(pos);
+}
+
+bool CGameInstance::IsSoundPlaying(const std::string& soundName)
+{
+    return m_pSoundManager->IsSoundPlaying(soundName);
+}
+
+void CGameInstance::UpdateBGM()
+{
+    m_pSoundManager->UpdateBGM();
+}
+
 
 
 // ------------------------------------------------------------------------

@@ -72,6 +72,9 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
     for (CCollider* p : m_vMapColliderComs)
         if (p) p->Set_Owner(this);
 
+    m_pMyPos = new _float3;
+    m_pGameInstance->Set_PlayerPos(m_pMyPos);
+
     return S_OK;
 }
 
@@ -99,6 +102,8 @@ void CPlayer_1rd::Priority_Update(_float fTimeDelta)
     XMStoreFloat4x4(&m_matFPSModel, matFps);
     // 카메라 동기화
     m_pCamera->Set_WorldMatrix(m_matFPSModel);
+
+    XMStoreFloat3(m_pMyPos, m_pTransformCom->Get_State(CTransform::STATE_POSITION));
 
     __super::Priority_Update(fTimeDelta);
 }
@@ -515,7 +520,12 @@ _bool CPlayer_1rd::Shoot(_float _val)
         _vector look = m_pTransformCom->Get_State(CTransform::STATE_LOOK);
         _vector pos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
 
-        //m_pGameInstance.
+        int ran = (int)m_pGameInstance->Compute_Random(1.f, 2.99f);
+        _float3 posi;
+        XMStoreFloat3(&posi, pos);
+        string sound = "attack" + to_string(ran);
+        m_pGameInstance->PlaySounds(sound);
+        m_pGameInstance->UpdateSoundVolumeByPlayer(sound, posi);
 
         m_pGameInstance->NewBullet(look, pos, this);
 

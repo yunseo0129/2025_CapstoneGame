@@ -93,6 +93,7 @@ private:
     _bool               m_isCrouch = false;
     _bool               m_isRun = false;
     _bool               m_isMove = false;
+    _float3*            m_pMyPos;
 
     // 현재 무기 인덱스 (0: 케첩건, 1: 마요건)
     _int                m_iWeapon = 0;
@@ -101,7 +102,7 @@ private:
     _bool               m_bLaunching = false;       // 비행 중?
     _float3             m_vLaunchVel = _float3(0.f, 0.f, 0.f); // 현재 속도(월드, units/s)
     _float              m_fLaunchLandY = 0.f;       // 이 높이 이하로 떨어지면 착지
-    _bool               m_bLaunchDescending = false;// 정점을 지나 하강 시작했는지
+    _bool               m_bLaunchDescending = false; // 정점을 지나 하강 시작했는지
 
 public:
     static CPlayer_1rd* Create(EngineContext* pContext);

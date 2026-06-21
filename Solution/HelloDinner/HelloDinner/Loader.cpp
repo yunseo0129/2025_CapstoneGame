@@ -241,6 +241,20 @@ HRESULT CLoader::Loading_Level_GamePlay()
             return E_FAIL;
     }
 
+    lstrcpy(m_szLoadingText, TEXT("사운드를 로딩중입니다."));
+
+    /* explode1 */
+    m_pGameInstance->LoadSound("explode1", "Resources/Sound/sfx/explode1.ogg");
+    /* explode2 */
+    m_pGameInstance->LoadSound("explode2", "Resources/Sound/sfx/explode2.ogg");
+    /* explode3 */
+    m_pGameInstance->LoadSound("explode3", "Resources/Sound/sfx/explode3.ogg");
+    /* explode4 */
+    m_pGameInstance->LoadSound("explode4", "Resources/Sound/sfx/explode4.ogg");
+    /* attack1 */
+    m_pGameInstance->LoadSound("attack1", "Resources/Sound/sfx/attack1.ogg");
+    /* attack2 */
+    m_pGameInstance->LoadSound("attack2", "Resources/Sound/sfx/attack2.ogg");
 
 
     Set_LoadingText(TEXT("객체원형을 로딩중입니다."));
