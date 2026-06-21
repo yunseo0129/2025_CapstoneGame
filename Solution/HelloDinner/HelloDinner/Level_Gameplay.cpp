@@ -94,27 +94,27 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
     if (!pNetwork->IsConnected())
         return;
 
-    std::vector<NetworkClient::NetEvent> events;
-    pNetwork->PopAllEvents(events);
+    //std::vector<NetworkClient::NetEvent> events;
+    //pNetwork->PopAllEvents(events);
 
     if (m_pGameManager) m_pGameManager->Update(fTimeDelta);
 
-    for (auto& evt : events) {
-        switch (evt.type) {
-        case NetworkClient::NetEventType::PLAYER_ADD: {
-            // TODO: evt.id 플레이어 생성 + evt.cameraPos 위치에 배치 + evt.name 이름 설정
-            break;
-        }
-        case NetworkClient::NetEventType::PLAYER_REMOVE: {
-            // TODO: evt.id 플레이어 제거
-            break;
-        }
-        case NetworkClient::NetEventType::PLAYER_MOVE: {
-            // TODO: 해당 id 플레이어의 Transform 갱신
-            break;
-        }
-        }
-    }
+    //for (auto& evt : events) {
+    //    switch (evt.type) {
+    //    case NetworkClient::NetEventType::PLAYER_ADD: {
+    //        // TODO: evt.id 플레이어 생성 + evt.cameraPos 위치에 배치 + evt.name 이름 설정
+    //        break;
+    //    }
+    //    case NetworkClient::NetEventType::PLAYER_REMOVE: {
+    //        // TODO: evt.id 플레이어 제거
+    //        break;
+    //    }
+    //    case NetworkClient::NetEventType::PLAYER_MOVE: {
+    //        // TODO: 해당 id 플레이어의 Transform 갱신
+    //        break;
+    //    }
+    //    }
+    //}
 }
 
 HRESULT CLevel_GamePlay::Render()

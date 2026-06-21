@@ -57,6 +57,9 @@ private:
 
     // 입력 차단 여부 (상점 창 열었을 때 움직임 없게 하려고 만듦)
     _bool                   m_bBlockInput = false;
+
+    // 서버 에코 keyInput 상승 에지 감지용 (이전 프레임 값 보존)
+    unsigned short          m_prevServerKeyInput = 0;
 public:
     static CController* Create();
     virtual void Free();

@@ -208,8 +208,26 @@ void CController::Apply_ServerEvents(_float fTimeDelta)
     {
         if (evt.id == myId)
         {
-            if (evt.type == NetPlayer::EventType::MOVED && m_pPlayer && !m_pPlayer->IsDead())
+            if (evt.type == NetPlayer::EventType::MOVED && m_pPlayer && !m_pPlayer->IsDead() && !m_pPlayer->Get_Die())
+            {
                 m_pPlayer->Apply_ServerCorrection(evt.worldMatrix, fTimeDelta);
+
+                // 서버가 에코한 keyInput 상승 에지 → 1인칭 애니메이션
+                unsigned short risingEdge = (~m_prevServerKeyInput) & evt.keyInput;
+                m_prevServerKeyInput = evt.keyInput;
+
+                if (!m_bBlockInput)
+                {
+                    if (risingEdge & KEY_R)
+                        m_pPlayer->Reload(fTimeDelta);
+
+                    if (risingEdge & KEY_MOUSE_LB)
+                    {
+                        if (m_pPlayer->Shoot(fTimeDelta))
+                            if (m_pCrosshair) m_pCrosshair->On_Fire();
+                    }
+                }
+            }
             continue;
         }
 
