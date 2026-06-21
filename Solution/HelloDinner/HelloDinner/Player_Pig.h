@@ -49,6 +49,9 @@ private:
 	_uint				m_iModelLevelIndex = 0;
     bool                m_isBlending   = false;
     bool                m_bIsJumping   = false;
+    bool                m_isReloading = false;
+    bool                m_bShootPending = false;
+    bool                m_bReloadPending = false;
     unsigned short      m_keyInput     = 0;
     unsigned short      m_prevKeyInput = 0;
 

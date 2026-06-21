@@ -79,6 +79,11 @@ void CPlayer_Pig::Update(_float fTimeDelta)
                 m_pModelCom->Change_Animation(0, 5.f, true, true);
                 m_pModelCom->Change_Animation(0, 5.f, true, false);
             }
+            else if (12 == m_pModelCom->Get_UpperAnimNum())
+            {
+                m_isReloading = false;
+                m_pModelCom->Change_Animation(0, 0.f, true, true);
+            }
         }
     }
     else
@@ -403,6 +408,27 @@ HRESULT CPlayer_Pig::Ready_Components()
 
 void CPlayer_Pig::Drive_Animation()
 {
+    // 사격 (Player_1rd::Shoot 동일 — 상체 전용, 이동·점프와 독립)
+    if (m_bShootPending)
+    {
+        m_bShootPending = false;
+        if (!m_isReloading)
+            m_pModelCom->Change_Animation(3, 0.f, false, true);
+    }
+
+    // 장전 (Player_1rd::Reload 동일)
+    if (m_bReloadPending)
+    {
+        m_bReloadPending = false;
+        if (!m_isReloading)
+        {
+            m_isReloading = true;
+            m_pModelCom->Change_Animation(12, 3.f, false, true);
+            static_cast<CKetchup_Gun*>(m_PartObjects[0])->Get_Model()->Change_Animation(2, 3.f, false);
+            static_cast<CKetchup_Gun*>(m_PartObjects[1])->Get_Model()->Change_Animation(2, 3.f, false);
+        }
+    }
+
     // 공중 상태 — 착지 전까지 SPACE를 다시 눌러도 재트리거 금지
     // m_bIsJumping은 Apply_NetworkMatrix에서 Y<0.05 감지 시 해제
     if (m_bIsJumping) return;
@@ -557,6 +583,13 @@ void CPlayer_Pig::Apply_NetworkMatrix(const float* pMatrix, unsigned short keyIn
 
     m_prevKeyInput = m_keyInput;
     m_keyInput     = keyInput;
+
+    // 라이징 에지 → 펜딩 플래그 설정
+    unsigned short risingEdge = (~m_prevKeyInput) & m_keyInput;
+    if (risingEdge & KEY_MOUSE_LB)
+        m_bShootPending = true;
+    if (risingEdge & KEY_R)
+        m_bReloadPending = true;
 
     // 착지 감지: 서버 권위 Y값 기준
     if (m_bIsJumping && newMat.m[3][1] < 0.05f)
