@@ -19,6 +19,16 @@ public:
     _bool Get_ShadowLightVP(_float4x4& outView, _float4x4& outProj) const;   // [파편 그림자]
     _bool IsSphereInShadowFrustum(const _float3& vCenter, _float fRadius) const;
 
+    // [맵 RTT] 탑다운 맵 렌더 타겟 패스. 기본 no-op (Gameplay 레벨만 오버라이드).
+    //  반환 false 면 이번 프레임에 그릴 게 없음(패스 스킵 가능).
+    virtual _bool Begin_MapRTPass(ID3D12GraphicsCommandList* cmdList) { return false; }
+    virtual _bool Is_MapRTActive() const { return false; }
+    virtual void  Render_MapRT(ID3D12GraphicsCommandList* cmdList) {}
+    virtual void  End_MapRTPass(ID3D12GraphicsCommandList* cmdList) {}
+    virtual _uint Get_MapRT_SRVIndex() const { return 0; }
+    virtual void  Set_MapRTView(const _float3& vCenterXZ, _float fHalfExtent, const _float3& vUpDirXZ) {}
+    virtual void  Set_MapRTActive(_bool b) {}
+
 
     virtual void Add_Camera();
 

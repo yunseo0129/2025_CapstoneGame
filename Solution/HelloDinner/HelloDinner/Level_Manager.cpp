@@ -91,6 +91,36 @@ void CLevel_Manager::End_ShadowPass(ID3D12GraphicsCommandList* cmdList)
     if (m_pCurrentLevel) m_pCurrentLevel->End_ShadowPass(cmdList);
 }
 
+// [맵 RTT] 포워딩
+_bool CLevel_Manager::Begin_MapRTPass(ID3D12GraphicsCommandList* cmdList)
+{
+    return m_pCurrentLevel ? m_pCurrentLevel->Begin_MapRTPass(cmdList) : false;
+}
+_bool CLevel_Manager::Is_MapRTActive() const
+{
+    return m_pCurrentLevel ? m_pCurrentLevel->Is_MapRTActive() : false;
+}
+void CLevel_Manager::Render_MapRT(ID3D12GraphicsCommandList* cmdList)
+{
+    if (m_pCurrentLevel) m_pCurrentLevel->Render_MapRT(cmdList);
+}
+void CLevel_Manager::End_MapRTPass(ID3D12GraphicsCommandList* cmdList)
+{
+    if (m_pCurrentLevel) m_pCurrentLevel->End_MapRTPass(cmdList);
+}
+_uint CLevel_Manager::Get_MapRT_SRVIndex() const
+{
+    return m_pCurrentLevel ? m_pCurrentLevel->Get_MapRT_SRVIndex() : 0;
+}
+void CLevel_Manager::Set_MapRTView(const _float3& vCenterXZ, _float fHalfExtent, const _float3& vUpDirXZ)
+{
+    if (m_pCurrentLevel) m_pCurrentLevel->Set_MapRTView(vCenterXZ, fHalfExtent, vUpDirXZ);
+}
+void CLevel_Manager::Set_MapRTActive(_bool b)
+{
+    if (m_pCurrentLevel) m_pCurrentLevel->Set_MapRTActive(b);
+}
+
 _bool CLevel_Manager::Get_ShadowLightVP(_float4x4& outView, _float4x4& outProj) const
 {
     return m_pCurrentLevel ? m_pCurrentLevel->Get_ShadowLightVP(outView, outProj) : false;

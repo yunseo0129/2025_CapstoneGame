@@ -4,6 +4,7 @@
 #include "GameObject.h"
 #include "UI_Text.h"
 #include "UI_Panel.h"
+#include "UI_Texture.h"
 #include "Controller.h"
 #include "Player_1rd.h"
 #include "CharSelect_Pig.h"
@@ -614,11 +615,18 @@ HRESULT CGame_Manager::Ready_CharSelect()
             return static_cast<CUI_Panel*>(
                 m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(PROTO_UI, L"Prototype_GameObject_UI_Panel", LV, UI, &d));
         };
+    auto AddFace = [&](float x, float y, float w, float h, float depth, const _wstring& texTag) -> CUI_Texture*
+        {
+            CUI_Texture::UI_TEXTURE_DESC d;
+            d.fX = x; d.fY = y; d.fSizeX = w; d.fSizeY = h; d.fDepth = depth;
+            d.strTextureProtoTag = texTag;
+            d.iTextureLevelIndex = LV;   // 텍스처는 LEVEL_GAMEPLAY 에 등록
+            return static_cast<CUI_Texture*>(
+                m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
+                    PROTO_UI, L"Prototype_GameObject_UI_Texture", LV, UI, &d));
+        };
 
     AddText(640.f, 70.f, L"Character Select", 1.4f);
-
-    // 중앙 라벨(나)
-    AddText(640.f, 540.f, L"Me", 0.9f);
 
     const float FW = 84.f, FH = 84.f, FGAP = 24.f, FY = 596.f;
     const float FTOT = 3 * FW + 2 * FGAP;
@@ -627,13 +635,26 @@ HRESULT CGame_Manager::Ready_CharSelect()
 
     AddPanel(FX0 - 20.f, FY - 20.f, FTOT + 40.f, FH + 40.f, _float4(0.08f, 0.10f, 0.14f, 0.78f), 0.7f); // 바 배경
     const _wstring caps[3] = {L"Pig", L"Chick", L"Blank"};
+    const _wstring faceTex[3] = {
+        L"Prototype_Component_Texture_SelectPig",
+        L"Prototype_Component_Texture_SelectChick",
+        L""   // Blank: 아이콘 없음
+    };
+    const float RING = 3.f;   // 패널을 아이콘보다 이만큼 크게 → 선택 링
     for (int i = 0; i < 3; ++i)
     {
-        m_pCSFacePanel[i] = AddPanel(FaceX(i), FY, FW, FH, _float4(0.4f, 0.4f, 0.42f, 0.95f), 0.4f);
-        m_vCSFaceRect[i] = _float4(FaceX(i), FY, FW, FH);
+        // 뒤 패널(선택 링/배경). 아이콘보다 RING 만큼 크게.
+        m_pCSFacePanel[i] = AddPanel(FaceX(i) - RING, FY - RING, FW + 2.f * RING, FH + 2.f * RING,
+            _float4(0.4f, 0.4f, 0.42f, 0.95f), 0.4f);
+        m_vCSFaceRect[i] = _float4(FaceX(i), FY, FW, FH);   // 클릭 판정은 아이콘 영역 기준
+
+        // 칸을 꽉 채우는 아이콘(패널 0.4 앞 0.3). 포인터 저장 → 틴트 대상.
+        if (!faceTex[i].empty())
+            m_pCSFaceIcon[i] = AddFace(FaceX(i), FY, FW, FH, 0.3f, faceTex[i]);
+
         AddText(FaceX(i) + FW * 0.5f, FY + FH + 12.f, caps[i], 0.7f);
     }
-
+     
     const float RW = 200.f, RH = 56.f, RX = 1280.f - RW - 40.f, RY = 720.f - RH - 40.f;
     AddPanel(RX, RY, RW, RH, _float4(40 / 255.f, 130 / 255.f, 80 / 255.f, 0.95f), 0.5f);
     m_vCSReadyRect = _float4(RX, RY, RW, RH);
@@ -681,14 +702,22 @@ void CGame_Manager::Handle_CharSelectClick()
 
 void CGame_Manager::Refresh_CharSelectFaces()
 {
+    // 선택 = 원본 밝기(또렷) / 비선택 = 강하게 딤.  뒤 패널은 선택 링.
+    const _float4 ICON_SEL = _float4(1.f, 1.f, 1.f, 1.f);   // 원본 색 그대로
+    const _float4 ICON_DIM = _float4(0.38f, 0.38f, 0.42f, 1.f);   // 어둡게(비선택)
+    const _float4 RING_SEL = _float4(1.f, 0.86f, 0.30f, 1.f);   // 노란 하이라이트 링
+    const _float4 RING_DIM = _float4(0.16f, 0.17f, 0.20f, 0.95f); // 어두운 테두리
+
     for (int i = 0; i < 3; ++i)
     {
-        if (!m_pCSFacePanel[i]) continue;
         const bool sel = (i == m_iCSMyCharacter);
-        _float4 c;
-        if (i == 0) c = sel ? _float4(235 / 255.f, 170 / 255.f, 180 / 255.f, 1.f) : _float4(150 / 255.f, 110 / 255.f, 120 / 255.f, 0.95f);
-        else      c = sel ? _float4(150 / 255.f, 155 / 255.f, 170 / 255.f, 1.f) : _float4(80 / 255.f, 85 / 255.f, 95 / 255.f, 0.95f);
-        m_pCSFacePanel[i]->Set_Color(c);
+
+        if (m_pCSFacePanel[i])
+            m_pCSFacePanel[i]->Set_Color(sel ? RING_SEL : RING_DIM);
+
+        if (m_pCSFaceIcon[i])                 // Pig/Chick: 밝기로 선택 표시
+            m_pCSFaceIcon[i]->Set_Color(sel ? ICON_SEL : ICON_DIM);
+        // Blank(2번)은 아이콘이 없어 패널 색(노랑/어둠)만으로 선택 표시됨
     }
 }
 

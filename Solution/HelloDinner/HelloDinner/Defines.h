@@ -104,6 +104,7 @@ enum PSO_TYPE
     SHADOW_ANIM,    // 그림자 생성용 (Skeletal Mesh / Depth Only)
     DEFAULT_INSTANCED, // 인스턴싱용
     SHADOW_STATIC_INSTANCED,
+    MAPRT_INSTANCED,   // [맵 RTT] 탑다운 맵 렌더용 (DEFAULT_INSTANCED + CullMode None)
     END
 };
 

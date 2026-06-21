@@ -249,9 +249,6 @@
     <Filter Include="소스 파일\02. Game\Font">
       <UniqueIdentifier>{51d3331a-8275-4de4-9478-6831336846a9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\01. Engine\99. GameInstance\00. Lobby">
-      <UniqueIdentifier>{d93e0ef8-18c4-4d64-833b-8866a1e3e9b8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\02. Game\01. Levels\05. Charselect">
       <UniqueIdentifier>{a1decd99-6cb5-4a51-9d47-70ac83e1a6a1}</UniqueIdentifier>
     </Filter>
@@ -263,6 +260,12 @@
     </Filter>
     <Filter Include="소스 파일\02. Game\GameObject\UI">
       <UniqueIdentifier>{63a148fe-bae6-459a-972d-b00df1122642}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Engine\13.UI\maprender">
+      <UniqueIdentifier>{cb2e27f9-2cff-4285-b722-668a02ba8ba0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Game\00. Lobby">
+      <UniqueIdentifier>{d93e0ef8-18c4-4d64-833b-8866a1e3e9b8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -474,10 +477,10 @@
       <Filter>소스 파일\01. Engine\12. Fracture</Filter>
     </ClInclude>
     <ClInclude Include="LobbyWindow.h">
-      <Filter>소스 파일\01. Engine\99. GameInstance\00. Lobby</Filter>
+      <Filter>소스 파일\02. Game\00. Lobby</Filter>
     </ClInclude>
     <ClInclude Include="RoomWindow.h">
-      <Filter>소스 파일\01. Engine\99. GameInstance\00. Lobby</Filter>
+      <Filter>소스 파일\02. Game\00. Lobby</Filter>
     </ClInclude>
     <ClInclude Include="Game_Manager.h">
       <Filter>소스 파일\02. Game\GameManager</Filter>
@@ -523,6 +526,9 @@
     </ClInclude>
     <ClInclude Include="UI_Crosshair.h">
       <Filter>소스 파일\02. Game\GameObject\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="MapRenderTarget.h">
+      <Filter>소스 파일\01. Engine\13.UI\maprender</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -728,10 +734,10 @@
       <Filter>소스 파일\01. Engine\12. Fracture</Filter>
     </ClCompile>
     <ClCompile Include="RoomWindow.cpp">
-      <Filter>소스 파일\01. Engine\99. GameInstance\00. Lobby</Filter>
+      <Filter>소스 파일\02. Game\00. Lobby</Filter>
     </ClCompile>
     <ClCompile Include="LobbyWindow.cpp">
-      <Filter>소스 파일\01. Engine\99. GameInstance\00. Lobby</Filter>
+      <Filter>소스 파일\02. Game\00. Lobby</Filter>
     </ClCompile>
     <ClCompile Include="Game_Manager.cpp">
       <Filter>소스 파일\02. Game\GameManager</Filter>
@@ -777,6 +783,9 @@
     </ClCompile>
     <ClCompile Include="UI_Crosshair.cpp">
       <Filter>소스 파일\02. Game\GameObject\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="MapRenderTarget.cpp">
+      <Filter>소스 파일\01. Engine\13.UI\maprender</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

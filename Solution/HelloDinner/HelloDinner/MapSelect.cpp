@@ -1,6 +1,7 @@
 #include "MapSelect.h"
 #include "GameInstance.h"
 #include "VIBuffer_Rect.h"
+#include <cmath>
 
 namespace
 {
@@ -53,6 +54,9 @@ HRESULT CMapSelect::Initialize(void* pArg)
     m_fBlipMinPx = pDesc->fBlipMinPx;
     m_fMarkerSize = pDesc->fMarkerSize;
     m_vMarkerColor = pDesc->vMarkerColor;
+    m_fRadarEdgePx = pDesc->fRadarEdgePx;
+    m_fRingThickness = pDesc->fRingThickness;
+    m_vRingColor = pDesc->vRingColor;
 
     // 베이스(CUIObject)가 위치/크기/배경색(m_vColor)/화면크기 셋업
     if (FAILED(__super::Initialize(pArg)))
@@ -68,8 +72,18 @@ void CMapSelect::Update(_float fTimeDelta)
 {
     __super::Update(fTimeDelta);
 
+    const _bool bShown = (m_bVisible && GetOnOff());
+
+    // [진단] RTT 패스를 무조건 활성화해서 게이팅 문제인지 패스 출력 문제인지 가른다.
+    //  (정상화되면 if(bShown) 안으로 되돌릴 것)
+    m_pGameInstance->Set_MapRTView(
+        _float3(m_vCenterWorld.x, 0.f, m_vCenterWorld.y),
+        m_fWorldRange,
+        _float3(0.f, 0.f, 1.f));
+    m_pGameInstance->Set_MapRTActive(true);
+
     // 보일 때만 클릭을 받는다. (창이 꺼져 있으면 선택 처리 안 함)
-    if (m_bVisible && GetOnOff())
+    if (bShown)
         Handle_Click();
 }
 
@@ -82,49 +96,52 @@ void CMapSelect::Render(ID3D12GraphicsCommandList* _commandList)
     m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::UI);
 
     // -----------------------------------------------------------------
-    // 1) 배경 (베이스가 갱신해 둔 m_matNDCWorld 사용, 단색)
+    // 1) 배경 = 탑다운 맵 RTT 텍스처 (오브젝트 실제 모양/텍스처 반영)
+    //    RTT 가 준비된 경우 텍스처로, 아니면 단색 배경으로 폴백.
     // -----------------------------------------------------------------
     Bind_NDCWorld(_commandList);
-    Bind_UIColor(_commandList, false);
+
+    const _uint iRTIndex = m_pGameInstance->Get_MapRT_SRVIndex();
+    const _bool bUseRT = (iRTIndex != 0);
+
+    if (bUseRT)
+    {
+        // useTexture = true
+        Bind_UIColor(_commandList, true);
+        // RTT 결과 SRV 를 TEXTURE_Diffuse 슬롯에 바인딩 (CTexture 와 동일 경로)
+        CD3DX12_GPU_DESCRIPTOR_HANDLE hGpu = m_pGameInstance->Get_GPUHandle(iRTIndex);
+        _commandList->SetGraphicsRootDescriptorTable((_uint)RootParameterIndex::TEXTURE_Diffuse, hGpu);
+    }
+    else
+    {
+        // [진단] 폴백(단색)일 때 시안색으로. 패널이 시안이면 bUseRT=false(인덱스 0).
+        //  패널이 (마젠타/맵)이면 텍스처 경로로 들어온 것.
+        const _float4 vOld = m_vColor;
+        m_vColor = _float4(0.f, 1.f, 1.f, 1.f);
+        Bind_UIColor(_commandList, false);
+        m_vColor = vOld;
+    }
     m_pVIBufferCom->Render(_commandList);
 
-    // -----------------------------------------------------------------
-    // 2) 맵 조각 높이맵 (고정 영역 / 회전 없음)
-    // -----------------------------------------------------------------
-    const _float scale = (m_fW * 0.5f) / m_fWorldRange; // 월드유닛 -> 픽셀
-    list<CGameObject*> MapObjs = m_pGameInstance->Get_List(m_iMapLevelIndex, m_strMapLayerTag);
-    const _float hRange = (m_fHeightMax - m_fHeightMin);
-
-    for (auto& pObj : MapObjs)
+    // 픽셀 좌표/레이더 반지름 (링·마커 공용)
+    const _float cxPx = m_fX + m_fW * 0.5f;
+    const _float cyPx = m_fY + m_fH * 0.5f;
+    _float fRadarPx = (m_fW < m_fH ? m_fW : m_fH) * 0.5f - m_fRadarEdgePx;
+    if (fRadarPx < 0.f) fRadarPx = 0.f;
+    if (m_fRingThickness > 0.f && fRadarPx > 1.f)
     {
-        if (nullptr == pObj)
-            continue;
-
-        _float3 c; _float r;
-        if (!pObj->Get_WorldBoundingSphere(c, r))
-            continue;
-
-        // 보여줄 영역(중심 기준 사각 범위) 밖이면 스킵
-        const _float dx = c.x - m_vCenterWorld.x;
-        const _float dz = c.z - m_vCenterWorld.y;
-        if (dx < -m_fWorldRange || dx > m_fWorldRange ||
-            dz < -m_fWorldRange || dz > m_fWorldRange)
-            continue;
-
-        _float bx, by;
-        World_To_Pixel(c.x, c.z, bx, by);
-
-        // 높이 -> 색
-        _float t = (hRange > 0.f) ? (c.y - m_fHeightMin) / hRange : 0.f;
-        t = Clamp01(t);
-        const _float4 col = Lerp4(m_vColorLow, m_vColorHigh, t);
-
-        // blip 크기 (최소치 보장)
-        _float sz = r * scale * 2.f * m_fBlipScale;
-        if (sz < m_fBlipMinPx) sz = m_fBlipMinPx;
-
-        _float4x4 matBlip = Make_PixelRectNDC(bx - sz * 0.5f, by - sz * 0.5f, sz, sz);
-        Draw_Solid(_commandList, m_pVIBufferCom, matBlip, col);
+        const _int   iSeg = 64;
+        const _float fStep = 6.2831853f / (_float)iSeg;
+        for (_int i = 0; i < iSeg; ++i)
+        {
+            const _float a = fStep * (_float)i;
+            const _float px = cxPx + cosf(a) * fRadarPx;
+            const _float py = cyPx + sinf(a) * fRadarPx;
+            _float4x4 matDot = Make_PixelRectNDC(
+                px - m_fRingThickness * 0.5f, py - m_fRingThickness * 0.5f,
+                m_fRingThickness, m_fRingThickness);
+            Draw_Solid(_commandList, m_pVIBufferCom, matDot, m_vRingColor);
+        }
     }
 
     // -----------------------------------------------------------------
@@ -211,6 +228,18 @@ void CMapSelect::Handle_Click()
         fDesignY < m_fY || fDesignY > m_fY + m_fH)
         return; // 창 밖 클릭은 무시
 
+    // ---- 3.5) 레이더 원 밖 클릭도 무시 (원형 영역만 유효) ----
+    {
+        const _float cxPx = m_fX + m_fW * 0.5f;
+        const _float cyPx = m_fY + m_fH * 0.5f;
+        _float fRadarPx = (m_fW < m_fH ? m_fW : m_fH) * 0.5f - m_fRadarEdgePx;
+        if (fRadarPx < 0.f) fRadarPx = 0.f;
+        const _float ddx = fDesignX - cxPx;
+        const _float ddy = fDesignY - cyPx;
+        if (ddx * ddx + ddy * ddy > fRadarPx * fRadarPx)
+            return;
+    }
+
     // ---- 4) 픽셀 -> 월드 (x,z) ----
     _float wx, wz;
     Pixel_To_World(fDesignX, fDesignY, wx, wz);
@@ -259,6 +288,31 @@ _float4x4 CMapSelect::Make_PixelRectNDC(_float fX, _float fY, _float fW, _float 
     m._31 = 0.f; m._32 = 0.f; m._33 = 1.f; m._34 = 0.f;
     m._41 = tx;  m._42 = ty;  m._43 = 0.f; m._44 = 1.f;
     return m;
+}
+
+// =====================================================================
+//  blip 사각형을 원(레이더) 안으로 잘라낸다.
+//   원의 외접 정사각형과 교차시켜 위젯 밖으로 절대 나가지 않게 한다.
+// =====================================================================
+bool CMapSelect::Clip_RectToCircle(_float inX, _float inY, _float inW, _float inH,
+    _float cx, _float cy, _float rad,
+    _float& outX, _float& outY, _float& outW, _float& outH) const
+{
+    if (rad <= 0.f)
+        return false;
+
+    _float l = inX, t = inY, r = inX + inW, b = inY + inH;
+
+    const _float bl = cx - rad, bt = cy - rad, br = cx + rad, bb = cy + rad;
+    if (l < bl) l = bl;
+    if (t < bt) t = bt;
+    if (r > br) r = br;
+    if (b > bb) b = bb;
+    if (r <= l || b <= t)
+        return false;
+
+    outX = l; outY = t; outW = r - l; outH = b - t;
+    return true;
 }
 
 void CMapSelect::Draw_Solid(ID3D12GraphicsCommandList* _commandList, CVIBuffer* pBuffer,

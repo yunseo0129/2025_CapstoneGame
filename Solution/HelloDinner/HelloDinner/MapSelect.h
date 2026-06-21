@@ -50,6 +50,11 @@ public:
         // ---- 선택 마커 ----
         _float   fMarkerSize = 14.f;
         _float4  vMarkerColor = _float4(0.2f, 1.f, 0.3f, 1.f);
+
+        // ---- 레이더(원형) 표시: 원 밖으로 새는 점/클릭을 잘라낸다 ----
+        _float   fRadarEdgePx = 2.f;
+        _float   fRingThickness = 2.f;
+        _float4  vRingColor = _float4(0.35f, 0.9f, 0.45f, 0.8f);
     };
 
 private:
@@ -87,6 +92,11 @@ private:
     // 임의의 픽셀 사각형 -> NDC world 행렬
     _float4x4 Make_PixelRectNDC(_float fX, _float fY, _float fW, _float fH) const;
 
+    // blip 사각형을 레이더 원(중심 cx,cy / 반지름 rad) 안으로 잘라낸다.
+    bool Clip_RectToCircle(_float inX, _float inY, _float inW, _float inH,
+        _float cx, _float cy, _float rad,
+        _float& outX, _float& outY, _float& outW, _float& outH) const;
+
     // 단색 도형 그리기
     void      Draw_Solid(ID3D12GraphicsCommandList* _commandList, class CVIBuffer* pBuffer,
         const _float4x4& matNDC, const _float4& vColor);
@@ -110,6 +120,10 @@ private:
 
     _float   m_fMarkerSize = 14.f;
     _float4  m_vMarkerColor = _float4(0.2f, 1.f, 0.3f, 1.f);
+
+    _float   m_fRadarEdgePx = 2.f;
+    _float   m_fRingThickness = 2.f;
+    _float4  m_vRingColor = _float4(0.35f, 0.9f, 0.45f, 0.8f);
 
     // 선택 상태
     _bool    m_bHasSelection = false;

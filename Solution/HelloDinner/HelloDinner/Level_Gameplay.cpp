@@ -23,6 +23,7 @@
 #include "UI_Panel.h"
 #include "MiniMap.h"
 #include "MapSelect.h"
+#include "MapRenderTarget.h"
 #include "Bullets.h"
 
 #include "UI_Crosshair.h"
@@ -42,6 +43,9 @@ HRESULT CLevel_GamePlay::Initialize()
         return E_FAIL;
 
     if (FAILED(Ready_UI()))
+        return E_FAIL;
+
+    if (FAILED(Ready_MapRT()))
         return E_FAIL;
 
     // 시작 시점에 사용할 카메라
@@ -162,6 +166,61 @@ HRESULT CLevel_GamePlay::Ready_Light()
     m_pLights.push_back(pLight);
 
     return S_OK;
+}
+
+// =====================================================================
+//  [맵 RTT] 탑다운 맵 렌더 타겟
+// =====================================================================
+HRESULT CLevel_GamePlay::Ready_MapRT()
+{
+    // 256x256 컬러 타겟. 클리어색 투명(맵이 없는 영역은 패널 배경이 비침).
+    m_pMapRT = CMapRenderTarget::Create(m_pContext, 256, 256, _float4(0.f, 0.f, 0.f, 0.f));
+    if (nullptr == m_pMapRT)
+        return E_FAIL;
+
+    // 초기 뷰: 원점 중심, 반경 1000유닛(≈10m, ×100 스케일), 북쪽 고정
+    m_pMapRT->Set_View(_float3(0.f, 0.f, 0.f), 100.f, _float3(0.f, 0.f, 1.f));
+    m_bMapRTActive = false;
+    return S_OK;
+}
+
+void CLevel_GamePlay::Set_MapRTView(const _float3& vCenterXZ, _float fHalfExtent, const _float3& vUpDirXZ)
+{
+    if (m_pMapRT)
+        m_pMapRT->Set_View(vCenterXZ, fHalfExtent, vUpDirXZ);
+}
+
+_bool CLevel_GamePlay::Begin_MapRTPass(ID3D12GraphicsCommandList* cmdList)
+{
+    if (!m_pMapRT || !m_bMapRTActive)
+        return false;
+    m_pMapRT->Begin_Pass(cmdList);
+    return true;
+}
+
+void CLevel_GamePlay::Render_MapRT(ID3D12GraphicsCommandList* cmdList)
+{
+    if (!m_pMapRT) return;
+
+    // [진단] 패스 실행 확인 완료(SRV=152, count=137). 팝업은 비활성화.
+    //static bool s_bProbed = false;
+    //if (!s_bProbed) { s_bProbed = true; /* MSG_BOX ... */ }
+
+    // 백페이스 컬링이 원인이었음 -> MAPRT_INSTANCED(CullMode None) PSO 로 그린다.
+    m_pMapRT->Render_MapLayer(cmdList, LEVEL_GAMEPLAY, L"Layer_Map");
+}
+
+void CLevel_GamePlay::End_MapRTPass(ID3D12GraphicsCommandList* cmdList)
+{
+    if (!m_pMapRT) return;
+    m_pMapRT->End_Pass(cmdList);
+    // 한 프레임용으로 자동 비활성화. 보이는 UI 가 매 프레임 다시 켠다(Update 에서).
+    m_bMapRTActive = false;
+}
+
+_uint CLevel_GamePlay::Get_MapRT_SRVIndex() const
+{
+    return m_pMapRT ? m_pMapRT->Get_SRVIndex() : 0;
 }
 
 HRESULT CLevel_GamePlay::Ready_Layer()
@@ -352,7 +411,7 @@ HRESULT CLevel_GamePlay::Ready_UI()
         desc.fDepth = 0.3f;
         desc.vColor = _float4(0.f, 0.f, 0.f, 0.5f); // 단색 배경(반투명 검정)
 
-        desc.fViewRange = 40.f;            // 플레이어 주변 ±40유닛 (작을수록 확대)
+        desc.fViewRange = 10.f;            // 내 주위 반경 10m (맵 크기와 무관하게 고정)
         desc.iMapLevelIndex = LEVEL_GAMEPLAY;
         desc.strMapLayerTag = L"Layer_Map";
 
@@ -378,9 +437,11 @@ HRESULT CLevel_GamePlay::Ready_UI()
         desc.fDepth = 0.4f;
         desc.vColor = _float4(0.05f, 0.06f, 0.10f, 0.85f); // 어두운 반투명 배경
 
-        // 보여줄 맵 영역: 나중에 여기(중심/범위)만 바꾸면 어느 부분이든 보여줄 수 있음 ▼▼
-        desc.vCenterWorld = _float2(0.f, 0.f);  // 창 중심에 올 월드 (x, z)
-        desc.fWorldRange = 60.f;               // 중심에서 ±60유닛 (작을수록 확대)
+        // 보여줄 맵 영역. 맵이 ×100 스케일이라 "반경 50m" = 5000 월드유닛.
+        //  (오브젝트 1개가 ~50유닛이므로 50 으로는 한 오브젝트도 화면에 안 들어왔음)
+        //  맵 전체가 안 보이면 이 값을 키우고, 너무 작게 보이면 줄인다. ▼▼
+        desc.vCenterWorld = _float2(0.f, 0.f);  // 원점 중심
+        desc.fWorldRange = 100.f;             // 원점에서 반경 5000유닛 (≈50m)
         // ----------------------------------------------------------------▲▲
 
         desc.iMapLevelIndex = LEVEL_GAMEPLAY;
@@ -456,6 +517,7 @@ void CLevel_GamePlay::Free()
     for (auto& pLight : m_pLights)
         Safe_Release(pLight);
     m_pLights.clear();
+    Safe_Release(m_pMapRT);
     Safe_Release(m_pGameManager);
     __super::Free();
 }

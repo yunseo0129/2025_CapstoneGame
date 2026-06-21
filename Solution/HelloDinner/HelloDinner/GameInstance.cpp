@@ -140,6 +140,23 @@ HRESULT CGameInstance::Draw()
     if (m_pFracture_System) m_pFracture_System->Render_Shadow(m_pCommandList.Get());  // [그림자] 파편 조각
     m_pLevel_Manager->End_ShadowPass(m_pCommandList.Get());
 
+    // [맵 RTT] 탑다운 맵 텍스처 생성 (패널 열렸을 때만 active). 백버퍼 복원 전에 그린다.
+    //  주의: 위 셰도우/파편 패스가 파편 RS 로 바꿔놨고 글로벌 힙도 보장되지 않으므로,
+    //        Begin_Pass(카메라 바인딩) 전에 전역 RS/힙을 먼저 복원해야 한다.
+    //        (안 하면 인스턴스 셰이더가 잘못된 디스크립터를 읽어 GPU 페이지폴트/행)
+    if (m_pLevel_Manager->Is_MapRTActive())
+    {
+        Set_RootSignature(m_pCommandList.Get());                   // 전역 RS 복원 (먼저!)
+        m_pTexture_Manager->Bind_GlobalHeap(m_pCommandList.Get());  // 전역 SRV 힙 복원
+
+        m_pLevel_Manager->Begin_MapRTPass(m_pCommandList.Get());    // RT 바인딩 + 탑다운 카메라(b0)
+        // 라이트(b3)+셰도우맵(t2) 바인딩 — 인스턴스 PS 가 둘 다 읽는다.
+        m_pLevel_Manager->Bind_LightBuffer(m_pCommandList.Get(), RootParameterIndex::Light);
+
+        m_pLevel_Manager->Render_MapRT(m_pCommandList.Get());
+        m_pLevel_Manager->End_MapRTPass(m_pCommandList.Get());
+    }
+
     m_pGraphic_Device->initRenderTargetAndDepthStencil(m_pCommandList.Get());
     Set_RootSignature(m_pCommandList.Get());   // [그림자] Render_Shadow 가 파편 RS 로 바꿔놨으므로 전역 RS 복원
     m_pLevel_Manager->Bind_CameraBuffer(m_pCommandList.Get(), RootParameterIndex::Camera, CAMERA_FPV);
@@ -406,6 +423,20 @@ XMFLOAT4X4 CGameInstance::Get_CurrentCameraView()
 _bool CGameInstance::Get_ShadowLightVP(_float4x4& outView, _float4x4& outProj)
 {
     return m_pLevel_Manager ? m_pLevel_Manager->Get_ShadowLightVP(outView, outProj) : false;
+}
+
+// [맵 RTT] 현재 레벨의 탑다운 맵 렌더 타겟 제어
+void CGameInstance::Set_MapRTView(const _float3& vCenterXZ, _float fHalfExtent, const _float3& vUpDirXZ)
+{
+    if (m_pLevel_Manager) m_pLevel_Manager->Set_MapRTView(vCenterXZ, fHalfExtent, vUpDirXZ);
+}
+void CGameInstance::Set_MapRTActive(_bool b)
+{
+    if (m_pLevel_Manager) m_pLevel_Manager->Set_MapRTActive(b);
+}
+_uint CGameInstance::Get_MapRT_SRVIndex() const
+{
+    return m_pLevel_Manager ? m_pLevel_Manager->Get_MapRT_SRVIndex() : 0;
 }
 
 XMFLOAT4X4 CGameInstance::Get_CurrentCameraProjection()

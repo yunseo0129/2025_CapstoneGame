@@ -204,6 +204,7 @@ HRESULT CShader_Manager::Create_PSO()
     ComPtr<ID3DBlob> psLit = Compile_Shader(L"Shader_Static.hlsl", "PS_Main_Lit", "ps_5_1"); // 조명 O
     ComPtr<ID3DBlob> psSkybox = Compile_Shader(L"Shader_Skybox.hlsl", "PS_Main_Skybox", "ps_5_1"); // Skybox
     ComPtr<ID3DBlob> psUI = Compile_Shader(L"Shader_UI.hlsl", "PS_Main_UI", "ps_5_1"); // 조명 X
+    ComPtr<ID3DBlob> psMapRT = Compile_Shader(L"Shader_Static_Instanced.hlsl", "PS_Main_MapRT", "ps_5_1"); // [맵 RTT] 무조명
 
     // ----------------------------------------------------------------
     // 2. 기본 PSO Desc 작성 (공통 설정)
@@ -239,6 +240,18 @@ HRESULT CShader_Manager::Create_PSO()
     psoDesc.PS = {psLit->GetBufferPointer(), psLit->GetBufferSize()};
 
     m_pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pPSOs[(UINT)PSO_TYPE::DEFAULT_INSTANCED]));
+
+    // ================================================================
+    // MAPRT_INSTANCED  [맵 RTT 탑다운] = DEFAULT_INSTANCED + CullMode None
+    //   위에서 수직으로 내려다보면 일반 메시 면이 뒷면으로 보여 Cull Back 으로
+    //   전부 잘린다. 컬링을 꺼서 양면 모두 그린다.
+    // ================================================================
+    psoDesc = baseDesc;
+    psoDesc.InputLayout = {m_LayoutStaticInstanced.data(), (UINT)m_LayoutStaticInstanced.size()};
+    psoDesc.VS = {vsStatic_Insatanced->GetBufferPointer(), vsStatic_Insatanced->GetBufferSize()};
+    psoDesc.PS = {psMapRT->GetBufferPointer(), psMapRT->GetBufferSize()};  // 무조명 PS
+    psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+    m_pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pPSOs[(UINT)PSO_TYPE::MAPRT_INSTANCED]));
 
 
     // ================================================================

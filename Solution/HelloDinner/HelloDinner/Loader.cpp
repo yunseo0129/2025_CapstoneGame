@@ -28,6 +28,7 @@
 #include "CharSelect_Pig.h"
 #include "CharSelect_Chick.h"
 #include "UI_Crosshair.h"
+#include "UI_Texture.h"
 
 CLoader::CLoader(EngineContext* pContext)
     : m_pContext {pContext}
@@ -128,9 +129,17 @@ HRESULT CLoader::Loading_Level_GamePlay()
                 return E_FAIL;
         }
 
+        // Crosshair
         if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, L"Prototype_Component_Texture_Crosshair",
             CTexture::Create(m_pContext, L"Resources/Textures/Crosshair.png", 1))))
             return E_FAIL;
+
+        // 캐릭터 선택창
+        if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, L"Prototype_Component_Texture_SelectPig",
+            CTexture::Create(m_pContext, L"Resources/Textures/Select_pig.png", 1))))   return E_FAIL;
+        if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, L"Prototype_Component_Texture_SelectChick",
+            CTexture::Create(m_pContext, L"Resources/Textures/Select_chick.png", 1))))  return E_FAIL;
+
     }
 
     Set_LoadingText(TEXT("폰트를 로딩중입니다."));
@@ -250,6 +259,10 @@ HRESULT CLoader::Loading_Level_GamePlay()
 
     if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_GameObject_UI_Panel",
         CUI_Panel::Create(m_pContext))))
+        return E_FAIL;
+
+    if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, L"Prototype_GameObject_UI_Texture",
+        CUI_Texture::Create(m_pContext))))   
         return E_FAIL;
 
     // Prototype_GameObject_MiniMap

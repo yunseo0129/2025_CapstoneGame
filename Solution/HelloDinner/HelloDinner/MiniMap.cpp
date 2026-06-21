@@ -2,6 +2,7 @@
 #include "GameInstance.h"
 #include "Texture.h"
 #include "VIBuffer_Rect.h"
+#include <cmath>
 
 namespace
 {
@@ -59,6 +60,9 @@ HRESULT CMiniMap::Initialize(void* pArg)
     m_fBlipMinPx = pDesc->fBlipMinPx;
     m_fMarkerSize = pDesc->fMarkerSize;
     m_vMarkerColor = pDesc->vMarkerColor;
+    m_fRadarEdgePx = pDesc->fRadarEdgePx;
+    m_fRingThickness = pDesc->fRingThickness;
+    m_vRingColor = pDesc->vRingColor;
 
     // 베이스(CUIObject)가 위치/크기/배경색(m_vColor)/화면크기 셋업
     if (FAILED(__super::Initialize(pArg)))
@@ -126,6 +130,11 @@ void CMiniMap::Render(ID3D12GraphicsCommandList* _commandList)
     const _float scale = (m_fW * 0.5f) / m_fViewRange;
     const _float fRangeSq = m_fViewRange * m_fViewRange;
 
+    // 레이더(원형) 반지름: 위젯의 내접원에서 여백만큼 안쪽. 이 원 밖 점은 그리지 않는다.
+    _float fRadarPx = (m_fW < m_fH ? m_fW : m_fH) * 0.5f - m_fRadarEdgePx;
+    if (fRadarPx < 0.f) fRadarPx = 0.f;
+    const _float fRadarPxSq = fRadarPx * fRadarPx;
+
     // -----------------------------------------------------------------
     // 3) 맵 조각 높이맵
     // -----------------------------------------------------------------
@@ -155,17 +164,50 @@ void CMiniMap::Render(ID3D12GraphicsCommandList* _commandList)
         const _float bx = cxPx + lr * scale;
         const _float by = cyPx - lf * scale;
 
+        // 레이더 원 밖으로 나가는 점은 그리지 않는다 (원형 클리핑)
+        const _float ddx = bx - cxPx;
+        const _float ddy = by - cyPx;
+        if (ddx * ddx + ddy * ddy > fRadarPxSq)
+            continue;
+
         // 높이 -> 색
         _float t = (hRange > 0.f) ? (c.y - m_fHeightMin) / hRange : 0.f;
         t = Clamp01(t);
         const _float4 col = Lerp4(m_vColorLow, m_vColorHigh, t);
 
-        // blip 크기 (최소치 보장)
+        // blip 크기 (최소치 보장 + 위젯을 넘지 않도록 상한)
         _float sz = r * scale * 2.f * m_fBlipScale;
         if (sz < m_fBlipMinPx) sz = m_fBlipMinPx;
+        const _float fMaxBlip = fRadarPx * 2.f; // 레이더 지름보다 크지 않게
+        if (sz > fMaxBlip) sz = fMaxBlip;
 
-        _float4x4 matBlip = Make_PixelRectNDC(bx - sz * 0.5f, by - sz * 0.5f, sz, sz);
+        // blip 사각형을 레이더 원 안으로 잘라낸다 (위젯 밖 그리기 방지)
+        _float cbx, cby, cbw, cbh;
+        if (!Clip_RectToCircle(bx - sz * 0.5f, by - sz * 0.5f, sz, sz,
+            cxPx, cyPx, fRadarPx, cbx, cby, cbw, cbh))
+            continue;
+
+        _float4x4 matBlip = Make_PixelRectNDC(cbx, cby, cbw, cbh);
         Draw_Solid(_commandList, m_pVIBufferCom, matBlip, col);
+    }
+
+    // -----------------------------------------------------------------
+    // 3.5) 레이더 테두리 링 (원형, 옵션)
+    // -----------------------------------------------------------------
+    if (m_fRingThickness > 0.f && fRadarPx > 1.f)
+    {
+        const _int   iSeg = 48;
+        const _float fStep = 6.2831853f / (_float)iSeg;
+        for (_int i = 0; i < iSeg; ++i)
+        {
+            const _float a = fStep * (_float)i;
+            const _float px = cxPx + cosf(a) * fRadarPx;
+            const _float py = cyPx + sinf(a) * fRadarPx;
+            _float4x4 matDot = Make_PixelRectNDC(
+                px - m_fRingThickness * 0.5f, py - m_fRingThickness * 0.5f,
+                m_fRingThickness, m_fRingThickness);
+            Draw_Solid(_commandList, m_pVIBufferCom, matDot, m_vRingColor);
+        }
     }
 
     // -----------------------------------------------------------------
@@ -197,6 +239,36 @@ _float4x4 CMiniMap::Make_PixelRectNDC(_float fX, _float fY, _float fW, _float fH
     m._31 = 0.f; m._32 = 0.f; m._33 = 1.f; m._34 = 0.f;
     m._41 = tx;  m._42 = ty;  m._43 = 0.f; m._44 = 1.f;
     return m;
+}
+
+// =====================================================================
+//  blip 사각형을 원(레이더) 안으로 잘라낸다.
+//   - 먼저 원의 외접 정사각형([cx-rad, cx+rad] x [cy-rad, cy+rad])과 교차.
+//     => 어떤 거대한 blip 도 위젯 밖으로 절대 못 나간다(화면 가림 방지).
+//   - 그 다음, 각 변의 중점이 원 안에 들어오도록 한 번 더 줄여 원형 느낌 유지.
+//   - 교차 영역이 없으면 false.
+// =====================================================================
+bool CMiniMap::Clip_RectToCircle(_float inX, _float inY, _float inW, _float inH,
+    _float cx, _float cy, _float rad,
+    _float& outX, _float& outY, _float& outW, _float& outH) const
+{
+    if (rad <= 0.f)
+        return false;
+
+    // 입력 사각형
+    _float l = inX, t = inY, r = inX + inW, b = inY + inH;
+
+    // 1) 원의 외접 정사각형으로 클램프 (위젯 밖으로 절대 못 나가게)
+    const _float bl = cx - rad, bt = cy - rad, br = cx + rad, bb = cy + rad;
+    if (l < bl) l = bl;
+    if (t < bt) t = bt;
+    if (r > br) r = br;
+    if (b > bb) b = bb;
+    if (r <= l || b <= t)
+        return false;
+
+    outX = l; outY = t; outW = r - l; outH = b - t;
+    return true;
 }
 
 void CMiniMap::Draw_Solid(ID3D12GraphicsCommandList* _commandList, CVIBuffer* pBuffer,
