@@ -28,6 +28,7 @@ public:
 	virtual void		Render(ID3D12GraphicsCommandList* _commandList) override;
 	virtual void		ShadowRender(ID3D12GraphicsCommandList* _commandList) override;
     virtual bool        Get_WorldBoundingSphere(_float3& outCenter, _float& outRadius) const override;
+    virtual void        Die(_float _val);
 
 	//CCollider* Get_CollisionCom() const { return m_pColliderCom; }
 	//virtual void TakeDamage(int iDamage) PURE;

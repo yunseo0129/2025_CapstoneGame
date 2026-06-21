@@ -93,7 +93,6 @@ private:
     _bool               m_isCrouch = false;
     _bool               m_isRun = false;
     _bool               m_isMove = false;
-    _bool               m_isDie = false;
 
     // 현재 무기 인덱스 (0: 케첩건, 1: 마요건)
     _int                m_iWeapon = 0;

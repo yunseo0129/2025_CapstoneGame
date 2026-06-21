@@ -50,6 +50,22 @@ void CGameObject::Late_Update(_float fTimeDelta)
 {
 }
 
+void   CGameObject::TakeDamage(_uint _val)
+{
+    if (m_isDie)
+        return;
+    m_ihealth -= _val;
+    if (m_ihealth <= 0)
+    {
+        Die(_val);
+    }
+}
+
+void    CGameObject::Die(_float _val)
+{
+    m_isDie = true;
+}
+
 void CGameObject::Render(ID3D12GraphicsCommandList* _commandList)
 {
 }

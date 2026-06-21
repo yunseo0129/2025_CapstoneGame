@@ -473,6 +473,13 @@ bool CPlayer_Pig::Get_WorldBoundingSphere(_float3& outCenter, _float& outRadius)
     return m_vColliderComs[0]->Get_SphereBound(outCenter, outRadius);
 }
 
+void CPlayer_Pig::Die(_float _val)
+{
+    m_isDie = true;
+    m_pModelCom->Change_Animation(9, 5.f, false, true);
+    m_pModelCom->Change_Animation(9, 5.f, false, false);
+}
+
 CPlayer_Pig* CPlayer_Pig::Create(EngineContext* _pcontext)
 {
 	CPlayer_Pig* pInstance = new CPlayer_Pig(_pcontext);
