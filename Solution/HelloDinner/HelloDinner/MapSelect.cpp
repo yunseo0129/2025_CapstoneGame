@@ -49,6 +49,7 @@ HRESULT CMapSelect::Initialize(void* pArg)
     m_iMapLevelIndex = pDesc->iMapLevelIndex;
     m_strMapLayerTag = pDesc->strMapLayerTag;
     m_strTableModelTag = pDesc->strTableModelTag;
+    m_fSpawnTopOffset = pDesc->fSpawnTopOffset;
     m_fHeightMin = pDesc->fHeightMin;
     m_fHeightMax = pDesc->fHeightMax;
     m_vColorLow = pDesc->vColorLow;
@@ -210,6 +211,8 @@ void CMapSelect::Resolve_TableRegion()
         m_vCenterWorld = _float2(vCenter.x, vCenter.z);
         // 원형 식탁: 작은 반칸을 반지름으로 → 선택 원이 식탁 안에 완전히 포함
         m_fSelectRadius = fminf(fabsf(vExtents.x), fabsf(vExtents.z));
+        // 식탁 윗면 높이 = 콜라이더 AABB 상단 (스폰을 여기에 올린다)
+        m_fTableTopY = vCenter.y + fabsf(vExtents.y);
 
         m_bTableResolved = true;
         break;
@@ -270,28 +273,21 @@ void CMapSelect::Handle_Click()
             return; // 식탁 반지름 밖 → 선택 무시
     }
 
-    // ---- 5) 그 지점에서 가장 가까운 맵 조각의 높이를 y 로 채택(없으면 0) ----
-    _float fBestY = 0.f;
-    _float fBestDistSq = FLT_MAX;
-    list<CGameObject*> MapObjs = m_pGameInstance->Get_List(m_iMapLevelIndex, m_strMapLayerTag);
-    for (auto& pObj : MapObjs)
+    // ---- 5) 스폰 높이(y) 결정 ----
+    _float fSpawnY;
+    if (m_fSelectRadius > 0.f)
     {
-        if (nullptr == pObj)
-            continue;
-        _float3 c; _float r;
-        if (!pObj->Get_WorldBoundingSphere(c, r))
-            continue;
-        const _float ddx = c.x - wx;
-        const _float ddz = c.z - wz;
-        const _float distSq = ddx * ddx + ddz * ddz;
-        if (distSq < fBestDistSq)
-        {
-            fBestDistSq = distSq;
-            fBestY = c.y;
-        }
+        // [정상] 식탁 확보됨 → 식탁 윗면에 올린다.
+        fSpawnY = m_fTableTopY + m_fSpawnTopOffset;
+    }
+    else
+    {
+        fSpawnY = m_fTableTopY + m_fSpawnTopOffset;
+        wx = 0.f; // 식탁 영역 확보 실패 → 월드 중심에 스폰
+        wz = 0.f;
     }
 
-    m_vSelectedWorld = _float3(wx, fBestY, wz);
+    m_vSelectedWorld = _float3(wx, fSpawnY, wz);
     m_bHasSelection = true;
 }
 

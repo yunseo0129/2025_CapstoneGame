@@ -42,6 +42,9 @@ public:
         //  콜라이더 AABB로부터 [뷰/선택 중심]과 [선택 반지름]을 자동 결정한다.
         _wstring strTableModelTag = L"Prototype_Component_Model_Table_1";
 
+        // 스폰을 식탁 윗면 위로 얼마나 띄울지 (0 = 윗면에 딱). 드롭인 효과 주려면 키우기.
+        _float   fSpawnTopOffset = 5.f;
+
         // ---- 높이 -> 색 매핑 ----
         _float   fHeightMin = -5.f;
         _float   fHeightMax = 20.f;
@@ -124,6 +127,8 @@ private:
     _wstring m_strTableModelTag = L"Prototype_Component_Model_Table_1";
     _bool    m_bTableResolved = false;
     _float   m_fSelectRadius = 0.f;   // 0 = 미확보(제한 없음)
+    _float   m_fTableTopY = 0.f;      // 식탁 윗면 월드 높이 (스폰 y 기준)
+    _float   m_fSpawnTopOffset = 0.f; // 윗면 위 추가 오프셋
 
     _float   m_fHeightMin = -5.f;
     _float   m_fHeightMax = 20.f;
