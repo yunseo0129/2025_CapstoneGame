@@ -162,6 +162,7 @@
     <ClInclude Include="Collision_Manager.h" />
     <ClInclude Include="Controller.h" />
     <ClInclude Include="MapRenderTarget.h" />
+    <ClInclude Include="Player_Fish.h" />
     <ClInclude Include="UI_Crosshair.h" />
     <ClInclude Include="Font_Manager.h" />
     <ClInclude Include="Fracture_System.h" />
@@ -262,6 +263,7 @@
     </ClCompile>
     <ClCompile Include="Collision_Manager.cpp" />
     <ClCompile Include="Controller.cpp" />
+    <ClCompile Include="Player_Fish.cpp" />
     <ClCompile Include="MapRenderTarget.cpp" />
     <ClCompile Include="UI_Crosshair.cpp" />
     <ClCompile Include="Font_Manager.cpp" />

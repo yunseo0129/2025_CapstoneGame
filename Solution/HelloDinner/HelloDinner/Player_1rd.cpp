@@ -140,11 +140,7 @@ void CPlayer_1rd::Update(_float fTimeDelta)
     else
         m_pModelCom->Blend_Animation(fTimeDelta, false);
 
-    if (m_pGameInstance->Get_DIKeyState(DIK_F))
-    {
-        m_pModelCom->Get_LowerAnimNum();
-        m_pModelCom->Get_UpperAnimNum();
-    }
+    
     Anima();
 
     m_pModelCom->Merge_UpperLower();
