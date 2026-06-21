@@ -186,8 +186,7 @@ void CCollision_Manager::NewBullet(_vector _look, _vector _pos, CGameObject* pSh
 
     b.vLook = XMVector3Normalize(_look);
     b.vPos = _pos;
-    b.isOn = true;
-    b.fLifeTime = 0.2f;
+    b.fLifeTime = 1.f;
 
     RAY_HIT playerHit =
         RayCast(b.vPos, b.vLook, GROUP_PLAYER, pShooter);
@@ -204,6 +203,7 @@ void CCollision_Manager::NewBullet(_vector _look, _vector _pos, CGameObject* pSh
                 XMVectorReplicate(mapHit.distance),
                 b.vPos);
         b.isHit = true;
+        b.isOn = true;
     }
     else if (playerHit.hit)
     {
@@ -213,6 +213,7 @@ void CCollision_Manager::NewBullet(_vector _look, _vector _pos, CGameObject* pSh
                 XMVectorReplicate(playerHit.distance),
                 b.vPos);
         b.isHit = true;
+        b.isOn = true;
 
         switch (playerHit.pCollider->Get_PartNum())
         {
