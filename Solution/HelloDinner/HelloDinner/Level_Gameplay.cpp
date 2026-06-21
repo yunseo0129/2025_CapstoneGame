@@ -124,7 +124,7 @@ HRESULT CLevel_GamePlay::Render()
 
 void CLevel_GamePlay::Add_Camera()
 {
-    ShowCursor(false);
+    CGame_Manager::GetInstance()->Set_MouseCaptured(true);
 
     CCamera_FPV::FPV_CAMERA_DESC tDesc;
     tDesc.vEye = _float3 {0.f, 1.38f, -100.f};
@@ -285,7 +285,7 @@ HRESULT CLevel_GamePlay::Ready_Layer()
         CPlayer_Pig::PLAYER_PIG_DESC eState;
         eState.fSpeedPerSec = 1.f;
         eState.vRotation = _float3(0.f, XM_PI, 0.f);
-        eState.vPos = _float3(0.f, 0.f, 0.f);
+        eState.vPos = _float3(0.f, 60.f, 0.f);
         eState.strModelTag = L"Prototype_Component_Pig_3rd";
         eState.iModelLevelIndex = LEVEL_GAMEPLAY;
         m_pGameInstance->Add_GameObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_Pig"),
@@ -296,7 +296,7 @@ HRESULT CLevel_GamePlay::Ready_Layer()
         CPlayer_Pig::PLAYER_PIG_DESC eState;
         eState.fSpeedPerSec = 1.f;
         eState.vRotation = _float3(0.f, XM_PI, 0.f);
-        eState.vPos = _float3(1.f, 0.f, 0.f);
+        eState.vPos = _float3(1.f, 60.f, 0.f);
         eState.strModelTag = L"Prototype_Component_Pig_3rd";
         eState.iModelLevelIndex = LEVEL_GAMEPLAY;
         m_pGameInstance->Add_GameObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_Pig"),
@@ -307,7 +307,7 @@ HRESULT CLevel_GamePlay::Ready_Layer()
         CPlayer_Pig::PLAYER_PIG_DESC eState;
         eState.fSpeedPerSec = 1.f;
         eState.vRotation = _float3(0.f, XM_PI, 0.f);
-        eState.vPos = _float3(2.f, 0.f, 0.f);
+        eState.vPos = _float3(2.f, 60.f, 0.f);
         eState.strModelTag = L"Prototype_Component_Pig_3rd";
         eState.iModelLevelIndex = LEVEL_GAMEPLAY;
         m_pGameInstance->Add_GameObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_Pig"),

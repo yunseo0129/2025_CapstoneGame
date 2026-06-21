@@ -6,7 +6,7 @@
 #include "Bounding_Sphere.h"
 #include "Map.h"
 #include "Bullets.h"
-
+#include "Particle_System.h"
 
 IMPLEMENT_SINGLETON(CCollision_Manager)
 
@@ -204,6 +204,30 @@ void CCollision_Manager::NewBullet(_vector _look, _vector _pos, CGameObject* pSh
                 b.vPos);
         b.isHit = true;
         b.isOn = true;
+
+        // 파티클 생성 부분
+        if (CParticle_System* pPS = m_pGameInstance->Get_ParticleSystem())
+        {
+            _float3 vHitPos;
+            XMStoreFloat3(&vHitPos, b.vTarget);   // _vector -> _float3
+
+            // 흙먼지(절차적) : 맵 파괴와 같은 WALL_DEBRIS
+            CParticle_System::EMIT_DESC dust;
+            dust.eType = CParticle_System::WALL_DEBRIS;
+            dust.vCenter = vHitPos;
+            dust.vExtents = {0.15f, 0.15f, 0.15f};  // 점 충돌이라 좁게
+            dust.iCount = 12;                        // 파괴보다 적게
+            pPS->Emit(dust);
+
+            // 파편(텍스처) : 맵 파괴와 같은 WALL_DEBRIS_2
+            CParticle_System::EMIT_DESC debris;
+            debris.eType = CParticle_System::WALL_DEBRIS_2;
+            debris.vCenter = vHitPos;
+            debris.vExtents = {0.15f, 0.15f, 0.15f};
+            debris.iCount = 6;
+            pPS->Emit(debris);
+        }
+        //
     }
     else if (playerHit.hit)
     {
@@ -248,6 +272,29 @@ void CCollision_Manager::NewBullet(_vector _look, _vector _pos, CGameObject* pSh
             playerHit.pTarget->TakeDamage(30);
             break;
         }
+        // 파티클 생성 부분
+        if (CParticle_System* pPS = m_pGameInstance->Get_ParticleSystem())
+        {
+            _float3 vHitPos;
+            XMStoreFloat3(&vHitPos, b.vTarget);   // _vector -> _float3
+
+            // 흙먼지(절차적) : 맵 파괴와 같은 WALL_DEBRIS
+            CParticle_System::EMIT_DESC dust;
+            dust.eType = CParticle_System::WALL_DEBRIS;
+            dust.vCenter = vHitPos;
+            dust.vExtents = {0.15f, 0.15f, 0.15f};  // 점 충돌이라 좁게
+            dust.iCount = 12;                        // 파괴보다 적게
+            pPS->Emit(dust);
+
+            // 파편(텍스처) : 맵 파괴와 같은 WALL_DEBRIS_2
+            CParticle_System::EMIT_DESC debris;
+            debris.eType = CParticle_System::WALL_DEBRIS_2;
+            debris.vCenter = vHitPos;
+            debris.vExtents = {0.15f, 0.15f, 0.15f};
+            debris.iCount = 6;
+            pPS->Emit(debris);
+        }
+        //
     }
 
     m_pBullets->NewBullet(b);
