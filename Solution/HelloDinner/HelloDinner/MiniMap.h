@@ -68,6 +68,7 @@ private:
 public:
     virtual HRESULT Initialize_Prototype() override;
     virtual HRESULT Initialize(void* pArg) override;
+    virtual void    Update(_float fTimeDelta) override;
     virtual void    Render(ID3D12GraphicsCommandList* _commandList) override;
 
 public:

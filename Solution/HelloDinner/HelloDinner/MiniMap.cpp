@@ -74,37 +74,16 @@ HRESULT CMiniMap::Initialize(void* pArg)
     return S_OK;
 }
 
-void CMiniMap::Render(ID3D12GraphicsCommandList* _commandList)
+void CMiniMap::Update(_float fTimeDelta)
 {
-    if (nullptr == m_pVIBufferCom)
+    __super::Update(fTimeDelta);
+
+    if (!(m_bVisible && GetOnOff()))
         return;
 
-    // UI 파이프라인 (알파 블렌딩 / 깊이 X) — 배경/조각/마커 공통
-    m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::UI);
-
-    // -----------------------------------------------------------------
-    // 1) 배경 (베이스가 갱신해 둔 m_matNDCWorld 사용)
-    // -----------------------------------------------------------------
-    Bind_NDCWorld(_commandList);
-    if (nullptr != m_pBGTextureCom)
-    {
-        Bind_UIColor(_commandList, true);
-        if (FAILED(m_pBGTextureCom->Bind_ShaderResource(_commandList, RootParameterIndex::TEXTURE_Diffuse)))
-        {
-            MSG_BOX("Failed to Bind BG Texture in CMiniMap");
-            return;
-        }
-    }
-    else
-    {
-        Bind_UIColor(_commandList, false);
-    }
-    m_pVIBufferCom->Render(_commandList);
-
-    // -----------------------------------------------------------------
-    // 2) 카메라(=내 플레이어 시점)에서 중심 위치 + 수평 방향축 구하기
-    //    뷰 행렬의 역 = 카메라 월드. RIGHT(_11,_13) 로 수평축(피치에 강건).
-    // -----------------------------------------------------------------
+    // [맵 RTT] 플레이어(카메라) 중심 + 좌우 회전 반영해서 탑다운 맵을 그리도록 활성화.
+    //  - 중심 = 카메라 월드 위치(x,z)
+    //  - up   = 카메라 수평 FORWARD (피치 무시) -> 보는 방향이 미니맵 위쪽이 됨
     XMFLOAT4X4 viewF = m_pGameInstance->Get_CurrentCameraView();
     XMMATRIX   camWorld = XMMatrixInverse(nullptr, XMLoadFloat4x4(&viewF));
     XMFLOAT4X4 camW;
@@ -113,106 +92,59 @@ void CMiniMap::Render(ID3D12GraphicsCommandList* _commandList)
     const _float camX = camW._41;
     const _float camZ = camW._43;
 
-    // 수평 RIGHT 축 (정규화). 좌우가 반대면 (rx,rz) 부호를 뒤집을 것.
+    // 수평 RIGHT 축
     _float rx = camW._11;
     _float rz = camW._13;
     _float rlen = sqrtf(rx * rx + rz * rz);
     if (rlen < 1e-5f) { rx = 1.f; rz = 0.f; }
     else { rx /= rlen; rz /= rlen; }
-
-    // FORWARD 축 = RIGHT 를 좌회전. 상하가 반대면 (fx,fz) 부호를 뒤집을 것.
+    // 수평 FORWARD = RIGHT 좌회전
     const _float fx = -rz;
     const _float fz = rx;
 
-    // 미니맵 중심 픽셀 / 픽셀-월드 배율 (정사각 가정: m_fW 사용)
+    m_pGameInstance->Set_MapRTView(
+        _float3(camX, 0.f, camZ),
+        m_fViewRange,
+        _float3(fx, 0.f, fz)); // up = 보는 방향
+    m_pGameInstance->Set_MapRTActive(true);
+}
+
+void CMiniMap::Render(ID3D12GraphicsCommandList* _commandList)
+{
+    if (nullptr == m_pVIBufferCom)
+        return;
+
+    // UI 파이프라인 (알파 블렌딩 / 깊이 X)
+    m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::UI);
+
+    // -----------------------------------------------------------------
+    // 1) 배경 = 탑다운 맵 RTT 텍스처. 네모 패널에 그대로(불투명·선명) 출력.
+    // -----------------------------------------------------------------
+    Bind_NDCWorld(_commandList);
+
+    const _uint iRTIndex = m_pGameInstance->Get_MapRT_SRVIndex();
+
+    if (iRTIndex != 0)
+    {
+        const _float4 vOld = m_vColor;
+        m_vColor = _float4(1.f, 1.f, 1.f, 1.f); // 불투명 흰색 곱 -> 선명
+        Bind_UIColor(_commandList, true);
+        m_vColor = vOld;
+
+        CD3DX12_GPU_DESCRIPTOR_HANDLE hGpu = m_pGameInstance->Get_GPUHandle(iRTIndex);
+        _commandList->SetGraphicsRootDescriptorTable((_uint)RootParameterIndex::TEXTURE_Diffuse, hGpu);
+    }
+    else
+    {
+        Bind_UIColor(_commandList, false);
+    }
+    m_pVIBufferCom->Render(_commandList);
+
+    // -----------------------------------------------------------------
+    // 2) 내 플레이어 마커 (중앙 고정). 회전식이라 항상 위를 향함.
+    // -----------------------------------------------------------------
     const _float cxPx = m_fX + m_fW * 0.5f;
     const _float cyPx = m_fY + m_fH * 0.5f;
-    const _float scale = (m_fW * 0.5f) / m_fViewRange;
-    const _float fRangeSq = m_fViewRange * m_fViewRange;
-
-    // 레이더(원형) 반지름: 위젯의 내접원에서 여백만큼 안쪽. 이 원 밖 점은 그리지 않는다.
-    _float fRadarPx = (m_fW < m_fH ? m_fW : m_fH) * 0.5f - m_fRadarEdgePx;
-    if (fRadarPx < 0.f) fRadarPx = 0.f;
-    const _float fRadarPxSq = fRadarPx * fRadarPx;
-
-    // -----------------------------------------------------------------
-    // 3) 맵 조각 높이맵
-    // -----------------------------------------------------------------
-    list<CGameObject*> MapObjs = m_pGameInstance->Get_List(m_iMapLevelIndex, m_strMapLayerTag);
-    const _float hRange = (m_fHeightMax - m_fHeightMin);
-
-    for (auto& pObj : MapObjs)
-    {
-        if (nullptr == pObj)
-            continue;
-
-        _float3 c; _float r;
-        if (!pObj->Get_WorldBoundingSphere(c, r))
-            continue;
-
-        const _float dx = c.x - camX;
-        const _float dz = c.z - camZ;
-
-        // 보여줄 반경 밖이면 스킵
-        if (dx * dx + dz * dz > fRangeSq)
-            continue;
-
-        // 상대벡터를 right/forward 축에 투영 -> 미니맵 로컬 (회전 적용)
-        const _float lr = dx * rx + dz * rz; // 오른쪽(+)
-        const _float lf = dx * fx + dz * fz; // 앞쪽(+) -> 화면 위(-Y)
-
-        const _float bx = cxPx + lr * scale;
-        const _float by = cyPx - lf * scale;
-
-        // 레이더 원 밖으로 나가는 점은 그리지 않는다 (원형 클리핑)
-        const _float ddx = bx - cxPx;
-        const _float ddy = by - cyPx;
-        if (ddx * ddx + ddy * ddy > fRadarPxSq)
-            continue;
-
-        // 높이 -> 색
-        _float t = (hRange > 0.f) ? (c.y - m_fHeightMin) / hRange : 0.f;
-        t = Clamp01(t);
-        const _float4 col = Lerp4(m_vColorLow, m_vColorHigh, t);
-
-        // blip 크기 (최소치 보장 + 위젯을 넘지 않도록 상한)
-        _float sz = r * scale * 2.f * m_fBlipScale;
-        if (sz < m_fBlipMinPx) sz = m_fBlipMinPx;
-        const _float fMaxBlip = fRadarPx * 2.f; // 레이더 지름보다 크지 않게
-        if (sz > fMaxBlip) sz = fMaxBlip;
-
-        // blip 사각형을 레이더 원 안으로 잘라낸다 (위젯 밖 그리기 방지)
-        _float cbx, cby, cbw, cbh;
-        if (!Clip_RectToCircle(bx - sz * 0.5f, by - sz * 0.5f, sz, sz,
-            cxPx, cyPx, fRadarPx, cbx, cby, cbw, cbh))
-            continue;
-
-        _float4x4 matBlip = Make_PixelRectNDC(cbx, cby, cbw, cbh);
-        Draw_Solid(_commandList, m_pVIBufferCom, matBlip, col);
-    }
-
-    // -----------------------------------------------------------------
-    // 3.5) 레이더 테두리 링 (원형, 옵션)
-    // -----------------------------------------------------------------
-    if (m_fRingThickness > 0.f && fRadarPx > 1.f)
-    {
-        const _int   iSeg = 48;
-        const _float fStep = 6.2831853f / (_float)iSeg;
-        for (_int i = 0; i < iSeg; ++i)
-        {
-            const _float a = fStep * (_float)i;
-            const _float px = cxPx + cosf(a) * fRadarPx;
-            const _float py = cyPx + sinf(a) * fRadarPx;
-            _float4x4 matDot = Make_PixelRectNDC(
-                px - m_fRingThickness * 0.5f, py - m_fRingThickness * 0.5f,
-                m_fRingThickness, m_fRingThickness);
-            Draw_Solid(_commandList, m_pVIBufferCom, matDot, m_vRingColor);
-        }
-    }
-
-    // -----------------------------------------------------------------
-    // 4) 내 플레이어 마커 (중앙 고정, 회전식이라 항상 위를 향하는 삼각형)
-    // -----------------------------------------------------------------
     CVIBuffer* pMarkerBuffer = (nullptr != m_pTriangleCom) ? m_pTriangleCom : m_pVIBufferCom;
     _float4x4 matMarker = Make_PixelRectNDC(
         cxPx - m_fMarkerSize * 0.5f, cyPx - m_fMarkerSize * 0.5f,

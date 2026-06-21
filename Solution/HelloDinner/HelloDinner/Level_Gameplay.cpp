@@ -178,7 +178,7 @@ HRESULT CLevel_GamePlay::Ready_MapRT()
     if (nullptr == m_pMapRT)
         return E_FAIL;
 
-    // 초기 뷰: 원점 중심, 반경 1000유닛(≈10m, ×100 스케일), 북쪽 고정
+    // 초기 뷰: 원점 중심, 반경 5000유닛(≈50m, ×100 스케일), 북쪽 고정
     m_pMapRT->Set_View(_float3(0.f, 0.f, 0.f), 100.f, _float3(0.f, 0.f, 1.f));
     m_bMapRTActive = false;
     return S_OK;
@@ -201,12 +201,6 @@ _bool CLevel_GamePlay::Begin_MapRTPass(ID3D12GraphicsCommandList* cmdList)
 void CLevel_GamePlay::Render_MapRT(ID3D12GraphicsCommandList* cmdList)
 {
     if (!m_pMapRT) return;
-
-    // [진단] 패스 실행 확인 완료(SRV=152, count=137). 팝업은 비활성화.
-    //static bool s_bProbed = false;
-    //if (!s_bProbed) { s_bProbed = true; /* MSG_BOX ... */ }
-
-    // 백페이스 컬링이 원인이었음 -> MAPRT_INSTANCED(CullMode None) PSO 로 그린다.
     m_pMapRT->Render_MapLayer(cmdList, LEVEL_GAMEPLAY, L"Layer_Map");
 }
 

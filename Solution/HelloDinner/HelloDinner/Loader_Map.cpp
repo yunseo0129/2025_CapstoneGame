@@ -201,7 +201,7 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
             }
 
             desc.vPosition.x = inst["position"]["x"].get<float>() * 100.f;
-            desc.vPosition.y = inst["position"]["y"].get<float>() * 100.f - 100.f;
+            desc.vPosition.y = inst["position"]["y"].get<float>() * 100.f;
             desc.vPosition.z = inst["position"]["z"].get<float>() * 100.f;
 
             desc.vRotation.x = XMConvertToRadians(inst["rotation"]["x"].get<float>());
@@ -224,7 +224,7 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
             else
                 desc.eColliderType = CCollider::TYPE_END;
             desc.vCenterCollider.x = colliderNode["center"]["x"].get<float>() * 100.f;
-            desc.vCenterCollider.y = colliderNode["center"]["y"].get<float>() * 100.f - 100.f;
+            desc.vCenterCollider.y = colliderNode["center"]["y"].get<float>() * 100.f;
             desc.vCenterCollider.z = colliderNode["center"]["z"].get<float>() * 100.f;
 
 

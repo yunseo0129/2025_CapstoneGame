@@ -28,9 +28,9 @@ struct MATCH_SETUP
     // 선택 지점 월드 좌표를 계산해 돌려준다(팀/번호 → 위치 규칙을 한 곳에 둠).
     XMFLOAT3 Get_SpawnSpot() const
     {
-        return XMFLOAT3(static_cast<float>((iNumber - 1) * 5),
-            (iTeam == 0) ? 0.f : 10.f,
-            0.f);
+        return XMFLOAT3(static_cast<float>((iNumber - 1) * 5 + 100),
+            (iTeam == 0) ? 125.f : 130.f,
+            100.f);
     }
 };
 extern MATCH_SETUP g_MatchSetup;

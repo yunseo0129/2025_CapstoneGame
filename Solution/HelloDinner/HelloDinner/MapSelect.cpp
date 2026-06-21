@@ -74,17 +74,18 @@ void CMapSelect::Update(_float fTimeDelta)
 
     const _bool bShown = (m_bVisible && GetOnOff());
 
-    // [진단] RTT 패스를 무조건 활성화해서 게이팅 문제인지 패스 출력 문제인지 가른다.
-    //  (정상화되면 if(bShown) 안으로 되돌릴 것)
-    m_pGameInstance->Set_MapRTView(
-        _float3(m_vCenterWorld.x, 0.f, m_vCenterWorld.y),
-        m_fWorldRange,
-        _float3(0.f, 0.f, 1.f));
-    m_pGameInstance->Set_MapRTActive(true);
-
-    // 보일 때만 클릭을 받는다. (창이 꺼져 있으면 선택 처리 안 함)
+    // [맵 RTT] 보일 때만 탑다운 맵 텍스처를 그리도록 활성화 + 카메라 영역 설정.
+    //  중심 = vCenterWorld(x,z), 반경 = fWorldRange, 위쪽 = 북쪽(+Z 고정, 회전 없음).
     if (bShown)
+    {
+        m_pGameInstance->Set_MapRTView(
+            _float3(m_vCenterWorld.x, 0.f, m_vCenterWorld.y),
+            m_fWorldRange,
+            _float3(0.f, 0.f, 1.f));
+        m_pGameInstance->Set_MapRTActive(true);
+
         Handle_Click();
+    }
 }
 
 void CMapSelect::Render(ID3D12GraphicsCommandList* _commandList)
@@ -96,56 +97,32 @@ void CMapSelect::Render(ID3D12GraphicsCommandList* _commandList)
     m_pGameInstance->Set_PipelineState(_commandList, PSO_TYPE::UI);
 
     // -----------------------------------------------------------------
-    // 1) 배경 = 탑다운 맵 RTT 텍스처 (오브젝트 실제 모양/텍스처 반영)
-    //    RTT 가 준비된 경우 텍스처로, 아니면 단색 배경으로 폴백.
+    // 1) 배경 = 탑다운 맵 RTT 텍스처. 네모 패널에 그대로(불투명·선명) 출력.
     // -----------------------------------------------------------------
     Bind_NDCWorld(_commandList);
 
     const _uint iRTIndex = m_pGameInstance->Get_MapRT_SRVIndex();
-    const _bool bUseRT = (iRTIndex != 0);
 
-    if (bUseRT)
+    if (iRTIndex != 0)
     {
-        // useTexture = true
+        // 텍스처를 불투명 흰색으로 곱해 풀 밝기/풀 알파로 선명하게.
+        const _float4 vOld = m_vColor;
+        m_vColor = _float4(1.f, 1.f, 1.f, 1.f);
         Bind_UIColor(_commandList, true);
-        // RTT 결과 SRV 를 TEXTURE_Diffuse 슬롯에 바인딩 (CTexture 와 동일 경로)
+        m_vColor = vOld;
+
         CD3DX12_GPU_DESCRIPTOR_HANDLE hGpu = m_pGameInstance->Get_GPUHandle(iRTIndex);
         _commandList->SetGraphicsRootDescriptorTable((_uint)RootParameterIndex::TEXTURE_Diffuse, hGpu);
     }
     else
     {
-        // [진단] 폴백(단색)일 때 시안색으로. 패널이 시안이면 bUseRT=false(인덱스 0).
-        //  패널이 (마젠타/맵)이면 텍스처 경로로 들어온 것.
-        const _float4 vOld = m_vColor;
-        m_vColor = _float4(0.f, 1.f, 1.f, 1.f);
+        // RTT 미준비 시 단색 폴백
         Bind_UIColor(_commandList, false);
-        m_vColor = vOld;
     }
     m_pVIBufferCom->Render(_commandList);
 
-    // 픽셀 좌표/레이더 반지름 (링·마커 공용)
-    const _float cxPx = m_fX + m_fW * 0.5f;
-    const _float cyPx = m_fY + m_fH * 0.5f;
-    _float fRadarPx = (m_fW < m_fH ? m_fW : m_fH) * 0.5f - m_fRadarEdgePx;
-    if (fRadarPx < 0.f) fRadarPx = 0.f;
-    if (m_fRingThickness > 0.f && fRadarPx > 1.f)
-    {
-        const _int   iSeg = 64;
-        const _float fStep = 6.2831853f / (_float)iSeg;
-        for (_int i = 0; i < iSeg; ++i)
-        {
-            const _float a = fStep * (_float)i;
-            const _float px = cxPx + cosf(a) * fRadarPx;
-            const _float py = cyPx + sinf(a) * fRadarPx;
-            _float4x4 matDot = Make_PixelRectNDC(
-                px - m_fRingThickness * 0.5f, py - m_fRingThickness * 0.5f,
-                m_fRingThickness, m_fRingThickness);
-            Draw_Solid(_commandList, m_pVIBufferCom, matDot, m_vRingColor);
-        }
-    }
-
     // -----------------------------------------------------------------
-    // 3) 선택 마커 (선택했을 때만)
+    // 2) 선택 마커 (스폰 지점을 선택했을 때만)
     // -----------------------------------------------------------------
     if (m_bHasSelection)
     {
@@ -227,18 +204,7 @@ void CMapSelect::Handle_Click()
     if (fDesignX < m_fX || fDesignX > m_fX + m_fW ||
         fDesignY < m_fY || fDesignY > m_fY + m_fH)
         return; // 창 밖 클릭은 무시
-
-    // ---- 3.5) 레이더 원 밖 클릭도 무시 (원형 영역만 유효) ----
-    {
-        const _float cxPx = m_fX + m_fW * 0.5f;
-        const _float cyPx = m_fY + m_fH * 0.5f;
-        _float fRadarPx = (m_fW < m_fH ? m_fW : m_fH) * 0.5f - m_fRadarEdgePx;
-        if (fRadarPx < 0.f) fRadarPx = 0.f;
-        const _float ddx = fDesignX - cxPx;
-        const _float ddy = fDesignY - cyPx;
-        if (ddx * ddx + ddy * ddy > fRadarPx * fRadarPx)
-            return;
-    }
+    // (맵이 네모 패널 전체에 출력되므로 원형 제한 없음 — 사각형 안 어디든 클릭 가능)
 
     // ---- 4) 픽셀 -> 월드 (x,z) ----
     _float wx, wz;
