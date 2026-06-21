@@ -58,6 +58,11 @@ public:
         // 테두리 링 그리기 (레이더 느낌). 두께 0이면 안 그림.
         _float   fRingThickness = 2.f;
         _float4  vRingColor = _float4(0.35f, 0.9f, 0.45f, 0.8f);
+
+        // [1] 원형 레이더 가장자리 페더 (0~0.5, 클수록 부드럽게 사라짐)
+        _float   fRadarFeather = 0.12f;
+        // [3] 컬러 그레이딩 강도 (0=원본, 1=최대)
+        _float   fGradeStrength = 1.0f;
     };
 
 private:
@@ -120,6 +125,9 @@ private:
     _float   m_fRadarEdgePx = 2.f;
     _float   m_fRingThickness = 2.f;
     _float4  m_vRingColor = _float4(0.35f, 0.9f, 0.45f, 0.8f);
+
+    _float   m_fRadarFeather = 0.12f;
+    _float   m_fGradeStrength = 1.0f;
 
 public:
     static CMiniMap* Create(EngineContext* _pContext);

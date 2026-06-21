@@ -63,6 +63,8 @@ HRESULT CMiniMap::Initialize(void* pArg)
     m_fRadarEdgePx = pDesc->fRadarEdgePx;
     m_fRingThickness = pDesc->fRingThickness;
     m_vRingColor = pDesc->vRingColor;
+    m_fRadarFeather = pDesc->fRadarFeather;
+    m_fGradeStrength = pDesc->fGradeStrength;
 
     // 베이스(CUIObject)가 위치/크기/배경색(m_vColor)/화면크기 셋업
     if (FAILED(__super::Initialize(pArg)))
@@ -126,10 +128,16 @@ void CMiniMap::Render(ID3D12GraphicsCommandList* _commandList)
 
     if (iRTIndex != 0)
     {
-        const _float4 vOld = m_vColor;
-        m_vColor = _float4(1.f, 1.f, 1.f, 1.f); // 불투명 흰색 곱 -> 선명
-        Bind_UIColor(_commandList, true);
-        m_vColor = vOld;
+        // b4 : 흰색 곱(선명) + [1]원형 마스크 + [3]컬러 그레이딩 파라미터
+        //  rgba(흰색) / x=useTexture, y=shapeMode(1=원형), z=feather, w=gradeStrength
+        _float fParams[8] = {
+            1.f, 1.f, 1.f, 1.f,   // 흰색 틴트 (풀 밝기)
+            1.f,                  // useTexture
+            1.f,                  // shapeMode = 원형
+            m_fRadarFeather,      // feather
+            m_fGradeStrength      // grade strength
+        };
+        _commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::UIColor, 8, fParams, 0);
 
         CD3DX12_GPU_DESCRIPTOR_HANDLE hGpu = m_pGameInstance->Get_GPUHandle(iRTIndex);
         _commandList->SetGraphicsRootDescriptorTable((_uint)RootParameterIndex::TEXTURE_Diffuse, hGpu);
@@ -138,6 +146,7 @@ void CMiniMap::Render(ID3D12GraphicsCommandList* _commandList)
     {
         Bind_UIColor(_commandList, false);
     }
+    m_pVIBufferCom->Render(_commandList);
     m_pVIBufferCom->Render(_commandList);
 
     // -----------------------------------------------------------------
