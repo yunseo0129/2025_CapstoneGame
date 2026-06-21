@@ -20,7 +20,7 @@ public:
         float distance = FLT_MAX;
 
         CCollider* pCollider = nullptr;
-        CGameObject* pTarget = nullptr;
+        class CGameObject* pTarget = nullptr;
     };
 private:
     CCollision_Manager();
@@ -41,14 +41,14 @@ public:
         _vector rayPos,
         _vector rayDir,
         COLLISION_GROUP group
-        , CGameObject* pShooter);
+        , class CGameObject* pShooter = nullptr);
 
     // 총알관련
     void Set_Bullets(class CBullets* _p);
     class CBullets* Get_Bullets() {
         return m_pBullets;
     }
-    void NewBullet(_vector _look, _vector _pos, CGameObject* pShooter);
+    void NewBullet(_vector _look, _vector _pos, class CGameObject* pShooter);
 
     //BVH
     void Build_StaticBVH();

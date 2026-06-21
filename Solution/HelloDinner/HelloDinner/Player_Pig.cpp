@@ -468,9 +468,9 @@ void CPlayer_Pig::Anim_Test()
 
 bool CPlayer_Pig::Get_WorldBoundingSphere(_float3& outCenter, _float& outRadius) const
 {
-    if (m_vColliderComs.empty() || !m_vColliderComs[COLLIDER_MAIN])
+    if (m_vColliderComs.empty() || !m_vColliderComs[0])
         return false;
-    return m_vColliderComs[COLLIDER_MAIN]->Get_SphereBound(outCenter, outRadius);
+    return m_vColliderComs[0]->Get_SphereBound(outCenter, outRadius);
 }
 
 CPlayer_Pig* CPlayer_Pig::Create(EngineContext* _pcontext)

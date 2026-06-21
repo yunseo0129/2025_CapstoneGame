@@ -142,7 +142,7 @@ bool CCollision_Manager::CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3
     return bHit;
 }
 
-CCollision_Manager::RAY_HIT CCollision_Manager::RayCast(_vector rayPos, _vector rayDir, COLLISION_GROUP group, CGameObject* pShooter = nullptr)
+CCollision_Manager::RAY_HIT CCollision_Manager::RayCast(_vector rayPos, _vector rayDir, COLLISION_GROUP group, CGameObject* pShooter)
 {
     RAY_HIT result;
 
