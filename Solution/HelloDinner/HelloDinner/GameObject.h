@@ -24,7 +24,8 @@ public:
 	virtual void		Late_Update(_float fTimeDelta);
 	virtual void		Render(ID3D12GraphicsCommandList* _commandList);
 	virtual void		ShadowRender(ID3D12GraphicsCommandList* _commandList);
-	
+    virtual void		Render_Blend(ID3D12GraphicsCommandList* _commandList);
+
 public:
 	// Frustum Culling
 	virtual bool Get_WorldBoundingSphere(_float3& pOutCenter, _float& pOutRadius) const { return false; }

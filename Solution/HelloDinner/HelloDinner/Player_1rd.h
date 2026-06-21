@@ -52,7 +52,7 @@ public:					// 플레이어 조종에 관련한 함수 구현
 
     // ---- 포물선 낙하(스폰) ----
     //  현재 위치에서 vTarget 까지 공을 던지듯 위로 솟구쳤다가 떨어진다.
-    //   - 비행 중에는 충돌 처리 없음(요구사항). 이동 입력 무시(시점 회전은 가능).
+    //   - 비행 중 맵과 충돌하면 그 자리에서 수직으로 추락한다. 이동 입력 무시(시점 회전은 가능).
     //   - 정점 높이 = max(현재y, 목표y) + fArcHeight 가 되도록 초기 수직속도 계산.
     //   - 하강하다가 y 가 fLandY(목표 높이) 이하로 내려오면 그 지점에서 멈춤.
     void Launch_To(const _float3& vTarget, _float fArcHeight = 3.f);
@@ -60,6 +60,9 @@ public:					// 플레이어 조종에 관련한 함수 구현
 
     // 즉시 위치 이동(텔레포트). 캐릭터 선택 단계에서 시작 지점에 세울 때 사용.
     void Set_Position(const _float3& vPos);
+
+    // Y축 회전(yaw, 라디안)을 즉시 적용. 스폰 시 특정 방향(예: 원점)을 바라보게 할 때 사용.
+    void Set_Facing(_float fYaw);
 
 private:
     virtual HRESULT				Ready_PartObjects();
@@ -93,7 +96,7 @@ private:
     _bool               m_isCrouch = false;
     _bool               m_isRun = false;
     _bool               m_isMove = false;
-    _float3*            m_pMyPos;
+    _float3* m_pMyPos;
 
     // 현재 무기 인덱스 (0: 케첩건, 1: 마요건)
     _int                m_iWeapon = 0;
@@ -103,6 +106,7 @@ private:
     _float3             m_vLaunchVel = _float3(0.f, 0.f, 0.f); // 현재 속도(월드, units/s)
     _float              m_fLaunchLandY = 0.f;       // 이 높이 이하로 떨어지면 착지
     _bool               m_bLaunchDescending = false; // 정점을 지나 하강 시작했는지
+    _bool               m_bLaunchFalling = false;    // 비행 중 충돌 → 그 자리에서 수직 추락 중
 
 public:
     static CPlayer_1rd* Create(EngineContext* pContext);

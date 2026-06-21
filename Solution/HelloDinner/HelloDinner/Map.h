@@ -38,6 +38,7 @@ public:
     virtual void Late_Update(_float fTimeDelta) override;
     virtual void Render(ID3D12GraphicsCommandList* _commandList) override;
     virtual void ShadowRender(ID3D12GraphicsCommandList* _commandList) override;
+    virtual void Render_Blend(ID3D12GraphicsCommandList* _commandList) override;  // [투명] 유리 메시만
 
 public:
     // Frustum Culling

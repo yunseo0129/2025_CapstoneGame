@@ -74,6 +74,10 @@ void CGameObject::ShadowRender(ID3D12GraphicsCommandList* _commandList)
 {
 }
 
+void CGameObject::Render_Blend(ID3D12GraphicsCommandList* _commandList)
+{
+}
+
 void CGameObject::Free()
 {
 	for (auto& Pair : m_Components) {
