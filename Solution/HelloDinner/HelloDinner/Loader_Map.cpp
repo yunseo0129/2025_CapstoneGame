@@ -63,6 +63,11 @@ HRESULT CLoader_Map::Load_MaterialData(const string& strJsonPath)
 
         MATERIAL_INFO& info = m_MaterialInfos[key];
 
+        // [팔레트 방식] 어느 공유 팔레트를 쓸지 고르기 위한 Unity 머티리얼 이름 저장.
+        //   'Paintings' → Paintings 팔레트, 그 외 전부 → 공용 Palette.
+        if (mat.contains("materialName"))
+            info.strMaterialName = mat["materialName"].get<string>();
+
         if (!albedoFile.empty())
             info.strAlbedoFile = m_strTextureDir + _wstring(albedoFile.begin(), albedoFile.end());
         if (!normalFile.empty())
@@ -142,37 +147,45 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
                 continue;
             }
 
-            // [Material 로딩] 검사(개수 검증)는 제거하되 텍스처 로딩은 유지한다.
-            //   이 루프가 없으면 디퓨즈가 안 올라와 맵 전체가 완전 검정이 된다.
-            //   (캐릭터는 MATLOAD_FROM_BINARY 라 영향 없음 / 맵만 외부 DDS 로딩 경로)
+            // [팔레트 방식] 모델의 "모든" 슬롯에 공유 팔레트를 바인딩한다.
+            //   • 핵심: min(jsonMats, modelMats) 가 아니라 modelMatCount 전체를 순회.
+            //     변환기(Assimp)가 만든 슬롯 수(예: Freezer=5)가 Unity 익스포트 슬롯 수
+            //     (예: 3)보다 많아도, 빠짐없이 팔레트가 발려 검정 슬롯이 없어진다.
+            //   • 메시 정점 UV 가 팔레트의 올바른 색을 직접 가리키므로, 슬롯 순서/개수가
+            //     익스포트와 어긋나도 색이 정확하다(슬롯별 crop/UV 재매핑 불필요).
+            //   • 'Paintings' 머티리얼 슬롯만 Paintings 팔레트, 그 외는 공용 Palette.
+            //   • DIFFUSE 만 바인딩(이 에셋군은 normal/AO/metallic 맵이 없음).
+            //   (캐릭터/총은 MATLOAD_FROM_BINARY 라 이 경로를 타지 않음 → 영향 0)
             const int iModelMatCount = (int)pModel->Get_NumMaterials();
-            const int iMatCount = ((int)materialNames.size() < iModelMatCount)
-                ? (int)materialNames.size() : iModelMatCount;
 
             int iLoadedTex = 0;
-            for (int i = 0; i < iMatCount; ++i)
+            for (int i = 0; i < iModelMatCount; ++i)
             {
-                auto it = m_MaterialInfos.find(materialNames[i]);
-                if (it == m_MaterialInfos.end())
-                    continue;
-                const auto& matInfo = it->second;
-                if (!matInfo.strAlbedoFile.empty())
+                // 이 슬롯이 어느 팔레트를 쓰는지: JSON 에 슬롯 i 정보가 있으면 그 머티리얼
+                // 이름으로 판정, 없으면(익스포트 슬롯 수 < 모델 슬롯 수) 기본 팔레트.
+                const _wstring* pPalette = &m_strPaletteDefault;
+                if (i < (int)materialNames.size())
                 {
-                    pModel->Ready_MapMaterial(matInfo.strAlbedoFile.c_str(), i, TextureType_DIFFUSE);
-                    ++iLoadedTex;
+                    auto it = m_MaterialInfos.find(materialNames[i]);
+                    if (it != m_MaterialInfos.end() &&
+                        it->second.strMaterialName == "Paintings")
+                    {
+                        pPalette = &m_strPalettePaintings;
+                    }
                 }
-                if (!matInfo.strNormalFile.empty())
-                    pModel->Ready_MapMaterial(matInfo.strNormalFile.c_str(), i, TextureType_NORMALS);
 
-                // [방식 가] 슬롯 i 의 팔레트 crop UV 재매핑값을 모델(머티리얼)에 전달.
-                //   렌더 시 셰이더 cbuffer 로 넘겨 finalUV = meshUV*uvScale + uvOffset 적용.
-                pModel->Set_MapMaterialUV(i, matInfo.vUVOffset, matInfo.vUVScale);
+                if (SUCCEEDED(pModel->Ready_MapMaterial(pPalette->c_str(), i, TextureType_DIFFUSE)))
+                    ++iLoadedTex;
+
+                // [레거시] UV 재매핑은 더 이상 쓰지 않는다(메시 원본 UV 사용).
+                //   호환을 위해 기본값(변환 없음)으로 명시.
+                pModel->Set_MapMaterialUV(i, _float2(0.f, 0.f), _float2(1.f, 1.f));
             }
-            // [진단] diffuseLoaded=0 이면 검정 원인(머티리얼 매칭 실패 / MaterialData 미로딩 등)
+            // [진단] paletteBound 가 modelMats 와 같아야 정상(모든 슬롯에 팔레트 바인딩됨).
             {
                 char szLog[256];
-                sprintf_s(szLog, "[LoadMap] %s : matInfos=%zu, jsonMats=%zu, diffuseLoaded=%d\n",
-                    fbxName.c_str(), m_MaterialInfos.size(), materialNames.size(), iLoadedTex);
+                sprintf_s(szLog, "[LoadMap] %s : modelMats=%d, jsonMats=%zu, paletteBound=%d\n",
+                    fbxName.c_str(), iModelMatCount, materialNames.size(), iLoadedTex);
                 OutputDebugStringA(szLog);
             }
 

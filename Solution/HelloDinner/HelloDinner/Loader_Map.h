@@ -11,8 +11,14 @@ private:
         _wstring strAlbedoFile {};
         _wstring strNormalFile {};
 
-        // [방식 가] 팔레트 crop UV 재매핑: finalUV = meshUV * uvScale + uvOffset
-        //   MaterialExporter 가 슬롯별로 기록한 값. 기본값(0,0)/(1,1) = 변환 없음.
+        // [팔레트 방식] 이 슬롯이 어느 공유 팔레트를 쓰는지 고르기 위한 Unity 머티리얼 이름.
+        //   대부분 'Kitchen'/'Gold'/'Glass' 등 → 공용 Palette 한 장으로 충분(메시 UV 가
+        //   팔레트의 올바른 색을 직접 가리킴). 'Paintings' 만 별도 Paintings 팔레트 사용.
+        string   strMaterialName {};
+
+        // [방식 가 - 레거시] 팔레트 crop UV 재매핑: finalUV = meshUV * uvScale + uvOffset.
+        //   팔레트 직접 매핑으로 전환하면 메시 원본 UV 를 그대로 쓰므로 사실상 미사용
+        //   (기본값 0,0 / 1,1 = 변환 없음). 호환을 위해 필드는 유지.
         _float2  vUVOffset {0.f, 0.f};
         _float2  vUVScale {1.f, 1.f};
     };
@@ -55,8 +61,16 @@ private:
     // material file을 읽어 존재하는 texture 파일명을 저장
     unordered_map<std::string, MATERIAL_INFO> m_MaterialInfos;
 
-    // 텍스처(dds) 공통 경로 프리픽스. 슬롯별 crop dds 도 동일 폴더에 위치.
+    // 텍스처(dds) 공통 경로 프리픽스.
     const _wstring m_strTextureDir = L"Resources/NonAnim/Map/dds/";
+
+    // [팔레트 방식] 공유 팔레트 DDS 경로.
+    //   맵의 거의 모든 머티리얼은 단일 Palette 를 공유하고, 메시 UV 가 팔레트의
+    //   올바른 영역을 직접 가리킨다. 그림 액자(Picture_Assembly_*, Photo_*)의
+    //   'Paintings' 슬롯만 별도 Paintings 팔레트를 사용한다.
+    //   ※ Unity 에서 Palette.png / Paintings.png 를 dds 로 변환해 이 경로에 둘 것.
+    const _wstring m_strPaletteDefault = m_strTextureDir + L"Palette.dds";
+    const _wstring m_strPalettePaintings = m_strTextureDir + L"Paintings.dds";
 
 public:
     static CLoader_Map* Create(EngineContext* pContext);
