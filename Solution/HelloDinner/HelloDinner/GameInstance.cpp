@@ -731,8 +731,8 @@ class CBullets* CGameInstance::Get_Bullets() {
     return m_pCollision_Manager->Get_Bullets();
 }
 
-void CGameInstance::NewBullet(_vector _look, _vector _pos, _vector _start) {
-    return m_pCollision_Manager->NewBullet(_look, _pos, _start);
+void CGameInstance::NewBullet(_vector _look, _vector _pos, CGameObject* pShooter) {
+    return m_pCollision_Manager->NewBullet(_look, _pos, pShooter);
 }
 
 //BVH

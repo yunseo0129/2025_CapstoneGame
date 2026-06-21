@@ -132,7 +132,7 @@ public: /* For.Collision_Manager */
     bool CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide, vector<class CCollider*>* outHits);
     void Set_Bullets(class CBullets* _p);
     class CBullets* Get_Bullets();
-    void NewBullet(_vector _look, _vector _pos, _vector _start);
+    void NewBullet(_vector _look, _vector _pos, CGameObject* pShooter);
 
     //BVH
     void  Build_StaticBVH();

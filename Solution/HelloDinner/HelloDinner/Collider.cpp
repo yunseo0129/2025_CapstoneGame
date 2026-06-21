@@ -157,6 +157,17 @@ _bool CCollider::Get_AABBBound(_float3& outCenter, _float3& outExtents) const
     return true;
 }
 
+_bool CCollider::IntersectsRay(FXMVECTOR rayOrigin, FXMVECTOR rayDir, _float& distance)
+{
+    if (!m_isEnable)
+        return false;
+
+    return m_pBounding->IntersectsRay(
+        rayOrigin,
+        rayDir,
+        distance);
+}
+
 CCollider* CCollider::Create(EngineContext* pContext, COLLIDERTYPE eColliderType)
 {
 	CCollider* pInstance = new CCollider(pContext);

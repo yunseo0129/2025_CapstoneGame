@@ -12,10 +12,9 @@ public:
     {
         _vector vLook;
         _vector vPos;
-        _vector vStart;
         _vector vTarget;
-        _float   iLifeTime;
-        _bool   isTarget = false;
+        _float  fLifeTime;
+        _bool   isHit = false;
         _bool   isOn = false;
     };
 private:

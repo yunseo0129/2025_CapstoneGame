@@ -26,6 +26,8 @@ public:
 	virtual void Update(_fmatrix WorldMatrix) = 0;
 	virtual void Render(PrimitiveBatch<VertexPositionColor>* pBatch) = 0;
 	virtual _bool Intersect(CCollider::COLLIDERTYPE eType, CBounding* pTargetBounding) = 0;
+    virtual bool IntersectsRay(FXMVECTOR rayOrigin, FXMVECTOR rayDir, float& distance) = 0;
+
 	virtual _bool Intersect_Offset(CCollider::COLLIDERTYPE eType, CBounding* pTargetBounding, const _float3& vOffset) = 0;
 	virtual _float3 Get_CollisionNormal(CCollider::COLLIDERTYPE eTargetType, CBounding* pTargetBounding) = 0;
 	virtual _float3 Get_Center() = 0;

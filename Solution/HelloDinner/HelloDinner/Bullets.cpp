@@ -49,8 +49,8 @@ void CBullets::Priority_Update(_float fTimeDelta)
     {
         if (b.isOn)
         {
-            b.iLifeTime -= fTimeDelta;
-            if (b.iLifeTime <= 0.f)
+            b.fLifeTime -= fTimeDelta;
+            if (b.fLifeTime <= 0.f)
                 b.isOn = false;
         }
     }

@@ -14,7 +14,14 @@ public:
         GROUP_PROJECTILE,
         GROUP_END
     };
+    struct RAY_HIT
+    {
+        bool hit = false;
+        float distance = FLT_MAX;
 
+        CCollider* pCollider = nullptr;
+        CGameObject* pTarget = nullptr;
+    };
 private:
     CCollision_Manager();
     virtual ~CCollision_Manager() = default;
@@ -30,13 +37,18 @@ public:
     bool CollisionCheck_with_Collider(class CCollider* _pMyCollider, class CCollider* _pOtherCollider);
     bool CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide);
     bool CheckMove(CCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide, vector<class CCollider*>* outHits);
+    RAY_HIT RayCast(
+        _vector rayPos,
+        _vector rayDir,
+        COLLISION_GROUP group
+        , CGameObject* pShooter);
 
     // 총알관련
     void Set_Bullets(class CBullets* _p);
     class CBullets* Get_Bullets() {
         return m_pBullets;
     }
-    void NewBullet(_vector _look, _vector _pos, _vector _start);
+    void NewBullet(_vector _look, _vector _pos, CGameObject* pShooter);
 
     //BVH
     void Build_StaticBVH();
