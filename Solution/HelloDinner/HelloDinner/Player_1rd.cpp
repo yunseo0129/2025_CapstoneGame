@@ -517,8 +517,8 @@ _bool CPlayer_1rd::Shoot(_float _val)
         m_pFPSModelCom->Change_Animation(2, 0.f, false);
         --m_iAmmo;
 
-        _vector look = m_pTransformCom->Get_State(CTransform::STATE_LOOK);
-        _vector pos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+        _vector look = { m_pCamera->Get_WorldMatrix4x4Ptr()->_31, m_pCamera->Get_WorldMatrix4x4Ptr()->_32, m_pCamera->Get_WorldMatrix4x4Ptr()->_33, 1.f };
+        _vector pos = { m_pCamera->Get_WorldMatrix4x4Ptr()->_41, m_pCamera->Get_WorldMatrix4x4Ptr()->_42, m_pCamera->Get_WorldMatrix4x4Ptr()->_43, 1.f };
 
         int ran = (int)m_pGameInstance->Compute_Random(1.f, 2.99f);
         _float3 posi;
@@ -527,7 +527,7 @@ _bool CPlayer_1rd::Shoot(_float _val)
         m_pGameInstance->PlaySounds(sound);
         m_pGameInstance->UpdateSoundVolumeByPlayer(sound, posi);
 
-        m_pGameInstance->NewBullet(look, pos, this);
+        m_pGameInstance->NewBullet(XMVector3Normalize(look), pos, this);
 
         return true;
     }
