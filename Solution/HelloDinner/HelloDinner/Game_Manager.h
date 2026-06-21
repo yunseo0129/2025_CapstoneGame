@@ -247,6 +247,13 @@ private:
     // 상황판(스코어보드) 자동 전환 시간(E키로 즉시 넘길 수도 있음).
     static constexpr _float SCOREBOARD_AUTO = 3.f;
 
+
+private:
+        _bool m_bMouseCaptured = false;
+public:
+    void Set_MouseCaptured(_bool bCaptured); // 플레이=true(숨김+가둠), 메뉴=false
+    void Update_MouseClip();                 // 매 프레임 호출(포커스 변화 자가 복구)
+
 public:
     static CGame_Manager* Create();
     virtual void Free() override;

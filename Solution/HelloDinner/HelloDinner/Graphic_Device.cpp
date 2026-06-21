@@ -181,10 +181,10 @@ bool CGraphic_Device::InitDirect3D(HWND& _hwnd, EngineContext* _pcontext)
 	_pcontext->dsvHeap = m_pDsvHeap.Get();
 	// srvHeap는 다른 곳에서 처리
 
-#ifdef _DEBUG
+
 	// collider 렌더링을 위한 그래픽 메모리 관리 객체 생성 (디버그 모드에서만)
 	m_pGraphicsMemory = std::make_unique<DirectX::GraphicsMemory>(m_pD3dDevice.Get());
-#endif
+
 
 	return true;
 }

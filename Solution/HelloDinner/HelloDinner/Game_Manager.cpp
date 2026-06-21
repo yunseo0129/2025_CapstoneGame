@@ -33,6 +33,31 @@ namespace
     }
 }
 
+// ===== 마우스 캡처 유틸 =====================================
+// ShowCursor 는 카운터 방식이라, 실제 가시 상태를 확인하고 필요할 때만 토글한다.
+static void SetCursorVisible(bool bShow)
+{
+    CURSORINFO ci {sizeof(CURSORINFO)};
+    GetCursorInfo(&ci);
+    const bool bVisible = (ci.flags & CURSOR_SHOWING) != 0;
+    if (bShow && !bVisible)  while (ShowCursor(TRUE) < 0) {}
+    if (!bShow && bVisible)  while (ShowCursor(FALSE) >= 0) {}
+}
+
+// 커서를 클라이언트 영역(스크린 좌표)에 가둔다.
+static void ClipCursorToClient(HWND hWnd)
+{
+    if (nullptr == hWnd) return;
+    RECT rc {};
+    GetClientRect(hWnd, &rc);
+    POINT lt {rc.left, rc.top};
+    POINT rb {rc.right, rc.bottom};
+    ClientToScreen(hWnd, &lt);   // 클라이언트 → 스크린 좌표
+    ClientToScreen(hWnd, &rb);
+    RECT rcScreen {lt.x, lt.y, rb.x, rb.y};
+    ClipCursor(&rcScreen);
+}
+
 CGame_Manager::CGame_Manager()
     : m_pGameInstance {CGameInstance::GetInstance()}
 {
@@ -87,6 +112,7 @@ void CGame_Manager::Start_Match()
 // =====================================================================
 void CGame_Manager::Update(_float fTimeDelta)
 {
+    Update_MouseClip();
     // 선택 구간(캐릭터/상황판/스폰) 동안에는 글로벌 타이머를 먼저 굴린다.
     //  0 이 되면 어느 단계든 즉시 PLAYING 으로 강제 진입.
     const _bool bSelectPhase =
@@ -159,7 +185,7 @@ void CGame_Manager::OnEnter_CharSelect()
     //  → Ready 로 1인칭 전환될 때 이 위치 그대로 시작.
     Place_PlayerAt_Spot();
 
-    ShowCursor(TRUE);
+    Set_MouseCaptured(false);
     if (CController* p = m_pGameInstance->Get_Controller())
         p->Set_BlockInput(true);
 
@@ -249,7 +275,7 @@ void CGame_Manager::Update_CharSelect(_float fTimeDelta)
 {
     if (m_bCSReady)
     {
-        ShowCursor(FALSE);
+        Set_MouseCaptured(false);
         if (CController* p = m_pGameInstance->Get_Controller())
             p->Set_BlockInput(false);
 
@@ -1107,7 +1133,7 @@ void CGame_Manager::Highlight_ShopSlot(_int iWeapon)
 void CGame_Manager::Set_ShopUIMode(_bool bOpen)
 {
     // 1) 커서: 상점 창이 열리면 보이고, 닫히면 숨긴다.
-    ShowCursor(bOpen);
+    Set_MouseCaptured(!bOpen);
 
     // 2) 플레이어 입력 차단: 창이 열려 있는 동안 시점/이동/사격을 막는다.
     CController* pController = m_pGameInstance->Get_Controller();
@@ -1243,7 +1269,7 @@ void CGame_Manager::Force_StartPlaying()
     m_bSelectExpired = true;
     m_iCSMyCharacter = 0;   // PIG 고정
 
-    ShowCursor(FALSE);
+    Set_MouseCaptured(true);
     if (CController* p = m_pGameInstance->Get_Controller())
         p->Set_BlockInput(false);
 
@@ -1252,6 +1278,25 @@ void CGame_Manager::Force_StartPlaying()
 }
 
 // =====================================================================
+
+void CGame_Manager::Set_MouseCaptured(_bool bCaptured)
+{
+    m_bMouseCaptured = bCaptured;
+    SetCursorVisible(!bCaptured);   // 잡으면 숨김, 풀면 표시 (전환 시 1회)
+    Update_MouseClip();             // 클립 상태 즉시 반영
+}
+
+void CGame_Manager::Update_MouseClip()
+{
+    // 우리 창이 포커스를 가진 동안에만 가둔다.
+    //  → Alt-Tab/다른 창 전환 시 자동으로 풀려 커서가 자유로워진다.
+    if (m_bMouseCaptured && GetForegroundWindow() == g_hWnd)
+        ClipCursorToClient(g_hWnd);
+    else
+        ClipCursor(nullptr);
+}
+
+
 CGame_Manager* CGame_Manager::Create()
 {
     CGame_Manager* pInstance = new CGame_Manager();
