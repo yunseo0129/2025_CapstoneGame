@@ -15,6 +15,7 @@
 #include "Ketchup_Gun.h"
 #include "Player_Pig.h"
 #include "Player_Chick.h"
+#include "Player_Fish.h"
 #include "Particle_System.h"
 #include "VIBuffer_Rect.h"
 #include "UI_Panel.h"
@@ -190,6 +191,14 @@ HRESULT CLoader::Loading_Level_GamePlay()
             return E_FAIL;
     }
 
+    // Prototype_Component_Fish_3rd
+    {
+        _matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(1.f, 1.f, 1.f);
+        if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Fish_3rd"),
+            CModel::Create(m_pContext, CModel::TYPE_ANIM, L"Resources/Anim/fish/Prototype_Component_fish.txt", PreTransformMatrix))))
+            return E_FAIL;
+    }
+
     // Prototype_Component_Chick_3rd
     {
         _matrix PreTransformMatrix = XMMatrixIdentity() * XMMatrixScaling(1.f, 1.f, 1.f);
@@ -307,9 +316,14 @@ HRESULT CLoader::Loading_Level_GamePlay()
         CPlayer_Pig::Create(m_pContext))))
         return E_FAIL;
 
-    // Prototype_GameObject_Pig_3rd
+    // Prototype_GameObject_Chick_3rd
     if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_Chick"),
         CPlayer_Chick::Create(m_pContext))))
+        return E_FAIL;
+
+    // Prototype_GameObject_Fish_3rd
+    if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_Fish"),
+        CPlayer_Fish::Create(m_pContext))))
         return E_FAIL;
 
     // Prototype_GameObject_Bullets

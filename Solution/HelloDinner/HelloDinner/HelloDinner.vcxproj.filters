@@ -267,6 +267,9 @@
     <Filter Include="소스 파일\02. Game\00. Lobby">
       <UniqueIdentifier>{d93e0ef8-18c4-4d64-833b-8866a1e3e9b8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\02. Game\GameObject\02. Player\Player_3rd\03. Fish_3rd">
+      <UniqueIdentifier>{422a488b-3849-4ad8-98e4-73e113c98ba5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\d3dx12.h">
@@ -530,6 +533,9 @@
     <ClInclude Include="MapRenderTarget.h">
       <Filter>소스 파일\01. Engine\13.UI\maprender</Filter>
     </ClInclude>
+    <ClInclude Include="Player_Fish.h">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd\03. Fish_3rd</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -786,6 +792,9 @@
     </ClCompile>
     <ClCompile Include="MapRenderTarget.cpp">
       <Filter>소스 파일\01. Engine\13.UI\maprender</Filter>
+    </ClCompile>
+    <ClCompile Include="Player_Fish.cpp">
+      <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd\03. Fish_3rd</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
