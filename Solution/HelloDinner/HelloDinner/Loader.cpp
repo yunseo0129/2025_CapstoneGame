@@ -243,6 +243,11 @@ HRESULT CLoader::Loading_Level_GamePlay()
 
     lstrcpy(m_szLoadingText, TEXT("사운드를 로딩중입니다."));
 
+    /* logo_bgm */
+    m_pGameInstance->LoadSound("logo_bgm", "Resources/Sound/bgm/logo_bgm.ogg");
+    /* game_bgm */
+    m_pGameInstance->LoadSound("game_bgm", "Resources/Sound/bgm/game_bgm.ogg");
+
     /* explode1 */
     m_pGameInstance->LoadSound("explode1", "Resources/Sound/sfx/explode1.ogg");
     /* explode2 */
@@ -255,7 +260,22 @@ HRESULT CLoader::Loading_Level_GamePlay()
     m_pGameInstance->LoadSound("attack1", "Resources/Sound/sfx/attack1.ogg");
     /* attack2 */
     m_pGameInstance->LoadSound("attack2", "Resources/Sound/sfx/attack2.ogg");
-
+    /* hit1 */
+    m_pGameInstance->LoadSound("hit1", "Resources/Sound/sfx/hit1.ogg");
+    /* hit2 */
+    m_pGameInstance->LoadSound("hit2", "Resources/Sound/sfx/hit2.ogg");
+    /* hit3 */
+    m_pGameInstance->LoadSound("hit3", "Resources/Sound/sfx/hit3.ogg");
+    /* reload1 */
+    m_pGameInstance->LoadSound("reload1", "Resources/Sound/sfx/reload1.ogg");
+    /* reload2 */
+    m_pGameInstance->LoadSound("reload2", "Resources/Sound/sfx/reload2.ogg");
+    /* jump1 */
+    m_pGameInstance->LoadSound("jump1", "Resources/Sound/sfx/jump1.ogg");
+    /* jump2 */
+    m_pGameInstance->LoadSound("jump2", "Resources/Sound/sfx/jump2.ogg");
+    /* jump3 */
+    m_pGameInstance->LoadSound("jump3", "Resources/Sound/sfx/jump3.ogg");
 
     Set_LoadingText(TEXT("객체원형을 로딩중입니다."));
     // 객체 원형 로드

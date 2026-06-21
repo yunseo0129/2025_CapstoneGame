@@ -385,6 +385,14 @@ void CPlayer_1rd::Jump(_float _val)
         m_bIsGrounded = false;
         m_isCrouch = false;
         m_pModelCom->Change_Animation(11, 0.f, false, false);
+
+        int ran = (int)m_pGameInstance->Compute_Random(1.f, 3.99f);
+        _float3 posi;
+        _vector pos = { m_pCamera->Get_WorldMatrix4x4Ptr()->_41, m_pCamera->Get_WorldMatrix4x4Ptr()->_42, m_pCamera->Get_WorldMatrix4x4Ptr()->_43, 1.f };
+        XMStoreFloat3(&posi, pos);
+        string sound = "jump" + to_string(ran);
+        m_pGameInstance->PlaySounds(sound);
+        m_pGameInstance->UpdateSoundVolumeByPlayer(sound, posi);
     }
 }
 
@@ -433,6 +441,14 @@ void CPlayer_1rd::Launch_To(const _float3& vTarget, _float fArcHeight)
     m_fVerticalVelocity = 0.f;
     m_fMoveLook = 0.f;
     m_fMoveRight = 0.f;
+
+    int ran = (int)m_pGameInstance->Compute_Random(1.f, 4.99f);
+    _float3 posi; 
+    _vector pos = { m_pCamera->Get_WorldMatrix4x4Ptr()->_41, m_pCamera->Get_WorldMatrix4x4Ptr()->_42, m_pCamera->Get_WorldMatrix4x4Ptr()->_43, 1.f };
+    XMStoreFloat3(&posi, pos);
+    string sound = "explode" + to_string(ran);
+    m_pGameInstance->PlaySounds(sound);
+    m_pGameInstance->UpdateSoundVolumeByPlayer(sound, posi);
 }
 
 void CPlayer_1rd::Set_Position(const _float3& vPos)
@@ -506,6 +522,7 @@ void CPlayer_1rd::Reload(_float _val)
         m_pFPSModelCom->Change_Animation(7, 3.f, false);
         static_cast<CKetchup_Gun*>(m_PartObjects[0])->Get_Model()->Change_Animation(2, 3.f, false);
         static_cast<CKetchup_Gun*>(m_PartObjects[1])->Get_Model()->Change_Animation(2, 3.f, false);
+        m_pGameInstance->PlaySounds("reload1");
     }
 }
 

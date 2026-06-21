@@ -210,7 +210,7 @@ void CLobbyWindow::OnCreate(HWND hWnd)
     }
 
     // ---- 배경 로드 & 애니메이션 타이머 ----
-    LoadBackground(LOBBY_IMAGE_PATH);
+    LoadBackground(L"Resources/Textures/lobby.png");
 
     if (m_pImage && m_iFrameCount > 1 && m_pFrameDelays)
         SetTimer(hWnd, TIMER_ANIM, m_pFrameDelays[0], nullptr); // GIF 재생

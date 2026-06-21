@@ -35,6 +35,9 @@ CLevel_GamePlay::CLevel_GamePlay(EngineContext* pContext)
 
 HRESULT CLevel_GamePlay::Initialize()
 {
+    m_pGameInstance->PlaySounds("game_bgm", true);
+    m_pGameInstance->SetSoundVolume("game_bgm", 0.85f);
+
     Add_Camera();
 
     if (FAILED(Ready_Light()))

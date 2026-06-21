@@ -59,6 +59,15 @@ void   CGameObject::TakeDamage(_uint _val)
     {
         Die(_val);
     }
+
+    int ran = (int)m_pGameInstance->Compute_Random(1.f, 3.99f);
+    _vector pos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+    _float3 posi;
+    XMStoreFloat3(&posi, pos);
+    string sound = "hit" + to_string(ran);
+    m_pGameInstance->PlaySounds(sound);
+    m_pGameInstance->UpdateSoundVolumeByPlayer(sound, posi);
+
 }
 
 void    CGameObject::Die(_float _val)
