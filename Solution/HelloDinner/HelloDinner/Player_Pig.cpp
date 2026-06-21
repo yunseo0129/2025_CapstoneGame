@@ -398,6 +398,9 @@ HRESULT CPlayer_Pig::Ready_Components()
 				return E_FAIL;
 			}
 		}
+
+        for (CCollider* c : m_vColliderComs)
+            m_pGameInstance->Add_CollisionGroup(1, c);
 	}
 
 	return S_OK;

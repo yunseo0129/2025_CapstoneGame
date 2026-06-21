@@ -36,7 +36,7 @@ public:
     class CBullets* Get_Bullets() {
         return m_pBullets;
     }
-    void NewBullet(_vector _look, _vector _pos);
+    void NewBullet(_vector _look, _vector _pos, _vector _start);
 
     //BVH
     void Build_StaticBVH();

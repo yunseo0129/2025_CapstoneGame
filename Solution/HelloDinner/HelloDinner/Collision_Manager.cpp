@@ -17,16 +17,27 @@ CCollision_Manager::CCollision_Manager(): m_pGameInstance {CGameInstance::GetIns
 
 void CCollision_Manager::Update_Collision()
 {
-	for (int i = 0; i < GROUP_END; ++i)
-	{
-		for (int j = i; j < GROUP_END; ++j)
-		{
-			// 초기 설정 확인
-			if (!m_CollisionMatrix[i][j]) continue;
+	//for (int i = 0; i < GROUP_END; ++i)
+	//{
+	//	for (int j = i; j < GROUP_END; ++j)
+	//	{
+	//		// 초기 설정 확인
+	//		if (!m_CollisionMatrix[i][j]) continue;
 
-			// 충돌 처리
-		}
-	}
+	//		// 충돌 처리
+	//	}
+	//}
+    vector<CBullets::BULLET> vbullets;
+    if (m_pBullets != nullptr)
+        vbullets = m_pBullets->Get_Bullets();
+    for (CBullets::BULLET bullet : vbullets)
+    {
+        if (bullet.isOn && !bullet.isTarget)
+        {
+            bullet.isTarget = true;
+            // 충돌 계산
+        }
+    }
 }
 
 void CCollision_Manager::Clear_CollisionGroup()
@@ -147,11 +158,12 @@ void CCollision_Manager::Set_Bullets(CBullets* _p)
     m_pBullets = _p;
 }
 
-void CCollision_Manager::NewBullet(_vector _look, _vector _pos)
+void CCollision_Manager::NewBullet(_vector _look, _vector _pos, _vector _start)
 {
     CBullets::BULLET b;
     b.vLook = _look;
     b.vPos = _pos;
+    b.vStart = _start;
     b.isTarget = false;
     b.isOn = true;
     b.iLifeTime = 0.2f;

@@ -493,7 +493,6 @@ void CPlayer_1rd::Run(_float _val)
     if (!m_isCrouch)
     {
         m_isRun = true;
-
     }
 }
 
@@ -519,7 +518,8 @@ _bool CPlayer_1rd::Shoot(_float _val)
 
         _vector look = m_pTransformCom->Get_State(CTransform::STATE_LOOK);
         _vector pos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
-        m_pGameInstance->NewBullet(look, pos);
+        _vector start = m_pTransformCom->Get_State(CTransform::STATE_LOOK);; // = m_pModelCom->Get_BoneMatrix();
+        m_pGameInstance->NewBullet(look, pos, start);
 
         return true;
     }
@@ -790,6 +790,9 @@ HRESULT CPlayer_1rd::Ready_Components()
                 return E_FAIL;
             }
         }
+
+        for (CCollider* c : m_vColliderComs)
+            m_pGameInstance->Add_CollisionGroup(1, c);
     }
 
     return S_OK;
