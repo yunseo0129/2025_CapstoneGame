@@ -259,63 +259,63 @@ HRESULT CLevel_GamePlay::Ready_Layer()
         m_pGameInstance->Get_Controller()->Set_Player(static_cast<CPlayer_1rd*>(pPlayer));
     }
 
-    // Fish_3rd
-    {
-        CPlayer_Chick::PLAYER_CHICK_DESC eState;
-        eState.fSpeedPerSec = 1.f;
-        eState.vRotation = _float3(0.f, XM_PI, 0.f);
-        eState.vPos = _float3(-2.f, 0.f, 0.f);
-        eState.strModelTag = L"Prototype_Component_Fish_3rd";
-        eState.iModelLevelIndex = LEVEL_GAMEPLAY;
-        m_pGameInstance->Add_GameObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_Fish"),
-            LEVEL_GAMEPLAY, TEXT("Layer_Other_Player"), &eState);
-    }
+    //// Fish_3rd
+    //{
+    //    CPlayer_Chick::PLAYER_CHICK_DESC eState;
+    //    eState.fSpeedPerSec = 1.f;
+    //    eState.vRotation = _float3(0.f, XM_PI, 0.f);
+    //    eState.vPos = _float3(-2.f, 0.f, 0.f);
+    //    eState.strModelTag = L"Prototype_Component_Fish_3rd";
+    //    eState.iModelLevelIndex = LEVEL_GAMEPLAY;
+    //    m_pGameInstance->Add_GameObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_Fish"),
+    //        LEVEL_GAMEPLAY, TEXT("Layer_Other_Player"), &eState);
+    //}
 
-    // Chick_3rd
-    {
-        CPlayer_Chick::PLAYER_CHICK_DESC eState;
-        eState.fSpeedPerSec = 1.f;
-        eState.vRotation = _float3(0.f, XM_PI, 0.f);
-        eState.vPos = _float3(-1.f, 0.f, 0.f);
-        eState.strModelTag = L"Prototype_Component_Chick_3rd";
-        eState.iModelLevelIndex = LEVEL_GAMEPLAY;
-        m_pGameInstance->Add_GameObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_Chick"),
-            LEVEL_GAMEPLAY, TEXT("Layer_Other_Player"), &eState);
-    }
+    //// Chick_3rd
+    //{
+    //    CPlayer_Chick::PLAYER_CHICK_DESC eState;
+    //    eState.fSpeedPerSec = 1.f;
+    //    eState.vRotation = _float3(0.f, XM_PI, 0.f);
+    //    eState.vPos = _float3(-1.f, 0.f, 0.f);
+    //    eState.strModelTag = L"Prototype_Component_Chick_3rd";
+    //    eState.iModelLevelIndex = LEVEL_GAMEPLAY;
+    //    m_pGameInstance->Add_GameObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_Chick"),
+    //        LEVEL_GAMEPLAY, TEXT("Layer_Other_Player"), &eState);
+    //}
 
-    // Pig_3rd
-    {
-        CPlayer_Pig::PLAYER_PIG_DESC eState;
-        eState.fSpeedPerSec = 1.f;
-        eState.vRotation = _float3(0.f, XM_PI, 0.f);
-        eState.vPos = _float3(0.f, 60.f, 0.f);
-        eState.strModelTag = L"Prototype_Component_Pig_3rd";
-        eState.iModelLevelIndex = LEVEL_GAMEPLAY;
-        m_pGameInstance->Add_GameObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_Pig"),
-            LEVEL_GAMEPLAY, TEXT("Layer_Other_Player"), &eState);
-    }
-    // Pig_3rd
-    {
-        CPlayer_Pig::PLAYER_PIG_DESC eState;
-        eState.fSpeedPerSec = 1.f;
-        eState.vRotation = _float3(0.f, XM_PI, 0.f);
-        eState.vPos = _float3(1.f, 60.f, 0.f);
-        eState.strModelTag = L"Prototype_Component_Pig_3rd";
-        eState.iModelLevelIndex = LEVEL_GAMEPLAY;
-        m_pGameInstance->Add_GameObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_Pig"),
-            LEVEL_GAMEPLAY, TEXT("Layer_Other_Player"), &eState);
-    }
-    // Pig_3rd
-    {
-        CPlayer_Pig::PLAYER_PIG_DESC eState;
-        eState.fSpeedPerSec = 1.f;
-        eState.vRotation = _float3(0.f, XM_PI, 0.f);
-        eState.vPos = _float3(2.f, 60.f, 0.f);
-        eState.strModelTag = L"Prototype_Component_Pig_3rd";
-        eState.iModelLevelIndex = LEVEL_GAMEPLAY;
-        m_pGameInstance->Add_GameObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_Pig"),
-            LEVEL_GAMEPLAY, TEXT("Layer_Other_Player"), &eState);
-    }
+    //// Pig_3rd
+    //{
+    //    CPlayer_Pig::PLAYER_PIG_DESC eState;
+    //    eState.fSpeedPerSec = 1.f;
+    //    eState.vRotation = _float3(0.f, XM_PI, 0.f);
+    //    eState.vPos = _float3(0.f, 60.f, 0.f);
+    //    eState.strModelTag = L"Prototype_Component_Pig_3rd";
+    //    eState.iModelLevelIndex = LEVEL_GAMEPLAY;
+    //    m_pGameInstance->Add_GameObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_Pig"),
+    //        LEVEL_GAMEPLAY, TEXT("Layer_Other_Player"), &eState);
+    //}
+    //// Pig_3rd
+    //{
+    //    CPlayer_Pig::PLAYER_PIG_DESC eState;
+    //    eState.fSpeedPerSec = 1.f;
+    //    eState.vRotation = _float3(0.f, XM_PI, 0.f);
+    //    eState.vPos = _float3(1.f, 60.f, 0.f);
+    //    eState.strModelTag = L"Prototype_Component_Pig_3rd";
+    //    eState.iModelLevelIndex = LEVEL_GAMEPLAY;
+    //    m_pGameInstance->Add_GameObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_Pig"),
+    //        LEVEL_GAMEPLAY, TEXT("Layer_Other_Player"), &eState);
+    //}
+    //// Pig_3rd
+    //{
+    //    CPlayer_Pig::PLAYER_PIG_DESC eState;
+    //    eState.fSpeedPerSec = 1.f;
+    //    eState.vRotation = _float3(0.f, XM_PI, 0.f);
+    //    eState.vPos = _float3(2.f, 60.f, 0.f);
+    //    eState.strModelTag = L"Prototype_Component_Pig_3rd";
+    //    eState.iModelLevelIndex = LEVEL_GAMEPLAY;
+    //    m_pGameInstance->Add_GameObject_ToLayer(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player_Pig"),
+    //        LEVEL_GAMEPLAY, TEXT("Layer_Other_Player"), &eState);
+    //}
 
     return S_OK;
 }
