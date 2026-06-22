@@ -250,11 +250,11 @@ void CPlayer_1rd::Move(_float _fLook, _float _fRight, _float _val)
 void CPlayer_1rd::Resolve_Movement(_float fTimeDelta)
 {
     // ---- 1) 수평 이동 벡터 (입력 기반) ----
-    _float val = 1.f;
+    _float val = 4.f;
     if (m_isCrouch)
-        val = 0.5f;
+        val = 2.f;
     else if (m_isRun)
-        val = 1.5f;
+        val = 6.f;
     _vector vHorizontal = XMVectorZero();
     {
         _vector vLook = XMVectorSetY(m_pTransformCom->Get_State(CTransform::STATE_LOOK), 0.f);
