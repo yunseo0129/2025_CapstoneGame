@@ -50,6 +50,13 @@ public:					// 플레이어 조종에 관련한 함수 구현
     void Set_Weapon(_int iIndex);
     _int Get_Weapon() const { return m_iWeapon; }
 
+    // ---- HUD 표시용 상태 조회 ----
+    _int  Get_Health()  const { return m_iHealth; }
+    _uint Get_Ammo()    const { return m_iAmmo; }
+    void Set_Ammo(_uint iAmmo) { m_iAmmo = iAmmo; }
+    _uint Get_MaxAmmo() const { return 30; }   // 현재 탄창 고정 30발
+    _bool Is_Reloading() const { return m_isReloading; }
+
     // ---- 포물선 낙하(스폰) ----
     //  현재 위치에서 vTarget 까지 공을 던지듯 위로 솟구쳤다가 떨어진다.
     //   - 비행 중 맵과 충돌하면 그 자리에서 수직으로 추락한다. 이동 입력 무시(시점 회전은 가능).

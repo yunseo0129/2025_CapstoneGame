@@ -61,6 +61,7 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
         return E_FAIL;
 
     m_iState = 0;
+    m_iHealth = 100;   // HUD 표시용 초기 체력
     m_pModelCom->SetUp_Animation(0, true);
     m_pFPSModelCom->SetUp_Animation(0, true);
 
@@ -388,7 +389,7 @@ void CPlayer_1rd::Jump(_float _val)
 
         int ran = (int)m_pGameInstance->Compute_Random(1.f, 3.99f);
         _float3 posi;
-        _vector pos = { m_pCamera->Get_WorldMatrix4x4Ptr()->_41, m_pCamera->Get_WorldMatrix4x4Ptr()->_42, m_pCamera->Get_WorldMatrix4x4Ptr()->_43, 1.f };
+        _vector pos = {m_pCamera->Get_WorldMatrix4x4Ptr()->_41, m_pCamera->Get_WorldMatrix4x4Ptr()->_42, m_pCamera->Get_WorldMatrix4x4Ptr()->_43, 1.f};
         XMStoreFloat3(&posi, pos);
         string sound = "jump" + to_string(ran);
         m_pGameInstance->PlaySounds(sound);
@@ -444,8 +445,8 @@ void CPlayer_1rd::Launch_To(const _float3& vTarget, _float fArcHeight)
     m_fMoveRight = 0.f;
 
     int ran = (int)m_pGameInstance->Compute_Random(1.f, 4.99f);
-    _float3 posi; 
-    _vector pos = { m_pCamera->Get_WorldMatrix4x4Ptr()->_41, m_pCamera->Get_WorldMatrix4x4Ptr()->_42, m_pCamera->Get_WorldMatrix4x4Ptr()->_43, 1.f };
+    _float3 posi;
+    _vector pos = {m_pCamera->Get_WorldMatrix4x4Ptr()->_41, m_pCamera->Get_WorldMatrix4x4Ptr()->_42, m_pCamera->Get_WorldMatrix4x4Ptr()->_43, 1.f};
     XMStoreFloat3(&posi, pos);
     string sound = "explode" + to_string(ran);
     m_pGameInstance->PlaySounds(sound);
@@ -612,8 +613,8 @@ _bool CPlayer_1rd::Shoot(_float _val)
         m_pFPSModelCom->Change_Animation(2, 0.f, false);
         --m_iAmmo;
 
-        _vector look = { m_pCamera->Get_WorldMatrix4x4Ptr()->_31, m_pCamera->Get_WorldMatrix4x4Ptr()->_32, m_pCamera->Get_WorldMatrix4x4Ptr()->_33, 1.f };
-        _vector pos = { m_pCamera->Get_WorldMatrix4x4Ptr()->_41, m_pCamera->Get_WorldMatrix4x4Ptr()->_42, m_pCamera->Get_WorldMatrix4x4Ptr()->_43, 1.f };
+        _vector look = {m_pCamera->Get_WorldMatrix4x4Ptr()->_31, m_pCamera->Get_WorldMatrix4x4Ptr()->_32, m_pCamera->Get_WorldMatrix4x4Ptr()->_33, 1.f};
+        _vector pos = {m_pCamera->Get_WorldMatrix4x4Ptr()->_41, m_pCamera->Get_WorldMatrix4x4Ptr()->_42, m_pCamera->Get_WorldMatrix4x4Ptr()->_43, 1.f};
 
         int ran = (int)m_pGameInstance->Compute_Random(1.f, 2.99f);
         _float3 posi;

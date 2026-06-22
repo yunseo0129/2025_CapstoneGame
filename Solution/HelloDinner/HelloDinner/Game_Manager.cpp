@@ -10,7 +10,6 @@
 #include "CharSelect_Pig.h"
 #include "CharSelect_Chick.h"
 #include "MapSelect.h"
-#include "Map.h"
 
 IMPLEMENT_SINGLETON(CGame_Manager)
 
@@ -90,6 +89,9 @@ void CGame_Manager::Start_Match()
 
     // 인게임 HUD(중앙 상단 라운드 점수 + 생존/사망 박스) 생성
     Ready_HUD();
+
+    // 하단 HUD(내 HP / 남은 탄약) 생성
+    Ready_PlayerHUD();
 
     // 상점 무기 슬롯(클릭 → 무기 교체) 생성
     Ready_ShopSlots();
@@ -251,6 +253,10 @@ void CGame_Manager::OnEnter_Playing()
     //  (요구사항: 창이 닫히고 PLAYING 진입 시 날아간다. 비행 중에도 타이머/게임은 진행)
     if (!USE_SHOP)
         Apply_SpawnLaunch();
+
+    CController* pController = m_pGameInstance->Get_Controller();
+    CPlayer_1rd* pPlayer = pController ? pController->Get_Player() : nullptr;
+    pPlayer->Set_Ammo(30.f);
 
     // 라운드 점수/생존 박스 최신화
     Refresh_HUD();
@@ -415,7 +421,7 @@ void CGame_Manager::End_Round(_int iWinnerTeam)
     //   2라운드부터 선택 단계가 진행/자동 종료되지 않는다)
     m_fSelectTimer = SELECT_TOTAL_DURATION;
     m_bSelectExpired = false;
-    Reset_BreakableWalls();
+
     Enter_Phase(GAME_PHASE::PHASE_SCOREBOARD);
 }
 
@@ -445,17 +451,6 @@ void CGame_Manager::Reset_RoundLoadFlags()
 {
     for (auto& stat : m_vStats)
         stat.bMapLoaded = false;
-}
-
-void CGame_Manager::Reset_BreakableWalls()
-{
-    list<CGameObject*> mapObjs = m_pGameInstance->Get_List(LEVEL_GAMEPLAY, L"Layer_Map");
-    for (auto* pObj : mapObjs)
-    {
-        CMap* pMap = dynamic_cast<CMap*>(pObj);
-        if (pMap && pMap->Is_Breakable())
-            pMap->Restore();   // 내부에서 실제 부서진 벽만 복구
-    }
 }
 
 void CGame_Manager::Setup_DummyPlayers()
@@ -1002,6 +997,9 @@ void CGame_Manager::Refresh_HUD()
         const _bool bAlive = true;
         m_pHUDPlayerBox[i]->Set_Color(bAlive ? vAlive : vDead);
     }
+
+    // 하단 HUD(HP/탄약)도 함께 갱신
+    Refresh_PlayerHUD();
 }
 
 _wstring CGame_Manager::Make_TimerString() const
@@ -1013,6 +1011,78 @@ _wstring CGame_Manager::Make_TimerString() const
     wchar_t buf[16];
     swprintf_s(buf, _countof(buf), L"%d:%02d", iMin, iSec);
     return buf;
+}
+
+// =====================================================================
+//  하단 HUD (내 HP / 남은 탄약)
+//   - 좌하단 HP, 우하단 탄약을 텍스트로 표시. (이후 텍스처로 교체 예정)
+//   - 상단 HUD와 같은 Layer_UI_HUD 에 올려 PLAYING 단계에서만 보이게 한다.
+//   - 좌표는 1280x720 디자인 기준.
+// =====================================================================
+HRESULT CGame_Manager::Ready_PlayerHUD()
+{
+    const _uint PROTO = LEVEL_STATIC;
+    const _uint LV = LEVEL_GAMEPLAY;
+    const _wstring HUD = L"Layer_UI_HUD";
+
+    // ---- 좌하단 HP ----
+    {
+        CUI_Text::UI_TEXT_DESC d;
+        d.fX = 60.f; d.fY = 660.f;
+        d.fDepth = 0.3f;
+        d.strText = L"HP 100";
+        d.strFontTag = L"Font_Default";
+        d.vColor = _float4(0.4f, 1.f, 0.5f, 1.f);   // 초록(체력)
+        d.fTextScale = 0.9f;
+        d.bCentered = false;
+        m_pHUDHealthText = static_cast<CUI_Text*>(
+            m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
+                PROTO, L"Prototype_GameObject_UI_Text", LV, HUD, &d));
+    }
+
+    // ---- 우하단 탄약 ----
+    {
+        CUI_Text::UI_TEXT_DESC d;
+        d.fX = 1100.f; d.fY = 660.f;
+        d.fDepth = 0.3f;
+        d.strText = L"30 / 30";
+        d.strFontTag = L"Font_Default";
+        d.vColor = _float4(1.f, 0.95f, 0.6f, 1.f);  // 노랑(탄약)
+        d.fTextScale = 0.9f;
+        d.bCentered = false;
+        m_pHUDAmmoText = static_cast<CUI_Text*>(
+            m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
+                PROTO, L"Prototype_GameObject_UI_Text", LV, HUD, &d));
+    }
+
+    return S_OK;
+}
+
+void CGame_Manager::Refresh_PlayerHUD()
+{
+    // 내 플레이어를 컨트롤러에서 받아 현재 HP/탄약을 읽는다.
+    CController* pController = m_pGameInstance->Get_Controller();
+    CPlayer_1rd* pPlayer = pController ? pController->Get_Player() : nullptr;
+    if (pPlayer == nullptr)
+        return;
+
+    if (m_pHUDHealthText != nullptr)
+    {
+        wchar_t buf[32];
+        swprintf_s(buf, _countof(buf), L"HP %d", pPlayer->Get_Health());
+        m_pHUDHealthText->Set_Text(buf);
+    }
+
+    if (m_pHUDAmmoText != nullptr)
+    {
+        wchar_t buf[32];
+        if (pPlayer->Is_Reloading())
+            swprintf_s(buf, _countof(buf), L"RELOADING");
+        else
+            swprintf_s(buf, _countof(buf), L"%u / %u",
+                pPlayer->Get_Ammo(), pPlayer->Get_MaxAmmo());
+        m_pHUDAmmoText->Set_Text(buf);
+    }
 }
 
 // =====================================================================

@@ -100,7 +100,6 @@ private:
     // ---- 내부 헬퍼 ----
     _bool   Are_AllLoaded() const;          // 모든 플레이어 로드 완료?
     void    Reset_RoundLoadFlags();         // 라운드 시작 시 로드 플래그 초기화
-    void    Reset_BreakableWalls();
     void    Setup_DummyPlayers();           // 로컬 더미 플레이어 생성
 
     // 레이어의 모든 UI 오브젝트를 켜고/끈다 (SetOnOff)
@@ -136,6 +135,11 @@ private:
     HRESULT  Ready_HUD();                   // HUD 패널/텍스트 생성 + 포인터 보관
     void     Refresh_HUD();                 // 점수/타이머 텍스트 + 생존 박스 색 갱신
     _wstring Make_TimerString() const;      // 남은 라운드 시간 "m:ss"
+
+    // ---- UI: 하단 HUD (내 HP / 남은 탄약) ----
+    //  화면 좌하단에 HP, 우하단에 탄약을 텍스트로 표시(이후 텍스처로 교체).
+    HRESULT  Ready_PlayerHUD();             // HP/탄약 텍스트 생성 + 포인터 보관
+    void     Refresh_PlayerHUD();           // 내 플레이어 상태 → 텍스트 갱신
 
     // ---- UI: 상점 무기 슬롯 (클릭 → 무기 교체) ----
     HRESULT  Ready_ShopSlots();             // 무기 슬롯 패널 생성 + 위치/포인터 보관
@@ -216,6 +220,10 @@ private:
     //  생존=흰색 박스 / 사망=검정 박스. 박스 인덱스 = 슬롯(= m_vStats 인덱스).
     class CUI_Text* m_pHUDTeamScoreText[2] = {nullptr}; // [0]=팀A 승수, [1]=팀B 승수
     class CUI_Panel* m_pHUDPlayerBox[MAX_PLAYER] = {nullptr};
+
+    // ---- 하단 HUD (내 HP / 남은 탄약) ----
+    class CUI_Text* m_pHUDHealthText = nullptr;   // 좌하단 HP
+    class CUI_Text* m_pHUDAmmoText = nullptr;    // 우하단 탄약
 
     // ---- 상점 무기 슬롯 ----
     //  슬롯 인덱스 = 무기 인덱스 (0=케첩건/빨강, 1=마요네즈건/하양).

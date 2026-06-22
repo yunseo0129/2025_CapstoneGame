@@ -31,8 +31,8 @@ struct MATCH_SETUP
     //   BLUE : x = -100, y = 100, z = 0
     XMFLOAT3 Get_SpawnSpot() const
     {
-        return XMFLOAT3(5.f * iNumber - 10.f,
-            100.f, iTeam == 0 ? 100.f : -100.f
+        return XMFLOAT3(5.f * iNumber - 5.f,
+            25.f, iTeam == 0 ? 50.f : -60.f
             );
     }
 

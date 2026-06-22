@@ -135,7 +135,7 @@ void CLevel_GamePlay::Add_Camera()
     tDesc.fFovy = XMConvertToRadians(60.f);
     tDesc.fAspect = 1280.f / 720.f;
     tDesc.fNear = 0.1f;
-    tDesc.fFar = 400.f;
+    tDesc.fFar = 150.f;
     tDesc.fCamMouseSensor = 1.f;
     tDesc.fCamSpeedPerSec = 1.f;
     tDesc.fRotationPerSec = 1.f;
@@ -452,7 +452,7 @@ HRESULT CLevel_GamePlay::Ready_UI()
         //  맵 전체가 안 보이면 이 값을 키우고, 너무 작게 보이면 줄인다. 
        // 중심은 런타임에 식탁(Table_1)으로 자동 설정되므로 이 값은 초기/폴백용.
         desc.vCenterWorld = _float2(0.f, 0.f);
-        desc.fWorldRange = 70.f;   // 줌(반경). 식탁이 패널 폭의 ~60%로 보임.
+        desc.fWorldRange = 40.f;   // 줌(반경). 식탁이 패널 폭의 ~60%로 보임.
 
         desc.iMapLevelIndex = LEVEL_GAMEPLAY;
         desc.strMapLayerTag = L"Layer_Map";
