@@ -157,6 +157,7 @@
     </ClInclude>
     <ClInclude Include="Channel.h" />
     <ClInclude Include="CharSelect_Chick.h" />
+    <ClInclude Include="CharSelect_Fish.h" />
     <ClInclude Include="CharSelect_Pig.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="Collision_Manager.h" />
@@ -257,6 +258,7 @@
     <ClCompile Include="Bullets.cpp" />
     <ClCompile Include="Channel.cpp" />
     <ClCompile Include="CharSelect_Chick.cpp" />
+    <ClCompile Include="CharSelect_Fish.cpp" />
     <ClCompile Include="CharSelect_Pig.cpp" />
     <ClCompile Include="Collider.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>

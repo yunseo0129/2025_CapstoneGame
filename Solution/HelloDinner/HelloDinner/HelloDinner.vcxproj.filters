@@ -542,6 +542,9 @@
     <ClInclude Include="SoundManager.h">
       <Filter>소스 파일\01. Engine\14. Sound</Filter>
     </ClInclude>
+    <ClInclude Include="CharSelect_Fish.h">
+      <Filter>소스 파일\02. Game\01. Levels\05. Charselect\list</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -804,6 +807,9 @@
     </ClCompile>
     <ClCompile Include="SoundManager.cpp">
       <Filter>소스 파일\01. Engine\14. Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="CharSelect_Fish.cpp">
+      <Filter>소스 파일\02. Game\01. Levels\05. Charselect\list</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

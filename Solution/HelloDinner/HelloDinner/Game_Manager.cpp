@@ -9,6 +9,7 @@
 #include "Player_1rd.h"
 #include "CharSelect_Pig.h"
 #include "CharSelect_Chick.h"
+#include "CharSelect_Fish.h"
 #include "MapSelect.h"
 
 IMPLEMENT_SINGLETON(CGame_Manager)
@@ -253,10 +254,6 @@ void CGame_Manager::OnEnter_Playing()
     //  (요구사항: 창이 닫히고 PLAYING 진입 시 날아간다. 비행 중에도 타이머/게임은 진행)
     if (!USE_SHOP)
         Apply_SpawnLaunch();
-
-    CController* pController = m_pGameInstance->Get_Controller();
-    CPlayer_1rd* pPlayer = pController ? pController->Get_Player() : nullptr;
-    pPlayer->Set_Ammo(30.f);
 
     // 라운드 점수/생존 박스 최신화
     Refresh_HUD();
@@ -640,10 +637,26 @@ HRESULT CGame_Manager::Ready_CharSelect()
                 LV, L"Prototype_GameObject_CharSelect_Chick", LV, PV, &d));
     }
 
-    // 시작 표시 상태를 명시: 기본 선택은 Pig(0) → Pig 만 보이고 Chick 은 숨김.
+    // ---- 3D 프리뷰 (Fish, 같은 자리) ----
+    //  Fish 칸(2번) 클릭 시에만 보이도록 시작은 숨김 처리.
+    {
+        CCharSelect_Fish::CHARSELECT_FISH_DESC d;
+        d.vPos = m_vMySpot;
+        d.vRotation = _float3(0.f, XM_PI, 0.f);
+        d.vScale = _float3(1.f, 1.f, 1.f);
+        d.strModelTag = L"Prototype_Component_Fish_3rd";
+        d.iModelLevelIndex = LEVEL_GAMEPLAY;
+        d.iAnimIndex = 8;   // 물고기 idle
+        m_pCSPreviewFish = static_cast<CCharSelect_Fish*>(
+            m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
+                LV, L"Prototype_GameObject_CharSelect_Fish", LV, PV, &d));
+    }
+
+    // 시작 표시 상태를 명시: 기본 선택은 Pig(0) → Pig 만 보이고 나머지는 숨김.
     m_iCSMyCharacter = 0;
     if (m_pCSPreviewMe)    m_pCSPreviewMe->SetOnOff(true);
     if (m_pCSPreviewChick) m_pCSPreviewChick->SetOnOff(false);
+    if (m_pCSPreviewFish)  m_pCSPreviewFish->SetOnOff(false);
 
     auto AddText = [&](float x, float y, const _wstring& s, float scale)
         {
@@ -679,11 +692,11 @@ HRESULT CGame_Manager::Ready_CharSelect()
     auto FaceX = [&](int i) { return FX0 + i * (FW + FGAP); };
 
     AddPanel(FX0 - 20.f, FY - 20.f, FTOT + 40.f, FH + 40.f, _float4(0.08f, 0.10f, 0.14f, 0.78f), 0.7f); // 바 배경
-    const _wstring caps[3] = {L"Pig", L"Chick", L"Blank"};
+    const _wstring caps[3] = {L"Pig", L"Chick", L"Fish"};
     const _wstring faceTex[3] = {
         L"Prototype_Component_Texture_SelectPig",
         L"Prototype_Component_Texture_SelectChick",
-        L""   // Blank: 아이콘 없음
+        L"Prototype_Component_Texture_SelectFish"
     };
     const float RING = 3.f;   // 패널을 아이콘보다 이만큼 크게 → 선택 링
     for (int i = 0; i < 3; ++i)
@@ -734,9 +747,10 @@ void CGame_Manager::Handle_CharSelectClick()
         if (In(m_vCSFaceRect[i]))
         {
             m_iCSMyCharacter = i;
-            // 0 = Pig, 1 = Chick. 선택한 칸의 프리뷰만 표시.
+            // 0 = Pig, 1 = Chick, 2 = Fish. 선택한 칸의 프리뷰만 표시.
             if (m_pCSPreviewMe)    m_pCSPreviewMe->SetOnOff(i == 0);
             if (m_pCSPreviewChick) m_pCSPreviewChick->SetOnOff(i == 1);
+            if (m_pCSPreviewFish)  m_pCSPreviewFish->SetOnOff(i == 2);
             Refresh_CharSelectFaces();
             return;
         }
@@ -762,7 +776,7 @@ void CGame_Manager::Refresh_CharSelectFaces()
 
         if (m_pCSFaceIcon[i])                 // Pig/Chick: 밝기로 선택 표시
             m_pCSFaceIcon[i]->Set_Color(sel ? ICON_SEL : ICON_DIM);
-        // Blank(2번)은 아이콘이 없어 패널 색(노랑/어둠)만으로 선택 표시됨
+        // Fish(2번)는 아직 아이콘 텍스처가 없어 패널 색(노랑/어둠)만으로 선택 표시됨
     }
 }
 

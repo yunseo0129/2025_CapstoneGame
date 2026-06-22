@@ -28,6 +28,7 @@
 #include "VIBuffer_Triangle.h"
 #include "CharSelect_Pig.h"
 #include "CharSelect_Chick.h"
+#include "CharSelect_Fish.h" 
 #include "UI_Crosshair.h"
 #include "UI_Texture.h"
 
@@ -140,6 +141,8 @@ HRESULT CLoader::Loading_Level_GamePlay()
             CTexture::Create(m_pContext, L"Resources/Textures/Select_pig.png", 1))))   return E_FAIL;
         if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, L"Prototype_Component_Texture_SelectChick",
             CTexture::Create(m_pContext, L"Resources/Textures/Select_chick.png", 1))))  return E_FAIL;
+        if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, L"Prototype_Component_Texture_SelectFish",
+            CTexture::Create(m_pContext, L"Resources/Textures/Select_fish.png", 1))))  return E_FAIL;
 
     }
 
@@ -343,6 +346,11 @@ HRESULT CLoader::Loading_Level_GamePlay()
     // Prototype_GameObject_CharSelect_Chick
     if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_CharSelect_Chick"),
         CCharSelect_Chick::Create(m_pContext))))
+        return E_FAIL;
+
+    // Prototype_GameObject_CharSelect_Fish
+    if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_CharSelect_Fish"),
+        CCharSelect_Fish::Create(m_pContext))))
         return E_FAIL;
 
     // Prototype_GameObject_Pig_3rd
