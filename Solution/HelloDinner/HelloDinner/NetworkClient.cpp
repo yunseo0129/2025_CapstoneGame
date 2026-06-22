@@ -233,6 +233,19 @@ NetworkClient::RoomSnapshot NetworkClient::GetRoomSnapshot()
 }
 
 // ─────────────────────────────────────────────
+// 인게임 페이즈 타이머 만료 → 인스턴스 서버로 전송
+// ─────────────────────────────────────────────
+void NetworkClient::Send_PhaseReady(unsigned char phase)
+{
+    if (m_bOfflineMode || m_instanceSocket == INVALID_SOCKET) return;
+    CS_PHASE_READY_PACKET p{};
+    p.size  = sizeof(CS_PHASE_READY_PACKET);
+    p.type  = CS_PHASE_READY;
+    p.phase = phase;
+    SendToInstance(&p, p.size);
+}
+
+// ─────────────────────────────────────────────
 // 캐릭터 선택 완료 → 인스턴스 서버로 전송 (Ready 클릭 시 1회)
 // ─────────────────────────────────────────────
 void NetworkClient::Send_CharSelect(unsigned char charType)
@@ -499,6 +512,15 @@ void NetworkClient::ProcessInstancePacket(char* packet)
         evt.score_b      = p->score_b;
         evt.player_count = p->player_count;
         memcpy(evt.stats, p->stats, sizeof(PlayerStatBrief) * ROOM_MAX_PLAYER);
+        std::lock_guard<std::mutex> lk(m_matchEventLock);
+        m_pendingMatchEvents.push_back(evt);
+        break;
+    }
+    case SC_TIMER_SYNC: {
+        SC_TIMER_SYNC_PACKET* p = reinterpret_cast<SC_TIMER_SYNC_PACKET*>(packet);
+        NetEvent evt{};
+        evt.type    = NetEventType::TIMER_SYNC;
+        evt.time_ms = p->time_ms;
         std::lock_guard<std::mutex> lk(m_matchEventLock);
         m_pendingMatchEvents.push_back(evt);
         break;

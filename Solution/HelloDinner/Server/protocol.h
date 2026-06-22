@@ -36,6 +36,7 @@ constexpr char CS_LEAVE_ROOM     = 8;  // 대기방 나가기
 constexpr char CS_QUICK_MATCH    = 9;  // 빠른 매칭 옵트인
 constexpr char CS_SELECT_SEAT    = 10; // 팀/번호 선택 (0xFF/0 = 해제)
 constexpr char CS_PLAYER_READY   = 11; // 준비/준비해제 토글
+constexpr char CS_PHASE_READY    = 13; // 인게임 페이즈 타이머 만료 알림 (인스턴스 서버 전용)
 
 // 패킷 ID (서버 → 클라)
 constexpr char SC_LOGIN_INFO = 0;
@@ -221,6 +222,7 @@ constexpr char SC_PHASE_CHANGE = 20;   // 페이즈 전환
 constexpr char SC_ROUND_START  = 21;   // 라운드 시작 (타이머 동기화)
 constexpr char SC_ROUND_END    = 22;   // 라운드 종료 (승패 + 점수)
 constexpr char SC_SCORE_UPDATE = 33;   // K/D/A + 팀 점수 브로드캐스트
+constexpr char SC_TIMER_SYNC   = 36;   // 페이즈 남은 시간 주기 전송 (0 = 만료 신호)
 
 struct SC_PHASE_CHANGE_PACKET {
     unsigned char size;
@@ -260,6 +262,20 @@ struct SC_SCORE_UPDATE_PACKET {
     unsigned char   score_b;
     unsigned char   player_count;
     PlayerStatBrief stats[ROOM_MAX_PLAYER];
+};
+
+// 인게임 페이즈 타이머 만료 알림 (클라 → 인스턴스 서버)
+struct CS_PHASE_READY_PACKET {
+    unsigned char size;
+    char          type;   // CS_PHASE_READY
+    unsigned char phase;  // 0=CHARSELECT 1=SCOREBOARD 2=SHOP
+};
+
+// 페이즈 남은 시간 주기 전송 (인스턴스 서버 → 클라)
+struct SC_TIMER_SYNC_PACKET {
+    unsigned char size;
+    char          type;     // SC_TIMER_SYNC
+    unsigned int  time_ms;  // 남은 시간(ms). 0 = 타이머 만료 신호
 };
 
 #pragma pack (pop)

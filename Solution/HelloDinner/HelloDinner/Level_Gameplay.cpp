@@ -91,7 +91,7 @@ void CLevel_GamePlay::Update(_float fTimeDelta)
 
     // 네트워크 이벤트 처리: 플레이어 추가/제거/이동
     NetworkClient* pNetwork = NetworkClient::GetInstance();
-    if (!pNetwork->IsConnected())
+    if (!pNetwork->IsInGame())
         return;
 
     //std::vector<NetworkClient::NetEvent> events;
@@ -526,6 +526,7 @@ void CLevel_GamePlay::Free()
         Safe_Release(pLight);
     m_pLights.clear();
     Safe_Release(m_pMapRT);
-    Safe_Release(m_pGameManager);
+    CGame_Manager::DestroyInstance();
+    m_pGameManager = nullptr;
     __super::Free();
 }

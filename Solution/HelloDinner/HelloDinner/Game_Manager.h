@@ -79,8 +79,6 @@ public:
     void    Notify_MapLoaded(_int iSlot);
     // (테스트/네트워크용) 모든 플레이어 로드 완료를 강제
     void    Force_AllLoaded();
-    // 라운드 결과를 반영하고 다음 라운드로 진행 (iWinnerTeam 팀 승)
-    void    End_Round(_int iWinnerTeam);
 
     // ---- 서버 주도 이벤트 (Phase 1: Controller::Apply_ServerEvents 에서 호출) ----
     void    Apply_PhaseChange(unsigned char phase, unsigned char round);
@@ -88,6 +86,7 @@ public:
     void    Apply_RoundEnd(unsigned char winner_team, unsigned char score_a, unsigned char score_b);
     void    Apply_ScoreUpdate(unsigned char score_a, unsigned char score_b,
                               unsigned char player_count, const PlayerStatBrief* stats);
+    void    Apply_TimerSync(unsigned int time_ms);  // SC_TIMER_SYNC 수신 → 타이머 갱신
 
 private:
     // ---- 단계 진입(한 번) ----
@@ -127,7 +126,6 @@ private:
 
     // ---- 선택 구간 글로벌 타이머 ----
     void     Tick_SelectTimer(_float fTimeDelta);   // 감소 + 세 화면 텍스트 갱신
-    void     Force_StartPlaying();                  // 타임아웃: 기본값으로 PLAYING 강제 진입
     _wstring Make_SelectTimerString() const;        // "TIME  nn" 포맷
     void     Set_MySpot_From_Setup();               // g_MatchSetup → 팀/번호/시작 지점
     void     Place_PlayerAt_Spot();                 // 내 플레이어 transform 을 시작 지점에 세움
@@ -184,6 +182,7 @@ private:
 
     // 팀 라운드 승수 (인덱스 0: 팀A, 1: 팀B)
     _int        m_iTeamScore[2] = {0, 0};
+    _int        m_iLastRoundWinner = -1;   // 직전 라운드 승리 팀 (0=팀A, 1=팀B, 2=무승부, -1=없음)
 
     // 상점
     _bool       m_bShopOpen = false;        // E키 토글 상태
@@ -251,8 +250,6 @@ private:
 
     // 선택 구간(캐릭터+상황판+스폰) 전체 제한 시간. 0 이 되면 강제 시작.
     static constexpr _float SELECT_TOTAL_DURATION = 30.f;
-    // 상황판(스코어보드) 자동 전환 시간(E키로 즉시 넘길 수도 있음).
-    static constexpr _float SCOREBOARD_AUTO = 3.f;
 
 public:
     static CGame_Manager* Create();

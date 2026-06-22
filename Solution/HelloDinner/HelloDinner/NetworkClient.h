@@ -15,6 +15,7 @@ public:
         ROUND_START,
         ROUND_END,
         SCORE_UPDATE,
+        TIMER_SYNC,
     };
 
     struct NetEvent {
@@ -35,6 +36,9 @@ public:
         // SCORE_UPDATE
         unsigned char   player_count   = 0;
         PlayerStatBrief stats[ROOM_MAX_PLAYER] = {};
+
+        // TIMER_SYNC
+        unsigned int    time_ms        = 0;
     };
 
 public:
@@ -51,6 +55,8 @@ public:
 
     // 캐릭터 선택 완료 통보 (Ready 클릭 시 1회) — 오프라인 모드에서는 무시
     void Send_CharSelect(unsigned char charType);
+    // 인게임 페이즈 타이머 만료 → 서버에 다음 페이즈 준비 완료 알림
+    void Send_PhaseReady(unsigned char phase);
 
     // ── 수동 방 관련 송신 (로비 소켓) ──────────────────────────────────
     void Send_CreateRoom();

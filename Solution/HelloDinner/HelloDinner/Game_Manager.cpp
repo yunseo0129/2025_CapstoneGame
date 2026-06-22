@@ -74,13 +74,12 @@ void CGame_Manager::Start_Match()
 
     Ready_Timer();
 
-    // 선택 구간 글로벌 타이머 시작(캐릭터+상황판+스폰을 30초로 묶음)
-    m_fSelectTimer = SELECT_TOTAL_DURATION;
+    m_fSelectTimer   = 0.f;     // 서버 SC_TIMER_SYNC 수신 시 세팅
     m_bSelectExpired = false;
 
-    // 첫 라운드는 캐릭터 선택 화면부터 시작
+    // 서버 SC_PHASE_CHANGE 수신 전까지 UI 전부 숨김 상태로 대기
     m_ePhase = GAME_PHASE::PHASE_END;
-    Enter_Phase(GAME_PHASE::PHASE_CHARSELECT);
+    Apply_PhaseVisibility(GAME_PHASE::PHASE_END);
 }
 
 // =====================================================================
@@ -88,22 +87,46 @@ void CGame_Manager::Start_Match()
 // =====================================================================
 void CGame_Manager::Update(_float fTimeDelta)
 {
-    // 선택 구간(캐릭터/상황판/스폰) 동안에는 글로벌 타이머를 먼저 굴린다.
-    //  0 이 되면 어느 단계든 즉시 PLAYING 으로 강제 진입.
+    // 서버 게임 상태 이벤트 처리
+    auto* pNet = NetworkClient::GetInstance();
+    if (pNet->IsInGame())
+    {
+        std::vector<NetworkClient::NetEvent> matchEvents;
+        pNet->PopAllMatchEvents(matchEvents);
+        for (auto& evt : matchEvents)
+        {
+            switch (evt.type)
+            {
+            case NetworkClient::NetEventType::PHASE_CHANGE:
+                Apply_PhaseChange(evt.phase, evt.round);
+                break;
+            case NetworkClient::NetEventType::ROUND_START:
+                Apply_RoundStart(evt.round, evt.duration_ms, evt.server_time_ms);
+                break;
+            case NetworkClient::NetEventType::ROUND_END:
+                Apply_RoundEnd(evt.winner_team, evt.score_a, evt.score_b);
+                break;
+            case NetworkClient::NetEventType::SCORE_UPDATE:
+                Apply_ScoreUpdate(evt.score_a, evt.score_b, evt.player_count, evt.stats);
+                break;
+            case NetworkClient::NetEventType::TIMER_SYNC:
+                Apply_TimerSync(evt.time_ms);
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    // 선택 페이즈: 로컬 카운트다운으로 UI를 부드럽게 유지
+    // SC_TIMER_SYNC 수신 시 Apply_TimerSync가 서버 값으로 보정
     const _bool bSelectPhase =
         (m_ePhase == GAME_PHASE::PHASE_CHARSELECT) ||
         (m_ePhase == GAME_PHASE::PHASE_SCOREBOARD) ||
         (m_ePhase == GAME_PHASE::PHASE_SHOP);
 
-    if (bSelectPhase && !m_bSelectExpired)
-    {
+    if (bSelectPhase)
         Tick_SelectTimer(fTimeDelta);
-        if (m_fSelectTimer <= 0.f)
-        {
-            Force_StartPlaying();
-            return;   // 이번 프레임은 강제 전환만 처리
-        }
-    }
 
     switch (m_ePhase)
     {
@@ -178,6 +201,8 @@ void CGame_Manager::OnEnter_CharSelect()
 void CGame_Manager::OnEnter_Scoreboard()
 {
     m_fScoreboardTimer = 0.f;
+    m_bSelectExpired   = false;
+    m_fSelectTimer     = SCOREBOARD_TIMEOUT;  // SC_TIMER_SYNC 도착 전 표시용 초기값
     Reset_RoundLoadFlags();
 
     // 매 라운드 시작 시 내 플레이어를 시작 지점(캐릭터 선택 때의 위치)으로 되돌린다.
@@ -194,7 +219,9 @@ void CGame_Manager::OnEnter_Scoreboard()
 
 void CGame_Manager::OnEnter_Shop()
 {
-    m_fShopTimer = SHOP_DURATION;
+    m_fShopTimer     = SHOP_DURATION;
+    m_bSelectExpired = false;
+    m_fSelectTimer   = SHOP_DURATION;  // SC_TIMER_SYNC 도착 전 표시용 초기값
     m_bShopOpen = true; // 진입 시 구매창을 띄운 상태로 시작
 
     /*if (USE_SHOP)
@@ -254,7 +281,13 @@ void CGame_Manager::Update_CharSelect(_float fTimeDelta)
         if (CController* p = m_pGameInstance->Get_Controller())
             p->Set_BlockInput(false);
 
-        Enter_Phase(GAME_PHASE::PHASE_SCOREBOARD);   // 스코어보드부터 정상 진행
+        // Ready 클릭 시 서버에 CS_PHASE_READY(0) 즉시 전송 (중복 방지)
+        if (!m_bSelectExpired)
+        {
+            m_bSelectExpired = true;
+            NetworkClient::GetInstance()->Send_PhaseReady(0);
+        }
+        // 페이즈 전환은 서버 SC_PHASE_CHANGE(SCOREBOARD) 수신 대기
         return;
     }
     Handle_CharSelectClick();
@@ -263,14 +296,7 @@ void CGame_Manager::Update_CharSelect(_float fTimeDelta)
 void CGame_Manager::Update_Scoreboard(_float fTimeDelta)
 {
     m_fScoreboardTimer += fTimeDelta;
-
-    // 상황판은 별도 시간이 없다(글로벌 타이머만 흐름).
-    //  E 키를 누르거나, 잠깐(SCOREBOARD_AUTO 초) 지나면 스폰 선택으로 넘어간다.
-    const _bool bKey = m_pGameInstance->Key_Down(DIK_E);
-    if (bKey || m_fScoreboardTimer >= SCOREBOARD_AUTO)
-    {
-        Enter_Phase(GAME_PHASE::PHASE_SHOP);
-    }
+    // 페이즈 전환은 서버 SC_PHASE_CHANGE 수신으로만 처리
 }
 
 void CGame_Manager::Update_Shop(_float fTimeDelta)
@@ -323,22 +349,7 @@ void CGame_Manager::Update_Playing(_float fTimeDelta)
             m_fRoundTimer = 0.f;
     }
     Refresh_HUD();
-
-    // 오프라인 모드에서만 로컬 타이머로 라운드 종료 + 디버그 키 허용
-    if (NetworkClient::GetInstance()->IsOfflineMode())
-    {
-        if (m_fRoundTimer <= 0.f)
-        {
-            End_Round(0);
-            return;
-        }
-#ifdef _DEBUG
-        if (m_pGameInstance->Key_Down(DIK_F9))
-            End_Round(0);
-        else if (m_pGameInstance->Key_Down(DIK_F10))
-            End_Round(1);
-#endif
-    }
+    // 라운드 종료는 서버 SC_ROUND_END 수신으로만 처리
 }
 
 // =====================================================================
@@ -362,35 +373,6 @@ void CGame_Manager::Force_AllLoaded()
         stat.bMapLoaded = true;
 }
 
-void CGame_Manager::End_Round(_int iWinnerTeam)
-{
-    if (m_ePhase != GAME_PHASE::PHASE_PLAYING)
-        return;
-
-    if (iWinnerTeam == 0 || iWinnerTeam == 1)
-        ++m_iTeamScore[iWinnerTeam];
-
-    GM_Log(L"Round %d 종료 → Score %d : %d",
-        m_iRound, m_iTeamScore[0], m_iTeamScore[1]);
-
-    // 마지막 라운드였으면 게임 종료
-    if (m_iRound >= MAX_ROUND)
-    {
-        Enter_Phase(GAME_PHASE::PHASE_GAMEOVER);
-        return;
-    }
-
-    // 다음 라운드: 다시 스코어보드부터
-    ++m_iRound;
-
-    // 선택 구간 글로벌 타이머 재시작.
-    //  (이게 없으면 1라운드에서 0이 된 타이머/만료 플래그가 그대로 남아
-    //   2라운드부터 선택 단계가 진행/자동 종료되지 않는다)
-    m_fSelectTimer = SELECT_TOTAL_DURATION;
-    m_bSelectExpired = false;
-
-    Enter_Phase(GAME_PHASE::PHASE_SCOREBOARD);
-}
 
 // =====================================================================
 //  서버 주도 이벤트 (Phase 1)
@@ -424,10 +406,36 @@ void CGame_Manager::Apply_RoundStart(unsigned char round, unsigned int duration_
 void CGame_Manager::Apply_RoundEnd(unsigned char winner_team,
                                     unsigned char score_a, unsigned char score_b)
 {
-    // 점수는 서버 값으로 덮어쓰고, 페이즈 전환은 뒤따르는 SC_PHASE_CHANGE 가 처리
-    m_iTeamScore[0] = static_cast<_int>(score_a);
-    m_iTeamScore[1] = static_cast<_int>(score_b);
+    m_iTeamScore[0]    = static_cast<_int>(score_a);
+    m_iTeamScore[1]    = static_cast<_int>(score_b);
+    m_iLastRoundWinner = static_cast<_int>(winner_team);
     GM_Log(L"서버 라운드 종료 | winner=%d  score %d:%d", winner_team, score_a, score_b);
+}
+
+void CGame_Manager::Apply_TimerSync(unsigned int time_ms)
+{
+    _float t = static_cast<_float>(time_ms) / 1000.f;
+
+    if (m_ePhase == GAME_PHASE::PHASE_PLAYING)
+    {
+        m_fRoundTimer = t;
+    }
+    else if (m_ePhase == GAME_PHASE::PHASE_CHARSELECT ||
+             m_ePhase == GAME_PHASE::PHASE_SCOREBOARD  ||
+             m_ePhase == GAME_PHASE::PHASE_SHOP)
+    {
+        m_fSelectTimer = t;
+        // SC_TIMER_SYNC(0) = 서버 타이머 만료 신호 → CS_PHASE_READY 전송
+        if (time_ms == 0 && !m_bSelectExpired)
+        {
+            m_bSelectExpired = true;
+            unsigned char phase_byte =
+                (m_ePhase == GAME_PHASE::PHASE_CHARSELECT) ? 0
+              : (m_ePhase == GAME_PHASE::PHASE_SCOREBOARD) ? 1
+              : 2; // SHOP
+            NetworkClient::GetInstance()->Send_PhaseReady(phase_byte);
+        }
+    }
 }
 
 void CGame_Manager::Apply_ScoreUpdate(unsigned char score_a, unsigned char score_b,
@@ -907,18 +915,6 @@ HRESULT CGame_Manager::Ready_HUD()
     const _int   iPerTeam = 3;
     const _float fGroupW = iPerTeam * fBox + (iPerTeam - 1) * fBoxGap;
 
-    // ---- 중앙: 남은 라운드 시간 타이머 ----
-    {
-        CUI_Text::UI_TEXT_DESC d;
-        d.fX = fCenterX; d.fY = fRowY;
-        d.fDepth = 0.3f;
-        d.strText = Make_TimerString();
-        d.strFontTag = L"Font_Default";
-        d.vColor = _float4(1.f, 1.f, 1.f, 1.f);
-        d.fTextScale = 0.85f;
-        d.bCentered = true;
-    }
-
     // ---- 팀 승수 (타이머 좌우) ----
     {
         // 팀 A (왼쪽, 파랑)
@@ -1284,21 +1280,6 @@ _wstring CGame_Manager::Make_SelectTimerString() const
     return buf;
 }
 
-void CGame_Manager::Force_StartPlaying()
-{
-    // 타임아웃: 어느 선택 단계든 즉시 PLAYING 으로.
-    //  - 캐릭터 미선택 → PIG(0) 자동.
-    //  - 스폰 미선택   → 기본 스폰 위치(Apply_SpawnLaunch 가 처리).
-    m_bSelectExpired = true;
-    m_iCSMyCharacter = 0;   // PIG 고정
-
-    ShowCursor(FALSE);
-    if (CController* p = m_pGameInstance->Get_Controller())
-        p->Set_BlockInput(false);
-
-    GM_Log(L"Select timer expired → FORCE PLAYING");
-    Enter_Phase(GAME_PHASE::PHASE_PLAYING);
-}
 
 // =====================================================================
 CGame_Manager* CGame_Manager::Create()
@@ -1308,7 +1289,9 @@ CGame_Manager* CGame_Manager::Create()
     {
         MSG_BOX("Failed to Create : CGame_Manager");
         Safe_Release(pInstance);
+        return nullptr;
     }
+    m_pInstance = pInstance;
     return pInstance;
 }
 

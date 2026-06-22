@@ -3,7 +3,6 @@
 #include "Player_Pig.h"
 #include "GameInstance.h"
 #include "NetworkClient.h"
-#include "Game_Manager.h"
 #include "Defines.h"
 #include "UI_Crosshair.h"
 
@@ -245,31 +244,6 @@ void CController::Apply_ServerEvents(_float fTimeDelta)
         }
     }
 
-    // Phase 1: 게임 상태머신 이벤트 처리
-    std::vector<NetworkClient::NetEvent> matchEvents;
-    pNet->PopAllMatchEvents(matchEvents);
-
-    auto* pGM = CGame_Manager::GetInstance();
-    for (auto& evt : matchEvents)
-    {
-        switch (evt.type)
-        {
-        case NetworkClient::NetEventType::PHASE_CHANGE:
-            pGM->Apply_PhaseChange(evt.phase, evt.round);
-            break;
-        case NetworkClient::NetEventType::ROUND_START:
-            pGM->Apply_RoundStart(evt.round, evt.duration_ms, evt.server_time_ms);
-            break;
-        case NetworkClient::NetEventType::ROUND_END:
-            pGM->Apply_RoundEnd(evt.winner_team, evt.score_a, evt.score_b);
-            break;
-        case NetworkClient::NetEventType::SCORE_UPDATE:
-            pGM->Apply_ScoreUpdate(evt.score_a, evt.score_b, evt.player_count, evt.stats);
-            break;
-        default:
-            break;
-        }
-    }
 }
 
 void CController::Spawn_OtherPlayer(int id, const float* worldMatrix)

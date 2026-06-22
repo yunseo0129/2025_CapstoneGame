@@ -113,6 +113,13 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
         cout << "[Instance] Client [" << c_id << "] selected char " << (int)p->char_type << endl;
         break;
     }
+    case CS_PHASE_READY: {
+        CS_PHASE_READY_PACKET* p = reinterpret_cast<CS_PHASE_READY_PACKET*>(packet);
+        int room_id = m_clients[c_id].m_room_id;
+        if (room_id != -1)
+            RoomPhaseManager::GetInstance()->OnPlayerPhaseReady(room_id, p->phase);
+        break;
+    }
     case CS_LOGOUT: {
         cout << "[Instance] Client [" << c_id << "] logout requested." << endl;
         Disconnect(c_id);

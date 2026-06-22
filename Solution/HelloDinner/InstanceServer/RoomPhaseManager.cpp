@@ -21,11 +21,11 @@ void RoomPhaseManager::TimerLoop()
     }
 }
 
-// 락 없이 pending 전환을 결정한 뒤, 락 해제 후 실제 전환 수행 (데드락 방지)
+// 락 없이 pending 상태를 결정한 뒤, 락 해제 후 실제 전환 수행 (데드락 방지)
 void RoomPhaseManager::TickRoom(int room_id, float dt)
 {
-    ROOM_PHASE pending_phase  = ROOM_PHASE::WAITING;  // WAITING = 전환 없음
-    int        pending_winner = -2;                    // -2 = 라운드 종료 없음
+    int  pending_winner = -2;   // -2 = 라운드 종료 없음
+    bool do_sync        = false;
 
     {
         lock_guard<mutex> lk(m_lock);
@@ -33,22 +33,33 @@ void RoomPhaseManager::TickRoom(int room_id, float dt)
         if (!r.active || r.phase == ROOM_PHASE::WAITING || r.timer_sec <= 0.f)
             return;
 
-        r.timer_sec -= dt;
-        if (r.timer_sec > 0.f) return;
+        r.timer_sec    -= dt;
+        r.sync_elapsed += dt;
 
-        switch (r.phase) {
-        case ROOM_PHASE::CHARSELECT: pending_phase  = ROOM_PHASE::SCOREBOARD; break;
-        case ROOM_PHASE::SCOREBOARD: pending_phase  = ROOM_PHASE::SHOP;       break;
-        case ROOM_PHASE::SHOP:       pending_phase  = ROOM_PHASE::PLAYING;    break;
-        case ROOM_PHASE::PLAYING:    pending_winner = 0;                      break; // 타임아웃 → 팀A 임시 승
-        default: break;
+        // 1초마다 주기 동기화
+        if (r.sync_elapsed >= SYNC_INTERVAL) {
+            r.sync_elapsed -= SYNC_INTERVAL;
+            do_sync = true;
+        }
+
+        if (r.timer_sec <= 0.f) {
+            r.timer_sec = 0.f;
+            if (r.phase == ROOM_PHASE::PLAYING) {
+                pending_winner = 0;  // 타임아웃 → 팀A 임시 승
+            } else {
+                // 선택 페이즈 타이머 만료: SC_TIMER_SYNC(0) 전송 → 클라가 CS_PHASE_READY 전송
+                // 다음 TickRoom 호출 시 timer_sec=0 이므로 early-return, 중복 전송 없음
+                do_sync = true;
+            }
         }
     }
 
+    // PLAYING 타임아웃이 아닌 경우 주기(또는 만료) 동기화 전송
+    if (do_sync && pending_winner == -2)
+        Broadcast_TimerSync(room_id);
+
     if (pending_winner >= -1)
         OnRoundEnd(room_id, pending_winner);
-    else if (pending_phase != ROOM_PHASE::WAITING)
-        TransitionTo(room_id, pending_phase);
 }
 
 void RoomPhaseManager::TransitionTo(int room_id, ROOM_PHASE next)
@@ -58,8 +69,11 @@ void RoomPhaseManager::TransitionTo(int room_id, ROOM_PHASE next)
         lock_guard<mutex> lk(m_lock);
         auto& r = m_rooms[room_id];
         if (!r.active) return;
+        if (r.phase == next) return;  // 중복 전환 방지 (TickRoom + OnPlayerPhaseReady 동시 호출 시)
 
-        r.phase = next;
+        r.phase             = next;
+        r.sync_elapsed      = 0.f;
+        r.phase_ready_count = 0;
         switch (next) {
         case ROOM_PHASE::CHARSELECT: r.timer_sec = CHARSELECT_DURATION; break;
         case ROOM_PHASE::SCOREBOARD: r.timer_sec = SCOREBOARD_DURATION; break;
@@ -73,6 +87,10 @@ void RoomPhaseManager::TransitionTo(int room_id, ROOM_PHASE next)
 
     Broadcast_PhaseChange(room_id, next, round);
 
+    // 페이즈 전환 직후 초기 타이머 값 즉시 전송 (클라가 SC_PHASE_CHANGE 처리 후 바로 표시 가능)
+    if (next != ROOM_PHASE::GAMEOVER)
+        Broadcast_TimerSync(room_id);
+
     if (next == ROOM_PHASE::PLAYING)
         Broadcast_RoundStart(room_id, round, static_cast<unsigned int>(ROUND_DURATION * 1000));
 }
@@ -82,14 +100,16 @@ void RoomPhaseManager::TransitionTo(int room_id, ROOM_PHASE next)
 void RoomPhaseManager::OnRoomRegistered(int room_id, int player_count)
 {
     lock_guard<mutex> lk(m_lock);
-    auto& r       = m_rooms[room_id];
-    r.phase       = ROOM_PHASE::WAITING;
-    r.round       = 1;
-    r.score[0]    = r.score[1] = 0;
-    r.timer_sec   = 0.f;
-    r.expected    = player_count;
-    r.joined      = 0;
-    r.active      = true;
+    auto& r             = m_rooms[room_id];
+    r.phase             = ROOM_PHASE::WAITING;
+    r.round             = 1;
+    r.score[0]          = r.score[1] = 0;
+    r.timer_sec         = 0.f;
+    r.sync_elapsed      = 0.f;
+    r.phase_ready_count = 0;
+    r.expected          = player_count;
+    r.joined            = 0;
+    r.active            = true;
 }
 
 void RoomPhaseManager::OnPlayerJoined(int room_id)
@@ -228,4 +248,48 @@ void RoomPhaseManager::Broadcast_ScoreUpdate(int room_id)
     }
 
     BroadcastToRoom(room_id, &pkt);
+}
+
+// ── 타이머 동기화 ──────────────────────────────────────────────────────
+
+void RoomPhaseManager::Broadcast_TimerSync(int room_id)
+{
+    unsigned int time_ms = 0;
+    {
+        lock_guard<mutex> lk(m_lock);
+        auto& r = m_rooms[room_id];
+        if (!r.active || r.phase == ROOM_PHASE::WAITING) return;
+        time_ms = static_cast<unsigned int>(r.timer_sec * 1000.f);
+    }
+    SC_TIMER_SYNC_PACKET pkt{};
+    pkt.size    = sizeof(pkt);
+    pkt.type    = SC_TIMER_SYNC;
+    pkt.time_ms = time_ms;
+    BroadcastToRoom(room_id, &pkt);
+}
+
+// ── CS_PHASE_READY 수신: 전원 준비 완료 시 다음 페이즈로 ��환 ───────��
+
+void RoomPhaseManager::OnPlayerPhaseReady(int room_id, unsigned char phase_byte)
+{
+    ROOM_PHASE pending = ROOM_PHASE::WAITING;
+    {
+        lock_guard<mutex> lk(m_lock);
+        auto& r = m_rooms[room_id];
+        if (!r.active) return;
+        if (static_cast<unsigned char>(r.phase) != phase_byte) return;
+        if (r.phase == ROOM_PHASE::PLAYING || r.phase == ROOM_PHASE::GAMEOVER) return;
+
+        ++r.phase_ready_count;
+        if (r.phase_ready_count < r.joined) return;
+
+        switch (r.phase) {
+        case ROOM_PHASE::CHARSELECT: pending = ROOM_PHASE::SCOREBOARD; break;
+        case ROOM_PHASE::SCOREBOARD: pending = ROOM_PHASE::SHOP;       break;
+        case ROOM_PHASE::SHOP:       pending = ROOM_PHASE::PLAYING;    break;
+        default: break;
+        }
+    }
+    if (pending != ROOM_PHASE::WAITING)
+        TransitionTo(room_id, pending);
 }

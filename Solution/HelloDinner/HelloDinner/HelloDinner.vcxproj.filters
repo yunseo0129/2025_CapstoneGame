@@ -536,6 +536,9 @@
     <ClInclude Include="Player_Fish.h">
       <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd\03. Fish_3rd</Filter>
     </ClInclude>
+    <ClInclude Include="NetPlayer.h">
+      <Filter>소스 파일\03. Network</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -795,6 +798,9 @@
     </ClCompile>
     <ClCompile Include="Player_Fish.cpp">
       <Filter>소스 파일\02. Game\GameObject\02. Player\Player_3rd\03. Fish_3rd</Filter>
+    </ClCompile>
+    <ClCompile Include="NetPlayer.cpp">
+      <Filter>소스 파일\03. Network</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

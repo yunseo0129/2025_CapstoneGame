@@ -133,6 +133,51 @@ ST_FREE → ST_ALLOC → ST_LOBBY → ST_INGAME
 
 ---
 
+## 네트워킹 아키텍처 원칙
+
+### 키 입력 릴레이 방식 (현재 채택)
+
+```
+클라이언트 A                 InstanceServer              클라이언트 A, B, C ...
+─────────────────────────────────────────────────────────────────────────────
+CS_MOVE (keyInput + worldMatrix)
+        ──────────────────▶
+                            서버: 물리 계산 후
+                            SC_MOVE_PLAYER (keyInput 포함)
+                                    ──────────────────▶  각 클라이언트:
+                                                         keyInput 기반 로직·애니메이션 처리
+```
+
+**규칙:**
+- **서버 역할**: 키 입력 수신 → 물리(중력/이동) 계산 → 위치 확정 → Room 전체에 `SC_MOVE_PLAYER` 브로드캐스트
+- **클라이언트 역할**: 받은 `SC_MOVE_PLAYER.keyInput`을 기준으로 애니메이션·이펙트 등 로컬 처리
+- 서버는 이벤트 발생 여부만 전달 — 이벤트에 대한 시각/음향 처리는 클라이언트가 담당
+
+### 상승 에지(Rising Edge) 감지
+
+단발성 액션(사격, 장전 등)은 **이전 keyInput과 현재 keyInput의 XOR**로 새로 눌린 키만 추출:
+
+```cpp
+// Controller::Apply_ServerEvents — 서버 에코 패킷 수신 시
+unsigned short risingEdge = (~m_prevServerKeyInput) & evt.keyInput;
+m_prevServerKeyInput = evt.keyInput;
+
+if (risingEdge & KEY_MOUSE_LB)  pPlayer->Shoot();    // 1인칭 발사 애니메이션
+if (risingEdge & KEY_R)         pPlayer->Reload();   // 1인칭 장전 애니메이션
+```
+
+### 이벤트 종류별 처리 위치
+
+| 이벤트 | 서버 처리 | 클라이언트 처리 |
+|--------|-----------|-----------------|
+| 이동 (WASD) | 물리 계산, 위치 확정 | 예측 이동(Predict_Local) + 보정(Apply_ServerCorrection) |
+| 발사 (LMB) | keyInput 기록·전달 | 상승 에지 감지 → 1인칭/3인칭 발사 애니메이션 |
+| 장전 (R) | keyInput 기록·전달 | 상승 에지 감지 → 1인칭/3인칭 장전 애니메이션 |
+| 페이즈 전환 | 타이머 관리, SC_PHASE_CHANGE 전송 | Apply_PhaseChange → UI 전환 |
+| 스폰 발사 | SC_SPAWN_LAUNCH 전송 | Apply_SpawnLaunch_Server → Launch_To |
+
+---
+
 ## 주의사항 / 알려진 제약
 
 - 패킷 구조체는 `#pragma pack(push, 1)` 적용 — 멤버 순서/타입 변경 시 클라이언트 팀과 반드시 동기화
