@@ -51,7 +51,7 @@ public:					// 플레이어 조종에 관련한 함수 구현
     _int Get_Weapon() const { return m_iWeapon; }
 
     // ---- HUD 표시용 상태 조회 ----
-    _int  Get_Health()  const { return m_iHealth; }
+    _int  Get_Health()  const { return m_ihealth; }
     _uint Get_Ammo()    const { return m_iAmmo; }
     void Set_Ammo(_uint iAmmo) { m_iAmmo = iAmmo; }
     _uint Get_MaxAmmo() const { return 30; }   // 현재 탄창 고정 30발
@@ -86,7 +86,6 @@ private:
     vector<class CCollider*> m_vColliderComs;
     vector<class CCollider*> m_vMapColliderComs;
     _uint				m_iState = 0;
-    _int				m_iHealth = 0;
     _wstring			m_strModelTag = L"";
     _uint				m_iModelLevelIndex = 0;
     _float				m_fPitchRot = 0;

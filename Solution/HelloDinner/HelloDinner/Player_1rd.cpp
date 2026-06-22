@@ -61,7 +61,6 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
         return E_FAIL;
 
     m_iState = 0;
-    m_iHealth = 100;   // HUD 표시용 초기 체력
     m_pModelCom->SetUp_Animation(0, true);
     m_pFPSModelCom->SetUp_Animation(0, true);
 
