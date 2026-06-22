@@ -436,6 +436,24 @@ void CFracture_System::Break_BySlot(_int iSlot, const BREAK_PARAM& param)
     Collect_Colliders(inst);
 }
 
+void CFracture_System::Break_All(const BREAK_PARAM& param)
+{
+    for (_uint i = 0; i < MAX_FRACTURE_WALLS; ++i)
+    {
+        INSTANCE& inst = m_Instances[i];
+        if (!inst.bUsed || inst.bBroken) continue;
+
+        // breakPoint 가 지정되지 않았으면(0) 각 벽의 월드 중심을 폭발 지점으로.
+        BREAK_PARAM p = param;
+        if (p.vBreakPoint.x == 0.f && p.vBreakPoint.y == 0.f && p.vBreakPoint.z == 0.f)
+            p.vBreakPoint = {inst.matWorld._41, inst.matWorld._42, inst.matWorld._43};
+        if (p.iSeed == 0)
+            p.iSeed = inst.iWallId;   // 벽마다 다른 시드 → 파편 패턴 다양화
+
+        Break_BySlot((_int)i, p);
+    }
+}
+
 // [A-1단계] 근처 정적 콜라이더를 BVH로 질의 → 모델 공간 OBB로 변환 → 로그(검증).
 //  2단계에서 이 결과를 콜라이더 버퍼(루트 SRV)로 올려 컴퓨트 셰이더 sphere-vs-OBB 충돌에 사용한다.
 void CFracture_System::Collect_Colliders(INSTANCE& inst)
@@ -640,6 +658,7 @@ void CFracture_System::Render(ID3D12GraphicsCommandList* pCmd)
     {
         INSTANCE& inst = m_Instances[i];
         if (!inst.bUsed || nullptr == inst.pModel) continue;
+        if (inst.bSeedDirty) continue;
 
         if (!bPipelineSet)
         {
@@ -705,6 +724,7 @@ void CFracture_System::Render_Shadow(ID3D12GraphicsCommandList* pCmd)
     {
         INSTANCE& inst = m_Instances[i];
         if (!inst.bUsed || nullptr == inst.pModel) continue;
+        if (inst.bSeedDirty) continue;
 
         if (!bSet)
         {

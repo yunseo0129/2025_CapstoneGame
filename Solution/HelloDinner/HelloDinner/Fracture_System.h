@@ -78,6 +78,8 @@ public:
     void    Break(CModel* pModel, const BREAK_PARAM& param = {});
     // 슬롯 인덱스를 직접 들고 있는 경우
     void    Break_BySlot(_int iSlot, const BREAK_PARAM& param = {});
+    // [디버그] 현재 등록된(아직 안 부서진) 모든 벽을 동시에 폭발. 각 벽의 월드 중심을 breakPoint 로.
+    void    Break_All(const BREAK_PARAM& param = {});
     // 등록 해제(벽 제거 시). 슬롯 반환.
     void    Unregister(CModel* pModel);
     // [라운드 초기화] 파괴된(또는 임의) 벽을 bind(온전) 상태로 되돌린다. 반환=슬롯(-1=실패).
@@ -168,7 +170,7 @@ private:
     void    Collect_Colliders(INSTANCE& inst);   // [A] 근처 정적 콜라이더 수집(브로드페이즈→모델 OBB)
     void    Update_FrameCB(_uint iFrame, _uint iRingSlot, const _float4x4& matWorld);
     void    Update_FrameCB_Shadow(_uint iFrame, _uint iRingSlot, const _float4x4& matWorld, const _float4x4& view, const _float4x4& proj);
-    
+
     // 튜닝
     _float  m_fDeltaTime = 0.f;
     _float  m_fFloorY = 0.f;

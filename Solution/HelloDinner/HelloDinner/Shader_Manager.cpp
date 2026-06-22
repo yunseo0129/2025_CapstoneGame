@@ -284,7 +284,7 @@ HRESULT CShader_Manager::Create_PSO()
 
     m_pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pPSOs[(UINT)PSO_TYPE::ANIM]));
 
-    
+
     // ================================================================
     // ALPHA BLEND (Static Mesh / Transparent / Lit) — 맵 유리 전용
     //   VS 는 DEFAULT 와 동일(VS_Main_Static), PS 만 PS_Glass.
@@ -311,7 +311,7 @@ HRESULT CShader_Manager::Create_PSO()
     psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 
     m_pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pPSOs[(UINT)PSO_TYPE::ALPHA_BLEND]));
-    
+
     // ================================================================
     // UI (UI Mesh / Transparent / Unlit)
     // ================================================================
@@ -345,9 +345,9 @@ HRESULT CShader_Manager::Create_PSO()
     psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
 
     // 그림자 아티팩트(Shadow Acne) 방지 바이어스
-    psoDesc.RasterizerState.DepthBias = 0;
+    psoDesc.RasterizerState.DepthBias = 100000;
     psoDesc.RasterizerState.DepthBiasClamp = 0.0f;
-    psoDesc.RasterizerState.SlopeScaledDepthBias = 0.0f;
+    psoDesc.RasterizerState.SlopeScaledDepthBias = 1.0f;
 
     m_pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pPSOs[(UINT)PSO_TYPE::SHADOW_STATIC]));
 
@@ -380,9 +380,9 @@ HRESULT CShader_Manager::Create_PSO()
     psoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
 
     psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;  // SHADOW_STATIC과 동일
-    psoDesc.RasterizerState.DepthBias = 0;
+    psoDesc.RasterizerState.DepthBias = 100000;
     psoDesc.RasterizerState.DepthBiasClamp = 0.0f;
-    psoDesc.RasterizerState.SlopeScaledDepthBias = 0.0f;
+    psoDesc.RasterizerState.SlopeScaledDepthBias = 1.0f;
 
     m_pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pPSOs[(UINT)PSO_TYPE::SHADOW_STATIC_INSTANCED]));
 
