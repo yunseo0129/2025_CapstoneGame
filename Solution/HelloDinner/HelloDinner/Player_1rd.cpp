@@ -61,7 +61,6 @@ HRESULT CPlayer_1rd::Initialize(void* pArg)
         return E_FAIL;
 
     m_iState = 0;
-    m_iHealth = 100;   // HUD 표시용 초기 체력
     m_pModelCom->SetUp_Animation(0, true);
     m_pFPSModelCom->SetUp_Animation(0, true);
 
@@ -201,7 +200,7 @@ void CPlayer_1rd::Render(ID3D12GraphicsCommandList* _commandList)
 
     // 콜라이더 디버깅
 #ifdef _DEBUG
-    for (CCollider* pCollider : m_vColliderComs)
+    /*for (CCollider* pCollider : m_vColliderComs)
     {
         if (pCollider != nullptr)
             m_pGameInstance->Add_RenderCollider(pCollider);
@@ -210,7 +209,7 @@ void CPlayer_1rd::Render(ID3D12GraphicsCommandList* _commandList)
     {
         if (pCollider != nullptr)
             m_pGameInstance->Add_RenderCollider(pCollider);
-    }
+    }*/
 #endif
 }
 

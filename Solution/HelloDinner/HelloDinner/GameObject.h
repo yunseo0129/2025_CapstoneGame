@@ -55,7 +55,7 @@ protected:
 	_uint										m_iData = {};
 	bool										m_bDead = false;
 	bool										m_bOnOff = true;
-    _int                                        m_ihealth = 100;
+    _int                                        m_ihealth = 500;
     _bool                                       m_isDie = false;
 
 public:
