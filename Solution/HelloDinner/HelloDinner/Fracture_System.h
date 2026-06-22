@@ -80,6 +80,9 @@ public:
     void    Break_BySlot(_int iSlot, const BREAK_PARAM& param = {});
     // 등록 해제(벽 제거 시). 슬롯 반환.
     void    Unregister(CModel* pModel);
+    // [라운드 초기화] 파괴된(또는 임의) 벽을 bind(온전) 상태로 되돌린다. 반환=슬롯(-1=실패).
+    //  슬롯이 살아있으면 그 자리를 bind 로 재시드, 회수됐으면 다시 등록한다.
+    _int    Reset_Wall(CModel* pModel, _uint iWallId, const _float4x4& matWorld, _uint iMeshIndex = 0, class CCollider* pSelfCollider = nullptr);
 
     void    Compute(ID3D12GraphicsCommandList* pCmd);   // 활성 슬롯 전체: 물리 적분 + 매트릭스 합성
     void    Render(ID3D12GraphicsCommandList* pCmd);    // 활성 슬롯 전체: 조각 메시 드로우
@@ -165,7 +168,7 @@ private:
     void    Collect_Colliders(INSTANCE& inst);   // [A] 근처 정적 콜라이더 수집(브로드페이즈→모델 OBB)
     void    Update_FrameCB(_uint iFrame, _uint iRingSlot, const _float4x4& matWorld);
     void    Update_FrameCB_Shadow(_uint iFrame, _uint iRingSlot, const _float4x4& matWorld, const _float4x4& view, const _float4x4& proj);
-
+    
     // 튜닝
     _float  m_fDeltaTime = 0.f;
     _float  m_fFloorY = 0.f;

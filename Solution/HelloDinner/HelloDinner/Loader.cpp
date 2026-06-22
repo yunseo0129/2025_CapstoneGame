@@ -28,6 +28,7 @@
 #include "VIBuffer_Triangle.h"
 #include "CharSelect_Pig.h"
 #include "CharSelect_Chick.h"
+#include "CharSelect_Fish.h" 
 #include "UI_Crosshair.h"
 #include "UI_Texture.h"
 
@@ -140,6 +141,8 @@ HRESULT CLoader::Loading_Level_GamePlay()
             CTexture::Create(m_pContext, L"Resources/Textures/Select_pig.png", 1))))   return E_FAIL;
         if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, L"Prototype_Component_Texture_SelectChick",
             CTexture::Create(m_pContext, L"Resources/Textures/Select_chick.png", 1))))  return E_FAIL;
+        if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, L"Prototype_Component_Texture_SelectFish",
+            CTexture::Create(m_pContext, L"Resources/Textures/Select_fish.png", 1))))  return E_FAIL;
 
     }
 
@@ -241,7 +244,41 @@ HRESULT CLoader::Loading_Level_GamePlay()
             return E_FAIL;
     }
 
+    lstrcpy(m_szLoadingText, TEXT("사운드를 로딩중입니다."));
 
+    /* logo_bgm */
+    m_pGameInstance->LoadSound("logo_bgm", "Resources/Sound/bgm/logo_bgm.ogg");
+    /* game_bgm */
+    m_pGameInstance->LoadSound("game_bgm", "Resources/Sound/bgm/game_bgm.ogg");
+
+    /* explode1 */
+    m_pGameInstance->LoadSound("explode1", "Resources/Sound/sfx/explode1.ogg");
+    /* explode2 */
+    m_pGameInstance->LoadSound("explode2", "Resources/Sound/sfx/explode2.ogg");
+    /* explode3 */
+    m_pGameInstance->LoadSound("explode3", "Resources/Sound/sfx/explode3.ogg");
+    /* explode4 */
+    m_pGameInstance->LoadSound("explode4", "Resources/Sound/sfx/explode4.ogg");
+    /* attack1 */
+    m_pGameInstance->LoadSound("attack1", "Resources/Sound/sfx/attack1.ogg");
+    /* attack2 */
+    m_pGameInstance->LoadSound("attack2", "Resources/Sound/sfx/attack2.ogg");
+    /* hit1 */
+    m_pGameInstance->LoadSound("hit1", "Resources/Sound/sfx/hit1.ogg");
+    /* hit2 */
+    m_pGameInstance->LoadSound("hit2", "Resources/Sound/sfx/hit2.ogg");
+    /* hit3 */
+    m_pGameInstance->LoadSound("hit3", "Resources/Sound/sfx/hit3.ogg");
+    /* reload1 */
+    m_pGameInstance->LoadSound("reload1", "Resources/Sound/sfx/reload1.ogg");
+    /* reload2 */
+    m_pGameInstance->LoadSound("reload2", "Resources/Sound/sfx/reload2.ogg");
+    /* jump1 */
+    m_pGameInstance->LoadSound("jump1", "Resources/Sound/sfx/jump1.ogg");
+    /* jump2 */
+    m_pGameInstance->LoadSound("jump2", "Resources/Sound/sfx/jump2.ogg");
+    /* jump3 */
+    m_pGameInstance->LoadSound("jump3", "Resources/Sound/sfx/jump3.ogg");
 
     Set_LoadingText(TEXT("객체원형을 로딩중입니다."));
     // 객체 원형 로드
@@ -309,6 +346,11 @@ HRESULT CLoader::Loading_Level_GamePlay()
     // Prototype_GameObject_CharSelect_Chick
     if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_CharSelect_Chick"),
         CCharSelect_Chick::Create(m_pContext))))
+        return E_FAIL;
+
+    // Prototype_GameObject_CharSelect_Fish
+    if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_CharSelect_Fish"),
+        CCharSelect_Fish::Create(m_pContext))))
         return E_FAIL;
 
     // Prototype_GameObject_Pig_3rd

@@ -190,6 +190,20 @@ public: /* For.Font_Manager */
 public: /* For.Fracture_System*/
     class CFracture_System* Get_FractureSystem() const { return m_pFracture_System; }
 
+public: /* SoundManager */
+    bool SoundInitialize(HWND hwnd);
+    void Shutdown();
+    bool LoadSound(const std::string& soundName, const std::string& filename);
+    void PlaySounds(const std::string& soundName, bool loop = false);
+    void StopSound(const std::string& soundName);
+    void SetSoundVolume(const std::string& soundName, float volume); // 0.0f (mute) to 1.0f (max)
+    void UpdateSoundVolumeByDistance(const std::string& soundName, _float3 vListner, _float3 vSoundPos);
+    void UpdateSoundVolumeByPlayer(const std::string& soundName, _float3 soundpos);
+    void Set_PlayerPos(_float3* pos);
+    bool IsSoundPlaying(const std::string& soundName);
+    void UpdateBGM();
+
+
 private:
     class CGraphic_Device* m_pGraphic_Device = {nullptr};
     class CInput_Device* m_pInput_Device = {nullptr};
@@ -208,6 +222,7 @@ private:
     class CParticle_System* m_pParticle_System = {nullptr};
     class CFracture_System* m_pFracture_System = {nullptr};
     class CFont_Manager* m_pFont_Manager = {nullptr};
+    class SoundManager* m_pSoundManager = { nullptr };
     ComPtr<ID3D12GraphicsCommandList> m_pCommandList = {nullptr};
 
 public:

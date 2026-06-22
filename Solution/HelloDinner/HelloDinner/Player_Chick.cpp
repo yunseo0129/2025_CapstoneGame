@@ -170,13 +170,6 @@ HRESULT CPlayer_Chick::Ready_Components()
 
 void CPlayer_Chick::Anim_Test()
 {
-    if (m_pGameInstance->Key_Pressing(DIK_0))
-    {
-        // 정지 
-        // 풀
-        m_pModelCom->Change_Animation(0, 5.f, true, true);
-        m_pModelCom->Change_Animation(0, 5.f, true, false);
-    }
     if (m_pGameInstance->Key_Pressing(DIK_1))
     {
         // 대기

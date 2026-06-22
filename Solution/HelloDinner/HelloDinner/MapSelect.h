@@ -31,7 +31,7 @@ public:
     {
         // ---- 보여줄 맵 영역 (여기만 바꾸면 어느 부분이든 보여줄 수 있음) ----
         _float2  vCenterWorld = _float2(0.f, 0.f); // 창 중심에 올 월드 (x, z)
-        _float   fWorldRange = 60.f;              // 중심에서 ±범위(월드유닛). 작을수록 확대.
+        _float   fWorldRange = 5.f;              // 중심에서 ±범위(월드유닛). 작을수록 확대.
 
         // ---- 맵(지형) 레이어 ----
         _uint    iMapLevelIndex = 3 /*LEVEL_GAMEPLAY*/;

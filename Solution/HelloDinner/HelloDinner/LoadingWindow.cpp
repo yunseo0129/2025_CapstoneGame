@@ -1,4 +1,8 @@
 #include "stdafx.h"
+#include <Windows.h>
+#include <mmsystem.h>
+
+#pragma comment(lib, "winmm.lib")
 #include "LoadingWindow.h"
 
 #pragma comment(lib, "gdi32.lib")

@@ -157,12 +157,14 @@
     </ClInclude>
     <ClInclude Include="Channel.h" />
     <ClInclude Include="CharSelect_Chick.h" />
+    <ClInclude Include="CharSelect_Fish.h" />
     <ClInclude Include="CharSelect_Pig.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="Collision_Manager.h" />
     <ClInclude Include="Controller.h" />
     <ClInclude Include="MapRenderTarget.h" />
     <ClInclude Include="Player_Fish.h" />
+    <ClInclude Include="SoundManager.h" />
     <ClInclude Include="UI_Crosshair.h" />
     <ClInclude Include="Font_Manager.h" />
     <ClInclude Include="Fracture_System.h" />
@@ -257,6 +259,7 @@
     <ClCompile Include="Bullets.cpp" />
     <ClCompile Include="Channel.cpp" />
     <ClCompile Include="CharSelect_Chick.cpp" />
+    <ClCompile Include="CharSelect_Fish.cpp" />
     <ClCompile Include="CharSelect_Pig.cpp" />
     <ClCompile Include="Collider.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -265,6 +268,7 @@
     <ClCompile Include="Controller.cpp" />
     <ClCompile Include="Player_Fish.cpp" />
     <ClCompile Include="MapRenderTarget.cpp" />
+    <ClCompile Include="SoundManager.cpp" />
     <ClCompile Include="UI_Crosshair.cpp" />
     <ClCompile Include="Font_Manager.cpp" />
     <ClCompile Include="Fracture_System.cpp" />

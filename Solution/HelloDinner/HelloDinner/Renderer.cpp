@@ -174,11 +174,34 @@ HRESULT CRenderer::Render_NonBlend(ID3D12GraphicsCommandList* _CmdList)
 
 HRESULT CRenderer::Render_Blend(ID3D12GraphicsCommandList* _CmdList)
 {
-    for (auto& pObj : m_RenderObjects[RG_BLEND]) {
-        if (pObj) pObj->Render(_CmdList);
+    auto& blendList = m_RenderObjects[RG_BLEND];
+
+    if (blendList.empty())
+        return S_OK;
+
+    // [투명] 카메라 월드 위치 = 뷰 행렬의 역행렬 translation.
+    XMFLOAT4X4 matView = m_pGameInstance->Get_CurrentCameraView();
+    XMVECTOR det;
+    XMMATRIX invView = XMMatrixInverse(&det, XMLoadFloat4x4(&matView));
+    XMFLOAT3 vCamPos; XMStoreFloat3(&vCamPos, invView.r[3]);
+
+    // [투명] 뒤→앞 정렬(먼 오브젝트 먼저). 오브젝트 중심은 월드행렬 translation.
+    auto fnDistSq = [&](CGameObject* p) -> float {
+        const _float4x4* w = p->Get_WorldMatrix4x4Ptr();
+        float dx = w->_41 - vCamPos.x, dy = w->_42 - vCamPos.y, dz = w->_43 - vCamPos.z;
+        return dx * dx + dy * dy + dz * dz;
+        };
+    blendList.sort([&](CGameObject* a, CGameObject* b) {
+        return fnDistSq(a) > fnDistSq(b);
+        });
+
+    // [투명] 블렌드 PSO 1회 설정 후, 각 오브젝트의 유리 메시만 그린다.
+    m_pGameInstance->Set_PipelineState(_CmdList, PSO_TYPE::ALPHA_BLEND);
+    for (auto& pObj : blendList) {
+        if (pObj) { pObj->Render_Blend(_CmdList); ++m_iDrawCallCount; }
         Safe_Release(pObj);
     }
-    m_RenderObjects[RG_BLEND].clear();
+    blendList.clear();
     return S_OK;
 }
 
@@ -233,6 +256,9 @@ HRESULT CRenderer::Render_InstancedQueue(ID3D12GraphicsCommandList* cmd, INSTANC
 
         _uint iNumMeshes = pModel->Get_NumMeshes();
         for (_uint m = 0; m < iNumMeshes; ++m) {
+            // [투명] 유리 메시는 불투명 인스턴스 패스(메인/그림자)에서 제외.
+            //   메인은 블렌드 패스에서 비인스턴싱으로, 그림자는 생략.
+            if (pModel->Is_MeshBlend(m)) continue;
             pModel->Render_Instanced(cmd, m, instanceCount, pSlot->vbv, bShadow);
             ++m_iDrawCallCount;
         }

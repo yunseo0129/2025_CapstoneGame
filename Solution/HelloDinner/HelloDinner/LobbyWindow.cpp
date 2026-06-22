@@ -1,4 +1,8 @@
 #include "stdafx.h"
+#include <Windows.h>
+#include <mmsystem.h>
+
+#pragma comment(lib, "winmm.lib")
 #include "LobbyWindow.h"
 #include "NetworkClient.h"
 
@@ -34,6 +38,8 @@ CLobbyWindow::CLobbyWindow()
 
 HRESULT CLobbyWindow::Initialize(HINSTANCE hInstance)
 {
+    PlaySound(L"Resources/Sound/bgm/logo_bgm.wav", NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+
     m_hInstance = hInstance;
 
     // 윈도우 클래스 등록 (이미 등록되어 있으면 무시됨)
@@ -211,7 +217,7 @@ void CLobbyWindow::OnCreate(HWND hWnd)
     }
 
     // ---- 배경 로드 & 애니메이션 타이머 ----
-    LoadBackground(LOBBY_IMAGE_PATH);
+    LoadBackground(L"Resources/Textures/lobby.png");
 
     if (m_pImage && m_iFrameCount > 1 && m_pFrameDelays)
         SetTimer(hWnd, TIMER_ANIM, m_pFrameDelays[0], nullptr); // GIF 재생

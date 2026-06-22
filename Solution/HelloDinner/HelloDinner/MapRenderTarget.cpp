@@ -43,9 +43,9 @@ void CMapRenderTarget::Set_View(const _float3& vCenterXZ, _float fHalfExtent, co
 
     // 맵이 ×100 스케일이라 좌표가 수백~수천에 분포한다. 카메라를 충분히 높이
     // 올리고 near~far 를 아주 넓게 잡아 어떤 높이의 맵도 절두체 안에 들어오게 한다.
-    const _float fHeight = 5000.f;   // 카메라 높이 (맵 최고점보다 충분히 위)
+    const _float fHeight = 500.f;   // 카메라 높이 (맵 최고점보다 충분히 위)
     const _float fNear = 1.f;
-    const _float fFar = 12000.f;     // near~far 안에 맵 전체 높이 포함
+    const _float fFar = 1000.f;     // near~far 안에 맵 전체 높이 포함
 
     XMVECTOR vEye = XMVectorSet(vCenterXZ.x, vCenterXZ.y + fHeight, vCenterXZ.z, 1.f);
     XMVECTOR vAt = XMVectorSet(vCenterXZ.x, vCenterXZ.y, vCenterXZ.z, 1.f);
@@ -123,6 +123,8 @@ HRESULT CMapRenderTarget::Render_MapLayer(ID3D12GraphicsCommandList* _cmdList, _
     {
         CMap* pMap = dynamic_cast<CMap*>(pObj);
         if (!pMap) continue;
+        if (pMap->IsDead()) continue;        // [추가] 죽은 오브젝트 제외
+        if (pMap->Is_Broken()) continue;     // [추가] fracture 파괴된 벽은 미니맵에 안 그림
         if (!pMap->Get_Model()) continue;
         groups[pMap->Get_ModelTag()].push_back(pMap);
     }

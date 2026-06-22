@@ -100,7 +100,18 @@ void CMap::Late_Update(_float fTimeDelta)
     if (m_bDead) return;
 
     if (!m_pGameInstance->Is_CullingBVHEnabled())
+    {
         Cull_And_Submit(CRenderer::RG_NONBLEND);
+        // [투명] 유리 메시가 있고 화면에 보이면 블렌드 패스(RG_BLEND)에도 제출.
+        if (m_pModelCom->Has_BlendMesh())
+        {
+            _float3 vC; _float fR;
+            _bool bVis = Get_WorldBoundingSphere(vC, fR)
+                ? m_pGameInstance->IsSphereInFrustum(vC, fR) : true;
+            if (bVis)
+                m_pGameInstance->Add_RenderObject(CRenderer::RG_BLEND, this);
+        }
+    }
 }
 
 void CMap::Render(ID3D12GraphicsCommandList* _commandList)
@@ -121,7 +132,11 @@ void CMap::Render(ID3D12GraphicsCommandList* _commandList)
 
     _uint iNumMeshes = m_pModelCom->Get_NumMeshes();
     for (_uint i = 0; i < iNumMeshes; ++i)
+    {
+        // [투명] 유리 메시는 불투명 패스에서 건너뛰고 블렌드 패스에서 그린다.
+        if (m_pModelCom->Is_MeshBlend(i)) continue;
         m_pModelCom->Render(_commandList, i);
+    }
 
 #ifdef _DEBUG
     m_pGameInstance->Add_RenderCollider(m_pColliderCom);
@@ -142,9 +157,27 @@ void CMap::ShadowRender(ID3D12GraphicsCommandList* _commandList)
     _uint iNumMeshes = m_pModelCom->Get_NumMeshes();
     for (_uint i = 0; i < iNumMeshes; ++i)
     {
+        // [투명] 유리 메시는 그림자 생략(반투명은 그림자 안 만듦 — 인스턴스 경로와 일관).
+        if (m_pModelCom->Is_MeshBlend(i)) continue;
         m_pModelCom->Render(_commandList, i, true);
     }
+}
 
+void CMap::Render_Blend(ID3D12GraphicsCommandList* _commandList)
+{
+    if (m_bDead) return;
+    // [Fracture] 등록된 벽은 Fracture_System 이 전담 → 여기서 안 그림.
+    if (m_iFractureSlot >= 0) return;
+    if (!m_pModelCom->Has_BlendMesh()) return;
+
+    // PSO(ALPHA_BLEND)는 Renderer::Render_Blend 가 패스 진입 시 1회 설정.
+    //   여기선 월드행렬만 push 하고 유리 메시만 그린다.
+    _commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::GameObject, 16, &m_xmf4x4CachedWorld, 0);
+
+    _uint iNumMeshes = m_pModelCom->Get_NumMeshes();
+    for (_uint i = 0; i < iNumMeshes; ++i)
+        if (m_pModelCom->Is_MeshBlend(i))
+            m_pModelCom->Render(_commandList, i);
 }
 
 bool CMap::Get_WorldBoundingSphere(_float3& outCenter, _float& outRadius) const
@@ -256,6 +289,31 @@ void CMap::Break()
         OutputDebugStringA("[CMap] Break -> SetDead (not registered)\n");
         SetDead();
     }
+}
+
+void CMap::Restore()
+{
+    // 이 라운드에 실제로 부서진 fracture 벽만 복구한다.
+    //  (부서지지 않은 벽은 콜라이더가 이미 그룹에 있어, 다시 Add 하면 중복되므로 건너뜀)
+    if (!m_bBreakable || !m_bBroken)
+        return;
+
+    // 콜라이더 재활성화 + 충돌 그룹 재등록
+    if (m_pColliderCom)
+    {
+        m_pColliderCom->Set_Enable(true);
+        m_pGameInstance->Add_CollisionGroup(0, m_pColliderCom);  // 0 = GROUP_MAP
+    }
+
+    // fracture 시스템에서 bind(온전) 상태로 되돌림. 슬롯이 회수됐으면 새로 등록.
+    if (auto pFS = m_pGameInstance->Get_FractureSystem())
+        m_iFractureSlot = pFS->Reset_Wall(m_pModelCom, m_iWallId, m_xmf4x4CachedWorld, 0, m_pColliderCom);
+
+    m_bBroken = false;
+    m_bLeftExposed = false;
+    m_bRightExposed = false;
+
+    m_pGameInstance->Invalidate_StaticBVH();
 }
 
 void CMap::Expose_Left()

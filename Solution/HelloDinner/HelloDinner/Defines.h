@@ -18,19 +18,33 @@ extern HWND g_hWnd;
 //    이 작은 전역 구조체에 선택값을 담아 둔다.
 //  - CGame_Manager::Start_Match() 가 이 값을 읽어 본인 슬롯을 배치한다.
 //  - iTeam : 0 = RED, 1 = BLUE  /  iNumber : 1~3 (팀 내 번호)
-//  - 선택 지점 월드 좌표:  x = (iNumber-1) * 5,  y = (iTeam==0 ? 0 : 10),  z = 0
+//  - 선택 지점 월드 좌표:  RED = (100, 100, 0),  BLUE = (-100, 100, 0)
+//  - 두 팀 모두 원점(0,0,0)을 바라보고 선다.
 //-------------------------------------------------------------
 struct MATCH_SETUP
 {
     int iTeam = 0;     // 0: RED, 1: BLUE
     int iNumber = 1;   // 1, 2, 3
 
-    // 선택 지점 월드 좌표를 계산해 돌려준다(팀/번호 → 위치 규칙을 한 곳에 둠).
+    // 선택 지점 월드 좌표를 계산해 돌려준다(팀 → 위치 규칙을 한 곳에 둠).
+    //   RED  : x = 100,  y = 100, z = 0
+    //   BLUE : x = -100, y = 100, z = 0
     XMFLOAT3 Get_SpawnSpot() const
     {
-        return XMFLOAT3(static_cast<float>((iNumber - 1) * 5 + 100),
-            (iTeam == 0) ? 125.f : 130.f,
-            100.f);
+        return XMFLOAT3(5.f * iNumber - 5.f,
+            25.f, iTeam == 0 ? 50.f : -60.f
+            );
+    }
+
+    // 스폰 지점에서 원점(0,0,0)을 바라보는 Y축 회전(yaw, 라디안)을 돌려준다.
+    //  - 기본 룩이 +Z 라는 전제(Game_Manager 에서 XM_PI 로 카메라 보도록 뒤집는 것과 동일 규칙).
+    //  - 수평 방향(dx, dz)을 바라보는 yaw = atan2(dx, dz).
+    float Get_SpawnYaw() const
+    {
+        const XMFLOAT3 vSpot = Get_SpawnSpot();
+        const float dx = 0.f - vSpot.x;   // 원점 - 스폰
+        const float dz = 0.f - vSpot.z;
+        return atan2f(dx, dz);
     }
 };
 extern MATCH_SETUP g_MatchSetup;

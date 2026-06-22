@@ -21,6 +21,8 @@ CModel::CModel(const CModel& Prototype)
     , m_Materials {Prototype.m_Materials}
     , m_MaterialUVOffset {Prototype.m_MaterialUVOffset}
     , m_MaterialUVScale {Prototype.m_MaterialUVScale}
+    , m_MaterialSurfaceType {Prototype.m_MaterialSurfaceType}
+    , m_MaterialAlpha {Prototype.m_MaterialAlpha}
     , m_PreTransformMatrix {Prototype.m_PreTransformMatrix}
 {
     // Bone은 인스턴스마다 애니메이션 상태가 다르므로 깊은 복사
@@ -113,17 +115,24 @@ HRESULT CModel::Render(ID3D12GraphicsCommandList* _commandList, _uint iMeshIndex
 
         if (iMaterialIndex < m_iNumMaterials)
         {
-            // [방식 가] 슬롯별 팔레트 crop UV 재매핑값을 b5(MapUV)로 push.
+            // [UV] 슬롯별 팔레트 crop UV 재매핑값을 b5(MapUV)로 push.
             //   순서: [offset.x, offset.y, scale.x, scale.y] = 4 float.
             //   비-맵 모델은 기본값(0,0)/(1,1)이라 변환 없음과 동일.
             if (iMaterialIndex < m_MaterialUVOffset.size() &&
                 iMaterialIndex < m_MaterialUVScale.size())
             {
-                _float fUV[4] = {
+                _float fAlpha = (iMaterialIndex < m_MaterialAlpha.size())
+                    ? m_MaterialAlpha[iMaterialIndex] : 1.f;
+                _float fSurface = (iMaterialIndex < m_MaterialSurfaceType.size())
+                    ? (_float)m_MaterialSurfaceType[iMaterialIndex] : 0.f;
+
+                // b5: [offset.xy, scale.xy, alpha, cutoff(미사용), surfaceType, pad]
+                _float fMapUV[8] = {
                     m_MaterialUVOffset[iMaterialIndex].x, m_MaterialUVOffset[iMaterialIndex].y,
-                    m_MaterialUVScale[iMaterialIndex].x, m_MaterialUVScale[iMaterialIndex].y
+                    m_MaterialUVScale[iMaterialIndex].x, m_MaterialUVScale[iMaterialIndex].y,
+                    fAlpha, 0.5f, fSurface, 0.f
                 };
-                _commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::MapUV, 4, fUV, 0);
+                _commandList->SetGraphicsRoot32BitConstants(RootParameterIndex::MapUV, 8, fMapUV, 0);
             }
 
             // 텍스처가 실제로 있는지 확인
@@ -302,9 +311,13 @@ HRESULT CModel::Ready_Materials(const wchar_t* pModelFilePath, MATERIAL_LOAD_MOD
 
     m_Materials.resize(m_iNumMaterials);
 
-    // [방식 가] UV 재매핑 기본값(변환 없음)으로 초기화. 맵 로더가 슬롯별로 덮어쓴다.
+    // [UV] UV 재매핑 기본값(변환 없음)으로 초기화. 맵 로더가 슬롯별로 덮어쓴다.
     m_MaterialUVOffset.assign(m_iNumMaterials, _float2(0.f, 0.f));
     m_MaterialUVScale.assign(m_iNumMaterials, _float2(1.f, 1.f));
+
+    // [투명] 기본 Opaque/1.0 으로 초기화. 맵 로더가 슬롯별로 덮어쓴다.
+    m_MaterialSurfaceType.assign(m_iNumMaterials, (int)SURFACE_OPAQUE);
+    m_MaterialAlpha.assign(m_iNumMaterials, 1.f);
 
     for (size_t i = 0; i < m_iNumMaterials; i++)
     {
@@ -680,7 +693,7 @@ HRESULT CModel::Ready_MapMaterial(const wchar_t* pModelFilePath, int _nMaterial,
     return S_OK;
 }
 
-// [방식 가] 슬롯별 팔레트 crop UV 재매핑값 저장. Render 에서 b5 로 push 된다.
+// [UV] 슬롯별 팔레트 crop UV 재매핑값 저장. Render 에서 b5 로 push 된다.
 void CModel::Set_MapMaterialUV(int _nMaterial, const _float2& vOffset, const _float2& vScale)
 {
     if (_nMaterial < 0 || _nMaterial >= (int)m_iNumMaterials)
@@ -689,6 +702,40 @@ void CModel::Set_MapMaterialUV(int _nMaterial, const _float2& vOffset, const _fl
     if ((int)m_MaterialUVScale.size() <= _nMaterial) m_MaterialUVScale.resize(_nMaterial + 1, _float2(1.f, 1.f));
     m_MaterialUVOffset[_nMaterial] = vOffset;
     m_MaterialUVScale[_nMaterial] = vScale;
+}
+
+// [투명] 슬롯별 표면타입/알파 저장. Render 에서 b5 로 push 된다.
+void CModel::Set_MapMaterialBlend(int _nMaterial, int _surfaceType, _float _alpha)
+{
+    if (_nMaterial < 0 || _nMaterial >= (int)m_iNumMaterials)
+        return;
+    if ((int)m_MaterialSurfaceType.size() <= _nMaterial) m_MaterialSurfaceType.resize(_nMaterial + 1, (int)SURFACE_OPAQUE);
+    if ((int)m_MaterialAlpha.size() <= _nMaterial)        m_MaterialAlpha.resize(_nMaterial + 1, 1.f);
+    m_MaterialSurfaceType[_nMaterial] = _surfaceType;
+    m_MaterialAlpha[_nMaterial] = _alpha;
+}
+
+// [투명] 메시(→머티리얼)가 Transparent 인지. (Cutout 은 블렌드 아님 → false)
+_bool CModel::Is_MeshBlend(_uint iMeshIndex) const
+{
+    if (iMeshIndex >= m_iNumMeshes) return false;
+    _uint iMat = m_Meshes[iMeshIndex]->Get_MaterialIndex();
+    if (iMat >= m_MaterialSurfaceType.size()) return false;
+    return m_MaterialSurfaceType[iMat] == SURFACE_TRANSPARENT;
+}
+
+// [투명] 모델 내 Transparent 메시가 하나라도 있는지.
+_bool CModel::Has_BlendMesh() const
+{
+
+    for (_uint i = 0; i < m_iNumMeshes; ++i)
+    {
+        _uint iMat = m_Meshes[i]->Get_MaterialIndex();
+        if (iMat < m_MaterialSurfaceType.size() &&
+            m_MaterialSurfaceType[iMat] == SURFACE_TRANSPARENT)
+            return true;
+    }
+    return false;
 }
 
 // ============================================================================

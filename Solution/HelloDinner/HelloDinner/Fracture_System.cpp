@@ -521,6 +521,35 @@ void CFracture_System::Unregister(CModel* pModel)
     inst.pModel = nullptr; inst.iChunkCount = 0; inst.fLife = 0.f;
 }
 
+_int CFracture_System::Reset_Wall(CModel* pModel, _uint iWallId, const _float4x4& matWorld, _uint iMeshIndex, class CCollider* pSelfCollider)
+{
+    if (nullptr == pModel) return -1;
+
+    _int s = Find_SlotByWallId(iWallId);
+    if (s < 0)
+    {
+        // 수명 만료로 슬롯이 회수된 경우 → 새로 등록(자동으로 bind 시드).
+        return Register(pModel, iWallId, matWorld, iMeshIndex, pSelfCollider);
+    }
+
+    // 살아있는 슬롯(파괴 진행 중 포함)을 bind 상태로 강제 재시드 → 온전한 벽 복구.
+    INSTANCE& inst = m_Instances[s];
+    _uint cnt = Seed_BindState(pModel, iMeshIndex, inst.pUploadMapped);
+    if (0 == cnt) return -1;
+
+    inst.pModel = pModel;
+    inst.matWorld = matWorld;
+    inst.iMeshIndex = iMeshIndex;
+    inst.pSelfCollider = pSelfCollider;
+    inst.iChunkCount = cnt;
+    inst.bUsed = true;
+    inst.bBroken = false;
+    inst.bSeedDirty = true;     // 다음 Compute 에서 업로드 재전송 → bind 매트릭스로 갱신
+    inst.fLife = 0.f;
+    inst.iColliderCount = 0;
+    return s;
+}
+
 // ----------------------------------------------------------------------------
 //  Compute: 활성 슬롯 순회. bind 완료 슬롯은 skip(1회만), 파괴 슬롯만 매 프레임 적분.
 // ----------------------------------------------------------------------------

@@ -10,6 +10,7 @@
 #include "Player_1rd.h"
 #include "CharSelect_Pig.h"
 #include "CharSelect_Chick.h"
+#include "CharSelect_Fish.h"
 #include "MapSelect.h"
 
 IMPLEMENT_SINGLETON(CGame_Manager)
@@ -32,6 +33,31 @@ namespace
         (void)fmt;
 #endif
     }
+}
+
+// ===== 마우스 캡처 유틸 =====================================
+// ShowCursor 는 카운터 방식이라, 실제 가시 상태를 확인하고 필요할 때만 토글한다.
+static void SetCursorVisible(bool bShow)
+{
+    CURSORINFO ci {sizeof(CURSORINFO)};
+    GetCursorInfo(&ci);
+    const bool bVisible = (ci.flags & CURSOR_SHOWING) != 0;
+    if (bShow && !bVisible)  while (ShowCursor(TRUE) < 0) {}
+    if (!bShow && bVisible)  while (ShowCursor(FALSE) >= 0) {}
+}
+
+// 커서를 클라이언트 영역(스크린 좌표)에 가둔다.
+static void ClipCursorToClient(HWND hWnd)
+{
+    if (nullptr == hWnd) return;
+    RECT rc {};
+    GetClientRect(hWnd, &rc);
+    POINT lt {rc.left, rc.top};
+    POINT rb {rc.right, rc.bottom};
+    ClientToScreen(hWnd, &lt);   // 클라이언트 → 스크린 좌표
+    ClientToScreen(hWnd, &rb);
+    RECT rcScreen {lt.x, lt.y, rb.x, rb.y};
+    ClipCursor(&rcScreen);
 }
 
 CGame_Manager::CGame_Manager()
@@ -65,6 +91,9 @@ void CGame_Manager::Start_Match()
 
     // 인게임 HUD(중앙 상단 라운드 점수 + 생존/사망 박스) 생성
     Ready_HUD();
+
+    // 하단 HUD(내 HP / 남은 탄약) 생성
+    Ready_PlayerHUD();
 
     // 상점 무기 슬롯(클릭 → 무기 교체) 생성
     Ready_ShopSlots();
@@ -123,6 +152,9 @@ void CGame_Manager::Update(_float fTimeDelta)
 
     // 선택 페이즈: 로컬 카운트다운으로 UI를 부드럽게 유지
     // SC_TIMER_SYNC 수신 시 Apply_TimerSync가 서버 값으로 보정
+    Update_MouseClip();
+    // 선택 구간(캐릭터/상황판/스폰) 동안에는 글로벌 타이머를 먼저 굴린다.
+    //  0 이 되면 어느 단계든 즉시 PLAYING 으로 강제 진입.
     const _bool bSelectPhase =
         (m_ePhase == GAME_PHASE::PHASE_CHARSELECT) ||
         (m_ePhase == GAME_PHASE::PHASE_SCOREBOARD) ||
@@ -186,7 +218,7 @@ void CGame_Manager::OnEnter_CharSelect()
     //  → Ready 로 1인칭 전환될 때 이 위치 그대로 시작.
     Place_PlayerAt_Spot();
 
-    ShowCursor(TRUE);
+    Set_MouseCaptured(false);
     if (CController* p = m_pGameInstance->Get_Controller())
         p->Set_BlockInput(true);
 
@@ -280,7 +312,7 @@ void CGame_Manager::Update_CharSelect(_float fTimeDelta)
 {
     if (m_bCSReady)
     {
-        ShowCursor(FALSE);
+        Set_MouseCaptured(false);
         if (CController* p = m_pGameInstance->Get_Controller())
             p->Set_BlockInput(false);
 
@@ -703,10 +735,26 @@ HRESULT CGame_Manager::Ready_CharSelect()
                 LV, L"Prototype_GameObject_CharSelect_Chick", LV, PV, &d));
     }
 
-    // 시작 표시 상태를 명시: 기본 선택은 Pig(0) → Pig 만 보이고 Chick 은 숨김.
+    // ---- 3D 프리뷰 (Fish, 같은 자리) ----
+    //  Fish 칸(2번) 클릭 시에만 보이도록 시작은 숨김 처리.
+    {
+        CCharSelect_Fish::CHARSELECT_FISH_DESC d;
+        d.vPos = m_vMySpot;
+        d.vRotation = _float3(0.f, XM_PI, 0.f);
+        d.vScale = _float3(1.f, 1.f, 1.f);
+        d.strModelTag = L"Prototype_Component_Fish_3rd";
+        d.iModelLevelIndex = LEVEL_GAMEPLAY;
+        d.iAnimIndex = 8;   // 물고기 idle
+        m_pCSPreviewFish = static_cast<CCharSelect_Fish*>(
+            m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
+                LV, L"Prototype_GameObject_CharSelect_Fish", LV, PV, &d));
+    }
+
+    // 시작 표시 상태를 명시: 기본 선택은 Pig(0) → Pig 만 보이고 나머지는 숨김.
     m_iCSMyCharacter = 0;
     if (m_pCSPreviewMe)    m_pCSPreviewMe->SetOnOff(true);
     if (m_pCSPreviewChick) m_pCSPreviewChick->SetOnOff(false);
+    if (m_pCSPreviewFish)  m_pCSPreviewFish->SetOnOff(false);
 
     auto AddText = [&](float x, float y, const _wstring& s, float scale)
         {
@@ -742,11 +790,11 @@ HRESULT CGame_Manager::Ready_CharSelect()
     auto FaceX = [&](int i) { return FX0 + i * (FW + FGAP); };
 
     AddPanel(FX0 - 20.f, FY - 20.f, FTOT + 40.f, FH + 40.f, _float4(0.08f, 0.10f, 0.14f, 0.78f), 0.7f); // 바 배경
-    const _wstring caps[3] = {L"Pig", L"Chick", L"Blank"};
+    const _wstring caps[3] = {L"Pig", L"Chick", L"Fish"};
     const _wstring faceTex[3] = {
         L"Prototype_Component_Texture_SelectPig",
         L"Prototype_Component_Texture_SelectChick",
-        L""   // Blank: 아이콘 없음
+        L"Prototype_Component_Texture_SelectFish"
     };
     const float RING = 3.f;   // 패널을 아이콘보다 이만큼 크게 → 선택 링
     for (int i = 0; i < 3; ++i)
@@ -797,9 +845,10 @@ void CGame_Manager::Handle_CharSelectClick()
         if (In(m_vCSFaceRect[i]))
         {
             m_iCSMyCharacter = i;
-            // 0 = Pig, 1 = Chick. 선택한 칸의 프리뷰만 표시.
+            // 0 = Pig, 1 = Chick, 2 = Fish. 선택한 칸의 프리뷰만 표시.
             if (m_pCSPreviewMe)    m_pCSPreviewMe->SetOnOff(i == 0);
             if (m_pCSPreviewChick) m_pCSPreviewChick->SetOnOff(i == 1);
+            if (m_pCSPreviewFish)  m_pCSPreviewFish->SetOnOff(i == 2);
             Refresh_CharSelectFaces();
             return;
         }
@@ -825,7 +874,7 @@ void CGame_Manager::Refresh_CharSelectFaces()
 
         if (m_pCSFaceIcon[i])                 // Pig/Chick: 밝기로 선택 표시
             m_pCSFaceIcon[i]->Set_Color(sel ? ICON_SEL : ICON_DIM);
-        // Blank(2번)은 아이콘이 없어 패널 색(노랑/어둠)만으로 선택 표시됨
+        // Fish(2번)는 아직 아이콘 텍스처가 없어 패널 색(노랑/어둠)만으로 선택 표시됨
     }
 }
 
@@ -1048,6 +1097,9 @@ void CGame_Manager::Refresh_HUD()
         const _bool bAlive = true;
         m_pHUDPlayerBox[i]->Set_Color(bAlive ? vAlive : vDead);
     }
+
+    // 하단 HUD(HP/탄약)도 함께 갱신
+    Refresh_PlayerHUD();
 }
 
 _wstring CGame_Manager::Make_TimerString() const
@@ -1059,6 +1111,78 @@ _wstring CGame_Manager::Make_TimerString() const
     wchar_t buf[16];
     swprintf_s(buf, _countof(buf), L"%d:%02d", iMin, iSec);
     return buf;
+}
+
+// =====================================================================
+//  하단 HUD (내 HP / 남은 탄약)
+//   - 좌하단 HP, 우하단 탄약을 텍스트로 표시. (이후 텍스처로 교체 예정)
+//   - 상단 HUD와 같은 Layer_UI_HUD 에 올려 PLAYING 단계에서만 보이게 한다.
+//   - 좌표는 1280x720 디자인 기준.
+// =====================================================================
+HRESULT CGame_Manager::Ready_PlayerHUD()
+{
+    const _uint PROTO = LEVEL_STATIC;
+    const _uint LV = LEVEL_GAMEPLAY;
+    const _wstring HUD = L"Layer_UI_HUD";
+
+    // ---- 좌하단 HP ----
+    {
+        CUI_Text::UI_TEXT_DESC d;
+        d.fX = 60.f; d.fY = 660.f;
+        d.fDepth = 0.3f;
+        d.strText = L"HP 100";
+        d.strFontTag = L"Font_Default";
+        d.vColor = _float4(0.4f, 1.f, 0.5f, 1.f);   // 초록(체력)
+        d.fTextScale = 0.9f;
+        d.bCentered = false;
+        m_pHUDHealthText = static_cast<CUI_Text*>(
+            m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
+                PROTO, L"Prototype_GameObject_UI_Text", LV, HUD, &d));
+    }
+
+    // ---- 우하단 탄약 ----
+    {
+        CUI_Text::UI_TEXT_DESC d;
+        d.fX = 1100.f; d.fY = 660.f;
+        d.fDepth = 0.3f;
+        d.strText = L"30 / 30";
+        d.strFontTag = L"Font_Default";
+        d.vColor = _float4(1.f, 0.95f, 0.6f, 1.f);  // 노랑(탄약)
+        d.fTextScale = 0.9f;
+        d.bCentered = false;
+        m_pHUDAmmoText = static_cast<CUI_Text*>(
+            m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
+                PROTO, L"Prototype_GameObject_UI_Text", LV, HUD, &d));
+    }
+
+    return S_OK;
+}
+
+void CGame_Manager::Refresh_PlayerHUD()
+{
+    // 내 플레이어를 컨트롤러에서 받아 현재 HP/탄약을 읽는다.
+    CController* pController = m_pGameInstance->Get_Controller();
+    CPlayer_1rd* pPlayer = pController ? pController->Get_Player() : nullptr;
+    if (pPlayer == nullptr)
+        return;
+
+    if (m_pHUDHealthText != nullptr)
+    {
+        wchar_t buf[32];
+        swprintf_s(buf, _countof(buf), L"HP %d", pPlayer->Get_Health());
+        m_pHUDHealthText->Set_Text(buf);
+    }
+
+    if (m_pHUDAmmoText != nullptr)
+    {
+        wchar_t buf[32];
+        if (pPlayer->Is_Reloading())
+            swprintf_s(buf, _countof(buf), L"RELOADING");
+        else
+            swprintf_s(buf, _countof(buf), L"%u / %u",
+                pPlayer->Get_Ammo(), pPlayer->Get_MaxAmmo());
+        m_pHUDAmmoText->Set_Text(buf);
+    }
 }
 
 // =====================================================================
@@ -1191,7 +1315,7 @@ void CGame_Manager::Highlight_ShopSlot(_int iWeapon)
 void CGame_Manager::Set_ShopUIMode(_bool bOpen)
 {
     // 1) 커서: 상점 창이 열리면 보이고, 닫히면 숨긴다.
-    ShowCursor(bOpen);
+    Set_MouseCaptured(!bOpen);
 
     // 2) 플레이어 입력 차단: 창이 열려 있는 동안 시점/이동/사격을 막는다.
     CController* pController = m_pGameInstance->Get_Controller();
@@ -1277,16 +1401,17 @@ void CGame_Manager::Set_MySpot_From_Setup()
     if (m_iMyNumber < 1) m_iMyNumber = 1;
     if (m_iMyNumber > 3) m_iMyNumber = 3;
 
-    XMFLOAT3 spot = g_MatchSetup.Get_SpawnSpot();   // x=(번호-1)*5, y=팀, z=0
+    XMFLOAT3 spot = g_MatchSetup.Get_SpawnSpot();   // RED=(100,100,0), BLUE=(-100,100,0)
     m_vMySpot = _float3(spot.x, spot.y, spot.z);
+    m_fMyYaw = g_MatchSetup.Get_SpawnYaw();         // 원점을 바라보는 yaw
 
     // 기본 스폰(스폰 선택 안 했을 때 날아갈 위치)도 시작 지점으로 맞춰 둔다.
     //  (원하면 맵별 기본 스폰으로 따로 지정 가능)
     m_vDefaultSpawn = m_vMySpot;
 
-    GM_Log(L"MatchSetup → Team %s, No.%d, Spot(%.1f, %.1f, %.1f)",
+    GM_Log(L"MatchSetup → Team %s, No.%d, Spot(%.1f, %.1f, %.1f), Yaw %.2f",
         (m_iMyTeam == 0) ? L"RED" : L"BLUE", m_iMyNumber,
-        m_vMySpot.x, m_vMySpot.y, m_vMySpot.z);
+        m_vMySpot.x, m_vMySpot.y, m_vMySpot.z, m_fMyYaw);
 }
 
 void CGame_Manager::Place_PlayerAt_Spot()
@@ -1295,7 +1420,10 @@ void CGame_Manager::Place_PlayerAt_Spot()
     CController* pController = m_pGameInstance->Get_Controller();
     CPlayer_1rd* pPlayer = pController ? pController->Get_Player() : nullptr;
     if (pPlayer != nullptr)
+    {
         pPlayer->Set_Position(m_vMySpot);
+        pPlayer->Set_Facing(m_fMyYaw);   // 원점을 바라보도록
+    }
 }
 
 void CGame_Manager::Tick_SelectTimer(_float fTimeDelta)
@@ -1321,6 +1449,25 @@ _wstring CGame_Manager::Make_SelectTimerString() const
 
 
 // =====================================================================
+
+void CGame_Manager::Set_MouseCaptured(_bool bCaptured)
+{
+    m_bMouseCaptured = bCaptured;
+    SetCursorVisible(!bCaptured);   // 잡으면 숨김, 풀면 표시 (전환 시 1회)
+    Update_MouseClip();             // 클립 상태 즉시 반영
+}
+
+void CGame_Manager::Update_MouseClip()
+{
+    // 우리 창이 포커스를 가진 동안에만 가둔다.
+    //  → Alt-Tab/다른 창 전환 시 자동으로 풀려 커서가 자유로워진다.
+    if (m_bMouseCaptured && GetForegroundWindow() == g_hWnd)
+        ClipCursorToClient(g_hWnd);
+    else
+        ClipCursor(nullptr);
+}
+
+
 CGame_Manager* CGame_Manager::Create()
 {
     CGame_Manager* pInstance = new CGame_Manager();

@@ -43,7 +43,7 @@ HRESULT CLoader_Map::Load_MaterialData(const string& strJsonPath)
     file >> matJson;
     file.close();
 
-    // [방식 가] 새 MaterialData 구조:
+    // [UV] 새 MaterialData 구조:
     //   - 머티리얼이 슬롯(서브메시) 단위로 분리되어 각자 고유 텍스처(textureKey)를 가짐.
     //   - 키는 더 이상 Unity 머티리얼 이름이 아니라 "textureKey"({fbx}_mat{slot}_Texture).
     //     MapData 의 materialNames[i] 가 이 키를 직접 가리킨다.
@@ -63,6 +63,11 @@ HRESULT CLoader_Map::Load_MaterialData(const string& strJsonPath)
 
         MATERIAL_INFO& info = m_MaterialInfos[key];
 
+        // [팔레트 방식] 어느 공유 팔레트를 쓸지 고르기 위한 Unity 머티리얼 이름 저장.
+        //   'Paintings' → Paintings 팔레트, 그 외 전부 → 공용 Palette.
+        if (mat.contains("materialName"))
+            info.strMaterialName = mat["materialName"].get<string>();
+
         if (!albedoFile.empty())
             info.strAlbedoFile = m_strTextureDir + _wstring(albedoFile.begin(), albedoFile.end());
         if (!normalFile.empty())
@@ -73,6 +78,16 @@ HRESULT CLoader_Map::Load_MaterialData(const string& strJsonPath)
         if (mat.contains("uvOffsetY")) info.vUVOffset.y = mat["uvOffsetY"].get<float>();
         if (mat.contains("uvScaleX"))  info.vUVScale.x = mat["uvScaleX"].get<float>();
         if (mat.contains("uvScaleY"))  info.vUVScale.y = mat["uvScaleY"].get<float>();
+
+        // [투명] 표면타입/알파 (없으면 기본 Opaque/1.0 → 기존 맵 JSON 그대로 동작).
+        if (mat.contains("surfaceType"))
+        {
+            string st = mat["surfaceType"].get<string>();
+            if (st == "Transparent")   info.iSurfaceType = 1;
+            else if (st == "Cutout")   info.iSurfaceType = 2;
+            else                       info.iSurfaceType = 0; // Opaque
+        }
+        if (mat.contains("alpha")) info.fAlpha = mat["alpha"].get<float>();
     }
     return S_OK;
 }
@@ -111,7 +126,7 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
         // [Fracture] 파괴 가능 벽 판별(현재는 모델 이름 기반). anim 이라고 모두 파괴 가능한 건
         //   아니므로 분리 판별. 파괴 모델이 늘면 이 조건만 확장(이름 집합/별도 플래그)하면 된다.
         string baseName = fbxName.substr(0, fbxName.find_last_of('.'));
-        bool bBreakable = (_stricmp(baseName.c_str(), "Fractured_Wall") == 0);
+        bool bBreakable = (_stricmp(baseName.c_str(), "Brread") == 0);
 
         char szDbgLoad[256];
         sprintf_s(szDbgLoad, "[LoadMap] %s : %s, breakable=%d\n",
@@ -142,37 +157,60 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
                 continue;
             }
 
-            // [Material 로딩] 검사(개수 검증)는 제거하되 텍스처 로딩은 유지한다.
-            //   이 루프가 없으면 디퓨즈가 안 올라와 맵 전체가 완전 검정이 된다.
-            //   (캐릭터는 MATLOAD_FROM_BINARY 라 영향 없음 / 맵만 외부 DDS 로딩 경로)
+            // [팔레트 방식] 모델의 "모든" 슬롯에 공유 팔레트를 바인딩한다.
+            //   • 핵심: min(jsonMats, modelMats) 가 아니라 modelMatCount 전체를 순회.
+            //     변환기(Assimp)가 만든 슬롯 수(예: Freezer=5)가 Unity 익스포트 슬롯 수
+            //     (예: 3)보다 많아도, 빠짐없이 팔레트가 발려 검정 슬롯이 없어진다.
+            //   • 메시 정점 UV 가 팔레트의 올바른 색을 직접 가리키므로, 슬롯 순서/개수가
+            //     익스포트와 어긋나도 색이 정확하다(슬롯별 crop/UV 재매핑 불필요).
+            //   • 'Paintings' 머티리얼 슬롯만 Paintings 팔레트, 그 외는 공용 Palette.
+            //   • DIFFUSE 만 바인딩(이 에셋군은 normal/AO/metallic 맵이 없음).
+            //   (캐릭터/총은 MATLOAD_FROM_BINARY 라 이 경로를 타지 않음 → 영향 0)
             const int iModelMatCount = (int)pModel->Get_NumMaterials();
-            const int iMatCount = ((int)materialNames.size() < iModelMatCount)
-                ? (int)materialNames.size() : iModelMatCount;
 
             int iLoadedTex = 0;
-            for (int i = 0; i < iMatCount; ++i)
+            int iBlendSlots = 0;   // [투명] 진단용: Transparent 슬롯 수
+            for (int i = 0; i < iModelMatCount; ++i)
             {
-                auto it = m_MaterialInfos.find(materialNames[i]);
-                if (it == m_MaterialInfos.end())
-                    continue;
-                const auto& matInfo = it->second;
-                if (!matInfo.strAlbedoFile.empty())
+                // 이 슬롯의 JSON 머티리얼 정보(있으면 한 번만 룩업). 슬롯 i 정보가 없으면
+                // (익스포트 슬롯 수 < 모델 슬롯 수) 기본값(Palette/Opaque/1.0) 사용.
+                const MATERIAL_INFO* pInfo = nullptr;
+                if (i < (int)materialNames.size())
                 {
-                    pModel->Ready_MapMaterial(matInfo.strAlbedoFile.c_str(), i, TextureType_DIFFUSE);
-                    ++iLoadedTex;
+                    auto it = m_MaterialInfos.find(materialNames[i]);
+                    if (it != m_MaterialInfos.end())
+                        pInfo = &it->second;
                 }
-                if (!matInfo.strNormalFile.empty())
-                    pModel->Ready_MapMaterial(matInfo.strNormalFile.c_str(), i, TextureType_NORMALS);
 
-                // [방식 가] 슬롯 i 의 팔레트 crop UV 재매핑값을 모델(머티리얼)에 전달.
-                //   렌더 시 셰이더 cbuffer 로 넘겨 finalUV = meshUV*uvScale + uvOffset 적용.
-                pModel->Set_MapMaterialUV(i, matInfo.vUVOffset, matInfo.vUVScale);
+                // 팔레트 선택: 'Paintings' 만 별도, 그 외 공용 Palette.
+                const _wstring* pPalette =
+                    (pInfo && pInfo->strMaterialName == "Paintings")
+                    ? &m_strPalettePaintings : &m_strPaletteDefault;
+
+                if (SUCCEEDED(pModel->Ready_MapMaterial(pPalette->c_str(), i, TextureType_DIFFUSE)))
+                    ++iLoadedTex;
+
+                // [레거시] UV 재매핑 미사용 → 기본값(변환 없음) 명시.
+                pModel->Set_MapMaterialUV(i, _float2(0.f, 0.f), _float2(1.f, 1.f));
+
+                // [투명] 표면타입/알파 전달(슬롯 정보 없으면 Opaque/1.0).
+                _int   iSurface = pInfo ? pInfo->iSurfaceType : 0;
+                _float fAlpha = pInfo ? pInfo->fAlpha : 1.f;
+
+                // [투명] Transparent 인데 알파가 사실상 1.0 이면(예: Kitchen_alpha) 블렌딩할
+                //   게 없고(공유 팔레트 불투명), 블렌드 패스 Z-Write Off 로 정렬 아티팩트만
+                //   생긴다 → 불투명으로 격하해 불투명 패스에서 솔리드로 그린다.
+                if (iSurface == 1 && fAlpha >= 0.99f)
+                    iSurface = 0;
+
+                pModel->Set_MapMaterialBlend(i, iSurface, fAlpha);
+                if (iSurface == 1) ++iBlendSlots;
             }
-            // [진단] diffuseLoaded=0 이면 검정 원인(머티리얼 매칭 실패 / MaterialData 미로딩 등)
+            // [진단] paletteBound 가 modelMats 와 같아야 정상(모든 슬롯에 팔레트 바인딩됨).
             {
                 char szLog[256];
-                sprintf_s(szLog, "[LoadMap] %s : matInfos=%zu, jsonMats=%zu, diffuseLoaded=%d\n",
-                    fbxName.c_str(), m_MaterialInfos.size(), materialNames.size(), iLoadedTex);
+                sprintf_s(szLog, "[LoadMap] %s : modelMats=%d, jsonMats=%zu, paletteBound=%d, blendSlots=%d\n",
+                    fbxName.c_str(), iModelMatCount, materialNames.size(), iLoadedTex, iBlendSlots);
                 OutputDebugStringA(szLog);
             }
 
@@ -200,17 +238,17 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
                 desc.iWallId = iFractureWallId++;
             }
 
-            desc.vPosition.x = inst["position"]["x"].get<float>() * 100.f;
-            desc.vPosition.y = inst["position"]["y"].get<float>() * 100.f;
-            desc.vPosition.z = inst["position"]["z"].get<float>() * 100.f;
+            desc.vPosition.x = inst["position"]["x"].get<float>() * 50.f;
+            desc.vPosition.y = inst["position"]["y"].get<float>() * 50.f;
+            desc.vPosition.z = inst["position"]["z"].get<float>() * 50.f;
 
             desc.vRotation.x = XMConvertToRadians(inst["rotation"]["x"].get<float>());
             desc.vRotation.y = XMConvertToRadians(inst["rotation"]["y"].get<float>() + 180.f);
             desc.vRotation.z = XMConvertToRadians(inst["rotation"]["z"].get<float>());
 
-            desc.vScale.x = inst["scale"]["x"].get<float>();
-            desc.vScale.y = inst["scale"]["y"].get<float>();
-            desc.vScale.z = inst["scale"]["z"].get<float>();
+            desc.vScale.x = inst["scale"]["x"].get<float>() / 2.0f;
+            desc.vScale.y = inst["scale"]["y"].get<float>() / 2.0f;
+            desc.vScale.z = inst["scale"]["z"].get<float>() / 2.0f;
 
             auto& colliderNode = inst["collider"];
             std::string strColliderType = colliderNode["colliderType"].get<std::string>();
@@ -223,14 +261,14 @@ HRESULT CLoader_Map::Load_MapData(const string& strJsonPath, _uint iLevelIndex)
                 desc.eColliderType = CCollider::TYPE_SPHERE;
             else
                 desc.eColliderType = CCollider::TYPE_END;
-            desc.vCenterCollider.x = colliderNode["center"]["x"].get<float>() * 100.f;
-            desc.vCenterCollider.y = colliderNode["center"]["y"].get<float>() * 100.f;
-            desc.vCenterCollider.z = colliderNode["center"]["z"].get<float>() * 100.f;
+            desc.vCenterCollider.x = colliderNode["center"]["x"].get<float>() * 50.f;
+            desc.vCenterCollider.y = colliderNode["center"]["y"].get<float>() * 50.f;
+            desc.vCenterCollider.z = colliderNode["center"]["z"].get<float>() * 50.f;
 
 
-            desc.vExtentsCollider.x = colliderNode["extents"]["x"].get<float>() * 100.f;
-            desc.vExtentsCollider.y = colliderNode["extents"]["y"].get<float>() * 100.f;
-            desc.vExtentsCollider.z = colliderNode["extents"]["z"].get<float>() * 100.f;
+            desc.vExtentsCollider.x = colliderNode["extents"]["x"].get<float>() * 50.f;
+            desc.vExtentsCollider.y = colliderNode["extents"]["y"].get<float>() * 50.f;
+            desc.vExtentsCollider.z = colliderNode["extents"]["z"].get<float>() * 50.f;
 
             desc.vRotationCollider.x = XMConvertToRadians(colliderNode["rotation"]["x"].get<float>());
             desc.vRotationCollider.y = XMConvertToRadians(colliderNode["rotation"]["y"].get<float>() + 180.f);

@@ -12,6 +12,8 @@
 #include "LobbyWindow.h"
 #include "RoomWindow.h"
 
+#include "Game_Manager.h"
+
 #include <gdiplus.h>
 #pragma comment(lib, "gdiplus.lib")
 
@@ -272,6 +274,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
     case WM_ACTIVATE:
         break;
+        if (CGame_Manager::GetInstance())
+            CGame_Manager::GetInstance()->Update_MouseClip();
+        break;
     case WM_SIZE:
         break;
     case WM_LBUTTONDOWN:
@@ -283,6 +288,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_KEYDOWN:
         break;
     case WM_DESTROY:
+        ClipCursor(nullptr);
         PostQuitMessage(0);
         break;
     default:

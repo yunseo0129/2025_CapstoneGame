@@ -38,6 +38,7 @@ public:
     virtual void Late_Update(_float fTimeDelta) override;
     virtual void Render(ID3D12GraphicsCommandList* _commandList) override;
     virtual void ShadowRender(ID3D12GraphicsCommandList* _commandList) override;
+    virtual void Render_Blend(ID3D12GraphicsCommandList* _commandList) override;  // [투명] 유리 메시만
 
 public:
     // Frustum Culling
@@ -51,7 +52,9 @@ public:
     // 부서지는 벽
     // 부서지는 벽인지 확인
     _bool Is_Breakable() const { return m_bBreakable; }
+    _bool Is_Broken()    const { return m_bBroken; }
     void  Break();
+    void  Restore();
     // 이웃 벽이 사라졌을 때 면 노출 구현
     void  Set_Neighbors(CMap* pLeft, CMap* pRight) { m_pLeftNeighbor = pLeft; m_pRightNeighbor = pRight; }
     void  Expose_Left();

@@ -14,6 +14,8 @@ public:
         MATLOAD_FROM_BINARY,     // 바이너리 경로에서 텍스처 로드 (캐릭터용)
         MATLOAD_DDS_FILE		// 바이너리는 읽되 텍스처 파일을 dds로 읽음
     };
+    // [투명] 머티리얼 표면 타입. 셰이더 g_fSurfaceType(0/1/2) 와 값 일치.
+    enum SURFACE_TYPE { SURFACE_OPAQUE = 0, SURFACE_TRANSPARENT = 1, SURFACE_CUTOUT = 2 };
 private:
     CModel(EngineContext* pContext);
     CModel(const CModel& Prototype);
@@ -95,9 +97,17 @@ public:
 
     HRESULT Ready_MapMaterial(const wchar_t* pModelFilePath, int _nMaterial, TextureType _eType);
 
-    // [방식 가] 슬롯별 팔레트 crop UV 재매핑값 설정(로더가 호출).
+    // [UV] 슬롯별 팔레트 crop UV 재매핑값 설정(로더가 호출).
     //   Render 시 b5(MapUV) 로 push 되어 셰이더에서 finalUV = meshUV*scale + offset.
     void    Set_MapMaterialUV(int _nMaterial, const _float2& vOffset, const _float2& vScale);
+
+    // [투명] 슬롯별 표면타입/알파 설정 (맵 로더가 호출). _surfaceType: SURFACE_TYPE.
+    void   Set_MapMaterialBlend(int _nMaterial, int _surfaceType, _float _alpha);
+    // [투명] 메시(→머티리얼)가 Transparent 인지.
+    _bool  Is_MeshBlend(_uint iMeshIndex) const;
+    // [투명] 모델 내 Transparent 메시가 하나라도 있는지(블렌드 패스 제출 판정).
+    _bool  Has_BlendMesh() const;
+
 public:
     // 인자값으로 넘어온 매쉬번호에 맞는 매쉬를 그려줌 (상위 클래스의 랜더에서 매쉬개수만큼 부를거임)
     virtual HRESULT Render(ID3D12GraphicsCommandList* _commandList, _uint iMeshIndex, bool IsShadow = false);
@@ -160,10 +170,14 @@ private:
     // 메테리얼들을 저장하는 벡터 -> 벡벡벡말고 메테리얼 클래스 하나만들어서 그냥 벡터로 만들것
     vector<class CMaterial*>		m_Materials;
 
-    // [방식 가] 머티리얼 슬롯별 팔레트 crop UV 재매핑값.
+    // [UV] 머티리얼 슬롯별 팔레트 crop UV 재매핑값.
     //   기본값 offset(0,0)/scale(1,1) = 변환 없음(맵이 아닌 모델은 그대로).
     vector<_float2>             m_MaterialUVOffset;
     vector<_float2>             m_MaterialUVScale;
+
+    // [투명] 머티리얼 슬롯별 표면타입/알파. 기본 Opaque/1.0(맵 아닌 모델은 불투명 유지).
+    vector<_int>    m_MaterialSurfaceType;
+    vector<_float>  m_MaterialAlpha;
 
 private:
     // 로컬 매트릭스처럼 사용될 미리 준비한 매트릭스임 회전, 크기 정보같은 초기값들을 담음

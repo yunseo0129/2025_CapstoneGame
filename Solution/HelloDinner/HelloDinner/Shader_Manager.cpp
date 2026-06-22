@@ -88,10 +88,10 @@ HRESULT CShader_Manager::Create_GlobalRootSignature()
 //  cbUIColor : register(b4)  — color rgba(4) + param(4) = 8 float
     parameters[RootParameterIndex::UIColor].InitAsConstants(8, 4);  // num32Bit=8, shaderRegister=4
 
-    // [방식 가] 팔레트 crop UV 재매핑 (Map UV, b5)
-    //  cbMapUV : register(b5) — float2 uvOffset + float2 uvScale = 4 float
-    //  Shader_Static.hlsl 의 VS 에서 finalUV = meshUV*uvScale + uvOffset 에 사용.
-    parameters[RootParameterIndex::MapUV].InitAsConstants(4, 5);  // num32Bit=4, shaderRegister=5
+    // [UV + 투명] 팔레트 UV 재매핑 + 머티리얼 알파/표면타입 (Map UV, b5)
+    //  cbMapUV : register(b5) — uvOffset(2) + uvScale(2) + alpha + cutoff + surfaceType + pad = 8 float
+    //  VS: finalUV = meshUV*uvScale + uvOffset.  PS_Glass: 최종 알파 *= g_fMatAlpha.
+    parameters[RootParameterIndex::MapUV].InitAsConstants(8, 5);  // num32Bit=8, shaderRegister=5
 
     //----------------------------------------------------------------------
     // Static Sampler s0 ~ s4
@@ -202,6 +202,7 @@ HRESULT CShader_Manager::Create_PSO()
 
     // Pixel Shader (재질별)
     ComPtr<ID3DBlob> psLit = Compile_Shader(L"Shader_Static.hlsl", "PS_Main_Lit", "ps_5_1"); // 조명 O
+    ComPtr<ID3DBlob> psGlass = Compile_Shader(L"Shader_Static.hlsl", "PS_Glass", "ps_5_1"); // [투명] 유리 전용
     ComPtr<ID3DBlob> psSkybox = Compile_Shader(L"Shader_Skybox.hlsl", "PS_Main_Skybox", "ps_5_1"); // Skybox
     ComPtr<ID3DBlob> psUI = Compile_Shader(L"Shader_UI.hlsl", "PS_Main_UI", "ps_5_1"); // 조명 X
     ComPtr<ID3DBlob> psMapRT = Compile_Shader(L"Shader_Static_Instanced.hlsl", "PS_Main_MapRT", "ps_5_1"); // [맵 RTT] 무조명
@@ -283,28 +284,34 @@ HRESULT CShader_Manager::Create_PSO()
 
     m_pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pPSOs[(UINT)PSO_TYPE::ANIM]));
 
-    /*
+    
     // ================================================================
-    // ALPHA BLEND (Static Mesh / Transparent / Lit)
+    // ALPHA BLEND (Static Mesh / Transparent / Lit) — 맵 유리 전용
+    //   VS 는 DEFAULT 와 동일(VS_Main_Static), PS 만 PS_Glass.
+    //   블렌드 On(SrcAlpha/InvSrcAlpha), 깊이 테스트 On / 쓰기 Off.
     // ================================================================
     psoDesc = baseDesc; // 리셋
-    psoDesc.InputLayout = { m_LayoutStatic.data (), ( UINT )m_LayoutStatic.size () };
-    psoDesc.VS = { vsStatic->GetBufferPointer (), vsStatic->GetBufferSize () };
-    psoDesc.PS = { psLit->GetBufferPointer (), psLit->GetBufferSize () };
+    psoDesc.InputLayout = {m_LayoutStatic.data(), (UINT)m_LayoutStatic.size()};
+    psoDesc.VS = {vsStatic->GetBufferPointer(), vsStatic->GetBufferSize()};
+    psoDesc.PS = {psGlass->GetBufferPointer(), psGlass->GetBufferSize()};
 
-    // 변경점: 블렌드 켜기 & 깊이 쓰기 끄기(Z-Write Off)
-    D3D12_RENDER_TARGET_BLEND_DESC& blend = psoDesc.BlendState.RenderTarget[0];
-    blend.BlendEnable = TRUE;
-    blend.SrcBlend = D3D12_BLEND_SRC_ALPHA;
-    blend.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-    blend.BlendOp = D3D12_BLEND_OP_ADD;
+    {
+        D3D12_RENDER_TARGET_BLEND_DESC& blend = psoDesc.BlendState.RenderTarget[0];
+        blend.BlendEnable = TRUE;
+        blend.SrcBlend = D3D12_BLEND_SRC_ALPHA;
+        blend.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+        blend.BlendOp = D3D12_BLEND_OP_ADD;
+        blend.SrcBlendAlpha = D3D12_BLEND_ONE;
+        blend.DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
+        blend.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+        blend.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+    }
 
-    // 반투명은 보통 깊이 테스트는 하되, 기록(Write)은 안 함 (뒤에 있는 것도 보여야 하니까)
+    // 반투명: 깊이 테스트는 하되 기록(Write)은 안 함 (뒤 물체도 보이게)
     psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 
-    m_pDevice->CreateGraphicsPipelineState ( &psoDesc , IID_PPV_ARGS ( &m_pPSOs[( UINT )PSO_TYPE::ALPHA_BLEND] ) );
-
-    */
+    m_pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pPSOs[(UINT)PSO_TYPE::ALPHA_BLEND]));
+    
     // ================================================================
     // UI (UI Mesh / Transparent / Unlit)
     // ================================================================

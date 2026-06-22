@@ -97,17 +97,17 @@ float CalcShadowFactor(float4 shadowPos)
 }
 
 // --------------------------------------------------------
-// Common Pixel Shader (Lit)
+// Common Lighting (Lit RGB 계산 공유)
 // --------------------------------------------------------
-// 일반/애니메이션 메쉬 공통 사용
-float4 PS_Main_Lit(VS_OUT In) : SV_TARGET
+//  PS_Main_Lit(불투명) 과 PS_Glass(반투명) 가 동일 조명을 공유한다.
+//  lit RGB 를 반환하고, 디퓨즈 텍스처 알파를 out 으로 돌려준다.
+float3 ComputeLit(VS_OUT In, out float texAlpha)
 {
-    
     float4 normalMapColor = g_NormalTextures.Sample(g_samWrap, In.vUV);
     float x = normalMapColor.r * 2.0f - 1.0f;
     float y = normalMapColor.g * 2.0f - 1.0f;
     float z = sqrt(max(1.0f - (x * x + y * y), 0.0f));
-    
+
     float3 vNormal = float3(x, y, z);
 
     // 2. World Normal 변환
@@ -129,7 +129,17 @@ float4 PS_Main_Lit(VS_OUT In) : SV_TARGET
     float shadowFactor = CalcShadowFactor(In.ShadowPos);
     vDiffuse *= shadowFactor;
 
-    return float4(vDiffuse + vAmbient, diffuseColor.a);
+    texAlpha = diffuseColor.a;
+    return vDiffuse + vAmbient;
 }
 
+// --------------------------------------------------------
+// Common Pixel Shader (Lit) — 일반/애니메이션 메쉬 공통
+// --------------------------------------------------------
+float4 PS_Main_Lit(VS_OUT In) : SV_TARGET
+{
+    float texA;
+    float3 litRGB = ComputeLit(In, texA);
+    return float4(litRGB, texA);
+}
 #endif

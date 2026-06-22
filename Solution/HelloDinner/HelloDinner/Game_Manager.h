@@ -142,6 +142,11 @@ private:
     void     Refresh_HUD();                 // 점수/타이머 텍스트 + 생존 박스 색 갱신
     _wstring Make_TimerString() const;      // 남은 라운드 시간 "m:ss"
 
+    // ---- UI: 하단 HUD (내 HP / 남은 탄약) ----
+    //  화면 좌하단에 HP, 우하단에 탄약을 텍스트로 표시(이후 텍스처로 교체).
+    HRESULT  Ready_PlayerHUD();             // HP/탄약 텍스트 생성 + 포인터 보관
+    void     Refresh_PlayerHUD();           // 내 플레이어 상태 → 텍스트 갱신
+
     // ---- UI: 상점 무기 슬롯 (클릭 → 무기 교체) ----
     HRESULT  Ready_ShopSlots();             // 무기 슬롯 패널 생성 + 위치/포인터 보관
     void     Handle_ShopClick();            // 좌클릭 시 슬롯 히트테스트 → 무기 교체
@@ -165,6 +170,7 @@ private:
     // 캐릭터 선택창에 필요한 정보
     class CCharSelect_Pig* m_pCSPreviewMe = nullptr;   // 중앙(나) 프리뷰 (Pig)
     class CCharSelect_Chick* m_pCSPreviewChick = nullptr;   // 중앙(나) 프리뷰 (Chick)
+    class CCharSelect_Fish* m_pCSPreviewFish = nullptr;   // 중앙(나) 프리뷰 (Fish)
     class CUI_Panel* m_pCSFacePanel[3] = {nullptr, nullptr, nullptr};
     class CUI_Texture* m_pCSFaceIcon[3] = {nullptr, nullptr, nullptr};
     _float4 m_vCSFaceRect[3] = {};   // (x,y,w,h) 픽셀
@@ -180,6 +186,7 @@ private:
     _int    m_iMyTeam = 0;
     _int    m_iMyNumber = 1;
     _float3 m_vMySpot = _float3(0.f, 0.f, 0.f);
+    _float  m_fMyYaw = 0.f;     // 스폰 시 바라볼 yaw(원점 방향, 라디안)
 
     // 팀 라운드 승수 (인덱스 0: 팀A, 1: 팀B)
     _int        m_iTeamScore[2] = {0, 0};
@@ -222,6 +229,10 @@ private:
     class CUI_Text* m_pHUDTeamScoreText[2] = {nullptr}; // [0]=팀A 승수, [1]=팀B 승수
     class CUI_Panel* m_pHUDPlayerBox[MAX_PLAYER] = {nullptr};
 
+    // ---- 하단 HUD (내 HP / 남은 탄약) ----
+    class CUI_Text* m_pHUDHealthText = nullptr;   // 좌하단 HP
+    class CUI_Text* m_pHUDAmmoText = nullptr;    // 우하단 탄약
+
     // ---- 상점 무기 슬롯 ----
     //  슬롯 인덱스 = 무기 인덱스 (0=케첩건/빨강, 1=마요네즈건/하양).
     //  히트테스트를 위해 슬롯의 픽셀 사각형(좌상단 x,y / 크기 w,h)을 보관.
@@ -251,6 +262,13 @@ private:
 
     // 선택 구간(캐릭터+상황판+스폰) 전체 제한 시간. 0 이 되면 강제 시작.
     static constexpr _float SELECT_TOTAL_DURATION = 30.f;
+
+
+private:
+    _bool m_bMouseCaptured = false;
+public:
+    void Set_MouseCaptured(_bool bCaptured); // 플레이=true(숨김+가둠), 메뉴=false
+    void Update_MouseClip();                 // 매 프레임 호출(포커스 변화 자가 복구)
 
 public:
     static CGame_Manager* Create();

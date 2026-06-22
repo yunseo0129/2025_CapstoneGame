@@ -5,8 +5,9 @@
 #include "Bounding_OBB.h"
 #include "Bounding_Sphere.h"
 #include "Map.h"
+#include "Model.h"
 #include "Bullets.h"
-
+#include "Particle_System.h"
 
 IMPLEMENT_SINGLETON(CCollision_Manager)
 
@@ -204,6 +205,30 @@ void CCollision_Manager::NewBullet(_vector _look, _vector _pos, CGameObject* pSh
                 b.vPos);
         b.isHit = true;
         b.isOn = true;
+
+        // 파티클 생성 부분
+        if (CParticle_System* pPS = m_pGameInstance->Get_ParticleSystem())
+        {
+            _float3 vHitPos;
+            XMStoreFloat3(&vHitPos, b.vTarget);   // _vector -> _float3
+
+            // 흙먼지(절차적) : 맵 파괴와 같은 WALL_DEBRIS
+            CParticle_System::EMIT_DESC dust;
+            dust.eType = CParticle_System::WALL_DEBRIS;
+            dust.vCenter = vHitPos;
+            dust.vExtents = {0.15f, 0.15f, 0.15f};  // 점 충돌이라 좁게
+            dust.iCount = 12;                        // 파괴보다 적게
+            pPS->Emit(dust);
+
+            // 파편(텍스처) : 맵 파괴와 같은 WALL_DEBRIS_2
+            CParticle_System::EMIT_DESC debris;
+            debris.eType = CParticle_System::WALL_DEBRIS_2;
+            debris.vCenter = vHitPos;
+            debris.vExtents = {0.15f, 0.15f, 0.15f};
+            debris.iCount = 6;
+            pPS->Emit(debris);
+        }
+        //
     }
     else if (playerHit.hit)
     {
@@ -248,6 +273,29 @@ void CCollision_Manager::NewBullet(_vector _look, _vector _pos, CGameObject* pSh
             playerHit.pTarget->TakeDamage(30);
             break;
         }
+        // 파티클 생성 부분
+        if (CParticle_System* pPS = m_pGameInstance->Get_ParticleSystem())
+        {
+            _float3 vHitPos;
+            XMStoreFloat3(&vHitPos, b.vTarget);   // _vector -> _float3
+
+            // 흙먼지(절차적) : 맵 파괴와 같은 WALL_DEBRIS
+            CParticle_System::EMIT_DESC dust;
+            dust.eType = CParticle_System::WALL_DEBRIS;
+            dust.vCenter = vHitPos;
+            dust.vExtents = {0.15f, 0.15f, 0.15f};  // 점 충돌이라 좁게
+            dust.iCount = 12;                        // 파괴보다 적게
+            pPS->Emit(dust);
+
+            // 파편(텍스처) : 맵 파괴와 같은 WALL_DEBRIS_2
+            CParticle_System::EMIT_DESC debris;
+            debris.eType = CParticle_System::WALL_DEBRIS_2;
+            debris.vCenter = vHitPos;
+            debris.vExtents = {0.15f, 0.15f, 0.15f};
+            debris.iCount = 6;
+            pPS->Emit(debris);
+        }
+        //
     }
 
     m_pBullets->NewBullet(b);
@@ -315,6 +363,10 @@ void CCollision_Manager::Cull_StaticBVH(const BoundingFrustum* pMainFrustum, con
                 else {
                     m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, owner);
                 }
+                // [투명] 맵에 유리 메시가 있으면 블렌드 패스(RG_BLEND)에도 제출(비인스턴싱).
+                CMap* pMapB = dynamic_cast<CMap*>(owner);
+                if (pMapB && pMapB->Get_Model() && pMapB->Get_Model()->Has_BlendMesh())
+                    m_pGameInstance->Add_RenderObject(CRenderer::RG_BLEND, owner);
             }
         }
         m_pGameInstance->Add_CullStat_Main_Bulk((_int)results.size(), iTotal);
@@ -331,6 +383,10 @@ void CCollision_Manager::Cull_StaticBVH(const BoundingFrustum* pMainFrustum, con
                 else {
                     m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, owner);
                 }
+                // [투명] 맵에 유리 메시가 있으면 블렌드 패스(RG_BLEND)에도 제출(비인스턴싱).
+                CMap* pMapB = dynamic_cast<CMap*>(owner);
+                if (pMapB && pMapB->Get_Model() && pMapB->Get_Model()->Has_BlendMesh())
+                    m_pGameInstance->Add_RenderObject(CRenderer::RG_BLEND, owner);
             }
         }
         m_pGameInstance->Add_CullStat_Main_Bulk(iTotal, iTotal);
@@ -364,10 +420,10 @@ void CCollision_Manager::Cull_StaticBVH(const BoundingFrustum* pMainFrustum, con
                 if (m_pGameInstance->Is_InstancingEnabled()) {
                     CMap* pMap = dynamic_cast<CMap*>(owner);
                     if (pMap) m_pGameInstance->Add_ShadowInstancedRenderObject(pMap->Get_ModelTag(), owner);
-                    else      m_pGameInstance->Add_ShadowRenderObject(CRenderer::RG_NONBLEND, owner);
+                    else      m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, owner);
                 }
                 else {
-                    m_pGameInstance->Add_ShadowRenderObject(CRenderer::RG_NONBLEND, owner);
+                    m_pGameInstance->Add_RenderObject(CRenderer::RG_NONBLEND, owner);
                 }
             }
         }
