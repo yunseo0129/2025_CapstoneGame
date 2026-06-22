@@ -34,10 +34,9 @@ VS_OUT_SKYBOX VS_Main_Skybox(VS_IN_STATIC In)
     
     return Out;
 }
+static const float3 g_CeilColor = float3(0.72f, 0.73f, 0.76f);
 
-// Skybox PS 
 float4 PS_Main_Skybox(VS_OUT_SKYBOX In) : SV_TARGET
 {
-    float4 texColor = g_DiffuseTexCube.Sample(g_samClamp, In.vTexCoord);
-    return texColor;
+    return float4(g_CeilColor, 0.30f);
 }

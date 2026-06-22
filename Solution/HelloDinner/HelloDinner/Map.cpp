@@ -291,6 +291,31 @@ void CMap::Break()
     }
 }
 
+void CMap::Restore()
+{
+    // 이 라운드에 실제로 부서진 fracture 벽만 복구한다.
+    //  (부서지지 않은 벽은 콜라이더가 이미 그룹에 있어, 다시 Add 하면 중복되므로 건너뜀)
+    if (!m_bBreakable || !m_bBroken)
+        return;
+
+    // 콜라이더 재활성화 + 충돌 그룹 재등록
+    if (m_pColliderCom)
+    {
+        m_pColliderCom->Set_Enable(true);
+        m_pGameInstance->Add_CollisionGroup(0, m_pColliderCom);  // 0 = GROUP_MAP
+    }
+
+    // fracture 시스템에서 bind(온전) 상태로 되돌림. 슬롯이 회수됐으면 새로 등록.
+    if (auto pFS = m_pGameInstance->Get_FractureSystem())
+        m_iFractureSlot = pFS->Reset_Wall(m_pModelCom, m_iWallId, m_xmf4x4CachedWorld, 0, m_pColliderCom);
+
+    m_bBroken = false;
+    m_bLeftExposed = false;
+    m_bRightExposed = false;
+
+    m_pGameInstance->Invalidate_StaticBVH();
+}
+
 void CMap::Expose_Left()
 {
     m_bLeftExposed = true;

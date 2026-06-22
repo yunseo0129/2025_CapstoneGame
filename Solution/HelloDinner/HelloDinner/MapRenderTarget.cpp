@@ -123,6 +123,8 @@ HRESULT CMapRenderTarget::Render_MapLayer(ID3D12GraphicsCommandList* _cmdList, _
     {
         CMap* pMap = dynamic_cast<CMap*>(pObj);
         if (!pMap) continue;
+        if (pMap->IsDead()) continue;        // [추가] 죽은 오브젝트 제외
+        if (pMap->Is_Broken()) continue;     // [추가] fracture 파괴된 벽은 미니맵에 안 그림
         if (!pMap->Get_Model()) continue;
         groups[pMap->Get_ModelTag()].push_back(pMap);
     }

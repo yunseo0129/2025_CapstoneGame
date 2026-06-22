@@ -100,6 +100,7 @@ private:
     // ---- 내부 헬퍼 ----
     _bool   Are_AllLoaded() const;          // 모든 플레이어 로드 완료?
     void    Reset_RoundLoadFlags();         // 라운드 시작 시 로드 플래그 초기화
+    void    Reset_BreakableWalls();
     void    Setup_DummyPlayers();           // 로컬 더미 플레이어 생성
 
     // 레이어의 모든 UI 오브젝트를 켜고/끈다 (SetOnOff)

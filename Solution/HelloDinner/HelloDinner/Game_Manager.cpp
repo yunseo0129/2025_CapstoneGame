@@ -10,6 +10,7 @@
 #include "CharSelect_Pig.h"
 #include "CharSelect_Chick.h"
 #include "MapSelect.h"
+#include "Map.h"
 
 IMPLEMENT_SINGLETON(CGame_Manager)
 
@@ -414,7 +415,7 @@ void CGame_Manager::End_Round(_int iWinnerTeam)
     //   2라운드부터 선택 단계가 진행/자동 종료되지 않는다)
     m_fSelectTimer = SELECT_TOTAL_DURATION;
     m_bSelectExpired = false;
-
+    Reset_BreakableWalls();
     Enter_Phase(GAME_PHASE::PHASE_SCOREBOARD);
 }
 
@@ -444,6 +445,17 @@ void CGame_Manager::Reset_RoundLoadFlags()
 {
     for (auto& stat : m_vStats)
         stat.bMapLoaded = false;
+}
+
+void CGame_Manager::Reset_BreakableWalls()
+{
+    list<CGameObject*> mapObjs = m_pGameInstance->Get_List(LEVEL_GAMEPLAY, L"Layer_Map");
+    for (auto* pObj : mapObjs)
+    {
+        CMap* pMap = dynamic_cast<CMap*>(pObj);
+        if (pMap && pMap->Is_Breakable())
+            pMap->Restore();   // 내부에서 실제 부서진 벽만 복구
+    }
 }
 
 void CGame_Manager::Setup_DummyPlayers()
