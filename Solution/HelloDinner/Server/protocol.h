@@ -214,11 +214,14 @@ struct IS_ROOM_NOTIFY_PACKET {
     int     player_count;
     int     player_ids[ROOM_MAX_PLAYER];
     char    player_names[ROOM_MAX_PLAYER][NAME_SIZE];
+    unsigned char player_teams[ROOM_MAX_PLAYER]; // 0=RED, 1=BLUE, 0xFF=미선택
+    unsigned char player_slots[ROOM_MAX_PLAYER]; // 1~3, 0=미선택
     char    auth_token[32];
 };
 
-// Phase 1: 게임 상태머신 동기화 패킷 (서버 → 클라)
+// Phase 1·2: 게임 상태머신 동기화 패킷 (서버 → 클라)
 constexpr char SC_PHASE_CHANGE = 20;   // 페이즈 전환
+constexpr char SC_ROSTER_INFO  = 37;   // CHARSELECT 진입 시 플레이어 로스터
 constexpr char SC_ROUND_START  = 21;   // 라운드 시작 (타이머 동기화)
 constexpr char SC_ROUND_END    = 22;   // 라운드 종료 (승패 + 점수)
 constexpr char SC_SCORE_UPDATE = 33;   // K/D/A + 팀 점수 브로드캐스트
@@ -269,6 +272,21 @@ struct CS_PHASE_READY_PACKET {
     unsigned char size;
     char          type;   // CS_PHASE_READY
     unsigned char phase;  // 0=CHARSELECT 1=SCOREBOARD 2=SHOP
+};
+
+// CHARSELECT 진입 시 방 전원에게 플레이어 구성 전송 (인스턴스 서버 → 클라)
+struct RosterEntry {
+    int           player_id;
+    char          name[NAME_SIZE];
+    unsigned char team;   // 0=RED, 1=BLUE, 0xFF=미선택
+    unsigned char slot;   // 1~3, 0=미선택
+};
+
+struct SC_ROSTER_INFO_PACKET {
+    unsigned char size;
+    char          type;           // SC_ROSTER_INFO
+    unsigned char player_count;
+    RosterEntry   players[ROOM_MAX_PLAYER];
 };
 
 // 페이즈 남은 시간 주기 전송 (인스턴스 서버 → 클라)

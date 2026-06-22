@@ -16,6 +16,8 @@ public:
         ROUND_END,
         SCORE_UPDATE,
         TIMER_SYNC,
+        // Phase 2: 매치 로스터
+        ROSTER_INFO,
     };
 
     struct NetEvent {
@@ -39,6 +41,10 @@ public:
 
         // TIMER_SYNC
         unsigned int    time_ms        = 0;
+
+        // ROSTER_INFO
+        unsigned char   roster_count   = 0;
+        RosterEntry     roster[ROOM_MAX_PLAYER] = {};
     };
 
 public:

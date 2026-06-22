@@ -359,3 +359,11 @@ void RoomManager::SetReady(int c_id, bool ready)
     for (int id : room.members)
         sm->GetClient(id).Send(&pkt);
 }
+
+pair<unsigned char, unsigned char> RoomManager::GetSeat(int c_id)
+{
+    lock_guard<mutex> ll(m_lock);
+    auto it = m_seat_map.find(c_id);
+    if (it != m_seat_map.end()) return it->second;
+    return { 0xFF, 0 };
+}

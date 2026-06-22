@@ -112,6 +112,9 @@ void CGame_Manager::Update(_float fTimeDelta)
             case NetworkClient::NetEventType::TIMER_SYNC:
                 Apply_TimerSync(evt.time_ms);
                 break;
+            case NetworkClient::NetEventType::ROSTER_INFO:
+                Apply_RosterInfo(evt.roster_count, evt.roster);
+                break;
             default:
                 break;
             }
@@ -447,6 +450,42 @@ void CGame_Manager::Apply_ScoreUpdate(unsigned char score_a, unsigned char score
     // Phase 3에서 개인 K/D/A stats 연동 예정
     Refresh_Scoreboard();
     Refresh_HUD();
+}
+
+void CGame_Manager::Apply_RosterInfo(unsigned char count, const RosterEntry* entries)
+{
+    Setup_DummyPlayers();  // 6슬롯 더미로 초기화 후 실제 이름 덮어쓰기
+
+    auto* pNet = NetworkClient::GetInstance();
+    const int myId = pNet->GetMyId();
+
+    for (int i = 0; i < count && i < ROOM_MAX_PLAYER; ++i)
+    {
+        const auto& e = entries[i];
+
+        // 좌석 선택이 있으면 team*3+(slot-1), 없으면 순서대로
+        int iSlot;
+        if (e.team <= 1 && e.slot >= 1 && e.slot <= 3)
+            iSlot = e.team * 3 + (e.slot - 1);
+        else
+            iSlot = i;
+
+        if (iSlot < 0 || iSlot >= (_int)m_vStats.size()) continue;
+
+        if (e.player_id == myId)
+        {
+            m_vStats[iSlot].strName = L"Me";
+        }
+        else
+        {
+            wchar_t wname[NAME_SIZE];
+            mbstowcs_s(nullptr, wname, e.name, NAME_SIZE - 1);
+            wname[NAME_SIZE - 1] = L'\0';
+            m_vStats[iSlot].strName = wname;
+        }
+    }
+
+    GM_Log(L"Apply_RosterInfo: %d 명 로스터 적용", count);
 }
 
 // =====================================================================

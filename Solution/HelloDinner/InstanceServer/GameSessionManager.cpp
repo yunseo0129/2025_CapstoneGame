@@ -172,8 +172,8 @@ void GameSessionManager::RegisterPendingRoom(const IS_ROOM_NOTIFY_PACKET& pkt)
         m_pending_tokens[pkt.room_id] = string(pkt.auth_token);
     }
 
-    // 페이즈 매니저에 방 등록 (입장 대기 상태로 초기화)
-    RoomPhaseManager::GetInstance()->OnRoomRegistered(pkt.room_id, pkt.player_count);
+    // 페이즈 매니저에 방 등록 (입장 대기 상태로 초기화 + 로스터 저장)
+    RoomPhaseManager::GetInstance()->OnRoomRegistered(pkt);
 
     cout << "[Instance] Room " << pkt.room_id << " registered. Expecting "
          << pkt.player_count << " players." << endl;

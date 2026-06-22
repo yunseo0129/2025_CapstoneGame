@@ -27,6 +27,8 @@ public:
     // 충돌 시(다른 멤버가 동일 슬롯 점유) false 반환
     bool             SelectSeat(int c_id, unsigned char team, unsigned char slot);
     void             SetReady(int c_id, bool ready);
+    // c_id의 팀·슬롯 반환. 미선택 시 {0xFF, 0}
+    pair<unsigned char, unsigned char> GetSeat(int c_id);
 
 private:
     RoomManager() = default;

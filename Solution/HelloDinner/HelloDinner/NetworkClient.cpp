@@ -525,6 +525,17 @@ void NetworkClient::ProcessInstancePacket(char* packet)
         m_pendingMatchEvents.push_back(evt);
         break;
     }
+    case SC_ROSTER_INFO: {
+        SC_ROSTER_INFO_PACKET* p = reinterpret_cast<SC_ROSTER_INFO_PACKET*>(packet);
+        NetEvent evt{};
+        evt.type         = NetEventType::ROSTER_INFO;
+        evt.roster_count = p->player_count;
+        for (int i = 0; i < p->player_count && i < ROOM_MAX_PLAYER; ++i)
+            evt.roster[i] = p->players[i];
+        std::lock_guard<std::mutex> lk(m_matchEventLock);
+        m_pendingMatchEvents.push_back(evt);
+        break;
+    }
     }
 }
 

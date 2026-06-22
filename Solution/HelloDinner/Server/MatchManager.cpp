@@ -1,6 +1,7 @@
 #include "MatchManager.h"
 #include "SessionManager.h"
 #include "InstanceManager.h"
+#include "RoomManager.h"
 
 void MatchManager::EnqueuePlayer(int c_id)
 {
@@ -81,11 +82,17 @@ void MatchManager::LaunchRoom(const vector<int>& players)
 	strcpy_s(notify.auth_token, sizeof(notify.auth_token), auth_token);
 	memset(notify.player_ids, -1, sizeof(notify.player_ids));
 	memset(notify.player_names, 0, sizeof(notify.player_names));
+	memset(notify.player_teams, 0xFF, sizeof(notify.player_teams));
+	memset(notify.player_slots, 0,    sizeof(notify.player_slots));
 
+	auto* rm = RoomManager::GetInstance();
 	for (int i = 0; i < playerCount; ++i) {
 		notify.player_ids[i] = players[i];
 		strcpy_s(notify.player_names[i], sizeof(notify.player_names[i]),
 			sm->GetClient(players[i]).m_player.name);
+		auto [team, slot] = rm->GetSeat(players[i]);
+		notify.player_teams[i] = team;
+		notify.player_slots[i] = slot;
 	}
 
 	InstanceManager::GetInstance()->NotifyRoomToInstance(bestInst, notify);

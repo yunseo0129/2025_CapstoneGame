@@ -87,6 +87,7 @@ public:
     void    Apply_ScoreUpdate(unsigned char score_a, unsigned char score_b,
                               unsigned char player_count, const PlayerStatBrief* stats);
     void    Apply_TimerSync(unsigned int time_ms);  // SC_TIMER_SYNC 수신 → 타이머 갱신
+    void    Apply_RosterInfo(unsigned char count, const RosterEntry* entries); // SC_ROSTER_INFO 수신 → m_vStats 교체
 
 private:
     // ---- 단계 진입(한 번) ----

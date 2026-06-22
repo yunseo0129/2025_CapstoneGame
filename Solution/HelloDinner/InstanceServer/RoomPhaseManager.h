@@ -11,6 +11,13 @@ enum class ROOM_PHASE : unsigned char {
     WAITING    = 0xFF   // 플레이어 입장 대기 중 (클라에 송신 안 함)
 };
 
+struct PlayerRosterEntry {
+    int           player_id = -1;
+    char          name[NAME_SIZE] = {};
+    unsigned char team = 0xFF;  // 0=RED, 1=BLUE, 0xFF=미선택
+    unsigned char slot = 0;     // 1~3, 0=미선택
+};
+
 struct RoomPhaseState {
     ROOM_PHASE  phase             = ROOM_PHASE::WAITING;
     int         round             = 1;
@@ -21,6 +28,8 @@ struct RoomPhaseState {
     int         expected          = 0;       // 입장 예정 인원 (IS_ROOM_NOTIFY.player_count)
     int         joined            = 0;       // CS_JOIN_ROOM 완료 인원
     bool        active            = false;
+    int         roster_count      = 0;
+    PlayerRosterEntry roster[ROOM_MAX_PLAYER];
 };
 
 // 인스턴스 서버 전체 룸의 페이즈/타이머를 단일 스레드로 관리하는 싱글톤
@@ -35,7 +44,7 @@ public:
     void StartTimerThread();
 
     // 이벤트 진입점
-    void OnRoomRegistered(int room_id, int player_count);
+    void OnRoomRegistered(const IS_ROOM_NOTIFY_PACKET& pkt);
     void OnPlayerJoined(int room_id);
     void OnPlayerLeft(int room_id);
     void OnRoundEnd(int room_id, int winner_team);       // Phase 3: 서버 히트 판정 후 호출
@@ -56,6 +65,7 @@ private:
     void Broadcast_RoundEnd(int room_id, unsigned char winner_team,
                             unsigned char score_a, unsigned char score_b);
     void Broadcast_ScoreUpdate(int room_id);
+    void Broadcast_RosterInfo(int room_id);
 
     array<RoomPhaseState, MAX_ROOM> m_rooms;
     mutex m_lock;

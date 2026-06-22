@@ -85,6 +85,9 @@ void RoomPhaseManager::TransitionTo(int room_id, ROOM_PHASE next)
         round = r.round;
     }
 
+    if (next == ROOM_PHASE::CHARSELECT)
+        Broadcast_RosterInfo(room_id);
+
     Broadcast_PhaseChange(room_id, next, round);
 
     // 페이즈 전환 직후 초기 타이머 값 즉시 전송 (클라가 SC_PHASE_CHANGE 처리 후 바로 표시 가능)
@@ -97,19 +100,26 @@ void RoomPhaseManager::TransitionTo(int room_id, ROOM_PHASE next)
 
 // ── 이벤트 진입점 ────────────────────────────────────────────────────
 
-void RoomPhaseManager::OnRoomRegistered(int room_id, int player_count)
+void RoomPhaseManager::OnRoomRegistered(const IS_ROOM_NOTIFY_PACKET& pkt)
 {
     lock_guard<mutex> lk(m_lock);
-    auto& r             = m_rooms[room_id];
+    auto& r             = m_rooms[pkt.room_id];
     r.phase             = ROOM_PHASE::WAITING;
     r.round             = 1;
     r.score[0]          = r.score[1] = 0;
     r.timer_sec         = 0.f;
     r.sync_elapsed      = 0.f;
     r.phase_ready_count = 0;
-    r.expected          = player_count;
+    r.expected          = pkt.player_count;
     r.joined            = 0;
     r.active            = true;
+    r.roster_count      = pkt.player_count;
+    for (int i = 0; i < pkt.player_count && i < ROOM_MAX_PLAYER; ++i) {
+        r.roster[i].player_id = pkt.player_ids[i];
+        strcpy_s(r.roster[i].name, sizeof(r.roster[i].name), pkt.player_names[i]);
+        r.roster[i].team = pkt.player_teams[i];
+        r.roster[i].slot = pkt.player_slots[i];
+    }
 }
 
 void RoomPhaseManager::OnPlayerJoined(int room_id)
@@ -176,6 +186,25 @@ namespace {
                 session.Send(pkt);
         }
     }
+}
+
+void RoomPhaseManager::Broadcast_RosterInfo(int room_id)
+{
+    SC_ROSTER_INFO_PACKET pkt{};
+    {
+        lock_guard<mutex> lk(m_lock);
+        auto& r = m_rooms[room_id];
+        pkt.size         = sizeof(pkt);
+        pkt.type         = SC_ROSTER_INFO;
+        pkt.player_count = static_cast<unsigned char>(r.roster_count);
+        for (int i = 0; i < r.roster_count && i < ROOM_MAX_PLAYER; ++i) {
+            pkt.players[i].player_id = r.roster[i].player_id;
+            strcpy_s(pkt.players[i].name, sizeof(pkt.players[i].name), r.roster[i].name);
+            pkt.players[i].team = r.roster[i].team;
+            pkt.players[i].slot = r.roster[i].slot;
+        }
+    }
+    BroadcastToRoom(room_id, &pkt);
 }
 
 void RoomPhaseManager::Broadcast_PhaseChange(int room_id, ROOM_PHASE phase, int round)
