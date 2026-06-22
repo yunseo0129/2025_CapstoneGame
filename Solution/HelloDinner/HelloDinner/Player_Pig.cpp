@@ -268,7 +268,7 @@ HRESULT CPlayer_Pig::Ready_Components()
 			if (FAILED(Add_Component(m_iModelLevelIndex, TEXT("Prototype_Component_OBB"),
 				TEXT("Com_Collider2"), reinterpret_cast<CComponent**>(&m_vColliderComs[COLLIDER_ARM_UP_L]), &ColliderDesc)))
 			{
-				MSG_BOX("Failed to Add Component : Head Collider in Player_3rd");
+				MSG_BOX("Failed to Add Component : ARM_UP_L Collider in Player_3rd");
 				return E_FAIL;
 			}
 		}
