@@ -1,4 +1,9 @@
 #include "stdafx.h"
+#include <Windows.h>
+#include <mmsystem.h>
+
+#pragma comment(lib, "winmm.lib")
+
 #include "Level_Loading.h"
 
 #include "Loader.h"
@@ -18,6 +23,8 @@ CLevel_Loading::CLevel_Loading(EngineContext* pContext)
 HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 {
     m_eNextLevelID = eNextLevelID;
+
+    PlaySound(NULL, NULL, 0);
 
     // 메인 위에 윈도우 
     //m_pLoadingWindow = CLoadingWindow::Create(g_hInst, g_hWnd);

@@ -1,4 +1,8 @@
 #include "stdafx.h"
+#include <Windows.h>
+#include <mmsystem.h>
+
+#pragma comment(lib, "winmm.lib")
 #include "LobbyWindow.h"
 
 #include <gdiplus.h>
@@ -33,6 +37,8 @@ CLobbyWindow::CLobbyWindow()
 
 HRESULT CLobbyWindow::Initialize(HINSTANCE hInstance)
 {
+    PlaySound(L"Resources/Sound/bgm/logo_bgm.wav", NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+
     m_hInstance = hInstance;
 
     // 윈도우 클래스 등록 (이미 등록되어 있으면 무시됨)
