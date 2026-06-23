@@ -271,10 +271,10 @@ inline void WorldMatrixInfo::ApplyPlayerPhysics(PlayerInfo& info, unsigned short
 	if (info.fVerticalVelocity < -PHYS_TERMINAL_VEL)
 		info.fVerticalVelocity = -PHYS_TERMINAL_VEL;
 
-	// 3) 속도 배율: 웅크리기=0.5x, 달리기=1.5x (Player_1rd::Resolve_Movement 동일)
-	float val = 1.f;
-	if (bCtrl)       val = 0.5f;
-	else if (bShift) val = 1.5f;
+	// 3) 속도 배율: 걷기 4.0 / 웅크리기 2.0 / 달리기 6.0 (Player_1rd::Resolve_Movement 동일)
+	float val = 4.f;
+	if (bCtrl)       val = 2.f;
+	else if (bShift) val = 6.f;
 	const float speed = info.speedPerSec * val;
 
 	// 4) 수평 이동 (XZ only — Y=0으로 만든 look/right, Resolve_Movement 동일)
