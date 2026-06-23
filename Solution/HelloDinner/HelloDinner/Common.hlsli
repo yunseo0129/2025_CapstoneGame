@@ -52,6 +52,7 @@ SamplerState g_samWrap : register(s0); // 일반 3D
 SamplerState g_samClamp : register(s1); // UI
 SamplerState g_samPoint : register(s2); // 도트
 SamplerState g_samAnisotropic : register(s3); // 지형
+SamplerComparisonState g_samShadowCmp : register(s4); // 그림자 PCF (LESS_EQUAL)
 // ------------------------------------------------
 
 // --------------------------------------------------------
@@ -63,7 +64,7 @@ struct VS_OUT
     float3 vWorldPos : TEXCOORD1; // 월드 좌표 (조명 계산용)
     float3 vNormal : NORMAL; // 노멀
     float2 vUV : TEXCOORD0; // UV
-    float3 vBinormal : BINORMAL; 
+    float3 vBinormal : BINORMAL;
     float3 vTangent : TANGENT;
     
     float4 ShadowPos : TEXCOORD2; // 그림자 맵용 좌표 (빛의 시점에서 변환된 위치)
@@ -74,26 +75,37 @@ struct VS_OUT
 float CalcShadowFactor(float4 shadowPos)
 {
     shadowPos.xyz /= shadowPos.w;
-    
+
+    // 범위 밖 = 그림자 없음 (s4 border 가 TRANSPARENT_BLACK 이라 명시 체크 유지)
     if (shadowPos.x < 0.0f || shadowPos.x > 1.0f ||
         shadowPos.y < 0.0f || shadowPos.y > 1.0f ||
         shadowPos.z < 0.0f || shadowPos.z > 1.0f)
     {
-        return 1.0f; // 그림자 맵 범위 밖, 그림자 없음
+        return 1.0f;
     }
-    
-    float shadowMapDepth = g_ShadowMap.Sample(g_samClamp, shadowPos.xy).r;
-    
-    float currentDepth = shadowPos.z;
-    
-    float bias = 0.00001f; // 그림자 경계선 깜빡임 방지용 바이어스
-    
-    if (currentDepth - bias > shadowMapDepth)
+
+    uint w, h;
+    g_ShadowMap.GetDimensions(w, h);
+    float texel = 1.0f / (float) w;
+
+    float bias = 0.0015f; // depth-space 바이어스 (튜닝)
+    float d = shadowPos.z - bias;
+
+    // 3x3 PCF: 비교 샘플러(LESS_EQUAL) → ref <= 저장깊이 일 때 1(=조명됨)
+    float sum = 0.0f;
+    [unroll]
+    for (int y = -1; y <= 1; ++y)
     {
-        return 0.5f; // 그림자 있음 (0.5는 반투명 그림자 효과)
+        [unroll]
+        for (int x = -1; x <= 1; ++x)
+        {
+            sum += g_ShadowMap.SampleCmpLevelZero(
+                g_samShadowCmp, shadowPos.xy + float2(x, y) * texel, d);
+        }
     }
-    
-    return 1.0f; // 그림자 없음
+    float lit = sum / 9.0f; // 0 = 완전 그림자, 1 = 완전 조명
+
+    return lerp(0.5f, 1.0f, lit); // 기존 0.5 반그림자 톤 유지
 }
 
 // --------------------------------------------------------

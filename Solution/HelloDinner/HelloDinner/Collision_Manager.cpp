@@ -212,20 +212,12 @@ void CCollision_Manager::NewBullet(_vector _look, _vector _pos, CGameObject* pSh
             _float3 vHitPos;
             XMStoreFloat3(&vHitPos, b.vTarget);   // _vector -> _float3
 
-            // 흙먼지(절차적) : 맵 파괴와 같은 WALL_DEBRIS
-            CParticle_System::EMIT_DESC dust;
-            dust.eType = CParticle_System::WALL_DEBRIS;
-            dust.vCenter = vHitPos;
-            dust.vExtents = {0.15f, 0.15f, 0.15f};  // 점 충돌이라 좁게
-            dust.iCount = 12;                        // 파괴보다 적게
-            pPS->Emit(dust);
-
             // 파편(텍스처) : 맵 파괴와 같은 WALL_DEBRIS_2
             CParticle_System::EMIT_DESC debris;
-            debris.eType = CParticle_System::WALL_DEBRIS_2;
+            debris.eType = CParticle_System::KETCHUP_SPRAY;
             debris.vCenter = vHitPos;
             debris.vExtents = {0.15f, 0.15f, 0.15f};
-            debris.iCount = 6;
+            debris.iCount = 16;
             pPS->Emit(debris);
         }
         //

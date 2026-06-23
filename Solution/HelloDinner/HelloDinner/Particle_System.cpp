@@ -64,7 +64,7 @@ namespace
     const EMIT_PRESET g_Presets[] =
     {
         // KETCHUP_SPRAY : 방향 콘, 빠르고 작고 짧은 방울. 색은 텍스처가 냄 -> vColor 는 거의 흰색(이중채색 방지).
-        {40, 6.f, 12.f, false, 0.18f, 0.f,
+        {40, 6.f, 12.f, true, 0.18f, 0.f,
         0.04f, 0.09f, 0.5f, 1.1f, {0.95f, 0.92f, 0.92f}, 0.03f},
         // WALL_DEBRIS(흙먼지, 절차적) : 사방으로 느리게 퍼지며 부풀고 오래 머묾(먼지 많이). 색은 vColor 가 직접 표현(옅은 황갈/회색).
         {40, 1.2f, 4.0f, true, 0.f, 1.4f,
@@ -81,7 +81,7 @@ namespace
     const CParticle_System::TYPE_BEHAVIOR g_Behaviors[] =
     {
         // KETCHUP_SPRAY(텍스처) : 약한 중력 + 큰 공기저항, 수축. 텍스처가 색을 내므로 색곡선은 거의 흰색(이중채색 방지) + 알파 페이드.
-        {0.35f, 0.80f, 1.0f, 0.40f,
+        {1.70f, 0.10f, 1.0f, 0.85f,
         {1.00f, 1.00f, 1.00f, 1.0f}, {0.65f, 0.55f, 0.55f, 0.0f}},
         // WALL_DEBRIS(흙먼지, 절차적) : 가볍게(중력 작음) 떠다니며 공기저항 큼. 부풀어 커짐(start<end). 색은 vColor 가 직접 -> 옅은 황갈->회색, 시작 알파 낮게.
         {0.30f, 0.85f, 1.0f, 1.8f,

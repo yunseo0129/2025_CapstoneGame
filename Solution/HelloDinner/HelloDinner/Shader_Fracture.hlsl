@@ -18,7 +18,7 @@ cbuffer FractureFrameCB : register(b0)
 };
 
 // compute(Shader_Fracture_Compute.hlsl)가 매 프레임 채우는 조각별 본 매트릭스.
-//  인덱스 = 정점의 BlendIndices.x (= chunkID, 메시 로컬 본 인덱스).
+// 인덱스 = 정점의 BlendIndices.x (= chunkID, 메시 로컬 본 인덱스).
 StructuredBuffer<float4x4> g_ChunkMatrices : register(t0);
 
 Texture2D g_DiffuseTex : register(t1);

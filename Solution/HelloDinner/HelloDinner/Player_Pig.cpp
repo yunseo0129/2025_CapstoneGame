@@ -143,7 +143,7 @@ void CPlayer_Pig::Render(ID3D12GraphicsCommandList* _commandList)
 
 	// 콜라이더 디버깅
 #ifdef _DEBUG
-	for (CCollider* pCollider : m_vColliderComs)
+	/*for (CCollider* pCollider : m_vColliderComs)
 	{
 		if (pCollider != nullptr)
 			m_pGameInstance->Add_RenderCollider(pCollider);
@@ -152,7 +152,7 @@ void CPlayer_Pig::Render(ID3D12GraphicsCommandList* _commandList)
 	{
 		if (pCollider != nullptr)
 			m_pGameInstance->Add_RenderCollider(pCollider);
-	}
+	}*/
 #endif
 }
 
@@ -277,7 +277,7 @@ HRESULT CPlayer_Pig::Ready_Components()
 			if (FAILED(Add_Component(m_iModelLevelIndex, TEXT("Prototype_Component_OBB"),
 				TEXT("Com_Collider2"), reinterpret_cast<CComponent**>(&m_vColliderComs[COLLIDER_ARM_UP_L]), &ColliderDesc)))
 			{
-				MSG_BOX("Failed to Add Component : Head Collider in Player_3rd");
+				MSG_BOX("Failed to Add Component : ARM_UP_L Collider in Player_3rd");
 				return E_FAIL;
 			}
 		}

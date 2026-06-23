@@ -2,6 +2,7 @@
 #include "MainApp.h"
 #include "GameInstance.h"
 #include <WindowsX.h>
+#include "Fracture_System.h"
 
 #include "Level_Loading.h"
 
@@ -76,6 +77,11 @@ void CMainApp::Update(_float fTimeDelta)
         m_pGameInstance->Set_CullingBVHEnabled(!m_pGameInstance->Is_CullingBVHEnabled());
     if (m_pGameInstance->Key_Down(DIK_F5))
         m_pGameInstance->Set_InstancingEnabled(!m_pGameInstance->Is_InstancingEnabled());
+    if (m_pGameInstance->Key_Down(DIK_U))
+    {
+        if (auto pFS = m_pGameInstance->Get_FractureSystem())
+            pFS->Break_All();
+    }
 
 
 	if (acc >= 1.f)

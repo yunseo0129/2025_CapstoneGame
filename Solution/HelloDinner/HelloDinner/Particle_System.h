@@ -44,12 +44,12 @@ public:
     static const _uint MAX_PARTICLES = 131072; // 128K (256으로 나눠떨어짐 -> 512 그룹)
     static const _uint THREAD_GROUP_SIZE = 256;     // 2단계 컴퓨트 그룹 크기
 
-    // [5단계] 입자 종류(방출 프리셋). 새 종류는 여기 + .cpp의 프리셋 테이블에만 추가하면 된다.
+    // 입자 종류(방출 프리셋). 새 종류는 여기 + .cpp의 프리셋 테이블에만 추가하면 된다.
     enum PARTICLE_TYPE { KETCHUP_SPRAY, WALL_DEBRIS, WALL_DEBRIS_2, TYPE_END };
 
-    // [7b] 외형 텍스처 배열(단일 DDS)의 총 슬라이스 수. CPU 외형표(.cpp g_SpriteRanges)의
-    //  (base+count) 최댓값 및 DDS DepthOrArraySize 와 반드시 일치해야 한다.
-    //  배분: 케첩 슬라이스 0~1(2) / 파편 슬라이스 2~5(4) / 흙먼지=텍스처 미사용(GPU 절차적).
+    // 외형 텍스처 배열(단일 DDS)의 총 슬라이스 수. CPU 외형표(.cpp g_SpriteRanges)의
+    // (base+count) 최댓값 및 DDS DepthOrArraySize 와 반드시 일치해야 한다.
+    // 배분: 케첩 슬라이스 0~1(2) / 파편 슬라이스 2~5(4) / 흙먼지=텍스처 미사용(GPU 절차적).
     static const _uint PARTICLE_TEX_SLICES = 6;
 
     // 방출 요청. 종류 + 위치(+ 분사 방향/스폰 영역/개수). 색·속도패턴·크기·수명은 프리셋이 결정.
@@ -64,8 +64,8 @@ public:
 
     static const _uint PARTICLE_TYPE_COUNT = TYPE_END; // Shader_Particle.hlsl 의 PARTICLE_TYPE_COUNT 와 동일해야 함
 
-    // [6단계] 종류별 거동(물리/수명 곡선) 테이블. Shader_Particle.hlsl 의 TypeBehavior 와 정확히 동일(48 bytes).
-    //  방출 모양(.cpp의 g_Presets)과 거동(.cpp의 g_Behaviors)의 단일 출처 = PARTICLE_TYPE enum.
+    // 종류별 거동(물리/수명 곡선) 테이블. Shader_Particle.hlsl 의 TypeBehavior 와 정확히 동일(48 bytes).
+    // 방출 모양(.cpp의 g_Presets)과 거동(.cpp의 g_Behaviors)의 단일 출처 = PARTICLE_TYPE enum.
     struct TYPE_BEHAVIOR
     {
         _float  fGravityScale;            // 중력 배율 (돌=큼, 케첩=작음)
@@ -92,11 +92,11 @@ public:
 
     _uint   Get_AliveCount() const { return m_iAliveCount; }
 
-    // [3단계+] 방출. 게임 로직(CMap::Break, 케첩건 발사 등)에서 호출. 시드 입자를 스테이징에 쌓고
+    // 방출. 게임 로직(CMap::Break, 케첩건 발사 등)에서 호출. 시드 입자를 스테이징에 쌓고
     //          다음 Compute 에서 풀의 링 영역으로 복사된다(GPU 명령은 Compute가 기록).
     void    Emit(const EMIT_DESC& desc);
 
-    // [7b] 파티클 외형 텍스처(단일 배열 DDS) 로드. CTexture(TEX_ARRAY)가 내부에서 EngineContext->cmdList 로
+    // 파티클 외형 텍스처(단일 배열 DDS) 로드. CTexture(TEX_ARRAY)가 내부에서 EngineContext->cmdList 로
     //  업로드를 기록하므로, 엔진 로딩 cmdList 구간(MainApp: ResetCmdList~CloseCmdList) 안에서 호출해야
     //  업로드가 로딩 펜스(WaitForGpuComplete)로 완료 보장된다. (Loader::Loading_Level_GamePlay 에서 호출)
     HRESULT Load_ParticleTexture();

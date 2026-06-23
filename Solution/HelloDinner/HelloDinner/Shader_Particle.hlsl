@@ -85,7 +85,7 @@ VS_OUT VS_Particle(uint vid : SV_VertexID, uint iid : SV_InstanceID)
     uint proc = (packed >> 18) & 0x1u;
 
     // 회전 각 (angleQ/256 * 2pi)
-    float angle = (float) angleQ * (TWO_PI / 256.0f);
+    float angle = (float) angleQ * (TWO_PI / 155.0f);
     float sinA, cosA;
     sincos(angle, sinA, cosA);
 
