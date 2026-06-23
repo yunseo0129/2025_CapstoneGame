@@ -23,6 +23,9 @@ public:
     void Set_BlockInput(_bool _b) { m_bBlockInput = _b; }
     _bool Is_InputBlocked() const { return m_bBlockInput; }
 
+    // 캐릭터 선택 정보 수신 시 호출 — 이미 스폰된 원격 플레이어면 올바른 모델로 재생성
+    void Set_OtherPlayerCharType(int id, unsigned char charType);
+
 private:
     void Update_Input();
     void Predict_Local(_float fTimeDelta);
@@ -51,6 +54,7 @@ private:
     static constexpr _float m_fSendInterval = 1.f / 20.f;
 
     std::map<int, class CPlayer_Pig*> m_otherPlayers;
+    std::map<int, unsigned char>      m_otherCharType; // id → 선택한 캐릭터(0=Pig,1=Chick,2=Fish)
 
     _bool                   m_isMouseInput[MOUSE_END];
     _bool                   m_isPreMouseInput[MOUSE_END];

@@ -555,6 +555,16 @@ void NetworkClient::ProcessInstancePacket(char* packet)
         m_pendingMatchEvents.push_back(evt);
         break;
     }
+    case SC_CHAR_SELECT: {
+        SC_CHAR_SELECT_PACKET* p = reinterpret_cast<SC_CHAR_SELECT_PACKET*>(packet);
+        NetEvent evt{};
+        evt.type                  = NetEventType::CHAR_SELECT;
+        evt.char_select_player_id = p->player_id;
+        evt.char_select_type      = p->char_type;
+        std::lock_guard<std::mutex> lk(m_matchEventLock);
+        m_pendingMatchEvents.push_back(evt);
+        break;
+    }
     }
 }
 

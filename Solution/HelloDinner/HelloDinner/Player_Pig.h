@@ -66,6 +66,8 @@ private:
 
 public:
 	void Apply_NetworkMatrix(const float* pMatrix, unsigned short keyInput = 0);
+    // 재생성 시 현재 위치 보존용 — m_drTargetMat 스냅샷
+    void Get_NetworkMatrix(float* outMatrix) const;
 
 public:
 	static CPlayer_Pig* Create(EngineContext* pContext);

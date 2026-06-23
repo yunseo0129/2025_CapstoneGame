@@ -596,6 +596,11 @@ void CPlayer_Pig::Apply_NetworkMatrix(const float* pMatrix, unsigned short keyIn
         m_bIsJumping = false;
 }
 
+void CPlayer_Pig::Get_NetworkMatrix(float* outMatrix) const
+{
+    memcpy(outMatrix, &m_drTargetMat, sizeof(float) * 16);
+}
+
 void CPlayer_Pig::Update_DeadReckoning(float fTimeDelta)
 {
     if (!m_drHasData) return;

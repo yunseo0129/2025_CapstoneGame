@@ -35,8 +35,10 @@ enum class GAME_PHASE
 struct PLAYER_STAT
 {
     _int    iSlot = -1;             // 슬롯/플레이어 인덱스
+    _int    iPlayerId = -1;         // 로비 플레이어 ID (-1 = 더미/미설정)
     _int    iTeam = 0;              // 0: 팀A, 1: 팀B
     _wstring strName = L"Player";
+    _int    iCharType = 0;          // 선택 캐릭터 (0=Pig, 1=Chick, 2=Fish)
     _int    iKill = 0;
     _int    iDeath = 0;
     _int    iAssist = 0;
@@ -89,6 +91,7 @@ public:
     void    Apply_TimerSync(unsigned int time_ms);  // SC_TIMER_SYNC 수신 → 타이머 갱신
     void    Apply_RosterInfo(unsigned char count, const RosterEntry* entries); // SC_ROSTER_INFO 수신 → m_vStats 교체
     void    Apply_MapLoaded(unsigned char slot);                               // SC_MAP_LOADED 수신 → bMapLoaded 갱신
+    void    Apply_CharSelect(int player_id, unsigned char char_type);          // SC_CHAR_SELECT 수신 → iCharType 갱신
 
 private:
     // ---- 단계 진입(한 번) ----

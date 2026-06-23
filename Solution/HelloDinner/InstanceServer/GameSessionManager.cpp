@@ -110,6 +110,22 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
     case CS_CHAR_SELECT: {
         CS_CHAR_SELECT_PACKET* p = reinterpret_cast<CS_CHAR_SELECT_PACKET*>(packet);
         m_clients[c_id].m_iCharType = p->char_type;
+
+        int room_id = m_clients[c_id].m_room_id;
+        if (room_id != -1) {
+            auto* room = GetRoom(room_id);
+            if (room && room->IsActive()) {
+                SC_CHAR_SELECT_PACKET pkt{};
+                pkt.size      = sizeof(SC_CHAR_SELECT_PACKET);
+                pkt.type      = SC_CHAR_SELECT;
+                pkt.player_id = m_clients[c_id].m_lobby_player_id;
+                pkt.char_type = p->char_type;
+                for (int pid : room->GetPlayerIds()) {
+                    if (m_clients[pid].m_state != ST_INGAME) continue;
+                    m_clients[pid].Send(&pkt);
+                }
+            }
+        }
         cout << "[Instance] Client [" << c_id << "] selected char " << (int)p->char_type << endl;
         break;
     }

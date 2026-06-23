@@ -8,6 +8,17 @@
 
 IMPLEMENT_SINGLETON(CController)
 
+// 캐릭터 타입(0=Pig,1=Chick,2=Fish) → 3인칭 body 모델 컴포넌트 태그
+static const wchar_t* CharModelTag(unsigned char t)
+{
+    switch (t)
+    {
+    case 1:  return L"Prototype_Component_Chick_3rd";
+    case 2:  return L"Prototype_Component_Fish_3rd";
+    default: return L"Prototype_Component_Pig_3rd";
+    }
+}
+
 CController::CController() : m_pGameInstance{ CGameInstance::GetInstance() }
 {
 }
@@ -260,8 +271,12 @@ void CController::Spawn_OtherPlayer(int id, const float* worldMatrix)
 {
     if (m_otherPlayers.count(id)) return;
 
+    // 이미 char type이 알려진 경우 처음부터 올바른 모델로 생성
+    auto itc = m_otherCharType.find(id);
+    unsigned char ct = (itc != m_otherCharType.end()) ? itc->second : 0;
+
     CPlayer_Pig::PLAYER_PIG_DESC desc;
-    desc.strModelTag     = L"Prototype_Component_Pig_3rd";
+    desc.strModelTag     = CharModelTag(ct);
     desc.iModelLevelIndex = LEVEL_GAMEPLAY;
     desc.fSpeedPerSec    = 1.f;
     desc.fRotationPerSec = 1.f;
@@ -287,6 +302,28 @@ void CController::Remove_OtherPlayer(int id)
     m_otherPlayers.erase(it);
 }
 
+void CController::Set_OtherPlayerCharType(int id, unsigned char charType)
+{
+    // 이전 값과 같으면 재생성 불필요
+    auto prev = m_otherCharType.find(id);
+    bool bChanged = (prev == m_otherCharType.end() || prev->second != charType);
+    m_otherCharType[id] = charType;
+
+    if (!bChanged) return;
+
+    // 이미 스폰된 플레이어가 있으면 올바른 모델로 재생성
+    auto it = m_otherPlayers.find(id);
+    if (it == m_otherPlayers.end()) return;
+
+    // 현재 위치 캡처 후 기존 객체 제거
+    float savedMatrix[16];
+    it->second->Get_NetworkMatrix(savedMatrix);
+    it->second->SetDead();
+    m_otherPlayers.erase(it);  // erase 후 Spawn_OtherPlayer (중복체크 통과)
+
+    Spawn_OtherPlayer(id, savedMatrix);
+}
+
 void CController::Move_OtherPlayer(int id, const float* worldMatrix, unsigned short keyInput)
 {
     auto it = m_otherPlayers.find(id);
@@ -299,6 +336,7 @@ void CController::Clear_OtherPlayers()
     for (auto& pair : m_otherPlayers)
         pair.second->SetDead();
     m_otherPlayers.clear();
+    m_otherCharType.clear();
 }
 
 void CController::Input_UI(_float fTimeDelta)
@@ -318,4 +356,5 @@ void CController::Free()
         Safe_Release(m_pPlayer);
     // m_otherPlayers의 CPlayer_Pig*는 Layer가 소유하므로 해제하지 않는다
     m_otherPlayers.clear();
+    m_otherCharType.clear();
 }

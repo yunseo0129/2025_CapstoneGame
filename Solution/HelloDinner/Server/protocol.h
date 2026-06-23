@@ -228,6 +228,7 @@ constexpr char SC_ROUND_END    = 22;   // 라운드 종료 (승패 + 점수)
 constexpr char SC_SCORE_UPDATE = 33;   // K/D/A + 팀 점수 브로드캐스트
 constexpr char SC_TIMER_SYNC   = 36;   // 페이즈 남은 시간 주기 전송 (0 = 만료 신호)
 constexpr char SC_MAP_LOADED   = 38;   // 특정 플레이어 맵 로드 완료 브로드캐스트
+constexpr char SC_CHAR_SELECT  = 39;   // 캐릭터 선택 릴레이 (인스턴스 → 클라 전체)
 
 struct SC_PHASE_CHANGE_PACKET {
     unsigned char size;
@@ -310,6 +311,14 @@ struct SC_MAP_LOADED_PACKET {
     unsigned char size;
     char          type;   // SC_MAP_LOADED
     unsigned char slot;   // 로드 완료한 플레이어 슬롯 (0~5)
+};
+
+// 캐릭터 선택 릴레이 (인스턴스 서버 → 클라 전체)
+struct SC_CHAR_SELECT_PACKET {
+    unsigned char size;
+    char          type;       // SC_CHAR_SELECT
+    int           player_id;  // 선택한 플레이어의 로비 ID
+    unsigned char char_type;  // 0=Pig, 1=Chick, 2=Fish
 };
 
 #pragma pack (pop)

@@ -147,6 +147,9 @@ void CGame_Manager::Update(_float fTimeDelta)
             case NetworkClient::NetEventType::MAP_LOADED:
                 Apply_MapLoaded(evt.map_slot);
                 break;
+            case NetworkClient::NetEventType::CHAR_SELECT:
+                Apply_CharSelect(evt.char_select_player_id, evt.char_select_type);
+                break;
             default:
                 break;
             }
@@ -323,10 +326,12 @@ void CGame_Manager::Update_CharSelect(_float fTimeDelta)
         if (CController* p = m_pGameInstance->Get_Controller())
             p->Set_BlockInput(false);
 
-        // Ready 클릭 시 서버에 CS_PHASE_READY(0) 즉시 전송 (중복 방지)
+        // Ready 클릭 시 서버에 CS_CHAR_SELECT + CS_PHASE_READY(0) 즉시 전송 (중복 방지)
         if (!m_bSelectExpired)
         {
             m_bSelectExpired = true;
+            const unsigned char ct = (m_iCSMyCharacter >= 0) ? (unsigned char)m_iCSMyCharacter : 0u;
+            NetworkClient::GetInstance()->Send_CharSelect(ct);
             NetworkClient::GetInstance()->Send_PhaseReady(0);
         }
         // 페이즈 전환은 서버 SC_PHASE_CHANGE(SCOREBOARD) 수신 대기
@@ -511,6 +516,8 @@ void CGame_Manager::Apply_RosterInfo(unsigned char count, const RosterEntry* ent
 
         if (iSlot < 0 || iSlot >= (_int)m_vStats.size()) continue;
 
+        m_vStats[iSlot].iPlayerId = e.player_id;
+
         if (e.player_id == myId)
         {
             m_vStats[iSlot].strName = L"Me";
@@ -530,6 +537,25 @@ void CGame_Manager::Apply_RosterInfo(unsigned char count, const RosterEntry* ent
 void CGame_Manager::Apply_MapLoaded(unsigned char slot)
 {
     Notify_MapLoaded(static_cast<_int>(slot));
+}
+
+void CGame_Manager::Apply_CharSelect(int player_id, unsigned char char_type)
+{
+    for (auto& stat : m_vStats)
+    {
+        if (stat.iPlayerId == player_id)
+        {
+            stat.iCharType = static_cast<_int>(char_type);
+            break;
+        }
+    }
+
+    // 본인이 아닌 원격 플레이어만 — 선택한 캐릭터 모델로 재생성 요청
+    if (player_id != NetworkClient::GetInstance()->GetMyId())
+    {
+        if (CController* pController = m_pGameInstance->Get_Controller())
+            pController->Set_OtherPlayerCharType(player_id, char_type);
+    }
 }
 
 // =====================================================================
@@ -571,7 +597,9 @@ void CGame_Manager::Setup_DummyPlayers()
     for (_int i = 0; i < 6; ++i)
     {
         PLAYER_STAT stat;
-        stat.iSlot = i;
+        stat.iSlot     = i;
+        stat.iPlayerId = -1;   // Apply_RosterInfo에서 실제 ID로 교체
+        stat.iCharType = 0;    // 기본 Pig
         stat.iTeam = (i < 3) ? 0 : 1;   // 앞 3명 RED, 뒤 3명 BLUE
 
         if (i == iMySlot)

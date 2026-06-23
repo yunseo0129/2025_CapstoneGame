@@ -20,6 +20,8 @@ public:
         ROSTER_INFO,
         // Phase 3: 맵 로드 완료
         MAP_LOADED,
+        // Phase 4: 캐릭터 선택 릴레이
+        CHAR_SELECT,
     };
 
     struct NetEvent {
@@ -50,6 +52,10 @@ public:
 
         // MAP_LOADED
         unsigned char   map_slot       = 0;
+
+        // CHAR_SELECT
+        int             char_select_player_id = -1;
+        unsigned char   char_select_type      = 0;
     };
 
 public:
