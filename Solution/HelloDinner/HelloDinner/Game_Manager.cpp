@@ -144,6 +144,9 @@ void CGame_Manager::Update(_float fTimeDelta)
             case NetworkClient::NetEventType::ROSTER_INFO:
                 Apply_RosterInfo(evt.roster_count, evt.roster);
                 break;
+            case NetworkClient::NetEventType::MAP_LOADED:
+                Apply_MapLoaded(evt.map_slot);
+                break;
             default:
                 break;
             }
@@ -239,6 +242,10 @@ void CGame_Manager::OnEnter_Scoreboard()
     m_bSelectExpired   = false;
     m_fSelectTimer     = SCOREBOARD_TIMEOUT;  // SC_TIMER_SYNC 도착 전 표시용 초기값
     Reset_RoundLoadFlags();
+
+    // 맵 로드 완료를 서버에 통보 → 전원 완료 시 서버가 SCOREBOARD→SHOP 전환
+    const unsigned char myFlatSlot = static_cast<unsigned char>(m_iMyTeam * 3 + (m_iMyNumber - 1));
+    NetworkClient::GetInstance()->Send_MapLoaded(myFlatSlot);
 
     // 매 라운드 시작 시 내 플레이어를 시작 지점(캐릭터 선택 때의 위치)으로 되돌린다.
     //  다음 라운드는 CharSelect 를 건너뛰고 곧장 스코어보드로 진입하므로,
@@ -518,6 +525,11 @@ void CGame_Manager::Apply_RosterInfo(unsigned char count, const RosterEntry* ent
     }
 
     GM_Log(L"Apply_RosterInfo: %d 명 로스터 적용", count);
+}
+
+void CGame_Manager::Apply_MapLoaded(unsigned char slot)
+{
+    Notify_MapLoaded(static_cast<_int>(slot));
 }
 
 // =====================================================================

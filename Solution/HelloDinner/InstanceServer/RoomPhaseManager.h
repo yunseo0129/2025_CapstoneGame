@@ -25,6 +25,7 @@ struct RoomPhaseState {
     float       timer_sec         = 0.f;     // 현재 페이즈 남은 시간
     float       sync_elapsed      = 0.f;     // 마지막 SC_TIMER_SYNC 전송 후 경과 시간
     int         phase_ready_count = 0;       // CS_PHASE_READY 수신 인원 (이번 페이즈)
+    int         map_loaded_count  = 0;       // CS_MAP_LOADED 수신 인원 (이번 SCOREBOARD)
     int         expected          = 0;       // 입장 예정 인원 (IS_ROOM_NOTIFY.player_count)
     int         joined            = 0;       // CS_JOIN_ROOM 완료 인원
     bool        active            = false;
@@ -49,6 +50,7 @@ public:
     void OnPlayerLeft(int room_id);
     void OnRoundEnd(int room_id, int winner_team);       // Phase 3: 서버 히트 판정 후 호출
     void OnPlayerPhaseReady(int room_id, unsigned char phase); // 클라 타이머 만료 알림
+    void OnMapLoaded(int room_id, unsigned char slot);         // 클라 맵 로드 완료 알림
 
 private:
     RoomPhaseManager() = default;
@@ -66,6 +68,7 @@ private:
                             unsigned char score_a, unsigned char score_b);
     void Broadcast_ScoreUpdate(int room_id);
     void Broadcast_RosterInfo(int room_id);
+    void Broadcast_MapLoaded(int room_id, unsigned char slot);
 
     array<RoomPhaseState, MAX_ROOM> m_rooms;
     mutex m_lock;

@@ -37,6 +37,7 @@ constexpr char CS_QUICK_MATCH    = 9;  // 빠른 매칭 옵트인
 constexpr char CS_SELECT_SEAT    = 10; // 팀/번호 선택 (0xFF/0 = 해제)
 constexpr char CS_PLAYER_READY   = 11; // 준비/준비해제 토글
 constexpr char CS_PHASE_READY    = 13; // 인게임 페이즈 타이머 만료 알림 (인스턴스 서버 전용)
+constexpr char CS_MAP_LOADED     = 14; // 맵 로드 완료 통보 (인스턴스 서버 전용)
 
 // 패킷 ID (서버 → 클라)
 constexpr char SC_LOGIN_INFO = 0;
@@ -226,6 +227,7 @@ constexpr char SC_ROUND_START  = 21;   // 라운드 시작 (타이머 동기화)
 constexpr char SC_ROUND_END    = 22;   // 라운드 종료 (승패 + 점수)
 constexpr char SC_SCORE_UPDATE = 33;   // K/D/A + 팀 점수 브로드캐스트
 constexpr char SC_TIMER_SYNC   = 36;   // 페이즈 남은 시간 주기 전송 (0 = 만료 신호)
+constexpr char SC_MAP_LOADED   = 38;   // 특정 플레이어 맵 로드 완료 브로드캐스트
 
 struct SC_PHASE_CHANGE_PACKET {
     unsigned char size;
@@ -294,6 +296,20 @@ struct SC_TIMER_SYNC_PACKET {
     unsigned char size;
     char          type;     // SC_TIMER_SYNC
     unsigned int  time_ms;  // 남은 시간(ms). 0 = 타이머 만료 신호
+};
+
+// 맵 로드 완료 통보 (클라 → 인스턴스 서버)
+struct CS_MAP_LOADED_PACKET {
+    unsigned char size;
+    char          type;   // CS_MAP_LOADED
+    unsigned char slot;   // 발신자 평면 슬롯 (team*3 + (number-1), 0~5)
+};
+
+// 특정 플레이어 맵 로드 완료 (인스턴스 서버 → 클라)
+struct SC_MAP_LOADED_PACKET {
+    unsigned char size;
+    char          type;   // SC_MAP_LOADED
+    unsigned char slot;   // 로드 완료한 플레이어 슬롯 (0~5)
 };
 
 #pragma pack (pop)

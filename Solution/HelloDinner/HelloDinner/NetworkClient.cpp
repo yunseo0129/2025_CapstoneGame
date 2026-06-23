@@ -245,6 +245,16 @@ void NetworkClient::Send_PhaseReady(unsigned char phase)
     SendToInstance(&p, p.size);
 }
 
+void NetworkClient::Send_MapLoaded(unsigned char slot)
+{
+    if (m_bOfflineMode || m_instanceSocket == INVALID_SOCKET) return;
+    CS_MAP_LOADED_PACKET p{};
+    p.size = sizeof(CS_MAP_LOADED_PACKET);
+    p.type = CS_MAP_LOADED;
+    p.slot = slot;
+    SendToInstance(&p, p.size);
+}
+
 // ─────────────────────────────────────────────
 // 캐릭터 선택 완료 → 인스턴스 서버로 전송 (Ready 클릭 시 1회)
 // ─────────────────────────────────────────────
@@ -532,6 +542,15 @@ void NetworkClient::ProcessInstancePacket(char* packet)
         evt.roster_count = p->player_count;
         for (int i = 0; i < p->player_count && i < ROOM_MAX_PLAYER; ++i)
             evt.roster[i] = p->players[i];
+        std::lock_guard<std::mutex> lk(m_matchEventLock);
+        m_pendingMatchEvents.push_back(evt);
+        break;
+    }
+    case SC_MAP_LOADED: {
+        SC_MAP_LOADED_PACKET* p = reinterpret_cast<SC_MAP_LOADED_PACKET*>(packet);
+        NetEvent evt{};
+        evt.type     = NetEventType::MAP_LOADED;
+        evt.map_slot = p->slot;
         std::lock_guard<std::mutex> lk(m_matchEventLock);
         m_pendingMatchEvents.push_back(evt);
         break;

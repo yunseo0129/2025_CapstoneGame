@@ -120,6 +120,13 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
             RoomPhaseManager::GetInstance()->OnPlayerPhaseReady(room_id, p->phase);
         break;
     }
+    case CS_MAP_LOADED: {
+        CS_MAP_LOADED_PACKET* p = reinterpret_cast<CS_MAP_LOADED_PACKET*>(packet);
+        int room_id = m_clients[c_id].m_room_id;
+        if (room_id != -1)
+            RoomPhaseManager::GetInstance()->OnMapLoaded(room_id, p->slot);
+        break;
+    }
     case CS_LOGOUT: {
         cout << "[Instance] Client [" << c_id << "] logout requested." << endl;
         Disconnect(c_id);

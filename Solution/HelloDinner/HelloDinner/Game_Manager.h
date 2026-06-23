@@ -88,6 +88,7 @@ public:
                               unsigned char player_count, const PlayerStatBrief* stats);
     void    Apply_TimerSync(unsigned int time_ms);  // SC_TIMER_SYNC 수신 → 타이머 갱신
     void    Apply_RosterInfo(unsigned char count, const RosterEntry* entries); // SC_ROSTER_INFO 수신 → m_vStats 교체
+    void    Apply_MapLoaded(unsigned char slot);                               // SC_MAP_LOADED 수신 → bMapLoaded 갱신
 
 private:
     // ---- 단계 진입(한 번) ----

@@ -545,6 +545,9 @@
     <ClInclude Include="CharSelect_Fish.h">
       <Filter>소스 파일\02. Game\01. Levels\05. Charselect\list</Filter>
     </ClInclude>
+    <ClInclude Include="NetPlayer.h">
+      <Filter>소스 파일\03. Network</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DDSTextureLoader12.cpp">
@@ -579,9 +582,6 @@
     </ClCompile>
     <ClCompile Include="Input_Device.cpp">
       <Filter>소스 파일\01. Engine\00. System\01. Device\Input</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderer.cpp">
-      <Filter>소스 파일\01. Engine\05. Renderer</Filter>
     </ClCompile>
     <ClCompile Include="GameObject.cpp">
       <Filter>소스 파일\01. Engine\03. Objects</Filter>
@@ -810,6 +810,12 @@
     </ClCompile>
     <ClCompile Include="CharSelect_Fish.cpp">
       <Filter>소스 파일\02. Game\01. Levels\05. Charselect\list</Filter>
+    </ClCompile>
+    <ClCompile Include="NetPlayer.cpp">
+      <Filter>소스 파일\03. Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>소스 파일\01. Engine\05. Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

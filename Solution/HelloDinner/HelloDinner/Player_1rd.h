@@ -126,9 +126,9 @@ private:
     float                       m_fPredictSpeed = 1.f;
     float                       m_fPredictRotation = 1.f;
 
-    static constexpr float      SOFT_TOLERANCE = 0.05f;
-    static constexpr float      HARD_TOLERANCE = 0.50f;
-    static constexpr float      LERP_RATE = 12.f;
+    static constexpr float      SOFT_TOLERANCE = 0.15f;
+    static constexpr float      HARD_TOLERANCE = 3.0f;
+    static constexpr float      LERP_RATE = 5.f;
 
 public:
     static CPlayer_1rd* Create(EngineContext* pContext);

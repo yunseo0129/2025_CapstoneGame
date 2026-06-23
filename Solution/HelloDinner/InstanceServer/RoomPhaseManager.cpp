@@ -76,7 +76,7 @@ void RoomPhaseManager::TransitionTo(int room_id, ROOM_PHASE next)
         r.phase_ready_count = 0;
         switch (next) {
         case ROOM_PHASE::CHARSELECT: r.timer_sec = CHARSELECT_DURATION; break;
-        case ROOM_PHASE::SCOREBOARD: r.timer_sec = SCOREBOARD_DURATION; break;
+        case ROOM_PHASE::SCOREBOARD: r.timer_sec = SCOREBOARD_DURATION; r.map_loaded_count = 0; break;
         case ROOM_PHASE::SHOP:       r.timer_sec = SHOP_DURATION;       break;
         case ROOM_PHASE::PLAYING:    r.timer_sec = ROUND_DURATION;      break;
         case ROOM_PHASE::GAMEOVER:   r.timer_sec = 0.f; r.active = false; break;
@@ -110,6 +110,7 @@ void RoomPhaseManager::OnRoomRegistered(const IS_ROOM_NOTIFY_PACKET& pkt)
     r.timer_sec         = 0.f;
     r.sync_elapsed      = 0.f;
     r.phase_ready_count = 0;
+    r.map_loaded_count  = 0;
     r.expected          = pkt.player_count;
     r.joined            = 0;
     r.active            = true;
@@ -294,6 +295,32 @@ void RoomPhaseManager::Broadcast_TimerSync(int room_id)
     pkt.size    = sizeof(pkt);
     pkt.type    = SC_TIMER_SYNC;
     pkt.time_ms = time_ms;
+    BroadcastToRoom(room_id, &pkt);
+}
+
+// ── CS_MAP_LOADED 수신: 전원 완료 시 SCOREBOARD → SHOP 전환 ──────────
+
+void RoomPhaseManager::OnMapLoaded(int room_id, unsigned char slot)
+{
+    bool all_loaded = false;
+    {
+        lock_guard<mutex> lk(m_lock);
+        auto& r = m_rooms[room_id];
+        if (!r.active || r.phase != ROOM_PHASE::SCOREBOARD) return;
+        ++r.map_loaded_count;
+        all_loaded = (r.map_loaded_count >= r.joined);
+    }
+    Broadcast_MapLoaded(room_id, slot);
+    if (all_loaded)
+        TransitionTo(room_id, ROOM_PHASE::SHOP);
+}
+
+void RoomPhaseManager::Broadcast_MapLoaded(int room_id, unsigned char slot)
+{
+    SC_MAP_LOADED_PACKET pkt{};
+    pkt.size = sizeof(pkt);
+    pkt.type = SC_MAP_LOADED;
+    pkt.slot = slot;
     BroadcastToRoom(room_id, &pkt);
 }
 

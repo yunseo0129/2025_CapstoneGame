@@ -18,6 +18,8 @@ public:
         TIMER_SYNC,
         // Phase 2: 매치 로스터
         ROSTER_INFO,
+        // Phase 3: 맵 로드 완료
+        MAP_LOADED,
     };
 
     struct NetEvent {
@@ -45,6 +47,9 @@ public:
         // ROSTER_INFO
         unsigned char   roster_count   = 0;
         RosterEntry     roster[ROOM_MAX_PLAYER] = {};
+
+        // MAP_LOADED
+        unsigned char   map_slot       = 0;
     };
 
 public:
@@ -63,6 +68,8 @@ public:
     void Send_CharSelect(unsigned char charType);
     // 인게임 페이즈 타이머 만료 → 서버에 다음 페이즈 준비 완료 알림
     void Send_PhaseReady(unsigned char phase);
+    // 맵 로드 완료 → 인스턴스 서버로 통보
+    void Send_MapLoaded(unsigned char slot);
 
     // ── 수동 방 관련 송신 (로비 소켓) ──────────────────────────────────
     void Send_CreateRoom();

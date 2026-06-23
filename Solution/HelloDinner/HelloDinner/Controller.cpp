@@ -203,14 +203,20 @@ void CController::Apply_ServerEvents(_float fTimeDelta)
 
     int myId = pNet->GetMyId();
 
+    // 로컬 플레이어: 프레임당 마지막 MOVED 에코만 보정에 사용
+    const NetPlayer::Event* pLastMyMoved = nullptr;
+    for (auto& evt : events)
+    {
+        if (evt.id == myId && evt.type == NetPlayer::EventType::MOVED)
+            pLastMyMoved = &evt;
+    }
+
     for (auto& evt : events)
     {
         if (evt.id == myId)
         {
             if (evt.type == NetPlayer::EventType::MOVED && m_pPlayer && !m_pPlayer->IsDead() && !m_pPlayer->Get_Die())
             {
-                m_pPlayer->Apply_ServerCorrection(evt.worldMatrix, fTimeDelta);
-
                 // 서버가 에코한 keyInput 상승 에지 → 1인칭 애니메이션
                 unsigned short risingEdge = (~m_prevServerKeyInput) & evt.keyInput;
                 m_prevServerKeyInput = evt.keyInput;
@@ -226,6 +232,10 @@ void CController::Apply_ServerEvents(_float fTimeDelta)
                             if (m_pCrosshair) m_pCrosshair->On_Fire();
                     }
                 }
+
+                // 위치 보정은 가장 최신 에코 한 번만 적용
+                if (&evt == pLastMyMoved)
+                    m_pPlayer->Apply_ServerCorrection(evt.worldMatrix, fTimeDelta);
             }
             continue;
         }
