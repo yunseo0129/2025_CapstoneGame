@@ -6,6 +6,13 @@ void RoomPhaseManager::StartTimerThread()
     thread(&RoomPhaseManager::TimerLoop, this).detach();
 }
 
+ROOM_PHASE RoomPhaseManager::GetRoomPhase(int room_id)
+{
+    if (room_id < 0 || room_id >= MAX_ROOM) return ROOM_PHASE::WAITING;
+    lock_guard<mutex> lk(m_lock);
+    return m_rooms[room_id].phase;
+}
+
 // 50ms 주기(20Hz)로 모든 룸의 타이머를 갱신
 void RoomPhaseManager::TimerLoop()
 {
@@ -94,8 +101,16 @@ void RoomPhaseManager::TransitionTo(int room_id, ROOM_PHASE next)
     if (next != ROOM_PHASE::GAMEOVER)
         Broadcast_TimerSync(room_id);
 
+    // 선택/스코어보드 페이즈: 팀 시작 지점(y=25)으로 이동 + 전원 즉시 동기화
+    if (next == ROOM_PHASE::CHARSELECT || next == ROOM_PHASE::SCOREBOARD)
+        ApplyTeamSpawnPositions(room_id);
+
     if (next == ROOM_PHASE::PLAYING)
+    {
+        // 스폰 위치를 서버 권위 위치에 적용 후 전원에게 즉시 동기화
+        ApplySpawnPositions(room_id);
         Broadcast_RoundStart(room_id, round, static_cast<unsigned int>(ROUND_DURATION * 1000));
+    }
 }
 
 // ── 이벤트 진입점 ────────────────────────────────────────────────────
@@ -220,6 +235,108 @@ void RoomPhaseManager::Broadcast_PhaseChange(int room_id, ROOM_PHASE phase, int 
     cout << "[Phase] Room " << room_id
          << " phase=" << (int)pkt.phase
          << " round=" << round << endl;
+}
+
+void RoomPhaseManager::ApplySpawnPositions(int room_id)
+{
+    auto* gsm  = GameSessionManager::GetInstance();
+    auto* room = gsm->GetRoom(room_id);
+    if (!room || !room->IsActive()) return;
+
+    const vector<int>& ids = room->GetPlayerIds();
+
+    // 1) 각 플레이어 위치를 선택 스폰 좌표로 세팅
+    for (int pid : ids)
+    {
+        auto& s = gsm->GetClient(pid);
+        lock_guard<mutex> lk(s.m_s_lock);
+        if (s.m_state != ST_INGAME) continue;
+
+        const float* sp = s.m_spawnPos;
+        // m_spawnPos가 미선택 상태(0,0,0)이면 GROUND_HEIGHT만 보정
+        const bool bSelected = (sp[0] != 0.f || sp[1] != 0.f || sp[2] != 0.f);
+        if (bSelected)
+            s.m_worldMatrix.SetPosition(sp[0], sp[1], sp[2]);
+        else
+            s.m_worldMatrix.SetPosition(s.m_worldMatrix.m[12],
+                                        WorldMatrixInfo::GROUND_HEIGHT,
+                                        s.m_worldMatrix.m[14]);
+
+        // 낙하 모멘텀 제거 (스폰 직후 중력으로 즉시 아래로 밀리는 것 방지)
+        s.m_player.fVerticalVelocity = 0.f;
+        s.m_player.bIsGrounded       = true;
+    }
+
+    // 즉시 브로드캐스트를 하지 않는다.
+    // 클라이언트는 PLAYING 진입 시 Apply_SpawnLaunch로 싱크대→식탁 포물선 연출을 자체 처리하며,
+    // 발사 중 보내는 CS_MOVE 위치를 서버가 채택(GameSessionManager.cpp memcpy)하므로
+    // 권위 위치도 포물선을 따라가다 착지(식탁, GROUND_HEIGHT)에서 수렴한다.
+    // 즉시 전송하면 클라가 PLAYING 진입 전에 식탁 위치를 받아 텔레포트처럼 보이는 부작용이 발생한다.
+
+    cout << "[Phase] Room " << room_id << " spawn positions applied (broadcast deferred to CS_MOVE)." << endl;
+}
+
+void RoomPhaseManager::ApplyTeamSpawnPositions(int room_id)
+{
+    auto* gsm  = GameSessionManager::GetInstance();
+    auto* room = gsm->GetRoom(room_id);
+    if (!room || !room->IsActive()) return;
+
+    const vector<int>& ids = room->GetPlayerIds();
+
+    // roster 스냅샷을 먼저 읽는다 (세션 락과 m_lock 중첩 금지 → 데드락 방지)
+    PlayerRosterEntry roster_snap[ROOM_MAX_PLAYER] = {};
+    int roster_count = 0;
+    {
+        lock_guard<mutex> lk(m_lock);
+        auto& r    = m_rooms[room_id];
+        roster_count = r.roster_count;
+        for (int i = 0; i < roster_count; ++i)
+            roster_snap[i] = r.roster[i];
+    }
+
+    // 각 플레이어를 팀 시작 지점으로 세팅
+    // 공식(클라 Defines.h::Get_SpawnSpot 과 동일):
+    //   x = 5*number-5,  y = 25,  z = (team==0 RED)?50:-60
+    for (int pid : ids)
+    {
+        auto& s = gsm->GetClient(pid);
+        lock_guard<mutex> lk(s.m_s_lock);
+        if (s.m_state != ST_INGAME) continue;
+
+        int team   = 0;
+        int number = 1;
+        for (int i = 0; i < roster_count; ++i)
+        {
+            if (roster_snap[i].player_id == s.m_lobby_player_id)
+            {
+                team   = roster_snap[i].team;
+                number = roster_snap[i].slot;
+                if (number < 1) number = 1;
+                break;
+            }
+        }
+
+        float x = 5.f * number - 5.f;
+        float y = 25.f;
+        float z = (team == 0) ? 50.f : -60.f;
+        s.m_worldMatrix.SetPosition(x, y, z);
+        s.m_player.fVerticalVelocity = 0.f;
+        s.m_player.bIsGrounded       = true;
+    }
+
+    // 전원에게 즉시 동기화 (선택 페이즈는 발사 연출이 없으므로 즉시 브로드캐스트가 올바름)
+    for (int sender_pid : ids)
+    {
+        if (gsm->GetClient(sender_pid).m_state != ST_INGAME) continue;
+        for (int receiver_pid : ids)
+        {
+            if (gsm->GetClient(receiver_pid).m_state != ST_INGAME) continue;
+            gsm->GetClient(receiver_pid).Send_Move_Packet(sender_pid, gsm);
+        }
+    }
+
+    cout << "[Phase] Room " << room_id << " team spawn positions applied (y=25)." << endl;
 }
 
 void RoomPhaseManager::Broadcast_RoundStart(int room_id, int round, unsigned int duration_ms)

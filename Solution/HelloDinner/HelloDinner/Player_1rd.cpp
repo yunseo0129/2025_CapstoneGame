@@ -388,6 +388,11 @@ void CPlayer_1rd::Anima()
 
 void CPlayer_1rd::Apply_ServerCorrection(const float* pServerMatrix, float fTimeDelta)
 {
+    // 포물선 발사(스폰) 중에는 서버 위치 보정을 적용하지 않는다.
+    // 발사가 끝나면(m_bLaunching=false) 보정이 재개되어 착지 지점(=서버 권위 위치)으로 수렴.
+    if (m_bLaunching)
+        return;
+
     if (!m_bPredictionInit)
     {
         m_pTransformCom->Set_State(CTransform::STATE_POSITION,

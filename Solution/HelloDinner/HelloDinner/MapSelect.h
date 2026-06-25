@@ -89,6 +89,9 @@ public:
     _float3 Get_SelectedWorld() const { return m_vSelectedWorld; } // y 는 맵 조각 높이(없으면 0)
     void    Clear_Selection() { m_bHasSelection = false; }
 
+    // 선택 영역 모델 윗면 Y + 오프셋 (미확보 시 폴백값 33.f 반환)
+    _float  Get_TableTopY() const { return m_bTableResolved ? (m_fTableTopY + m_fSpawnTopOffset) : 33.f; }
+
 private:
     HRESULT   Ready_Components();
 

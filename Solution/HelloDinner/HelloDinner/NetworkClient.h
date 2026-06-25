@@ -22,6 +22,8 @@ public:
         MAP_LOADED,
         // Phase 4: 캐릭터 선택 릴레이
         CHAR_SELECT,
+        // Phase 5: 스폰 위치 선택 릴레이
+        SPAWN_SELECT,
     };
 
     struct NetEvent {
@@ -56,6 +58,12 @@ public:
         // CHAR_SELECT
         int             char_select_player_id = -1;
         unsigned char   char_select_type      = 0;
+
+        // SPAWN_SELECT
+        int             spawn_select_player_id = -1;
+        float           spawn_x = 0.f;
+        float           spawn_y = 0.f;
+        float           spawn_z = 0.f;
     };
 
 public:
@@ -72,6 +80,8 @@ public:
 
     // 캐릭터 선택 완료 통보 (Ready 클릭 시 1회) — 오프라인 모드에서는 무시
     void Send_CharSelect(unsigned char charType);
+    // 스폰 위치 선택 통보 (SHOP 종료 시 1회) — 오프라인 모드에서는 무시
+    void Send_SpawnSelect(const float* worldPos);
     // 인게임 페이즈 타이머 만료 → 서버에 다음 페이즈 준비 완료 알림
     void Send_PhaseReady(unsigned char phase);
     // 맵 로드 완료 → 인스턴스 서버로 통보

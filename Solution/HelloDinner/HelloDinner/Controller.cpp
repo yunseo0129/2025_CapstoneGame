@@ -324,6 +324,20 @@ void CController::Set_OtherPlayerCharType(int id, unsigned char charType)
     Spawn_OtherPlayer(id, savedMatrix);
 }
 
+void CController::Launch_OtherPlayer(int id, const _float3& vTarget, float arc)
+{
+    auto it = m_otherPlayers.find(id);
+    if (it == m_otherPlayers.end()) return;
+    it->second->Launch_To(vTarget, arc);
+}
+
+void CController::Teleport_OtherPlayer(int id, const _float3& vPos)
+{
+    auto it = m_otherPlayers.find(id);
+    if (it == m_otherPlayers.end()) return;
+    it->second->Set_Position(vPos);
+}
+
 void CController::Move_OtherPlayer(int id, const float* worldMatrix, unsigned short keyInput)
 {
     auto it = m_otherPlayers.find(id);

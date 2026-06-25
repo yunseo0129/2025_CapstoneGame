@@ -38,6 +38,7 @@ constexpr char CS_SELECT_SEAT    = 10; // 팀/번호 선택 (0xFF/0 = 해제)
 constexpr char CS_PLAYER_READY   = 11; // 준비/준비해제 토글
 constexpr char CS_PHASE_READY    = 13; // 인게임 페이즈 타이머 만료 알림 (인스턴스 서버 전용)
 constexpr char CS_MAP_LOADED     = 14; // 맵 로드 완료 통보 (인스턴스 서버 전용)
+constexpr char CS_SPAWN_SELECT   = 15; // 스폰 위치 선택 통보 (인스턴스 서버 전용)
 
 // 패킷 ID (서버 → 클라)
 constexpr char SC_LOGIN_INFO = 0;
@@ -229,6 +230,7 @@ constexpr char SC_SCORE_UPDATE = 33;   // K/D/A + 팀 점수 브로드캐스트
 constexpr char SC_TIMER_SYNC   = 36;   // 페이즈 남은 시간 주기 전송 (0 = 만료 신호)
 constexpr char SC_MAP_LOADED   = 38;   // 특정 플레이어 맵 로드 완료 브로드캐스트
 constexpr char SC_CHAR_SELECT  = 39;   // 캐릭터 선택 릴레이 (인스턴스 → 클라 전체)
+constexpr char SC_SPAWN_SELECT = 40;   // 스폰 위치 선택 릴레이 (인스턴스 → 클라 전체)
 
 struct SC_PHASE_CHANGE_PACKET {
     unsigned char size;
@@ -319,6 +321,21 @@ struct SC_CHAR_SELECT_PACKET {
     char          type;       // SC_CHAR_SELECT
     int           player_id;  // 선택한 플레이어의 로비 ID
     unsigned char char_type;  // 0=Pig, 1=Chick, 2=Fish
+};
+
+// 스폰 위치 선택 (클라이언트 → 인스턴스 서버)
+struct CS_SPAWN_SELECT_PACKET {
+    unsigned char size;
+    char          type;         // CS_SPAWN_SELECT
+    float         world_pos[3]; // 선택한 스폰 월드 좌표 (x, y, z)
+};
+
+// 스폰 위치 선택 릴레이 (인스턴스 서버 → 클라 전체)
+struct SC_SPAWN_SELECT_PACKET {
+    unsigned char size;
+    char          type;         // SC_SPAWN_SELECT
+    int           player_id;    // 선택한 플레이어의 로비 ID
+    float         world_pos[3]; // 선택한 스폰 월드 좌표 (x, y, z)
 };
 
 #pragma pack (pop)

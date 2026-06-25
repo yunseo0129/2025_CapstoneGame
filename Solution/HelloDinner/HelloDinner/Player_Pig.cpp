@@ -7,6 +7,13 @@
 #include "Bounding_Sphere.h"
 #include "Bounding_OBB.h"
 #include "../Server/protocol.h"
+#include "Map.h"
+#include "Collider.h"
+
+namespace {
+    constexpr float PIG_GRAVITY      = -9.8f;  // 중력 가속도 (units/s^2, Player_1rd와 동일)
+    constexpr float PIG_TERMINAL_VEL = 20.f;   // 최대 낙하 속도 (터널링 방지)
+}
 
 CPlayer_Pig::CPlayer_Pig(EngineContext* _pcontext)
 	: CContainerObj{ _pcontext }
@@ -68,7 +75,12 @@ void CPlayer_Pig::Priority_Update(_float fTimeDelta)
 
 void CPlayer_Pig::Update(_float fTimeDelta)
 {
-    Update_DeadReckoning(fTimeDelta);
+    // 포물선 발사 중에는 로컬 탄도 연출만 적용하고 데드레코닝 위치 갱신을 억제한다.
+    // Apply_NetworkMatrix는 계속 호출되어 m_drTargetMat만 갱신 → 착지 후 부드럽게 수렴.
+    if (m_bLaunching)
+        Update_Launch(fTimeDelta);
+    else
+        Update_DeadReckoning(fTimeDelta);
 
     if (!m_pModelCom->Get_UpperBlend())
     {
@@ -599,6 +611,155 @@ void CPlayer_Pig::Apply_NetworkMatrix(const float* pMatrix, unsigned short keyIn
 void CPlayer_Pig::Get_NetworkMatrix(float* outMatrix) const
 {
     memcpy(outMatrix, &m_drTargetMat, sizeof(float) * 16);
+}
+
+void CPlayer_Pig::Set_Position(const _float3& vPos)
+{
+    m_pTransformCom->Set_State(CTransform::STATE_POSITION,
+        XMVectorSet(vPos.x, vPos.y, vPos.z, 1.f));
+
+    // 발사/낙하 상태 초기화 (이 위치에서 새로 Launch_To를 호출할 수 있도록)
+    m_bLaunching       = false;
+    m_bLaunchDescending = false;
+    m_bLaunchFalling   = false;
+    m_vLaunchVel       = _float3(0.f, 0.f, 0.f);
+
+    // 데드레코닝도 새 위치로 초기화 (스냅백 방지)
+    XMFLOAT4X4 mat;
+    XMStoreFloat4x4(&mat, m_pTransformCom->Get_WorldMatrix());
+    m_drCurrentMat = mat;
+    m_drTargetMat  = mat;
+    m_drHasData    = false;
+}
+
+// =====================================================================
+//  포물선 발사 (Launch_To / Update_Launch)
+//  Player_1rd::Launch_To / Update_Launch 에서 이식.
+//  카메라·사운드 블록은 제거 (원격 플레이어에는 카메라 없음).
+// =====================================================================
+void CPlayer_Pig::Launch_To(const _float3& vTarget, _float fArcHeight)
+{
+    _float3 vPos;
+    XMStoreFloat3(&vPos, m_pTransformCom->Get_State(CTransform::STATE_POSITION));
+
+    const _float g = -PIG_GRAVITY;  // 양수 중력 가속도 (크기)
+    if (g <= 0.f) return;
+
+    // 착지 목표 높이 + 정점 높이
+    m_fLaunchLandY = vTarget.y;
+    const _float fApexY = ((vPos.y > vTarget.y) ? vPos.y : vTarget.y) + fArcHeight;
+
+    // 1) 정점까지 초기 상승 속도: v0y = sqrt(2g(apex - y0))
+    const _float fRiseH = (fApexY > vPos.y) ? (fApexY - vPos.y) : 0.f;
+    const _float v0y = sqrtf(2.f * g * fRiseH);
+
+    // 2) 총 비행 시간 = 상승 시간 + 정점→착지 하강 시간
+    const _float tUp = v0y / g;
+    const _float fDropH = (fApexY > m_fLaunchLandY) ? (fApexY - m_fLaunchLandY) : 0.f;
+    const _float tDown = sqrtf(2.f * fDropH / g);
+    _float tTotal = tUp + tDown;
+    if (tTotal < 1e-3f) tTotal = 1e-3f;
+
+    // 3) 수평 속도 = 수평 변위 / 총 시간 (등속)
+    const _float vx = (vTarget.x - vPos.x) / tTotal;
+    const _float vz = (vTarget.z - vPos.z) / tTotal;
+
+    m_vLaunchVel = _float3(vx, v0y, vz);
+    m_bLaunching = true;
+    m_bLaunchDescending = false;
+    m_bLaunchFalling = false;
+}
+
+void CPlayer_Pig::Update_Launch(_float fTimeDelta)
+{
+    // 탄도 적분 + 충돌 검사
+    m_vLaunchVel.y += PIG_GRAVITY * fTimeDelta;  // PIG_GRAVITY 는 음수
+    if (m_vLaunchVel.y < -PIG_TERMINAL_VEL)
+        m_vLaunchVel.y = -PIG_TERMINAL_VEL;
+    if (m_vLaunchVel.y < 0.f)
+        m_bLaunchDescending = true;
+
+    // 이번 프레임 이동량 (충돌로 추락 중이면 수평 성분은 0)
+    _float3 vMove = _float3(
+        m_vLaunchVel.x * fTimeDelta,
+        m_vLaunchVel.y * fTimeDelta,
+        m_vLaunchVel.z * fTimeDelta);
+
+    // ---- 충돌 검사 (콜라이더당 CheckMove) ----
+    _bool bBlocked = false;
+    vector<CCollider*> vHitColliders;
+    {
+        _vector vMoveVec = XMLoadFloat3(&vMove);
+        for (CCollider* pCollider : m_vMapColliderComs)
+        {
+            if (pCollider == nullptr) continue;
+            _float3 vOffset; XMStoreFloat3(&vOffset, vMoveVec);
+            _float3 vSlide;
+            if (m_pGameInstance->CheckMove(pCollider, vOffset, vSlide, &vHitColliders))
+            {
+                bBlocked = true;
+                vMoveVec = XMLoadFloat3(&vSlide);
+            }
+        }
+        XMStoreFloat3(&vMove, vMoveVec);
+    }
+
+    // 충돌한 부서지는 맵 처리
+    for (CCollider* pHit : vHitColliders)
+    {
+        if (pHit == nullptr) continue;
+        CMap* pMap = dynamic_cast<CMap*>(pHit->Get_Owner());
+        if (pMap && pMap->Is_Breakable())
+            pMap->Break();
+    }
+
+    // 비행(아치) 도중 처음으로 막히면 → 그 자리에서 수직 추락으로 전환
+    if (bBlocked && !m_bLaunchFalling)
+    {
+        m_bLaunchFalling = true;
+        m_vLaunchVel.x = 0.f;
+        m_vLaunchVel.z = 0.f;
+        m_bLaunchDescending = true;
+    }
+
+    _float3 vPos;
+    XMStoreFloat3(&vPos, m_pTransformCom->Get_State(CTransform::STATE_POSITION));
+
+    vPos.x += vMove.x;
+    vPos.y += vMove.y;
+    vPos.z += vMove.z;
+
+    // 종료 조건:
+    //  (A) 수직 추락 중 바닥에 막히면 그 자리에서 정지
+    //  (B) 정상 아치 비행 시, 하강 중 목표 높이 이하로 내려오면 정지
+    _bool bLanded = false;
+    if (m_bLaunchFalling)
+    {
+        if (m_vLaunchVel.y < 0.f && vMove.y > m_vLaunchVel.y * fTimeDelta - 1e-4f)
+            bLanded = true;
+    }
+    else if (m_bLaunchDescending && vPos.y <= m_fLaunchLandY)
+    {
+        vPos.y = m_fLaunchLandY;
+        bLanded = true;
+    }
+
+    if (bLanded)
+    {
+        m_bLaunching = false;
+        m_bLaunchDescending = false;
+        m_bLaunchFalling = false;
+        m_vLaunchVel = _float3(0.f, 0.f, 0.f);
+
+        // 착지 시 데드레코닝 행렬 동기화 → 이후 네트워크 위치 수렴 시 튀지 않음
+        XMFLOAT4X4 landedMat;
+        XMStoreFloat4x4(&landedMat, m_pTransformCom->Get_WorldMatrix());
+        m_drCurrentMat = landedMat;
+        m_drTargetMat  = landedMat;
+    }
+
+    m_pTransformCom->Set_State(CTransform::STATE_POSITION,
+        XMVectorSet(vPos.x, vPos.y, vPos.z, 1.f));
 }
 
 void CPlayer_Pig::Update_DeadReckoning(float fTimeDelta)

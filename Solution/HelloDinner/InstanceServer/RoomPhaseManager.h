@@ -52,6 +52,9 @@ public:
     void OnPlayerPhaseReady(int room_id, unsigned char phase); // 클라 타이머 만료 알림
     void OnMapLoaded(int room_id, unsigned char slot);         // 클라 맵 로드 완료 알림
 
+    // CS_MOVE 핸들러에서 현재 페이즈 조회 (물리 게이트용)
+    ROOM_PHASE GetRoomPhase(int room_id);
+
 private:
     RoomPhaseManager() = default;
     RoomPhaseManager(const RoomPhaseManager&) = delete;
@@ -69,6 +72,11 @@ private:
     void Broadcast_ScoreUpdate(int room_id);
     void Broadcast_RosterInfo(int room_id);
     void Broadcast_MapLoaded(int room_id, unsigned char slot);
+
+    // PLAYING 진입 시 각 플레이어를 선택 스폰 위치로 순간이동 + 전원에게 동기화
+    void ApplySpawnPositions(int room_id);
+    // CHARSELECT/SCOREBOARD 진입 시 팀 시작 지점(y=25)으로 이동 + 즉시 브로드캐스트
+    void ApplyTeamSpawnPositions(int room_id);
 
     array<RoomPhaseState, MAX_ROOM> m_rooms;
     mutex m_lock;

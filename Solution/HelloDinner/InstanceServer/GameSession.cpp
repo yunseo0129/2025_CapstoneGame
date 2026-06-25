@@ -5,7 +5,7 @@ GameSession::GameSession()
 {
     m_player = {};
     m_worldMatrix = WorldMatrixInfo{};
-    m_worldMatrix.SetPosition(10.f, 0.f, 0.f);  // 테스트용 초기 스폰 위치
+    m_worldMatrix.SetPosition(10.f, WorldMatrixInfo::GROUND_HEIGHT, 0.f);  // 초기 위치 (식탁 윗면 높이)
     m_socket = 0;
     m_state = ST_FREE;
     m_prev_remain = 0;

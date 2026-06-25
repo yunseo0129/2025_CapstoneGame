@@ -44,6 +44,8 @@ struct PLAYER_STAT
     _int    iAssist = 0;
     _int    iMoney = 0;             // 보유 금액(상점에서 사용)
     _bool   bMapLoaded = false;     // 이 라운드 맵 로드 완료 여부
+    _float3 vSpawnPos = _float3(0.f, 0.f, 0.f); // 선택한 스폰 좌표 (SC_SPAWN_SELECT 수신 시 갱신)
+    _bool   bSpawnSet = false;      // 스폰 좌표 수신 여부
 };
 
 class CGame_Manager final: public CBase
@@ -92,6 +94,7 @@ public:
     void    Apply_RosterInfo(unsigned char count, const RosterEntry* entries); // SC_ROSTER_INFO 수신 → m_vStats 교체
     void    Apply_MapLoaded(unsigned char slot);                               // SC_MAP_LOADED 수신 → bMapLoaded 갱신
     void    Apply_CharSelect(int player_id, unsigned char char_type);          // SC_CHAR_SELECT 수신 → iCharType 갱신
+    void    Apply_SpawnSelect(int player_id, _float3 vSpawnPos);              // SC_SPAWN_SELECT 수신 → vSpawnPos 갱신
 
 private:
     // ---- 단계 진입(한 번) ----

@@ -150,6 +150,9 @@ void CGame_Manager::Update(_float fTimeDelta)
             case NetworkClient::NetEventType::CHAR_SELECT:
                 Apply_CharSelect(evt.char_select_player_id, evt.char_select_type);
                 break;
+            case NetworkClient::NetEventType::SPAWN_SELECT:
+                Apply_SpawnSelect(evt.spawn_select_player_id, _float3(evt.spawn_x, evt.spawn_y, evt.spawn_z));
+                break;
             default:
                 break;
             }
@@ -480,6 +483,17 @@ void CGame_Manager::Apply_TimerSync(unsigned int time_ms)
                 (m_ePhase == GAME_PHASE::PHASE_CHARSELECT) ? 0
               : (m_ePhase == GAME_PHASE::PHASE_SCOREBOARD) ? 1
               : 2; // SHOP
+            // SHOP 만료 시 선택(또는 기본) 스폰 좌표를 TCP 순서 보장으로 PhaseReady 전에 전송
+            if (m_ePhase == GAME_PHASE::PHASE_SHOP)
+            {
+                _float3 tgt = m_vDefaultSpawn;
+                if (m_pMapSelect != nullptr && m_pMapSelect->Has_Selection())
+                    tgt = m_pMapSelect->Get_SelectedWorld();
+                float wp[3] = { tgt.x, tgt.y, tgt.z };
+                NetworkClient::GetInstance()->Send_SpawnSelect(wp);
+                // 본인 stat에도 즉시 반영 (에코 대기 없이)
+                Apply_SpawnSelect(NetworkClient::GetInstance()->GetMyId(), tgt);
+            }
             NetworkClient::GetInstance()->Send_PhaseReady(phase_byte);
         }
     }
@@ -555,6 +569,19 @@ void CGame_Manager::Apply_CharSelect(int player_id, unsigned char char_type)
     {
         if (CController* pController = m_pGameInstance->Get_Controller())
             pController->Set_OtherPlayerCharType(player_id, char_type);
+    }
+}
+
+void CGame_Manager::Apply_SpawnSelect(int player_id, _float3 vSpawnPos)
+{
+    for (auto& stat : m_vStats)
+    {
+        if (stat.iPlayerId == player_id)
+        {
+            stat.vSpawnPos = vSpawnPos;
+            stat.bSpawnSet = true;
+            break;
+        }
     }
 }
 
@@ -1411,23 +1438,54 @@ void CGame_Manager::Cache_MapSelect()
 
 void CGame_Manager::Apply_SpawnLaunch()
 {
+    // 싱크대(Washbasin) 윗면 중심 — 포물선 발사 시작 위치 (고정)
+    // MapData.json Washbasin 콜라이더 world: center(-53.04, 16.6, 9.85), top Y ≈ 33.2
+    static constexpr _float SINK_X = -53.04f;
+    static constexpr _float SINK_Y =  33.2f;
+    static constexpr _float SINK_Z =   9.85f;
+
+    const _float3 vSinkPos = { SINK_X, SINK_Y, SINK_Z };
+
     // 컨트롤러에서 내 플레이어를 받는다.
     CController* pController = m_pGameInstance->Get_Controller();
     CPlayer_1rd* pPlayer = pController ? pController->Get_Player() : nullptr;
     if (pPlayer == nullptr)
         return;
 
-    // 선택된 위치가 있으면 그곳, 없으면 코드에서 정한 기본 스폰 위치.
+    // 선택된 위치가 있으면 그곳, 없으면 식탁 윗면 기준 기본 위치.
     _float3 vTarget = m_vDefaultSpawn;
     if (m_pMapSelect != nullptr && m_pMapSelect->Has_Selection())
         vTarget = m_pMapSelect->Get_SelectedWorld();
+    else if (m_pMapSelect != nullptr)
+        vTarget.y = m_pMapSelect->Get_TableTopY(); // 식탁 윗면에 맞게 y 보정
 
-    // 현재 위치 → 목표까지 공을 던지듯 포물선 발사. (비행 중 충돌 없음/이동 무시)
+    // 로컬 플레이어: 싱크대 위치로 순간이동 후 선택 지점까지 포물선 발사
+    pPlayer->Set_Position(vSinkPos);
     pPlayer->Launch_To(vTarget, SPAWN_ARC_HEIGHT);
 
-    GM_Log(L"Spawn launch → (%.1f, %.1f, %.1f) %s",
+    GM_Log(L"Spawn launch: sink(%.1f,%.1f,%.1f) → target(%.1f,%.1f,%.1f) %s",
+        SINK_X, SINK_Y, SINK_Z,
         vTarget.x, vTarget.y, vTarget.z,
         (m_pMapSelect && m_pMapSelect->Has_Selection()) ? L"[선택]" : L"[기본]");
+
+    // 원격 플레이어: 싱크대에 세운 후 각자 선택 지점으로 발사
+    CController* pCtrl = m_pGameInstance->Get_Controller();
+    int myId = NetworkClient::GetInstance()->GetMyId();
+    for (auto& stat : m_vStats)
+    {
+        if (stat.iPlayerId < 0 || stat.iPlayerId == myId) continue;
+        _float3 tgt = stat.bSpawnSet ? stat.vSpawnPos : m_vDefaultSpawn;
+        if (!stat.bSpawnSet && m_pMapSelect != nullptr)
+            tgt.y = m_pMapSelect->Get_TableTopY();
+        if (pCtrl)
+        {
+            pCtrl->Teleport_OtherPlayer(stat.iPlayerId, vSinkPos);
+            pCtrl->Launch_OtherPlayer(stat.iPlayerId, tgt, SPAWN_ARC_HEIGHT);
+        }
+        GM_Log(L"Remote spawn launch [id=%d]: sink → (%.1f, %.1f, %.1f) %s",
+            stat.iPlayerId, tgt.x, tgt.y, tgt.z,
+            stat.bSpawnSet ? L"[선택]" : L"[기본]");
+    }
 }
 
 // =====================================================================

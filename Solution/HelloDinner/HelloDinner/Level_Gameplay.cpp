@@ -456,7 +456,7 @@ HRESULT CLevel_GamePlay::Ready_UI()
 
         desc.iMapLevelIndex = LEVEL_GAMEPLAY;
         desc.strMapLayerTag = L"Layer_Map";
-        desc.strTableModelTag = L"Prototype_Component_Model_Table_1"; // 식탁 모델 태그
+        desc.strTableModelTag = L"Prototype_Component_Model_Table_1"; // 목적지 선택 = 식탁 위
 
         desc.fHeightMin = -5.f;                  // 맵 실제 최저~최고에 맞춰 조정
         desc.fHeightMax = 20.f;

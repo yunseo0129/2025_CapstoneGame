@@ -270,6 +270,20 @@ void NetworkClient::Send_CharSelect(unsigned char charType)
 }
 
 // ─────────────────────────────────────────────
+// 스폰 위치 선택 → 인스턴스 서버로 전송 (SHOP 종료 시 1회)
+// ─────────────────────────────────────────────
+void NetworkClient::Send_SpawnSelect(const float* worldPos)
+{
+    if (m_bOfflineMode || m_instanceSocket == INVALID_SOCKET) return;
+
+    CS_SPAWN_SELECT_PACKET p{};
+    p.size = sizeof(CS_SPAWN_SELECT_PACKET);
+    p.type = CS_SPAWN_SELECT;
+    memcpy(p.world_pos, worldPos, sizeof(float) * 3);
+    SendToInstance(&p, p.size);
+}
+
+// ─────────────────────────────────────────────
 // 이동 패킷 → 인스턴스 서버로 전송
 // ─────────────────────────────────────────────
 void NetworkClient::Send_Move(unsigned short keyInput, float mouseYaw, const float* worldMatrix)
@@ -561,6 +575,18 @@ void NetworkClient::ProcessInstancePacket(char* packet)
         evt.type                  = NetEventType::CHAR_SELECT;
         evt.char_select_player_id = p->player_id;
         evt.char_select_type      = p->char_type;
+        std::lock_guard<std::mutex> lk(m_matchEventLock);
+        m_pendingMatchEvents.push_back(evt);
+        break;
+    }
+    case SC_SPAWN_SELECT: {
+        SC_SPAWN_SELECT_PACKET* p = reinterpret_cast<SC_SPAWN_SELECT_PACKET*>(packet);
+        NetEvent evt{};
+        evt.type                   = NetEventType::SPAWN_SELECT;
+        evt.spawn_select_player_id = p->player_id;
+        evt.spawn_x                = p->world_pos[0];
+        evt.spawn_y                = p->world_pos[1];
+        evt.spawn_z                = p->world_pos[2];
         std::lock_guard<std::mutex> lk(m_matchEventLock);
         m_pendingMatchEvents.push_back(evt);
         break;

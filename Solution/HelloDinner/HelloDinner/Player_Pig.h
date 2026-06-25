@@ -57,6 +57,14 @@ private:
 
     // Dead reckoning
     void                Update_DeadReckoning(float fTimeDelta);
+
+    // 포물선 발사 — 탄도 적분 (Update에서 m_bLaunching 중 호출)
+    void                Update_Launch(_float fTimeDelta);
+    bool                m_bLaunching       = false;
+    _float3             m_vLaunchVel       = _float3(0.f, 0.f, 0.f);
+    float               m_fLaunchLandY     = 0.f;
+    bool                m_bLaunchDescending = false;
+    bool                m_bLaunchFalling   = false;
     XMFLOAT4X4          m_drCurrentMat = {};
     XMFLOAT4X4          m_drTargetMat  = {};
     XMFLOAT3            m_drVelocity   = {};
@@ -68,6 +76,13 @@ public:
 	void Apply_NetworkMatrix(const float* pMatrix, unsigned short keyInput = 0);
     // 재생성 시 현재 위치 보존용 — m_drTargetMat 스냅샷
     void Get_NetworkMatrix(float* outMatrix) const;
+
+    // ---- 포물선 낙하(스폰) — 원격 플레이어 연출용 ----
+    void Launch_To(const _float3& vTarget, _float fArcHeight = 3.f);
+    bool Is_Launching() const { return m_bLaunching; }
+
+    // 즉시 위치 이동 (포물선 발사 시작 전 싱크대 위치 세팅용)
+    void Set_Position(const _float3& vPos);
 
 public:
 	static CPlayer_Pig* Create(EngineContext* pContext);

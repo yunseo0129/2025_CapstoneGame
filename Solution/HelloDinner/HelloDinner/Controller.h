@@ -25,6 +25,10 @@ public:
 
     // 캐릭터 선택 정보 수신 시 호출 — 이미 스폰된 원격 플레이어면 올바른 모델로 재생성
     void Set_OtherPlayerCharType(int id, unsigned char charType);
+    // 원격 플레이어 포물선 발사 (PLAYING 진입 시 Apply_SpawnLaunch에서 호출)
+    void Launch_OtherPlayer(int id, const _float3& vTarget, float arc);
+    // 원격 플레이어 즉시 위치 이동 (발사 전 싱크대에 세우기)
+    void Teleport_OtherPlayer(int id, const _float3& vPos);
 
 private:
     void Update_Input();

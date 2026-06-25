@@ -86,8 +86,11 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
         // 클라이언트 회전(Right/Up/Look, m[0..11])만 복사 — 위치는 서버가 계산
         memcpy(session.m_worldMatrix.m, p->worldMatrix, sizeof(float) * 12);
 
-        // 서버 권위 물리: 중력, 점프, 달리기, 웅크리기, WASD 수평이동
-        session.m_worldMatrix.ApplyPlayerPhysics(session.m_player, p->keyInput, fTimeDelta);
+        // 서버 권위 물리: PLAYING 페이즈에서만 적용
+        // 선택/스코어보드/상점 페이즈에서는 물리를 동결 → ApplyTeamSpawnPositions가 세팅한
+        // 팀 시작 지점(y=25)이 GROUND_HEIGHT(27.6) 클램프에 끌려 올라가지 않도록 함
+        if (RoomPhaseManager::GetInstance()->GetRoomPhase(session.m_room_id) == ROOM_PHASE::PLAYING)
+            session.m_worldMatrix.ApplyPlayerPhysics(session.m_player, p->keyInput, fTimeDelta);
 
         // 액션 키 라이징 에지 처리
         if (risingEdge & KEY_R)
@@ -127,6 +130,29 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
             }
         }
         cout << "[Instance] Client [" << c_id << "] selected char " << (int)p->char_type << endl;
+        break;
+    }
+    case CS_SPAWN_SELECT: {
+        CS_SPAWN_SELECT_PACKET* p = reinterpret_cast<CS_SPAWN_SELECT_PACKET*>(packet);
+        memcpy(m_clients[c_id].m_spawnPos, p->world_pos, sizeof(float) * 3);
+
+        int room_id = m_clients[c_id].m_room_id;
+        if (room_id != -1) {
+            auto* room = GetRoom(room_id);
+            if (room && room->IsActive()) {
+                SC_SPAWN_SELECT_PACKET pkt{};
+                pkt.size      = sizeof(SC_SPAWN_SELECT_PACKET);
+                pkt.type      = SC_SPAWN_SELECT;
+                pkt.player_id = m_clients[c_id].m_lobby_player_id;
+                memcpy(pkt.world_pos, p->world_pos, sizeof(float) * 3);
+                for (int pid : room->GetPlayerIds()) {
+                    if (m_clients[pid].m_state != ST_INGAME) continue;
+                    m_clients[pid].Send(&pkt);
+                }
+            }
+        }
+        cout << "[Instance] Client [" << c_id << "] spawn pos ("
+             << p->world_pos[0] << ", " << p->world_pos[1] << ", " << p->world_pos[2] << ")" << endl;
         break;
     }
     case CS_PHASE_READY: {

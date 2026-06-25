@@ -143,6 +143,9 @@ struct WorldMatrixInfo
 	static constexpr float PHYS_GRAVITY      = -9.8f;
 	static constexpr float PHYS_JUMP_SPEED   =  4.5f;
 	static constexpr float PHYS_TERMINAL_VEL = 20.f;
+	// 식탁(Table_1) 윗면 — 실제 플레이 면 높이
+	// MapData.json Table_1 콜라이더: (center.y + extents.y) * 50 = (0.26967 + 0.28261) * 50 ≈ 27.6
+	static constexpr float GROUND_HEIGHT     = 27.6f;
 
 	void ApplyPlayerPhysics(PlayerInfo& info, unsigned short keyInput, float fTimeDelta);
 
@@ -303,10 +306,10 @@ inline void WorldMatrixInfo::ApplyPlayerPhysics(PlayerInfo& info, unsigned short
 	// 5) 수직 이동
 	m[13] += info.fVerticalVelocity * fTimeDelta;
 
-	// 6) 바닥 클램프 Y=0 (Player_1rd::Resolve_Movement 동일)
-	if (m[13] < 0.f)
+	// 6) 바닥 클램프: 식탁(Table_1) 윗면(GROUND_HEIGHT) 아래로 내려가지 않도록
+	if (m[13] < GROUND_HEIGHT)
 	{
-		m[13] = 0.f;
+		m[13] = GROUND_HEIGHT;
 		if (info.fVerticalVelocity < 0.f)
 		{
 			info.fVerticalVelocity = 0.f;
