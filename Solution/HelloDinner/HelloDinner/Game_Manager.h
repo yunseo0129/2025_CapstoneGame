@@ -95,6 +95,9 @@ public:
     void    Apply_MapLoaded(unsigned char slot);                               // SC_MAP_LOADED 수신 → bMapLoaded 갱신
     void    Apply_CharSelect(int player_id, unsigned char char_type);          // SC_CHAR_SELECT 수신 → iCharType 갱신
     void    Apply_SpawnSelect(int player_id, _float3 vSpawnPos);              // SC_SPAWN_SELECT 수신 → vSpawnPos 갱신
+    void    Apply_Hit(int shooter_id, int victim_id, short victim_hp,
+                      unsigned char part_num, const float hit_pos[3]);       // SC_HIT 수신 → 파티클 + HP 반영
+    void    Apply_Death(int victim_id, int killer_id);                       // SC_DEATH 수신 → 사망 처리
 
 private:
     // ---- 단계 진입(한 번) ----

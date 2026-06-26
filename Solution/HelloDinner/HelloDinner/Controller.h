@@ -29,6 +29,8 @@ public:
     void Launch_OtherPlayer(int id, const _float3& vTarget, float arc);
     // 원격 플레이어 즉시 위치 이동 (발사 전 싱크대에 세우기)
     void Teleport_OtherPlayer(int id, const _float3& vPos);
+    // 원격 플레이어 사망 처리 (SC_DEATH 수신 시 호출)
+    void Kill_OtherPlayer(int id);
 
 private:
     void Update_Input();

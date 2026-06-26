@@ -301,12 +301,101 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
         break;
     }
 
+    case CS_HIT: {
+        CS_HIT_PACKET* p = reinterpret_cast<CS_HIT_PACKET*>(packet);
+
+        GameSession& shooter = m_clients[c_id];
+        if (shooter.m_state != ST_INGAME) break;
+        int room_id = shooter.m_room_id;
+        auto* room = GetRoom(room_id);
+        if (!room || !room->IsActive()) break;
+        if (RoomPhaseManager::GetInstance()->GetRoomPhase(room_id) != ROOM_PHASE::PLAYING) break;
+
+        // victim 세션 탐색 (로비 ID 기준)
+        int victim_cid = -1;
+        for (int pid : room->GetPlayerIds()) {
+            if (m_clients[pid].m_lobby_player_id == p->victim_id) {
+                victim_cid = pid; break;
+            }
+        }
+        if (victim_cid < 0) break;
+
+        GameSession& victim = m_clients[victim_cid];
+        if (!victim.m_bAlive) break;
+
+        // 거리 합리성 (최대 150 유닛 — 맵 스케일 × 50 적용)
+        XMFLOAT3 sPos = { shooter.m_worldMatrix.m[12], shooter.m_worldMatrix.m[13], shooter.m_worldMatrix.m[14] };
+        XMFLOAT3 vPos = { victim.m_worldMatrix.m[12],  victim.m_worldMatrix.m[13],  victim.m_worldMatrix.m[14] };
+        float dist = XMVectorGetX(XMVector3Length(
+            XMVectorSubtract(XMLoadFloat3(&vPos), XMLoadFloat3(&sPos))));
+        if (dist > 150.f) break;
+
+        // LOS: 벽에 가로막히면 거부
+        if (!CheckLOS(sPos, vPos)) break;
+
+        // 데미지 테이블 (Collision_Manager.cpp:235-267 동일)
+        static constexpr int s_dmg[10] = { 50, 20, 20, 20, 20, 15, 15, 15, 15, 30 };
+        int part = (p->part_num < 10) ? p->part_num : 9;
+        victim.m_hp -= s_dmg[part];
+        bool died = (victim.m_hp <= 0);
+        if (died) { victim.m_hp = 0; victim.m_bAlive = false; }
+
+        // SC_HIT 브로드캐스트 (이펙트 위치 포함)
+        SC_HIT_PACKET hit{};
+        hit.size       = sizeof(SC_HIT_PACKET);
+        hit.type       = SC_HIT;
+        hit.shooter_id = shooter.m_lobby_player_id;
+        hit.victim_id  = p->victim_id;
+        hit.victim_hp  = static_cast<short>(victim.m_hp);
+        hit.part_num   = p->part_num;
+        hit.hit_pos[0] = p->hit_pos[0];
+        hit.hit_pos[1] = p->hit_pos[1];
+        hit.hit_pos[2] = p->hit_pos[2];
+        for (int pid : room->GetPlayerIds()) {
+            if (m_clients[pid].m_state == ST_INGAME)
+                m_clients[pid].Send(&hit);
+        }
+
+        if (died) {
+            SC_DEATH_PACKET death{};
+            death.size      = sizeof(SC_DEATH_PACKET);
+            death.type      = SC_DEATH;
+            death.victim_id = p->victim_id;
+            death.killer_id = shooter.m_lobby_player_id;
+            for (int pid : room->GetPlayerIds()) {
+                if (m_clients[pid].m_state == ST_INGAME)
+                    m_clients[pid].Send(&death);
+            }
+            cout << "[Hit] Player " << shooter.m_lobby_player_id
+                 << " killed player " << p->victim_id << endl;
+        }
+        break;
+    }
+
     case CS_LOGOUT: {
         cout << "[Instance] Client [" << c_id << "] logout requested." << endl;
         Disconnect(c_id);
         break;
     }
     }
+}
+
+bool GameSessionManager::CheckLOS(const XMFLOAT3& from, const XMFLOAT3& to) const
+{
+    if (m_mapPtrs.empty()) return true;
+
+    XMVECTOR vFrom = XMLoadFloat3(&from);
+    XMVECTOR vTo   = XMLoadFloat3(&to);
+    XMVECTOR vDir  = XMVector3Normalize(XMVectorSubtract(vTo, vFrom));
+    float maxDist  = XMVectorGetX(XMVector3Length(XMVectorSubtract(vTo, vFrom)));
+
+    for (const SServerCollider* col : m_mapPtrs) {
+        if (!col->enable) continue;
+        float hitDist = 0.f;
+        if (col->IntersectsRay(vFrom, vDir, hitDist) && hitDist < maxDist)
+            return false;
+    }
+    return true;
 }
 
 // =============================================================================

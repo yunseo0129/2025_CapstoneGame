@@ -24,6 +24,9 @@ public:
         CHAR_SELECT,
         // Phase 5: 스폰 위치 선택 릴레이
         SPAWN_SELECT,
+        // Phase 3: 히트 판정
+        HIT,
+        DEATH,
     };
 
     struct NetEvent {
@@ -64,6 +67,14 @@ public:
         float           spawn_x = 0.f;
         float           spawn_y = 0.f;
         float           spawn_z = 0.f;
+
+        // HIT / DEATH
+        int             hit_shooter_id   = -1;
+        int             hit_victim_id    = -1;
+        short           hit_victim_hp    = 0;
+        unsigned char   hit_part_num     = 0;
+        float           hit_pos[3]       = {};
+        int             death_killer_id  = -1;
     };
 
 public:
@@ -86,6 +97,8 @@ public:
     void Send_PhaseReady(unsigned char phase);
     // 맵 로드 완료 → 인스턴스 서버로 통보
     void Send_MapLoaded(unsigned char slot);
+    // 히트 신고 → 인스턴스 서버로 전송 (서버가 LOS 검증 후 SC_HIT 브로드캐스트)
+    void Send_Hit(int victim_id, unsigned char part_num, const float hit_pos[3]);
 
     // ── 수동 방 관련 송신 (로비 소켓) ──────────────────────────────────
     void Send_CreateRoom();

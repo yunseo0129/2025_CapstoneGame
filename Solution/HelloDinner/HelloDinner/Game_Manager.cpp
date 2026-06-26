@@ -12,6 +12,7 @@
 #include "CharSelect_Chick.h"
 #include "CharSelect_Fish.h"
 #include "MapSelect.h"
+#include "Particle_System.h"
 
 IMPLEMENT_SINGLETON(CGame_Manager)
 
@@ -152,6 +153,13 @@ void CGame_Manager::Update(_float fTimeDelta)
                 break;
             case NetworkClient::NetEventType::SPAWN_SELECT:
                 Apply_SpawnSelect(evt.spawn_select_player_id, _float3(evt.spawn_x, evt.spawn_y, evt.spawn_z));
+                break;
+            case NetworkClient::NetEventType::HIT:
+                Apply_Hit(evt.hit_shooter_id, evt.hit_victim_id, evt.hit_victim_hp,
+                          evt.hit_part_num, evt.hit_pos);
+                break;
+            case NetworkClient::NetEventType::DEATH:
+                Apply_Death(evt.hit_victim_id, evt.death_killer_id);
                 break;
             default:
                 break;
@@ -1577,6 +1585,51 @@ CGame_Manager* CGame_Manager::Create()
     }
     m_pInstance = pInstance;
     return pInstance;
+}
+
+void CGame_Manager::Apply_Hit(int shooter_id, int victim_id, short victim_hp,
+                               unsigned char /*part_num*/, const float hit_pos[3])
+{
+    // 피격 파티클 (모든 클라이언트 동일 위치)
+    if (CParticle_System* pPS = m_pGameInstance->Get_ParticleSystem())
+    {
+        _float3 vPos = { hit_pos[0], hit_pos[1], hit_pos[2] };
+
+        CParticle_System::EMIT_DESC spray;
+        spray.eType    = CParticle_System::KETCHUP_SPRAY;
+        spray.vCenter  = vPos;
+        spray.vExtents = { 0.1f, 0.1f, 0.1f };
+        spray.iCount   = 16;
+        pPS->Emit(spray);
+    }
+
+    // 내 HP 업데이트 (서버 권위 값으로 덮어씀)
+    auto* pNet = NetworkClient::GetInstance();
+    if (victim_id == pNet->GetMyId())
+    {
+        CController* pCtrl = m_pGameInstance->Get_Controller();
+        CPlayer_1rd* pPlayer = pCtrl ? pCtrl->Get_Player() : nullptr;
+        if (pPlayer)
+            pPlayer->Set_Health(static_cast<_int>(victim_hp));
+    }
+}
+
+void CGame_Manager::Apply_Death(int victim_id, int /*killer_id*/)
+{
+    auto* pNet  = NetworkClient::GetInstance();
+    auto* pCtrl = m_pGameInstance->Get_Controller();
+    if (!pCtrl) return;
+
+    if (victim_id == pNet->GetMyId())
+    {
+        CPlayer_1rd* pPlayer = pCtrl->Get_Player();
+        if (pPlayer && !pPlayer->Get_Die())
+            pPlayer->Die(0.f);
+    }
+    else
+    {
+        pCtrl->Kill_OtherPlayer(victim_id);
+    }
 }
 
 void CGame_Manager::Free()

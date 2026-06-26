@@ -13,6 +13,8 @@ GameSession::GameSession()
     m_lobby_player_id = -1;
     m_lastClientTimestamp = 0;
     m_lastServerTimestamp = 0;
+    m_hp     = GameSession::MAX_HP;
+    m_bAlive = true;
 
     // 맵 이동 충돌용 sphere 초기화
     // 파라미터: Player_1rd::Ready_Components ~785-809 에서 발/몸통 sphere 와 동일

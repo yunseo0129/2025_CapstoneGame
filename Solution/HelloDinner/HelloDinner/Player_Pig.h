@@ -54,6 +54,7 @@ private:
     bool                m_bReloadPending = false;
     unsigned short      m_keyInput     = 0;
     unsigned short      m_prevKeyInput = 0;
+    int                 m_iNetworkId   = -1;
 
     // Dead reckoning
     void                Update_DeadReckoning(float fTimeDelta);
@@ -73,6 +74,9 @@ private:
     bool                m_drHasData    = false;
 
 public:
+    virtual int Get_NetworkId() const override { return m_iNetworkId; }
+    void        Set_NetworkId(int id)           { m_iNetworkId = id; }
+
 	void Apply_NetworkMatrix(const float* pMatrix, unsigned short keyInput = 0);
     // 재생성 시 현재 위치 보존용 — m_drTargetMat 스냅샷
     void Get_NetworkMatrix(float* outMatrix) const;

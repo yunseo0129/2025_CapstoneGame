@@ -26,6 +26,11 @@ public:
     unsigned int    m_lastClientTimestamp;
     unsigned int    m_lastServerTimestamp;
 
+    // 전투 상태 (Phase 3: 히트 판정)
+    static constexpr int MAX_HP = 500;
+    int           m_hp     = MAX_HP;
+    bool          m_bAlive = true;
+
     // 맵 이동 충돌용 플레이어 sphere 콜라이더 2개
     // [0]=발 sphere (localOffset y+0.41, radius=0.41)
     // [1]=몸통 sphere (localOffset y+1.23, radius=0.41)

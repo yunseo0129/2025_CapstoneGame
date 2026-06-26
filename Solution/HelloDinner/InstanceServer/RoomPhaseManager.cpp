@@ -265,6 +265,9 @@ void RoomPhaseManager::ApplySpawnPositions(int room_id)
         // 낙하 모멘텀 제거 (스폰 직후 중력으로 즉시 아래로 밀리는 것 방지)
         s.m_player.fVerticalVelocity = 0.f;
         s.m_player.bIsGrounded       = true;
+        // 라운드 시작: HP/생사 리셋
+        s.m_hp     = GameSession::MAX_HP;
+        s.m_bAlive = true;
     }
 
     // 즉시 브로드캐스트를 하지 않는다.

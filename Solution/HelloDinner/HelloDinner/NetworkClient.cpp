@@ -284,6 +284,24 @@ void NetworkClient::Send_SpawnSelect(const float* worldPos)
 }
 
 // ─────────────────────────────────────────────
+// 히트 신고 → 인스턴스 서버로 전송
+// ─────────────────────────────────────────────
+void NetworkClient::Send_Hit(int victim_id, unsigned char part_num, const float hit_pos[3])
+{
+    if (m_instanceSocket == INVALID_SOCKET) return;
+
+    CS_HIT_PACKET p{};
+    p.size      = sizeof(CS_HIT_PACKET);
+    p.type      = CS_HIT;
+    p.victim_id = victim_id;
+    p.part_num  = part_num;
+    p.hit_pos[0] = hit_pos[0];
+    p.hit_pos[1] = hit_pos[1];
+    p.hit_pos[2] = hit_pos[2];
+    SendToInstance(&p, sizeof(p));
+}
+
+// ─────────────────────────────────────────────
 // 이동 패킷 → 인스턴스 서버로 전송
 // ─────────────────────────────────────────────
 void NetworkClient::Send_Move(unsigned short keyInput, float mouseYaw, const float* worldMatrix)
@@ -587,6 +605,31 @@ void NetworkClient::ProcessInstancePacket(char* packet)
         evt.spawn_x                = p->world_pos[0];
         evt.spawn_y                = p->world_pos[1];
         evt.spawn_z                = p->world_pos[2];
+        std::lock_guard<std::mutex> lk(m_matchEventLock);
+        m_pendingMatchEvents.push_back(evt);
+        break;
+    }
+    case SC_HIT: {
+        SC_HIT_PACKET* p = reinterpret_cast<SC_HIT_PACKET*>(packet);
+        NetEvent evt{};
+        evt.type           = NetEventType::HIT;
+        evt.hit_shooter_id = p->shooter_id;
+        evt.hit_victim_id  = p->victim_id;
+        evt.hit_victim_hp  = p->victim_hp;
+        evt.hit_part_num   = p->part_num;
+        evt.hit_pos[0]     = p->hit_pos[0];
+        evt.hit_pos[1]     = p->hit_pos[1];
+        evt.hit_pos[2]     = p->hit_pos[2];
+        std::lock_guard<std::mutex> lk(m_matchEventLock);
+        m_pendingMatchEvents.push_back(evt);
+        break;
+    }
+    case SC_DEATH: {
+        SC_DEATH_PACKET* p = reinterpret_cast<SC_DEATH_PACKET*>(packet);
+        NetEvent evt{};
+        evt.type           = NetEventType::DEATH;
+        evt.hit_victim_id  = p->victim_id;
+        evt.death_killer_id = p->killer_id;
         std::lock_guard<std::mutex> lk(m_matchEventLock);
         m_pendingMatchEvents.push_back(evt);
         break;

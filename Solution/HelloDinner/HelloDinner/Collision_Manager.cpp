@@ -8,6 +8,7 @@
 #include "Model.h"
 #include "Bullets.h"
 #include "Particle_System.h"
+#include "NetworkClient.h"
 
 IMPLEMENT_SINGLETON(CCollision_Manager)
 
@@ -232,62 +233,19 @@ void CCollision_Manager::NewBullet(_vector _look, _vector _pos, CGameObject* pSh
         b.isHit = true;
         b.isOn = true;
 
-        switch (playerHit.pCollider->Get_PartNum())
-        {
-        case 0: // COLLIDER_HEAD
-            playerHit.pTarget->TakeDamage(50);
-            break;
-        case 1: // COLLIDER_ARM_UP_L
-            playerHit.pTarget->TakeDamage(20);
-            break;
-        case 2: // COLLIDER_ARM_UP_R
-            playerHit.pTarget->TakeDamage(20);
-            break;
-        case 3: // COLLIDER_ARM_LOW_L
-            playerHit.pTarget->TakeDamage(20);
-            break;
-        case 4: // COLLIDER_ARM_LOW_R
-            playerHit.pTarget->TakeDamage(20);
-            break;
-        case 5: // COLLIDER_THIGH_L
-            playerHit.pTarget->TakeDamage(15);
-            break;
-        case 6: // COLLIDER_THIGH_R
-            playerHit.pTarget->TakeDamage(15);
-            break;
-        case 7: // COLLIDER_SHIN_L
-            playerHit.pTarget->TakeDamage(15);
-            break;
-        case 8: // COLLIDER_SHIN_R
-            playerHit.pTarget->TakeDamage(15);
-            break;
-        case 9: // COLLIDER_BODY
-            playerHit.pTarget->TakeDamage(30);
-            break;
-        }
-        // 파티클 생성 부분
-        if (CParticle_System* pPS = m_pGameInstance->Get_ParticleSystem())
+        // 서버에 히트 신고 → 서버가 LOS 검증 후 SC_HIT 브로드캐스트
+        // 파티클/데미지는 SC_HIT 수신 시 Game_Manager::Apply_Hit에서 처리
+        int victimId = playerHit.pTarget->Get_NetworkId();
+        if (victimId >= 0)
         {
             _float3 vHitPos;
-            XMStoreFloat3(&vHitPos, b.vTarget);   // _vector -> _float3
-
-            // 흙먼지(절차적) : 맵 파괴와 같은 WALL_DEBRIS
-            CParticle_System::EMIT_DESC dust;
-            dust.eType = CParticle_System::WALL_DEBRIS;
-            dust.vCenter = vHitPos;
-            dust.vExtents = {0.15f, 0.15f, 0.15f};  // 점 충돌이라 좁게
-            dust.iCount = 12;                        // 파괴보다 적게
-            pPS->Emit(dust);
-
-            // 파편(텍스처) : 맵 파괴와 같은 WALL_DEBRIS_2
-            CParticle_System::EMIT_DESC debris;
-            debris.eType = CParticle_System::WALL_DEBRIS_2;
-            debris.vCenter = vHitPos;
-            debris.vExtents = {0.15f, 0.15f, 0.15f};
-            debris.iCount = 6;
-            pPS->Emit(debris);
+            XMStoreFloat3(&vHitPos, b.vTarget);
+            float hp[3] = { vHitPos.x, vHitPos.y, vHitPos.z };
+            NetworkClient::GetInstance()->Send_Hit(
+                victimId,
+                static_cast<unsigned char>(playerHit.pCollider->Get_PartNum()),
+                hp);
         }
-        //
     }
 
     m_pBullets->NewBullet(b);

@@ -40,6 +40,9 @@ public:
     // CheckMove 래퍼: me sphere 에 대해 맵 BVH/콜라이더와 충돌 해소
     bool CheckMove_Player(SServerCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide);
 
+    // LOS 레이캐스트: from → to 사이에 맵 콜라이더가 없으면 true (가시성 확인)
+    bool CheckLOS(const XMFLOAT3& from, const XMFLOAT3& to) const;
+
 private:
     GameSessionManager() = default;
     ~GameSessionManager() = default;

@@ -290,6 +290,7 @@ void CController::Spawn_OtherPlayer(int id, const float* worldMatrix)
     if (!pObj) return;
 
     CPlayer_Pig* pPig = static_cast<CPlayer_Pig*>(pObj);
+    pPig->Set_NetworkId(id);
     pPig->Apply_NetworkMatrix(worldMatrix);
     m_otherPlayers[id] = pPig;
 }
@@ -336,6 +337,14 @@ void CController::Teleport_OtherPlayer(int id, const _float3& vPos)
     auto it = m_otherPlayers.find(id);
     if (it == m_otherPlayers.end()) return;
     it->second->Set_Position(vPos);
+}
+
+void CController::Kill_OtherPlayer(int id)
+{
+    auto it = m_otherPlayers.find(id);
+    if (it == m_otherPlayers.end()) return;
+    if (!it->second->IsDead())
+        it->second->Die(0.f);
 }
 
 void CController::Move_OtherPlayer(int id, const float* worldMatrix, unsigned short keyInput)

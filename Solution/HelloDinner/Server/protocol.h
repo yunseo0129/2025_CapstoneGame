@@ -232,6 +232,11 @@ constexpr char SC_MAP_LOADED   = 38;   // 특정 플레이어 맵 로드 완료 
 constexpr char SC_CHAR_SELECT  = 39;   // 캐릭터 선택 릴레이 (인스턴스 → 클라 전체)
 constexpr char SC_SPAWN_SELECT = 40;   // 스폰 위치 선택 릴레이 (인스턴스 → 클라 전체)
 
+// Phase 3: 히트 판정
+constexpr char CS_HIT   = 16;  // 클라 → 인스턴스: 히트 신고
+constexpr char SC_HIT   = 23;  // 인스턴스 → 클라: 피격 확인 + 이펙트
+constexpr char SC_DEATH = 24;  // 인스턴스 → 클라: 사망 알림
+
 struct SC_PHASE_CHANGE_PACKET {
     unsigned char size;
     char          type;    // SC_PHASE_CHANGE
@@ -337,5 +342,33 @@ struct SC_SPAWN_SELECT_PACKET {
     int           player_id;    // 선택한 플레이어의 로비 ID
     float         world_pos[3]; // 선택한 스폰 월드 좌표 (x, y, z)
 };
+
+// 히트 신고 (클라 → 인스턴스 서버)
+struct CS_HIT_PACKET {
+    unsigned char size;
+    char          type;          // CS_HIT
+    int           victim_id;     // 피격자 로비 ID
+    unsigned char part_num;      // 피격 부위 (0=HEAD ... 9=BODY)
+    float         hit_pos[3];    // 클라 계산 충돌 위치 (이펙트용)
+};  // 2+4+1+12 = 19B
+
+// 피격 확인 + 이펙트 위치 브로드캐스트 (인스턴스 → 클라 전체)
+struct SC_HIT_PACKET {
+    unsigned char size;
+    char          type;          // SC_HIT
+    int           shooter_id;
+    int           victim_id;
+    short         victim_hp;     // 피격 후 남은 HP
+    unsigned char part_num;
+    float         hit_pos[3];
+};  // 2+4+4+2+1+12 = 25B
+
+// 사망 알림 (인스턴스 → 클라 전체)
+struct SC_DEATH_PACKET {
+    unsigned char size;
+    char          type;          // SC_DEATH
+    int           victim_id;
+    int           killer_id;
+};  // 2+4+4 = 10B
 
 #pragma pack (pop)
