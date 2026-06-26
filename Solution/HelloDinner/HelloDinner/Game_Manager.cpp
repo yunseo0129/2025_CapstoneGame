@@ -1507,17 +1507,23 @@ void CGame_Manager::Set_MySpot_From_Setup()
     if (m_iMyNumber < 1) m_iMyNumber = 1;
     if (m_iMyNumber > 3) m_iMyNumber = 3;
 
-    XMFLOAT3 spot = g_MatchSetup.Get_SpawnSpot();   // RED=(100,100,0), BLUE=(-100,100,0)
-    m_vMySpot = _float3(spot.x, spot.y, spot.z);
-    m_fMyYaw = g_MatchSetup.Get_SpawnYaw();         // 원점을 바라보는 yaw
+    // ── 스테이징 지점: 싱크대(Washbasin) 윗면 팀/슬롯 정렬 ──────────────────
+    //   CHARSELECT/SCOREBOARD 단계에서 플레이어가 서 있을 위치.
+    //   서버 RoomPhaseManager::ApplyTeamSpawnPositions 와 동일한 수치 사용.
+    XMFLOAT3 sink = g_MatchSetup.Get_SinkSpot();
+    m_vMySpot = _float3(sink.x, sink.y, sink.z);
+    m_fMyYaw  = g_MatchSetup.Get_SinkYaw();   // 상대 팀 방향을 바라봄
 
-    // 기본 스폰(스폰 선택 안 했을 때 날아갈 위치)도 시작 지점으로 맞춰 둔다.
-    //  (원하면 맵별 기본 스폰으로 따로 지정 가능)
-    m_vDefaultSpawn = m_vMySpot;
+    // ── launch fallback: PLAYING 진입 시 스폰 선택 안 했을 때 날아갈 바닥 위치 ──
+    //   SHOP 종료 시 항상 Send_SpawnSelect 를 전송하므로 실제로는 이 값이
+    //   사용될 일이 거의 없지만 안전망으로 바닥 좌표를 유지한다.
+    XMFLOAT3 floor = g_MatchSetup.Get_SpawnSpot();
+    m_vDefaultSpawn = _float3(floor.x, floor.y, floor.z);
 
-    GM_Log(L"MatchSetup → Team %s, No.%d, Spot(%.1f, %.1f, %.1f), Yaw %.2f",
+    GM_Log(L"MatchSetup → Team %s, No.%d | Sink(%.1f,%.1f,%.1f) Yaw %.2f | Floor(%.1f,%.1f,%.1f)",
         (m_iMyTeam == 0) ? L"RED" : L"BLUE", m_iMyNumber,
-        m_vMySpot.x, m_vMySpot.y, m_vMySpot.z, m_fMyYaw);
+        m_vMySpot.x, m_vMySpot.y, m_vMySpot.z, m_fMyYaw,
+        m_vDefaultSpawn.x, m_vDefaultSpawn.y, m_vDefaultSpawn.z);
 }
 
 void CGame_Manager::Place_PlayerAt_Spot()

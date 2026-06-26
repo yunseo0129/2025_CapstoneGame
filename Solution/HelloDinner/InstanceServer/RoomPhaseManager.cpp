@@ -298,9 +298,19 @@ void RoomPhaseManager::ApplyTeamSpawnPositions(int room_id)
             roster_snap[i] = r.roster[i];
     }
 
-    // 각 플레이어를 팀 시작 지점으로 세팅
-    // 공식(클라 Defines.h::Get_SpawnSpot 과 동일):
-    //   x = 5*number-5,  y = 25,  z = (team==0 RED)?50:-60
+    // 각 플레이어를 싱크대(Washbasin) 윗면 팀/슬롯 정렬 지점으로 세팅.
+    // 클라 Defines.h::MATCH_SETUP::Get_SinkSpot() 와 수치 완전 일치 유지 필요:
+    //   SINK_X=-53.04  SINK_TOP_Y=33.2  SINK_Z=9.85
+    //   SLOT_SPACING_X=8.0  TEAM_Z_OFFSET=15.0
+    //   x = SINK_X + (number-2)*8    (slot1→-61.04, slot2→-53.04, slot3→-45.04)
+    //   y = 33.2  (싱크대 윗면)
+    //   z = SINK_Z + (team==0 ? +15 : -15)   (teamA:24.85, teamB:-5.15)
+    static constexpr float SINK_X         = -53.04f;
+    static constexpr float SINK_TOP_Y     =  33.2f;
+    static constexpr float SINK_Z         =   9.85f;
+    static constexpr float SLOT_SPACING_X =   8.0f;
+    static constexpr float TEAM_Z_OFFSET  =  15.0f;
+
     for (int pid : ids)
     {
         auto& s = gsm->GetClient(pid);
@@ -320,9 +330,9 @@ void RoomPhaseManager::ApplyTeamSpawnPositions(int room_id)
             }
         }
 
-        float x = 5.f * number - 5.f;
-        float y = 25.f;
-        float z = (team == 0) ? 50.f : -60.f;
+        float x = SINK_X + (number - 2) * SLOT_SPACING_X;
+        float y = SINK_TOP_Y;
+        float z = SINK_Z + (team == 0 ? +TEAM_Z_OFFSET : -TEAM_Z_OFFSET);
         s.m_worldMatrix.SetPosition(x, y, z);
         s.m_player.fVerticalVelocity = 0.f;
         s.m_player.bIsGrounded       = true;
@@ -339,7 +349,7 @@ void RoomPhaseManager::ApplyTeamSpawnPositions(int room_id)
         }
     }
 
-    cout << "[Phase] Room " << room_id << " team spawn positions applied (y=25)." << endl;
+    cout << "[Phase] Room " << room_id << " sink staging applied (y=" << SINK_TOP_Y << ")." << endl;
 }
 
 void RoomPhaseManager::Broadcast_RoundStart(int room_id, int round, unsigned int duration_ms)

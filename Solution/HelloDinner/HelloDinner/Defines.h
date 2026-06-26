@@ -46,6 +46,35 @@ struct MATCH_SETUP
         const float dz = 0.f - vSpot.z;
         return atan2f(dx, dz);
     }
+
+    // ── 싱크대 위 스테이징 좌표 (CHARSELECT / SCOREBOARD 단계 배치용) ──────────
+    // Washbasin OBB 윗면 월드 (MapData.json에서 확인):
+    //   중심 XZ = (-53.04, 9.85),  윗면 Y = 33.2
+    //   반치수 x=11.9  z=20.0  (footprint x∈[-65,-41] z∈[-10,30])
+    // 팀A(0) → z = +24.85 (싱크 +z 끝), 팀B(1) → z = -5.15 (싱크 -z 끝)
+    // 슬롯 번호(1~3) → x = SINK_X + (number-2)*8   (8 단위 1열 정렬)
+    // 서버 RoomPhaseManager::ApplyTeamSpawnPositions 와 수치 완전 일치 유지 필요.
+    XMFLOAT3 Get_SinkSpot() const
+    {
+        constexpr float SINK_X         = -53.04f;
+        constexpr float SINK_TOP_Y     =  33.2f;
+        constexpr float SINK_Z         =   9.85f;
+        constexpr float SLOT_SPACING_X =   8.0f;
+        constexpr float TEAM_Z_OFFSET  =  15.0f;
+
+        const float x = SINK_X + (iNumber - 2) * SLOT_SPACING_X;
+        const float y = SINK_TOP_Y;
+        const float z = SINK_Z + (iTeam == 0 ? +TEAM_Z_OFFSET : -TEAM_Z_OFFSET);
+        return XMFLOAT3(x, y, z);
+    }
+
+    // 싱크대 위에서 바라볼 방향: 팀A → 상대(−z) 방향, 팀B → 상대(+z) 방향
+    float Get_SinkYaw() const
+    {
+        // 팀A: dz=-1(-z를 바라봄), 팀B: dz=+1(+z를 바라봄)
+        const float dz = (iTeam == 0) ? -1.f : +1.f;
+        return atan2f(0.f, dz);
+    }
 };
 extern MATCH_SETUP g_MatchSetup;
 

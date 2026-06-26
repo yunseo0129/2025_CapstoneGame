@@ -14,9 +14,9 @@
 | 2 | 매치 로스터 | ✅ 완료 |
 | 3 | 맵 로드 완료 | ✅ 완료 |
 | 4 | 캐릭터 선택 릴레이 | ✅ 완료 |
-| 5 | 스폰 위치 선택 릴레이 | ✅ 완료 |
-| 6 | 전투 결과 (피격·사망·K/D/A) | 🔲 미구현 |
-| 7 | 라운드 승패 판정 | 🔲 미구현 |
+| 5 | 스폰 위치 선택 릴레이 + 싱크대 스테이징 | ✅ 완료 |
+| 6 | 전투 결과 (피격·사망·K/D/A) | ✅ 완료 (K/D는 미연동) |
+| 7 | 라운드 승패 판정 (팀 전멸) | 🔲 미구현 |
 
 ---
 
@@ -222,31 +222,33 @@
 | CS_SPAWN_SELECT 수신 릴레이 | `GameSessionManager.cpp` | `m_spawnPos` 저장 + `SC_SPAWN_SELECT` 방 전원 브로드캐스트 |
 | PLAYING 진입 스폰 위치 적용 | `RoomPhaseManager.cpp::ApplySpawnPositions` | 선택 좌표로 서버 권위 위치 세팅, 브로드캐스트 지연(포물선 연출용) |
 | 싱크대→식탁 포물선 호 | `Player_1rd.cpp::Apply_ServerCorrection` | `m_bLaunching` 중 서버 보정 차단, 착지 후 서버 위치로 수렴 |
-| 팀 시작 지점 배치 | `RoomPhaseManager.cpp::ApplyTeamSpawnPositions` | CHARSELECT/SCOREBOARD 진입 시 `(5*slot-5, 25, team==0?50:-60)` 세팅 + 즉시 브로드캐스트 |
-| CS_MOVE 물리 게이트 | `GameSessionManager.cpp::CS_MOVE` | `GetRoomPhase()==PLAYING` 일 때만 `ApplyPlayerPhysics` 실행 (선택 페이즈엔 y=25 고정) |
+| 팀 싱크대 스테이징 배치 | `RoomPhaseManager.cpp::ApplyTeamSpawnPositions` | CHARSELECT/SCOREBOARD 진입 시 싱크대 위 팀/슬롯 정렬 좌표 세팅 + 즉시 브로드캐스트 (2026-06-26) |
+| CS_MOVE 물리 게이트 | `GameSessionManager.cpp::CS_MOVE` | `GetRoomPhase()==PLAYING` 일 때만 `ApplyPlayerPhysics` 실행 (선택 페이즈엔 싱크대 위 고정) |
 
 ---
 
-## STEP 6 — 전투 결과 (피격·사망·K/D/A)
+## STEP 6 — 전투 결과 (피격·사망·K/D/A) ✅ 구현 완료
 
-**목적:** 히트 판정을 서버가 처리하고 K/D/A·생존 여부를 전체에 브로드캐스트한다. 현재 `Refresh_HUD()`의 `bAlive = true` 더미를 교체.
+**목적:** 히트 판정을 서버가 처리하고 K/D/A·생존 여부를 전체에 브로드캐스트한다.
 
-**서버에서 해야 할 작업**
-1. `protocol.h` — 패킷 정의
-   - `CS_HIT_PACKET`: `size`, `type`, `attacker_id`, `victim_id`, `damage`
-   - `SC_COMBAT_RESULT_PACKET`: `size`, `type`, `victim_id`, `attacker_id`, `remaining_hp`, `is_dead(bool)`
-2. `GameSession` — 플레이어별 `m_iHp`, `m_bAlive` 필드 추가; 라운드 시작 시 초기화
-3. `GameSessionManager::ProcessPacket` — `CS_HIT` 케이스 추가  
-   - 피해량 적용 → HP 계산 → 사망 판정  
-   - `SC_COMBAT_RESULT` 브로드캐스트 (전원에게)
-4. `RoomPhaseManager::OnPlayerDead(room_id, victim_id)` 구현  
-   - 한 팀 전멸 판정 → `OnRoundEnd(winner_team)` 호출 (STEP 7과 연동)
-5. K/D/A 집계: 킬 발생 시 attacker의 kill++, victim의 death++, 어시스트 로직 추가 후  
-   `SC_SCORE_UPDATE` 브로드캐스트
+**구현 완료 (2026-06-26)**
 
-**완료 조건**
-- 실제 피격 → HP 감소 → HP=0 시 사망 처리 → 스코어보드에 K/D 반영
-- 모든 클라에서 생존/사망 HUD 상태 일치
+| 항목 | 파일 | 내용 |
+|------|------|------|
+| 패킷 정의 | `Server/protocol.h` | CS_HIT(16) 19B, SC_HIT(23) 25B, SC_DEATH(24) 10B |
+| HP/생사 필드 | `InstanceServer/GameSession.h/cpp` | `m_hp(MAX_HP=500)`, `m_bAlive`; 생성자 초기화 |
+| HP 라운드 리셋 | `RoomPhaseManager.cpp::ApplySpawnPositions` | PLAYING 진입 시 `m_hp=MAX_HP, m_bAlive=true` |
+| CS_HIT 처리 | `GameSessionManager.cpp::case CS_HIT` | PLAYING 게이트 + 거리(≤150) + LOS 검증 → 부위별 데미지 → SC_HIT/SC_DEATH 브로드캐스트 |
+| LOS 검증 | `GameSessionManager.cpp::CheckLOS` | `m_mapPtrs` flat 순회 + `SServerCollider::IntersectsRay` |
+| 클라 송신 | `NetworkClient.cpp::Send_Hit` | 인스턴스 소켓으로 CS_HIT 전송 |
+| 클라 히트 감지 | `Collision_Manager.cpp::NewBullet` | 플레이어 hit 시 `Send_Hit` 전송; 로컬 TakeDamage 제거 |
+| 클라 SC_HIT 수신 | `NetworkClient.cpp::ProcessInstancePacket` + `Game_Manager.cpp::Apply_Hit` | KETCHUP_SPRAY 파티클 + 본인 피격 시 HP 갱신 |
+| 클라 SC_DEATH 수신 | `NetworkClient.cpp::ProcessInstancePacket` + `Game_Manager.cpp::Apply_Death` | 본인: `Die(0.f)`, 타인: `Kill_OtherPlayer(id)` |
+| victim NetworkId | `CPlayer_Pig::m_iNetworkId` + `Get_NetworkId()` | `Spawn_OtherPlayer`에서 `Set_NetworkId(id)` 호출 |
+
+**잔존 미구현:**
+- 팀 전멸 판정 → `OnRoundEnd` 호출 (STEP 7)
+- K/D/A 실제 연동 (현재 Broadcast_ScoreUpdate에서 0 하드코딩)
 
 ---
 
