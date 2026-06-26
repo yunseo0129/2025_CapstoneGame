@@ -1,5 +1,10 @@
 #include "GameSessionManager.h"
 #include "RoomPhaseManager.h"
+#include <cmath>
+
+// =============================================================================
+// 클라이언트 연결 관리
+// =============================================================================
 
 int GameSessionManager::GetNewClientId()
 {
@@ -13,13 +18,46 @@ int GameSessionManager::GetNewClientId()
     return -1;
 }
 
+// =============================================================================
+// 맵 충돌 로드 + BVH 빌드
+// =============================================================================
+
+bool GameSessionManager::Build_MapCollision(const std::string& jsonPath)
+{
+    m_mapColliders.clear();
+    m_mapPtrs.clear();
+    m_mapBVH.Clear();
+
+    if (!LoadMapColliders(jsonPath, m_mapColliders)) {
+        cout << "[Collision] Failed to load map colliders. Collision disabled." << endl;
+        return false;
+    }
+
+    m_mapPtrs.reserve(m_mapColliders.size());
+    for (auto& col : m_mapColliders)
+        m_mapPtrs.push_back(&col);
+
+    m_mapBVH.Build(m_mapPtrs);
+    return true;
+}
+
+bool GameSessionManager::CheckMove_Player(SServerCollider* me, const XMFLOAT3& move, XMFLOAT3& outSlide)
+{
+    return ServerCheckMove(me, move, outSlide, nullptr, m_mapBVH, m_mapPtrs);
+}
+
+// =============================================================================
+// 패킷 처리
+// =============================================================================
+
 void GameSessionManager::ProcessPacket(int c_id, char* packet)
 {
     switch (packet[1]) {
+
     case CS_JOIN_ROOM: {
         CS_JOIN_ROOM_PACKET* p = reinterpret_cast<CS_JOIN_ROOM_PACKET*>(packet);
 
-        // ���� ��ū Ȯ��
+        // 인증 토큰 확인
         if (!AuthenticateJoin(p->room_id, p->auth_token)) {
             cout << "[Instance] Auth failed for client " << c_id
                  << " room " << p->room_id << endl;
@@ -36,17 +74,17 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
             session.m_state = ST_INGAME;
         }
 
-        // �濡 �÷��̾� �߰�
+        // 방에 플레이어 추가
         auto* room = GetRoom(p->room_id);
         if (room && room->IsActive()) {
-            // ���� �� �÷��̾�� �ű� �÷��̾� �˸�
+            // 기존 룸 플레이어에게 새 플레이어 알림
             for (int pid : room->GetPlayerIds()) {
                 if (m_clients[pid].m_state != ST_INGAME) continue;
                 m_clients[pid].Send_Add_Player_Packet(c_id, this);
-                // �ű� �÷��̾�� ���� �÷��̾� �˸�
+                // 새 플레이어에게 기존 플레이어 알림
                 session.Send_Add_Player_Packet(pid, this);
             }
-            // ���� �÷��̾� ��Ͽ� �߰�
+            // 새 플레이어 목록에 추가
             vector<int> ids = room->GetPlayerIds();
             ids.push_back(c_id);
             room->Initialize(p->room_id, ids);
@@ -62,13 +100,12 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
              << " as " << p->name << endl;
         break;
     }
+
     case CS_MOVE: {
         CS_MOVE_PACKET* p = reinterpret_cast<CS_MOVE_PACKET*>(packet);
-
         auto& session = m_clients[c_id];
 
         // 클라이언트 타임스탬프 차이를 fTimeDelta로 사용
-        // → 서버와 클라이언트가 동일한 dt로 CalculateMovement를 실행하게 됨
         float fTimeDelta = 0.f;
         if (session.m_lastClientTimestamp != 0) {
             unsigned int delta = p->timestamp - session.m_lastClientTimestamp;
@@ -86,11 +123,101 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
         // 클라이언트 회전(Right/Up/Look, m[0..11])만 복사 — 위치는 서버가 계산
         memcpy(session.m_worldMatrix.m, p->worldMatrix, sizeof(float) * 12);
 
-        // 서버 권위 물리: PLAYING 페이즈에서만 적용
-        // 선택/스코어보드/상점 페이즈에서는 물리를 동결 → ApplyTeamSpawnPositions가 세팅한
-        // 팀 시작 지점(y=25)이 GROUND_HEIGHT(27.6) 클램프에 끌려 올라가지 않도록 함
-        if (RoomPhaseManager::GetInstance()->GetRoomPhase(session.m_room_id) == ROOM_PHASE::PLAYING)
-            session.m_worldMatrix.ApplyPlayerPhysics(session.m_player, p->keyInput, fTimeDelta);
+        // PLAYING 페이즈에서만 물리+충돌 적용
+        // 그 외 페이즈는 동결 (ApplyTeamSpawnPositions 위치가 GROUND_HEIGHT 클램프에 끌리지 않도록)
+        if (RoomPhaseManager::GetInstance()->GetRoomPhase(session.m_room_id) == ROOM_PHASE::PLAYING) {
+
+            // ─────────────────────────────────────────────────────────────────
+            // 서버 권위 물리 + 맵 이동 충돌
+            // 클라이언트 CPlayer_1rd::Resolve_Movement + CheckMove 와 동일 흐름
+            // ─────────────────────────────────────────────────────────────────
+            auto& wm = session.m_worldMatrix;
+            auto& pi = session.m_player;
+            const unsigned short ki = p->keyInput;
+
+            const bool bSpace = (ki & KEY_SPACE) != 0;
+            const bool bCtrl  = (ki & KEY_CTRL)  != 0;
+            const bool bShift = (ki & KEY_SHIFT) != 0;
+            const bool bW = (ki & KEY_W) != 0, bS = (ki & KEY_S) != 0;
+            const bool bA = (ki & KEY_A) != 0, bD = (ki & KEY_D) != 0;
+
+            // 1. 점프 (ApplyPlayerPhysics 와 동일)
+            if (bSpace && pi.bIsGrounded) {
+                pi.fVerticalVelocity = WorldMatrixInfo::PHYS_JUMP_SPEED;
+                pi.bIsGrounded       = false;
+            }
+
+            // 2. 중력
+            pi.fVerticalVelocity += WorldMatrixInfo::PHYS_GRAVITY * fTimeDelta;
+            if (pi.fVerticalVelocity < -WorldMatrixInfo::PHYS_TERMINAL_VEL)
+                pi.fVerticalVelocity = -WorldMatrixInfo::PHYS_TERMINAL_VEL;
+            const float fVerticalDelta = pi.fVerticalVelocity * fTimeDelta;
+
+            // 3. 속도 배율 (걷기4 / 웅크리기2 / 달리기6)
+            const float speed = pi.speedPerSec * (bCtrl ? 2.f : (bShift ? 6.f : 4.f));
+
+            // 4. 수평 XZ 이동 방향 (ApplyPlayerPhysics 동일)
+            float lx = wm.m[8], lz = wm.m[10];
+            const float lenL = sqrtf(lx * lx + lz * lz);
+            if (lenL > 1e-4f) { lx /= lenL; lz /= lenL; }
+            float rx = wm.m[0], rz = wm.m[2];
+            const float lenR = sqrtf(rx * rx + rz * rz);
+            if (lenR > 1e-4f) { rx /= lenR; rz /= lenR; }
+
+            const float fLook  = (bW ? 1.f : 0.f) - (bS ? 1.f : 0.f);
+            const float fRight = (bD ? 1.f : 0.f) - (bA ? 1.f : 0.f);
+            float dirX = lx * fLook + rx * fRight;
+            float dirZ = lz * fLook + rz * fRight;
+            const float dirLen = sqrtf(dirX * dirX + dirZ * dirZ);
+            float hX = 0.f, hZ = 0.f;
+            if (dirLen > 1e-4f) {
+                hX = (dirX / dirLen) * speed * fTimeDelta;
+                hZ = (dirZ / dirLen) * speed * fTimeDelta;
+            }
+
+            // 5. 수평+수직 합산 이동 벡터
+            XMFLOAT3 vMove = { hX, fVerticalDelta, hZ };
+
+            // 6. 플레이어 sphere 콜라이더 월드 위치 갱신 (현재 위치 기준)
+            session.UpdateColliderPositions();
+
+            // 7. 각 sphere 에 대해 CheckMove 슬라이드 누적
+            //    (Resolve_Movement:289-299 와 동일)
+            XMFLOAT3 vSlide = vMove;
+            if (!m_mapPtrs.empty()) {  // 맵 콜라이더 로드된 경우에만
+                for (int si = 0; si < 2; ++si) {
+                    XMFLOAT3 slideOut = vSlide;
+                    CheckMove_Player(&session.m_mapSpheres[si], vSlide, slideOut);
+                    vSlide = slideOut;
+                }
+            }
+
+            // 8. 착지/천장 판정 (Resolve_Movement:309-323 과 동일)
+            pi.bIsGrounded = false;
+            if (fVerticalDelta < -1e-5f && vSlide.y > fVerticalDelta + 1e-4f) {
+                // 내려가려 했는데 막힘 → 착지
+                pi.bIsGrounded       = true;
+                pi.fVerticalVelocity = 0.f;
+            }
+            else if (fVerticalDelta > 1e-5f && vSlide.y < fVerticalDelta - 1e-4f) {
+                // 올라가려 했는데 막힘 → 천장
+                pi.fVerticalVelocity = 0.f;
+            }
+
+            // 9. 위치 반영
+            wm.m[12] += vSlide.x;
+            wm.m[13] += vSlide.y;
+            wm.m[14] += vSlide.z;
+
+            // 10. 안전 바닥 클램프 (맵 지오메트리 누락 대비 fallback)
+            if (wm.m[13] < WorldMatrixInfo::GROUND_HEIGHT) {
+                wm.m[13] = WorldMatrixInfo::GROUND_HEIGHT;
+                if (pi.fVerticalVelocity < 0.f) {
+                    pi.fVerticalVelocity = 0.f;
+                    pi.bIsGrounded       = true;
+                }
+            }
+        }
 
         // 액션 키 라이징 에지 처리
         if (risingEdge & KEY_R)
@@ -110,6 +237,7 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
         }
         break;
     }
+
     case CS_CHAR_SELECT: {
         CS_CHAR_SELECT_PACKET* p = reinterpret_cast<CS_CHAR_SELECT_PACKET*>(packet);
         m_clients[c_id].m_iCharType = p->char_type;
@@ -132,6 +260,7 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
         cout << "[Instance] Client [" << c_id << "] selected char " << (int)p->char_type << endl;
         break;
     }
+
     case CS_SPAWN_SELECT: {
         CS_SPAWN_SELECT_PACKET* p = reinterpret_cast<CS_SPAWN_SELECT_PACKET*>(packet);
         memcpy(m_clients[c_id].m_spawnPos, p->world_pos, sizeof(float) * 3);
@@ -155,6 +284,7 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
              << p->world_pos[0] << ", " << p->world_pos[1] << ", " << p->world_pos[2] << ")" << endl;
         break;
     }
+
     case CS_PHASE_READY: {
         CS_PHASE_READY_PACKET* p = reinterpret_cast<CS_PHASE_READY_PACKET*>(packet);
         int room_id = m_clients[c_id].m_room_id;
@@ -162,6 +292,7 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
             RoomPhaseManager::GetInstance()->OnPlayerPhaseReady(room_id, p->phase);
         break;
     }
+
     case CS_MAP_LOADED: {
         CS_MAP_LOADED_PACKET* p = reinterpret_cast<CS_MAP_LOADED_PACKET*>(packet);
         int room_id = m_clients[c_id].m_room_id;
@@ -169,6 +300,7 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
             RoomPhaseManager::GetInstance()->OnMapLoaded(room_id, p->slot);
         break;
     }
+
     case CS_LOGOUT: {
         cout << "[Instance] Client [" << c_id << "] logout requested." << endl;
         Disconnect(c_id);
@@ -176,6 +308,10 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
     }
     }
 }
+
+// =============================================================================
+// 연결 해제
+// =============================================================================
 
 void GameSessionManager::Disconnect(int c_id)
 {
@@ -202,26 +338,30 @@ void GameSessionManager::Disconnect(int c_id)
     closesocket(m_clients[c_id].m_socket);
 
     lock_guard<mutex> ll(m_clients[c_id].m_s_lock);
-    m_clients[c_id].m_state = ST_FREE;
+    m_clients[c_id].m_state  = ST_FREE;
     m_clients[c_id].m_room_id = -1;
 }
 
+// =============================================================================
+// 방 / 인증
+// =============================================================================
+
 void GameSessionManager::RegisterPendingRoom(const IS_ROOM_NOTIFY_PACKET& pkt)
 {
-    // �� ���� (�� �÷��̾� �������, ���� ���� �� �߰�)
+    // 방 초기화 (플레이어 없는 빈 방으로 등록)
     vector<int> empty_ids;
     {
         lock_guard<mutex> ll(m_room_lock);
         m_rooms[pkt.room_id].Initialize(pkt.room_id, empty_ids);
     }
 
-    // ���� ��ū ����
+    // 인증 토큰 저장
     {
         lock_guard<mutex> ll(m_pending_lock);
         m_pending_tokens[pkt.room_id] = string(pkt.auth_token);
     }
 
-    // 페이즈 매니저에 방 등록 (입장 대기 상태로 초기화 + 로스터 저장)
+    // 페이즈 매니저에 방 등록
     RoomPhaseManager::GetInstance()->OnRoomRegistered(pkt);
 
     cout << "[Instance] Room " << pkt.room_id << " registered. Expecting "

@@ -13,6 +13,25 @@ GameSession::GameSession()
     m_lobby_player_id = -1;
     m_lastClientTimestamp = 0;
     m_lastServerTimestamp = 0;
+
+    // 맵 이동 충돌용 sphere 초기화
+    // 파라미터: Player_1rd::Ready_Components ~785-809 에서 발/몸통 sphere 와 동일
+    //   발 sphere : localOffset.y=0.41, radius=0.41
+    //   몸통 sphere: localOffset.y=1.23, radius=0.41
+    const float px = 10.f, py = WorldMatrixInfo::GROUND_HEIGHT, pz = 0.f;
+    m_mapSpheres[0] = SServerCollider::FromSphere({ px, py + 0.41f, pz }, 0.41f);
+    m_mapSpheres[1] = SServerCollider::FromSphere({ px, py + 1.23f, pz }, 0.41f);
+}
+
+void GameSession::UpdateColliderPositions()
+{
+    // m_worldMatrix.m[12..14] = 플레이어 월드 발 위치
+    // 발 sphere: y + 0.41, 몸통 sphere: y + 1.23
+    const float px = m_worldMatrix.m[12];
+    const float py = m_worldMatrix.m[13];
+    const float pz = m_worldMatrix.m[14];
+    m_mapSpheres[0].sphere.Center = { px, py + 0.41f, pz };
+    m_mapSpheres[1].sphere.Center = { px, py + 1.23f, pz };
 }
 
 unsigned int GameSession::GetServerTimestamp()

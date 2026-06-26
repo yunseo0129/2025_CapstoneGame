@@ -20,6 +20,12 @@
     <Filter Include="소스 파일\Room">
       <UniqueIdentifier>{0e4c68b7-4510-4927-9700-4417758544bc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\GameSession\Map">
+      <UniqueIdentifier>{057af6f7-76c4-4ffe-aa95-42cb8f584960}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\GameSession\Collision">
+      <UniqueIdentifier>{3c58fb0b-ed3b-49f5-a1d5-5c470344ccdd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -39,6 +45,12 @@
     </ClCompile>
     <ClCompile Include="RoomPhaseManager.cpp">
       <Filter>소스 파일\Room</Filter>
+    </ClCompile>
+    <ClCompile Include="ServerCollision.cpp">
+      <Filter>소스 파일\GameSession\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="MapDataLoader.cpp">
+      <Filter>소스 파일\GameSession\Map</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -62,6 +74,12 @@
     </ClInclude>
     <ClInclude Include="RoomPhaseManager.h">
       <Filter>소스 파일\Room</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerCollision.h">
+      <Filter>소스 파일\GameSession\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="MapDataLoader.h">
+      <Filter>소스 파일\GameSession\Map</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

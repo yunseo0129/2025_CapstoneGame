@@ -1,9 +1,10 @@
 #pragma once
 #include "OverllapedEXP.h"
+#include "ServerCollision.h"
 
 class GameSessionManager;
 
-// �ν��Ͻ� ������ Ŭ���̾�Ʈ ����
+// 인스턴스 서버의 클라이언트 세션
 class GameSession
 {
     OverllapedEXP m_recv_over;
@@ -24,6 +25,15 @@ public:
 
     unsigned int    m_lastClientTimestamp;
     unsigned int    m_lastServerTimestamp;
+
+    // 맵 이동 충돌용 플레이어 sphere 콜라이더 2개
+    // [0]=발 sphere (localOffset y+0.41, radius=0.41)
+    // [1]=몸통 sphere (localOffset y+1.23, radius=0.41)
+    // 클라이언트 Player_1rd::Ready_Components ~785-809 와 동일 파라미터
+    SServerCollider m_mapSpheres[2];
+
+    // 매 CS_MOVE 처리 전 호출: m_worldMatrix.m[12..14] 기준으로 sphere world 위치 갱신
+    void UpdateColliderPositions();
 
 public:
     GameSession();

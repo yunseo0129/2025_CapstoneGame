@@ -14,7 +14,7 @@
 | 2 | 매치 로스터 | ✅ 완료 |
 | 3 | 맵 로드 완료 | ✅ 완료 |
 | 4 | 캐릭터 선택 릴레이 | ✅ 완료 |
-| 5 | 스폰 위치 선택 릴레이 | 🔲 미구현 |
+| 5 | 스폰 위치 선택 릴레이 | ✅ 완료 |
 | 6 | 전투 결과 (피격·사망·K/D/A) | 🔲 미구현 |
 | 7 | 라운드 승패 판정 | 🔲 미구현 |
 
@@ -211,22 +211,19 @@
 
 ---
 
-## STEP 5 — 스폰 위치 선택 릴레이 - 진행중
+## STEP 5 — 스폰 위치 선택 릴레이 ✅ 구현 완료
 
-**목적:** SHOP(MAPSELECT) 단계에서 선택한 스폰 좌표를 전체에 공유한다. `Apply_SpawnLaunch()` 포물선 발사가 모든 클라에서 동시에 올바른 위치로 일어나야 한다. 또한 캐릭터 선택 시 처음 스폰되는 장소 동기화
+**목적:** SHOP(MAPSELECT) 단계에서 선택한 스폰 좌표를 전체에 공유하고, 캐릭터 선택/스코어보드 페이즈에서 캐릭터를 팀 시작 지점에 배치한다.
 
-**서버에서 해야 할 작업**
-1. `protocol.h` — 패킷 정의
-   - `CS_SPAWN_SELECT_PACKET`: `size`, `type`, `world_pos[3]` (선택 좌표 XYZ)
-   - `SC_SPAWN_SELECT_PACKET`: `size`, `type`, `player_id`, `world_pos[3]`
-2. `GameSessionManager::ProcessPacket` — `CS_SPAWN_SELECT` 케이스 추가  
-   - `GameSession`에 선택 좌표 저장 (`m_spawnPos`)  
-   - `SC_SPAWN_SELECT`를 방 전원에게 브로드캐스트
-3. PLAYING 전환 시 서버가 저장된 스폰 좌표를 `SC_PHASE_CHANGE(PLAYING)`과 함께  
-   또는 별도 패킷으로 전달 (클라 스폰 위치 보정용)
+**구현 완료 항목 (2026-06-25)**
 
-**완료 조건**
-- 플레이어 A가 맵에서 스폰 지점 선택 → 모든 클라가 A의 스폰 좌표를 수신
+| 항목 | 파일 | 내용 |
+|------|------|------|
+| CS_SPAWN_SELECT 수신 릴레이 | `GameSessionManager.cpp` | `m_spawnPos` 저장 + `SC_SPAWN_SELECT` 방 전원 브로드캐스트 |
+| PLAYING 진입 스폰 위치 적용 | `RoomPhaseManager.cpp::ApplySpawnPositions` | 선택 좌표로 서버 권위 위치 세팅, 브로드캐스트 지연(포물선 연출용) |
+| 싱크대→식탁 포물선 호 | `Player_1rd.cpp::Apply_ServerCorrection` | `m_bLaunching` 중 서버 보정 차단, 착지 후 서버 위치로 수렴 |
+| 팀 시작 지점 배치 | `RoomPhaseManager.cpp::ApplyTeamSpawnPositions` | CHARSELECT/SCOREBOARD 진입 시 `(5*slot-5, 25, team==0?50:-60)` 세팅 + 즉시 브로드캐스트 |
+| CS_MOVE 물리 게이트 | `GameSessionManager.cpp::CS_MOVE` | `GetRoomPhase()==PLAYING` 일 때만 `ApplyPlayerPhysics` 실행 (선택 페이즈엔 y=25 고정) |
 
 ---
 

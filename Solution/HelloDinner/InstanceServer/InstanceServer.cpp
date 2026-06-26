@@ -73,6 +73,25 @@ bool InstanceServer::Initialize(int instance_id, unsigned short port, const char
     cout << "[Instance #" << m_instance_id << "] Running on port " << m_port << endl;
     PrintServerIP();
 
+    // 맵 충돌 콜라이더 로드 + 정적 BVH 빌드
+    // CWD 비의존: exe 위치에서 부모를 거슬러 올라가며 파일을 탐색
+    // → StartServers.bat(x64\Debug\)·VS 디버거(InstanceServer\x64\Debug\) 양쪽 모두 동작
+    auto ResolveResourcePath = [](const char* relFromSolutionRoot) -> std::string {
+        char exePath[MAX_PATH] = {};
+        GetModuleFileNameA(nullptr, exePath, MAX_PATH);
+        std::filesystem::path dir = std::filesystem::path(exePath).parent_path();
+        for (int up = 0; up < 6; ++up) {
+            std::filesystem::path cand = dir / relFromSolutionRoot;
+            if (std::filesystem::exists(cand))
+                return cand.string();
+            dir = dir.parent_path();
+        }
+        return relFromSolutionRoot; // 폴백: 못 찾으면 그대로 반환
+    };
+
+    GameSessionManager::GetInstance()->Build_MapCollision(
+        ResolveResourcePath("HelloDinner/Resources/NonAnim/Map/MapData.json"));
+
     return true;
 }
 
