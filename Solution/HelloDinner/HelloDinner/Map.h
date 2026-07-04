@@ -53,6 +53,9 @@ public:
     // 부서지는 벽인지 확인
     _bool Is_Breakable() const { return m_bBreakable; }
     _bool Is_Broken()    const { return m_bBroken; }
+    // Fracture_System 전담 렌더 대상인지 (인스턴싱 이중 드로우 방지)
+    _bool Is_FractureRegistered() const { return m_iFractureSlot >= 0; }
+
     void  Break();
     void  Restore();
     // 이웃 벽이 사라졌을 때 면 노출 구현
