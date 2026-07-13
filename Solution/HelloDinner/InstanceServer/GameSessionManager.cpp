@@ -404,12 +404,15 @@ bool GameSessionManager::CheckLOS(const XMFLOAT3& from, const XMFLOAT3& to) cons
 
 void GameSessionManager::Disconnect(int c_id)
 {
+    int room_id = -1;
     {
         lock_guard<mutex> ll(m_clients[c_id].m_s_lock);
         if (m_clients[c_id].m_state == ST_FREE) return;
+        // 잠금 안에서 즉시 ST_FREE로 전환해 다른 스레드의 이중 진입을 차단
+        m_clients[c_id].m_state = ST_FREE;
+        room_id = m_clients[c_id].m_room_id;
+        m_clients[c_id].m_room_id = -1;
     }
-
-    int room_id = m_clients[c_id].m_room_id;
 
     if (room_id != -1) {
         auto* room = GetRoom(room_id);
@@ -425,10 +428,6 @@ void GameSessionManager::Disconnect(int c_id)
     }
 
     closesocket(m_clients[c_id].m_socket);
-
-    lock_guard<mutex> ll(m_clients[c_id].m_s_lock);
-    m_clients[c_id].m_state  = ST_FREE;
-    m_clients[c_id].m_room_id = -1;
 }
 
 // =============================================================================

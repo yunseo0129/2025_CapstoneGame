@@ -341,6 +341,7 @@ void NetworkClient::RecvThread()
 
         while (totalData > 0) {
             int packetSize = static_cast<unsigned char>(p[0]);
+            if (packetSize < 2) break;
             if (packetSize > totalData) break;
             ProcessLobbyPacket(p);
             p += packetSize;
@@ -374,6 +375,7 @@ void NetworkClient::InstanceRecvThread()
 
         while (totalData > 0) {
             int packetSize = static_cast<unsigned char>(p[0]);
+            if (packetSize < 2) break;
             if (packetSize > totalData) break;
             ProcessInstancePacket(p);
             p += packetSize;
@@ -394,6 +396,7 @@ void NetworkClient::ProcessLobbyPacket(char* packet)
     switch (packet[1]) {
     case SC_LOGIN_INFO: {
         SC_LOGIN_INFO_PACKET* p = reinterpret_cast<SC_LOGIN_INFO_PACKET*>(packet);
+        if (p->id < 0 || p->id >= MAX_USER) break;
         m_iMyId = p->id;
         memcpy(m_worldMatrix, p->worldMatrix, sizeof(float) * 16);
         m_players[m_iMyId].OnAdded(m_iMyId, p->worldMatrix, m_szName);
@@ -492,6 +495,7 @@ void NetworkClient::ProcessInstancePacket(char* packet)
     switch (packet[1]) {
     case SC_ADD_PLAYER: {
         SC_ADD_PLAYER_PACKET* p = reinterpret_cast<SC_ADD_PLAYER_PACKET*>(packet);
+        if (p->id < 0 || p->id >= MAX_USER) break;
         m_players[p->id].OnAdded(p->id, p->worldMatrix, p->name);
         {
             std::lock_guard<std::mutex> lk(m_activePlayerLock);
@@ -501,6 +505,7 @@ void NetworkClient::ProcessInstancePacket(char* packet)
     }
     case SC_REMOVE_PLAYER: {
         SC_REMOVE_PLAYER_PACKET* p = reinterpret_cast<SC_REMOVE_PLAYER_PACKET*>(packet);
+        if (p->id < 0 || p->id >= MAX_USER) break;
         m_players[p->id].OnRemoved();
         {
             std::lock_guard<std::mutex> lk(m_activePlayerLock);
@@ -510,6 +515,7 @@ void NetworkClient::ProcessInstancePacket(char* packet)
     }
     case SC_MOVE_PLAYER: {
         SC_MOVE_PLAYER_PACKET* p = reinterpret_cast<SC_MOVE_PLAYER_PACKET*>(packet);
+        if (p->id < 0 || p->id >= MAX_USER) break;
         m_players[p->id].OnMoved(p->keyInput, p->worldMatrix);
         break;
     }

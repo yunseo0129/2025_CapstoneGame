@@ -290,3 +290,167 @@ SC_ROSTER_INFO     CS_MAP_LOADED      SC_MAP_LOADED
 SC_CHAR_SELECT     CS_SPAWN_SELECT    SC_SPAWN_SELECT
 CS_HIT             SC_COMBAT_RESULT
 ```
+
+---
+
+## 코드 감사 — 버그 목록 (2026-07-13)
+
+> 3개 영역(클라이언트 플레이어·네트워크 / InstanceServer / Lobby Server·protocol)을 전수 감사.
+> **A그룹 항목은 실제 소스로 직접 검증 완료.**
+
+---
+
+### A. 검증 완료 — 최고위험
+
+#### A-1. `IOCPServer.cpp` 패킷 크기를 signed char로 읽어 128B↑ 패킷에서 무한루프
+- **파일:** `Server/IOCPServer.cpp:139` — `int packet_size = p[0];`
+- **문제:** `p`가 `char*`라 `p[0]`이 부호 있는 값. `SC_ROOM_UPDATE`(173B), `IS_ROOM_NOTIFY`(198B)처럼
+  size 바이트가 128 이상이면 음수로 부호확장 → `packet_size <= remain_data` 통과 →
+  `p += packet_size`가 **뒤로** 이동, `remain_data`는 계속 커짐 → 무한루프/OOB.
+  (`LobbyServer.cpp:145`는 이미 `static_cast<unsigned char>(p[0])`로 수정됨. IOCPServer만 누락.)
+- **해결:** `int packet_size = static_cast<unsigned char>(p[0]);`
+
+#### A-2. 모든 recv 루프에서 `packetSize == 0` 무한루프 (클라·서버 공통)
+- **파일:** `NetworkClient.cpp:342-348`(로비), `359-386`(인스턴스), `IOCPServer.cpp:138-146`,
+  `LobbyServer.cpp:144-152`, InstanceServer recv 경로
+- **문제:** size=0 패킷은 `0 > totalData`(false) 통과 → Process 호출 후 `p += 0`, `totalData -= 0`
+  → 포인터·잔량이 그대로 → **무한루프로 스레드 영구 정지(DoS)**.
+- **해결:** 루프 진입 시 `if (packetSize < 2) break;` (최소 크기 2 미만 거부).
+  서버는 `Disconnect(key)` 후 break 권장.
+
+#### A-3. 와이어 id로 `m_players[id]` 무검증 인덱싱 (OOB write)
+- **파일:** `NetworkClient.cpp:397-399` 외 `SC_ADD_PLAYER`/`SC_MOVE`/`SC_REMOVE`/`PopAllPlayerEvents`의
+  `m_players[p->id]` 모든 접근부
+- **문제:** `m_players`는 `NetPlayer[MAX_USER=4000]`. 서버에서 온 `id`에 범위검사가 없어
+  `id < 0` 또는 `id >= MAX_USER`면 배열 OOB read/write = 서버 입력이 곧바로 메모리 손상.
+- **해결:** 모든 `m_players[...]` 접근 전에 `if (id < 0 || id >= MAX_USER) break;`.
+
+#### A-4. `Controller.h` 마우스 입력 배열 미초기화
+- **파일:** `Controller.h:65-66` — `_bool m_isMouseInput[MOUSE_END];`, `_bool m_isPreMouseInput[MOUSE_END];`
+  (같은 파일 54행 `m_isKeyboardInput[KEYS_END] = {}`와 대조)
+- **문제:** 0프레임에 `Update_Input`이 pre 배열을 쓰기 전에 읽어 **초기화되지 않은 값** 참조.
+- **해결:** `_bool m_isMouseInput[MOUSE_END] = {};` / `_bool m_isPreMouseInput[MOUSE_END] = {};`
+
+#### A-5. `GameSessionManager::Disconnect` 비멱등 — 이중 해제 위험
+- **파일:** `GameSessionManager.cpp:405-432`
+- **문제:** 첫 잠금 블록에서 `ST_FREE` 확인 후 **잠금을 푼 채** teardown 진행, 마지막에 다시 잠가
+  `ST_FREE` 설정. 두 IOCP 스레드(GQCS 오류 + 0바이트 완료)가 동시에 초기 검사를 통과하면
+  `closesocket`·`RemovePlayer`·`OnPlayerLeft` 이중 실행 → `joined` 카운트 붕괴, 페이즈 전환 오작동.
+- **해결:** 첫 잠금 블록 안에서 즉시 `ST_CLOSING`으로 상태 전환하고 이미 그 상태면 early-return.
+  임계구역을 하나의 잠금 상태 전이로 원자화.
+
+---
+
+### B. 고위험 — 스레드 안전성 / 패킷 검증
+
+#### B-1. 타입별 최소 크기 검증 없음 (모든 ProcessPacket)
+- **파일:** `NetworkClient::ProcessLobbyPacket/ProcessInstancePacket`,
+  `GameSessionManager::ProcessPacket`, `SessionManager::ProcessPacket`
+- **문제:** 디스패치는 `size <= 남은데이터`만 보장. `size=2, type=CS_JOIN_ROOM`처럼 짧은 패킷을
+  구조체로 reinterpret해 `auth_token[32]/name[20]` 등을 버퍼 밖까지 읽음.
+- **해결:** 각 case에서 `if (static_cast<unsigned char>(packet[0]) < sizeof(기대구조체)) break;` 후 역참조.
+
+#### B-2. `worldMatrix`/`m_hp` 잠금 없이 변경 (CS_MOVE/CS_HIT ↔ 타이머 스레드 경쟁)
+- **파일:** `GameSessionManager.cpp` CS_MOVE(~124), CS_HIT(~350) vs
+  `RoomPhaseManager` `Send_Move_Packet`/`ApplySpawnPositions`
+- **문제:** `ApplySpawnPositions`는 `m_s_lock`을 잡지만 CS_MOVE 핸들러는 같은 `m_worldMatrix`를
+  **잠금 없이** 수정 → 상호배제 실패. 실제 데이터 레이스.
+- **해결:** CS_MOVE/CS_HIT의 worldMatrix·hp 변경을 `m_clients[c_id].m_s_lock`으로 감쌈.
+
+#### B-3. `Room::GetPlayerIds()` 참조를 잠금 밖에서 순회 → 반복자 무효화
+- **파일:** `GameSessionManager.cpp:417`, `Room.cpp:16-33`, `RoomPhaseManager` 브로드캐스트부
+- **문제:** `GetPlayerIds()`는 `const vector<int>&` 반환. `RemovePlayer`/`Initialize`가
+  `m_room_lock` 아래 벡터 변경 중 다른 스레드가 참조 순회 → use-after-free.
+  `HasPlayer`(Room.cpp:31)도 잠금 없이 `find`.
+- **해결:** `GetPlayerIds()`를 잠금 하에 **복사본 반환**으로 변경. `HasPlayer`에 잠금 추가.
+
+#### B-4. 공유 소켓/플래그 무동기화
+- **파일:** `InstanceServer.cpp` `m_lobby_socket`(HeartbeatThread↔LobbyRecvThread),
+  `NetworkClient.h:168-192` `m_iMyId`/`m_bConnected`/`m_bInGame`/`m_bGameStarting` 등
+- **문제:** recv 스레드가 쓰고 main/heartbeat 스레드가 잠금 없이 읽음 → 데이터 레이스,
+  닫힌 소켓에 send 가능. `IsGameStarting()`은 잠금 없이 읽는데 쓰기는 `m_roomLock` 아래.
+- **해결:** 상태 플래그를 `std::atomic<bool>`으로, 소켓은 `std::atomic<SOCKET>` 또는 뮤텍스 보호.
+
+#### B-5. GQCS 실패 시 `over == nullptr` 역참조
+- **파일:** `IOCPServer.cpp:88-91`, `LobbyServer.cpp:94-97`, `InstanceServer.cpp:232-243`
+- **문제:** GQCS 실패는 `over == nullptr`로 반환될 수 있는데 곧바로 `ex_over->m_comp_type` 역참조.
+- **해결:** `if (over == nullptr) continue;` 를 역참조 전에 추가.
+
+#### B-6. `OP_ACCEPT` 실패 분기 fall-through
+- **파일:** `IOCPServer.cpp:90-98`, `LobbyServer.cpp:94-104`
+- **문제:** accept 실패 시 `continue` 없이 아래 정상 처리로 흘러감.
+- **해결:** 실패 분기에 `continue;` 추가.
+
+#### B-7. 내부(인스턴스↔로비) recv가 부분 패킷 유실
+- **파일:** `InstanceServer.cpp:197-210`(LobbyRecvThread), `InstanceManager.cpp:70-102`(InternalRecvThread)
+- **문제:** `recv` 경계로 잘린 패킷 잔여 바이트를 다음 호출에 이월하지 않고 버림.
+  `IS_ROOM_NOTIFY`(198B)가 TCP 분할되면 스트림 영구 손상.
+- **해결:** 잔여를 버퍼 앞으로 `memmove` 후 `buf + remain`으로 recv (OP_RECV 경로와 동일 패턴).
+
+---
+
+### C. 고위험 — 게임 로직 / 상태머신
+
+#### C-1. `room_id`/`player_count` 무검증 배열 접근
+- **파일:** `GameSessionManager.cpp` `RegisterPendingRoom`(~438), `RoomPhaseManager::OnRoomRegistered`
+- **문제:** 로비가 준 `pkt.room_id`로 `m_rooms[room_id]` 직접 인덱싱 (범위검사 없음). 부분 패킷이면 OOB write.
+- **해결:** `0 <= room_id < MAX_ROOM`, `0 <= player_count <= ROOM_MAX_PLAYER` 검증 후 접근.
+
+#### C-2. 페이즈 카운터가 `joined`와 어긋남 → 전환 정지/조기 전환
+- **파일:** `RoomPhaseManager.cpp` `OnMapLoaded`/`OnPlayerPhaseReady`, `OnPlayerLeft`
+- **문제:** 준비/로드 보고 후 이탈해도 카운터를 되돌리지 않아 임계값에 영영 못 도달 → 방이 영구 정지.
+  WAITING 중 이탈 시 `expected` 미감소로 매치 게이팅 붕괴.
+- **해결:** 카운터 대신 **플레이어별 준비 집합(set)** 사용. `OnPlayerLeft`에서 보류 중 전환 재평가,
+  `expected`도 함께 조정.
+
+#### C-3. CS_MOVE dt를 클라 타임스탬프로 계산 → 스피드핵 여지
+- **파일:** `GameSessionManager.cpp:110-113`
+- **문제:** `delta = p->timestamp - m_lastClientTimestamp`. 클라가 타임스탬프를 빠르게 올리면
+  서버 물리가 가속됨 (0.1s 클램프는 있으나 고빈도 패킷과 조합 가능).
+- **해결:** dt를 서버 시계(`GetServerTimestamp`) 차분으로 계산.
+
+#### C-4. 브로드캐스트 `part_num`을 클램프 전 값으로 echo
+- **파일:** `GameSessionManager.cpp:337-350`
+- **문제:** 데미지 인덱스는 `min(part, 9)`로 안전하나, `hit.part_num = p->part_num`(원값)으로 전송.
+  클라가 `part_num=255`를 보내면 전원에게 그대로 중계 → 클라 이펙트 배열 OOB 가능.
+- **해결:** `hit.part_num = static_cast<unsigned char>(part);` (클램프된 값 전송).
+
+---
+
+### D. 중·저위험 (요약)
+
+| # | 파일 | 내용 | 해결 |
+|---|------|------|------|
+| D-1 | `Player_Pig.cpp:584-590` | 데드레코닝 속도 스파이크 — 패킷 간격 클 때 `1/m_drTimeSince` 과대속도 → 러버밴딩 | `m_drTimeSince` 상한 클램프(≈0.25s) |
+| D-2 | `Player_Pig.cpp:798-800` | 회전 행렬 성분별 lerp → 정규직교 붕괴, 원격 플레이어 전단 왜곡 | 쿼터니언 slerp 또는 축 재정규화 |
+| D-3 | `Game_Manager.cpp:583-593` | 스폰 echo가 로스터보다 먼저 도착 시 id 매칭 실패로 유실 | player_id 키로 버퍼링 후 로스터 수신 시 재적용 |
+| D-4 | `Ketchup_Gun.cpp:56` | 소켓/부모 행렬 널검사 없음 — 본 조회 실패 시 널 역참조 | 널이면 early-out |
+| D-5 | `Player_Pig.cpp:410-415`, `439-440` | 콜라이더/파트 루프 널검사 불일치 | `if (c)` 가드 추가 |
+| D-6 | `Server/MatchManager.cpp` | `MIN_MATCH_PLAYERS=2` → 6인 방이 거의 안 참 | 최소 인원 또는 타임아웃 기반 매치 조정 |
+| D-7 | `Server/InstanceInfo.h:24` | `GetLoadScore`가 MAX_USER(4000)로 정규화 → player 부하 항상 ≈0 | 인스턴스 실제 정원으로 나눔 |
+| D-8 | `Server/RoomManager.cpp:22,66` | `operator[]`로 없는 방 접근 시 유령 방 자동삽입 | `find` 사용 |
+| D-9 | `SessionManager.cpp:24` 등 | `strcpy_s(dst, p->name)` — 소스 미종단 시 프로세스 종료 가능 | `p->name[NAME_SIZE-1]=0` 강제 후 복사 |
+| D-10 | `Session.cpp:40-45` | `Session::Send` 상태검사 없음 + 동기 실패 시 OVERLAPPED 누수 | 상태검사 추가, `WSA_IO_PENDING` 아니면 `delete` |
+| D-11 | `Session.cpp:8` | `m_socket` 초기값 `0` (`INVALID_SOCKET` 아님) | `INVALID_SOCKET`으로 초기화 |
+| D-12 | 여러 파일 | 죽은 코드 — `m_szAuthToken`(미저장), `Bullets::Render` no-op, `static int a`, 레이어 미추가 UI 등 | 정리 |
+
+---
+
+### 우선순위 요약
+
+| 순서 | 항목 | 이유 |
+|------|------|------|
+| 1 | **A-1, A-2** | recv 파싱 — 즉시 크래시/무한루프 차단 |
+| 2 | **A-3, C-1** | 와이어 id/room_id → OOB write 차단 |
+| 3 | **A-5, B-3** | Disconnect 멱등화 + 방 목록 스냅샷 → 이중해제/UAF 차단 |
+| 4 | **B-2, B-4** | 공유 상태 잠금/atomic |
+| 5 | **A-4, B-1, B-5, B-6, B-7** | 초기화·최소크기·널가드·부분패킷 이월 |
+| 6 | **C-2~C-4, D-*** | 로직·치트·품질 |
+
+### 검증 방법
+
+- **A-1/A-2:** 173B 이상 패킷 및 size=0 패킷 주입 → 수정 전 무한루프, 수정 후 정상 파싱/연결종료.
+- **A-3/C-1:** 경계 밖 `id`/`room_id` 주입 → 크래시 없이 무시되는지 확인.
+- **A-5/B-3:** 2클라 접속 후 라운드 중 강제 종료 반복 → `joined` 카운트·페이즈 전환 정상, 이중 로그 없음.
+- **A-4:** 첫 프레임 마우스 입력 정상 동작 확인.
+- 전체: 기존 검증 체크리스트(2클라 CHARSELECT→GAMEOVER 흐름) 재수행으로 회귀 확인.

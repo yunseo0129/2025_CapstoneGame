@@ -62,8 +62,8 @@ private:
     std::map<int, class CPlayer_Pig*> m_otherPlayers;
     std::map<int, unsigned char>      m_otherCharType; // id → 선택한 캐릭터(0=Pig,1=Chick,2=Fish)
 
-    _bool                   m_isMouseInput[MOUSE_END];
-    _bool                   m_isPreMouseInput[MOUSE_END];
+    _bool                   m_isMouseInput[MOUSE_END] = {};
+    _bool                   m_isPreMouseInput[MOUSE_END] = {};
 
     // 입력 차단 여부 (상점 창 열었을 때 움직임 없게 하려고 만듦)
     _bool                   m_bBlockInput = false;
