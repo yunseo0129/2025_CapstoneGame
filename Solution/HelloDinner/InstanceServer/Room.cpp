@@ -30,5 +30,12 @@ void Room::RemovePlayer(int c_id)
 
 bool Room::HasPlayer(int c_id) const
 {
+    lock_guard<mutex> ll(m_room_lock);
     return find(m_player_ids.begin(), m_player_ids.end(), c_id) != m_player_ids.end();
+}
+
+vector<int> Room::GetPlayerIds() const
+{
+    lock_guard<mutex> ll(m_room_lock);
+    return m_player_ids;
 }

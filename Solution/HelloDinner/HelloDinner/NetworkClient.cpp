@@ -393,8 +393,10 @@ void NetworkClient::InstanceRecvThread()
 // ─────────────────────────────────────────────
 void NetworkClient::ProcessLobbyPacket(char* packet)
 {
+    const int sz = static_cast<unsigned char>(packet[0]);
     switch (packet[1]) {
     case SC_LOGIN_INFO: {
+        if (sz < (int)sizeof(SC_LOGIN_INFO_PACKET)) break;
         SC_LOGIN_INFO_PACKET* p = reinterpret_cast<SC_LOGIN_INFO_PACKET*>(packet);
         if (p->id < 0 || p->id >= MAX_USER) break;
         m_iMyId = p->id;
@@ -408,6 +410,7 @@ void NetworkClient::ProcessLobbyPacket(char* packet)
         break;
     }
     case SC_MATCH_WAIT: {
+        if (sz < (int)sizeof(SC_MATCH_WAIT_PACKET)) break;
         SC_MATCH_WAIT_PACKET* p = reinterpret_cast<SC_MATCH_WAIT_PACKET*>(packet);
         m_iQueueSize = p->queue_size;
 
@@ -420,6 +423,7 @@ void NetworkClient::ProcessLobbyPacket(char* packet)
         break;
     }
     case SC_MATCH_SUCCESS: {
+        if (sz < (int)sizeof(SC_MATCH_SUCCESS_PACKET)) break;
         SC_MATCH_SUCCESS_PACKET* p = reinterpret_cast<SC_MATCH_SUCCESS_PACKET*>(packet);
         m_iRoomId  = p->room_id;
         m_bMatched = true;
@@ -434,6 +438,7 @@ void NetworkClient::ProcessLobbyPacket(char* packet)
         break;
     }
     case SC_REDIRECT: {
+        if (sz < (int)sizeof(SC_REDIRECT_PACKET)) break;
         SC_REDIRECT_PACKET* p = reinterpret_cast<SC_REDIRECT_PACKET*>(packet);
         std::cout << "[Lobby] Redirect → Instance " << p->ip << ":" << p->port
                   << "  Room " << p->room_id << "\n";
@@ -445,6 +450,7 @@ void NetworkClient::ProcessLobbyPacket(char* packet)
         break;
     }
     case SC_ROOM_CREATED: {
+        if (sz < (int)sizeof(SC_ROOM_CREATED_PACKET)) break;
         SC_ROOM_CREATED_PACKET* p = reinterpret_cast<SC_ROOM_CREATED_PACKET*>(packet);
         std::lock_guard<std::mutex> lk(m_roomLock);
         m_roomCode   = p->code;
@@ -458,6 +464,7 @@ void NetworkClient::ProcessLobbyPacket(char* packet)
         break;
     }
     case SC_ROOM_JOIN_RESULT: {
+        if (sz < (int)sizeof(SC_ROOM_JOIN_RESULT_PACKET)) break;
         SC_ROOM_JOIN_RESULT_PACKET* p = reinterpret_cast<SC_ROOM_JOIN_RESULT_PACKET*>(packet);
         std::lock_guard<std::mutex> lk(m_roomLock);
         m_roomJoinResult  = p->result;
@@ -468,6 +475,7 @@ void NetworkClient::ProcessLobbyPacket(char* packet)
         break;
     }
     case SC_ROOM_UPDATE: {
+        if (sz < (int)sizeof(SC_ROOM_UPDATE_PACKET)) break;
         SC_ROOM_UPDATE_PACKET* p = reinterpret_cast<SC_ROOM_UPDATE_PACKET*>(packet);
         std::lock_guard<std::mutex> lk(m_roomLock);
         m_roomCode    = p->code;
@@ -492,8 +500,10 @@ void NetworkClient::ProcessLobbyPacket(char* packet)
 // ─────────────────────────────────────────────
 void NetworkClient::ProcessInstancePacket(char* packet)
 {
+    const int sz = static_cast<unsigned char>(packet[0]);
     switch (packet[1]) {
     case SC_ADD_PLAYER: {
+        if (sz < (int)sizeof(SC_ADD_PLAYER_PACKET)) break;
         SC_ADD_PLAYER_PACKET* p = reinterpret_cast<SC_ADD_PLAYER_PACKET*>(packet);
         if (p->id < 0 || p->id >= MAX_USER) break;
         m_players[p->id].OnAdded(p->id, p->worldMatrix, p->name);
@@ -504,6 +514,7 @@ void NetworkClient::ProcessInstancePacket(char* packet)
         break;
     }
     case SC_REMOVE_PLAYER: {
+        if (sz < (int)sizeof(SC_REMOVE_PLAYER_PACKET)) break;
         SC_REMOVE_PLAYER_PACKET* p = reinterpret_cast<SC_REMOVE_PLAYER_PACKET*>(packet);
         if (p->id < 0 || p->id >= MAX_USER) break;
         m_players[p->id].OnRemoved();
@@ -514,6 +525,7 @@ void NetworkClient::ProcessInstancePacket(char* packet)
         break;
     }
     case SC_MOVE_PLAYER: {
+        if (sz < (int)sizeof(SC_MOVE_PLAYER_PACKET)) break;
         SC_MOVE_PLAYER_PACKET* p = reinterpret_cast<SC_MOVE_PLAYER_PACKET*>(packet);
         if (p->id < 0 || p->id >= MAX_USER) break;
         m_players[p->id].OnMoved(p->keyInput, p->worldMatrix);
@@ -521,6 +533,7 @@ void NetworkClient::ProcessInstancePacket(char* packet)
     }
     // ── Phase 1: 게임 상태머신 패킷 ──────────────────────────────────
     case SC_PHASE_CHANGE: {
+        if (sz < (int)sizeof(SC_PHASE_CHANGE_PACKET)) break;
         SC_PHASE_CHANGE_PACKET* p = reinterpret_cast<SC_PHASE_CHANGE_PACKET*>(packet);
         NetEvent evt{};
         evt.type  = NetEventType::PHASE_CHANGE;
@@ -531,6 +544,7 @@ void NetworkClient::ProcessInstancePacket(char* packet)
         break;
     }
     case SC_ROUND_START: {
+        if (sz < (int)sizeof(SC_ROUND_START_PACKET)) break;
         SC_ROUND_START_PACKET* p = reinterpret_cast<SC_ROUND_START_PACKET*>(packet);
         NetEvent evt{};
         evt.type           = NetEventType::ROUND_START;
@@ -542,6 +556,7 @@ void NetworkClient::ProcessInstancePacket(char* packet)
         break;
     }
     case SC_ROUND_END: {
+        if (sz < (int)sizeof(SC_ROUND_END_PACKET)) break;
         SC_ROUND_END_PACKET* p = reinterpret_cast<SC_ROUND_END_PACKET*>(packet);
         NetEvent evt{};
         evt.type        = NetEventType::ROUND_END;
@@ -553,6 +568,7 @@ void NetworkClient::ProcessInstancePacket(char* packet)
         break;
     }
     case SC_SCORE_UPDATE: {
+        if (sz < (int)sizeof(SC_SCORE_UPDATE_PACKET)) break;
         SC_SCORE_UPDATE_PACKET* p = reinterpret_cast<SC_SCORE_UPDATE_PACKET*>(packet);
         NetEvent evt{};
         evt.type         = NetEventType::SCORE_UPDATE;
@@ -565,6 +581,7 @@ void NetworkClient::ProcessInstancePacket(char* packet)
         break;
     }
     case SC_TIMER_SYNC: {
+        if (sz < (int)sizeof(SC_TIMER_SYNC_PACKET)) break;
         SC_TIMER_SYNC_PACKET* p = reinterpret_cast<SC_TIMER_SYNC_PACKET*>(packet);
         NetEvent evt{};
         evt.type    = NetEventType::TIMER_SYNC;
@@ -574,6 +591,7 @@ void NetworkClient::ProcessInstancePacket(char* packet)
         break;
     }
     case SC_ROSTER_INFO: {
+        if (sz < (int)sizeof(SC_ROSTER_INFO_PACKET)) break;
         SC_ROSTER_INFO_PACKET* p = reinterpret_cast<SC_ROSTER_INFO_PACKET*>(packet);
         NetEvent evt{};
         evt.type         = NetEventType::ROSTER_INFO;
@@ -585,6 +603,7 @@ void NetworkClient::ProcessInstancePacket(char* packet)
         break;
     }
     case SC_MAP_LOADED: {
+        if (sz < (int)sizeof(SC_MAP_LOADED_PACKET)) break;
         SC_MAP_LOADED_PACKET* p = reinterpret_cast<SC_MAP_LOADED_PACKET*>(packet);
         NetEvent evt{};
         evt.type     = NetEventType::MAP_LOADED;
@@ -594,6 +613,7 @@ void NetworkClient::ProcessInstancePacket(char* packet)
         break;
     }
     case SC_CHAR_SELECT: {
+        if (sz < (int)sizeof(SC_CHAR_SELECT_PACKET)) break;
         SC_CHAR_SELECT_PACKET* p = reinterpret_cast<SC_CHAR_SELECT_PACKET*>(packet);
         NetEvent evt{};
         evt.type                  = NetEventType::CHAR_SELECT;
@@ -604,6 +624,7 @@ void NetworkClient::ProcessInstancePacket(char* packet)
         break;
     }
     case SC_SPAWN_SELECT: {
+        if (sz < (int)sizeof(SC_SPAWN_SELECT_PACKET)) break;
         SC_SPAWN_SELECT_PACKET* p = reinterpret_cast<SC_SPAWN_SELECT_PACKET*>(packet);
         NetEvent evt{};
         evt.type                   = NetEventType::SPAWN_SELECT;
@@ -616,6 +637,7 @@ void NetworkClient::ProcessInstancePacket(char* packet)
         break;
     }
     case SC_HIT: {
+        if (sz < (int)sizeof(SC_HIT_PACKET)) break;
         SC_HIT_PACKET* p = reinterpret_cast<SC_HIT_PACKET*>(packet);
         NetEvent evt{};
         evt.type           = NetEventType::HIT;
@@ -631,6 +653,7 @@ void NetworkClient::ProcessInstancePacket(char* packet)
         break;
     }
     case SC_DEATH: {
+        if (sz < (int)sizeof(SC_DEATH_PACKET)) break;
         SC_DEATH_PACKET* p = reinterpret_cast<SC_DEATH_PACKET*>(packet);
         NetEvent evt{};
         evt.type           = NetEventType::DEATH;

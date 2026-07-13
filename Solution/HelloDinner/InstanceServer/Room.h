@@ -13,11 +13,11 @@ public:
 	bool IsActive() const { return m_active; }
 	bool HasPlayer(int c_id) const;
 	int  GetRoomId() const { return m_room_id; }
-	const vector<int>& GetPlayerIds() const { return m_player_ids; }
+	vector<int> GetPlayerIds() const; // 잠금 하에 복사본 반환
 
 private:
 	int				m_room_id = -1;
 	bool			m_active = false;
-	mutex			m_room_lock;
+	mutable mutex	m_room_lock;
 	vector<int>		m_player_ids;
 };

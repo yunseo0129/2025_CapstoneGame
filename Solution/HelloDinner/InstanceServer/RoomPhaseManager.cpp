@@ -243,7 +243,7 @@ void RoomPhaseManager::ApplySpawnPositions(int room_id)
     auto* room = gsm->GetRoom(room_id);
     if (!room || !room->IsActive()) return;
 
-    const vector<int>& ids = room->GetPlayerIds();
+    vector<int> ids = room->GetPlayerIds();
 
     // 1) 각 플레이어 위치를 선택 스폰 좌표로 세팅
     for (int pid : ids)
@@ -285,7 +285,7 @@ void RoomPhaseManager::ApplyTeamSpawnPositions(int room_id)
     auto* room = gsm->GetRoom(room_id);
     if (!room || !room->IsActive()) return;
 
-    const vector<int>& ids = room->GetPlayerIds();
+    vector<int> ids = room->GetPlayerIds();
 
     // roster 스냅샷을 먼저 읽는다 (세션 락과 m_lock 중첩 금지 → 데드락 방지)
     PlayerRosterEntry roster_snap[ROOM_MAX_PLAYER] = {};

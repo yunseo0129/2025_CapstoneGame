@@ -5,8 +5,8 @@ InstanceServer::~InstanceServer()
 {
     if (m_listen_socket != INVALID_SOCKET)
         closesocket(m_listen_socket);
-    if (m_lobby_socket != INVALID_SOCKET)
-        closesocket(m_lobby_socket);
+    if (m_lobby_socket.load() != INVALID_SOCKET)
+        closesocket(m_lobby_socket.load());
     WSACleanup();
 }
 
@@ -106,9 +106,9 @@ bool InstanceServer::ConnectToLobby(const char* lobby_ip)
     lobby_addr.sin_port = htons(INTERNAL_PORT);
     inet_pton(AF_INET, lobby_ip, &lobby_addr.sin_addr);
 
-    if (connect(m_lobby_socket, reinterpret_cast<sockaddr*>(&lobby_addr), sizeof(lobby_addr)) == SOCKET_ERROR) {
+    if (connect(m_lobby_socket.load(), reinterpret_cast<sockaddr*>(&lobby_addr), sizeof(lobby_addr)) == SOCKET_ERROR) {
         cout << "[Instance #" << m_instance_id << "] Connect to lobby failed.\n";
-        closesocket(m_lobby_socket);
+        closesocket(m_lobby_socket.load());
         m_lobby_socket = INVALID_SOCKET;
         return false;
     }
@@ -121,7 +121,7 @@ bool InstanceServer::ConnectToLobby(const char* lobby_ip)
     strcpy_s(rp.ip, m_my_ip);
     rp.port = m_port;
 
-    send(m_lobby_socket, reinterpret_cast<char*>(&rp), rp.size, 0);
+    send(m_lobby_socket.load(), reinterpret_cast<char*>(&rp), rp.size, 0);
 
     cout << "[Instance #" << m_instance_id << "] Registered with Lobby ("
          << lobby_ip << ":" << INTERNAL_PORT << ")" << endl;
@@ -170,7 +170,7 @@ void InstanceServer::HeartbeatThread()
         hb.current_players = gsm->GetActivePlayerCount();
         hb.cpu_usage = 0.f;  // TODO: 실제 CPU 사용률 측정
 
-        int sent = send(m_lobby_socket, reinterpret_cast<char*>(&hb), hb.size, 0);
+        int sent = send(m_lobby_socket.load(), reinterpret_cast<char*>(&hb), hb.size, 0);
         if (sent == SOCKET_ERROR) {
             cout << "[Instance #" << m_instance_id << "] Heartbeat send failed.\n";
         }
@@ -180,25 +180,28 @@ void InstanceServer::HeartbeatThread()
 void InstanceServer::LobbyRecvThread()
 {
     char buf[BUF_SIZE] = {};
+    int prevRemain = 0;
 
     while (true) {
         if (m_lobby_socket == INVALID_SOCKET) {
+            prevRemain = 0;
             this_thread::sleep_for(chrono::seconds(1));
             continue;
         }
 
-        int received = recv(m_lobby_socket, buf, BUF_SIZE, 0);
+        int received = recv(m_lobby_socket.load(), buf + prevRemain, BUF_SIZE - prevRemain, 0);
         if (received <= 0) {
             cout << "[Instance #" << m_instance_id << "] Lobby connection lost.\n";
             m_lobby_socket = INVALID_SOCKET;
+            prevRemain = 0;
             continue;
         }
 
         char* p = buf;
-        int remain = received;
+        int remain = received + prevRemain;
         while (remain > 0) {
             int pkt_size = static_cast<unsigned char>(p[0]);
-            if (pkt_size > remain) break;
+            if (pkt_size < 2 || pkt_size > remain) break;
 
             if (p[1] == IS_ROOM_NOTIFY) {
                 IS_ROOM_NOTIFY_PACKET* rn = reinterpret_cast<IS_ROOM_NOTIFY_PACKET*>(p);
@@ -208,6 +211,10 @@ void InstanceServer::LobbyRecvThread()
             p += pkt_size;
             remain -= pkt_size;
         }
+
+        prevRemain = remain;
+        if (prevRemain > 0)
+            memmove(buf, p, prevRemain);
     }
 }
 
@@ -230,10 +237,11 @@ void InstanceServer::WorkerThread()
         ULONG_PTR key;
         WSAOVERLAPPED* over = nullptr;
         BOOL ret = GetQueuedCompletionStatus(m_h_iocp, &num_bytes, &key, &over, INFINITE);
+        if (over == nullptr) continue;
         OverllapedEXP* ex_over = reinterpret_cast<OverllapedEXP*>(over);
 
         if (FALSE == ret) {
-            if (ex_over->m_comp_type == OP_ACCEPT) cout << "Accept Error";
+            if (ex_over->m_comp_type == OP_ACCEPT) { cout << "Accept Error"; continue; }
             else {
                 cout << "[Instance] GQCS Error on client[" << key << "]\n";
                 gsm->Disconnect(static_cast<int>(key));

@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <atomic>
 #include <iostream>
 #include <array>
 #include <WS2tcpip.h>

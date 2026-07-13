@@ -91,10 +91,11 @@ void LobbyServer::WorkerThread()
         ULONG_PTR key;
         WSAOVERLAPPED* over = nullptr;
         BOOL ret = GetQueuedCompletionStatus(m_h_iocp, &num_bytes, &key, &over, INFINITE);
+        if (over == nullptr) continue;
         OverllapedEXP* ex_over = reinterpret_cast<OverllapedEXP*>(over);
 
         if (FALSE == ret) {
-            if (ex_over->m_comp_type == OP_ACCEPT) cout << "Accept Error";
+            if (ex_over->m_comp_type == OP_ACCEPT) { cout << "Accept Error"; continue; }
             else {
                 cout << "GQCS Error on client[" << key << "]\n";
                 sm->Disconnect(static_cast<int>(key));

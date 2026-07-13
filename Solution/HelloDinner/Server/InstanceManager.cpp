@@ -73,8 +73,9 @@ void InstanceManager::InternalRecvThread(int inst_id)
     if (!inst || inst->socket == INVALID_SOCKET) return;
 
     char buf[BUF_SIZE] = {};
+    int prevRemain = 0;
     while (true) {
-        int received = recv(inst->socket, buf, BUF_SIZE, 0);
+        int received = recv(inst->socket, buf + prevRemain, BUF_SIZE - prevRemain, 0);
         if (received <= 0) {
             cout << "[InstanceManager] Instance #" << inst_id << " disconnected.\n";
             lock_guard<mutex> ll(m_lock);
@@ -85,10 +86,10 @@ void InstanceManager::InternalRecvThread(int inst_id)
 
         // 패킷 처리
         char* p = buf;
-        int remain = received;
+        int remain = received + prevRemain;
         while (remain > 0) {
             int pkt_size = static_cast<unsigned char>(p[0]);
-            if (pkt_size > remain) break;
+            if (pkt_size < 2 || pkt_size > remain) break;
 
             if (p[1] == IS_HEARTBEAT) {
                 IS_HEARTBEAT_PACKET* hb = reinterpret_cast<IS_HEARTBEAT_PACKET*>(p);
@@ -98,6 +99,10 @@ void InstanceManager::InternalRecvThread(int inst_id)
             p += pkt_size;
             remain -= pkt_size;
         }
+
+        prevRemain = remain;
+        if (prevRemain > 0)
+            memmove(buf, p, prevRemain);
     }
 }
 

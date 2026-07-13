@@ -52,9 +52,11 @@ bool GameSessionManager::CheckMove_Player(SServerCollider* me, const XMFLOAT3& m
 
 void GameSessionManager::ProcessPacket(int c_id, char* packet)
 {
+    const int sz = static_cast<unsigned char>(packet[0]);
     switch (packet[1]) {
 
     case CS_JOIN_ROOM: {
+        if (sz < (int)sizeof(CS_JOIN_ROOM_PACKET)) break;
         CS_JOIN_ROOM_PACKET* p = reinterpret_cast<CS_JOIN_ROOM_PACKET*>(packet);
 
         // 인증 토큰 확인
@@ -102,6 +104,7 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
     }
 
     case CS_MOVE: {
+        if (sz < (int)sizeof(CS_MOVE_PACKET)) break;
         CS_MOVE_PACKET* p = reinterpret_cast<CS_MOVE_PACKET*>(packet);
         auto& session = m_clients[c_id];
 
@@ -116,9 +119,12 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
         // 라이징 에지: 이번 패킷에서 새로 눌린 키
         unsigned short risingEdge = (~session.m_player.keyInput) & p->keyInput;
 
+        session.UpdateTimestamp(p->timestamp);
+
+        {
+        lock_guard<mutex> lk(session.m_s_lock);
         session.m_player.prevKeyInput = session.m_player.keyInput;
         session.m_player.keyInput     = p->keyInput;
-        session.UpdateTimestamp(p->timestamp);
 
         // 클라이언트 회전(Right/Up/Look, m[0..11])만 복사 — 위치는 서버가 계산
         memcpy(session.m_worldMatrix.m, p->worldMatrix, sizeof(float) * 12);
@@ -218,6 +224,7 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
                 }
             }
         }
+        } // lock_guard<mutex> lk(session.m_s_lock)
 
         // 액션 키 라이징 에지 처리
         if (risingEdge & KEY_R)
@@ -239,6 +246,7 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
     }
 
     case CS_CHAR_SELECT: {
+        if (sz < (int)sizeof(CS_CHAR_SELECT_PACKET)) break;
         CS_CHAR_SELECT_PACKET* p = reinterpret_cast<CS_CHAR_SELECT_PACKET*>(packet);
         m_clients[c_id].m_iCharType = p->char_type;
 
@@ -262,6 +270,7 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
     }
 
     case CS_SPAWN_SELECT: {
+        if (sz < (int)sizeof(CS_SPAWN_SELECT_PACKET)) break;
         CS_SPAWN_SELECT_PACKET* p = reinterpret_cast<CS_SPAWN_SELECT_PACKET*>(packet);
         memcpy(m_clients[c_id].m_spawnPos, p->world_pos, sizeof(float) * 3);
 
@@ -286,6 +295,7 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
     }
 
     case CS_PHASE_READY: {
+        if (sz < (int)sizeof(CS_PHASE_READY_PACKET)) break;
         CS_PHASE_READY_PACKET* p = reinterpret_cast<CS_PHASE_READY_PACKET*>(packet);
         int room_id = m_clients[c_id].m_room_id;
         if (room_id != -1)
@@ -294,6 +304,7 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
     }
 
     case CS_MAP_LOADED: {
+        if (sz < (int)sizeof(CS_MAP_LOADED_PACKET)) break;
         CS_MAP_LOADED_PACKET* p = reinterpret_cast<CS_MAP_LOADED_PACKET*>(packet);
         int room_id = m_clients[c_id].m_room_id;
         if (room_id != -1)
@@ -302,6 +313,7 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
     }
 
     case CS_HIT: {
+        if (sz < (int)sizeof(CS_HIT_PACKET)) break;
         CS_HIT_PACKET* p = reinterpret_cast<CS_HIT_PACKET*>(packet);
 
         GameSession& shooter = m_clients[c_id];
@@ -336,9 +348,13 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
         // 데미지 테이블 (Collision_Manager.cpp:235-267 동일)
         static constexpr int s_dmg[10] = { 50, 20, 20, 20, 20, 15, 15, 15, 15, 30 };
         int part = (p->part_num < 10) ? p->part_num : 9;
-        victim.m_hp -= s_dmg[part];
-        bool died = (victim.m_hp <= 0);
-        if (died) { victim.m_hp = 0; victim.m_bAlive = false; }
+        bool died = false;
+        {
+            lock_guard<mutex> lk(victim.m_s_lock);
+            victim.m_hp -= s_dmg[part];
+            died = (victim.m_hp <= 0);
+            if (died) { victim.m_hp = 0; victim.m_bAlive = false; }
+        }
 
         // SC_HIT 브로드캐스트 (이펙트 위치 포함)
         SC_HIT_PACKET hit{};

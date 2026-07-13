@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <unordered_set>
 #include "stdafx.h"
 #include "NetPlayer.h"
@@ -164,20 +165,20 @@ private:
     static NetworkClient* s_pInstance;
 
     // 로비 TCP 소켓
-    SOCKET  m_socket         = INVALID_SOCKET;
-    bool    m_bConnected     = false;
-    bool    m_bLoggedIn      = false;
-    bool    m_bMatched       = false;
+    SOCKET               m_socket         = INVALID_SOCKET;
+    std::atomic<bool>    m_bConnected     = false;
+    std::atomic<bool>    m_bLoggedIn      = false;
+    std::atomic<bool>    m_bMatched       = false;
 
     // 인스턴스 서버 TCP 소켓
-    SOCKET  m_instanceSocket = INVALID_SOCKET;
-    bool    m_bInGame        = false;
-    bool    m_bOfflineMode   = false;
-    char    m_szAuthToken[32] = {};
+    SOCKET               m_instanceSocket = INVALID_SOCKET;
+    std::atomic<bool>    m_bInGame        = false;
+    bool                 m_bOfflineMode   = false;
+    char                 m_szAuthToken[32] = {};
 
-    int     m_iMyId      = -1;
-    int     m_iRoomId    = -1;
-    int     m_iQueueSize = 0;
+    std::atomic<int>     m_iMyId      = -1;
+    int                  m_iRoomId    = -1;
+    int                  m_iQueueSize = 0;
 
     float   m_worldMatrix[16] = {};
     char    m_szName[NAME_SIZE] = {};
@@ -189,7 +190,7 @@ private:
     std::vector<RoomMember> m_roomMembers;
     bool                    m_roomJoinPending = false;
     unsigned char           m_roomJoinResult  = 0;
-    bool                    m_bGameStarting   = false;
+    std::atomic<bool>       m_bGameStarting   = false;
 
     NetPlayer m_players[MAX_USER];
 

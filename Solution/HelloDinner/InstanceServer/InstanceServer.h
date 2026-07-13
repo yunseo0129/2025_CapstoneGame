@@ -27,7 +27,7 @@ private:
 
     SOCKET          m_listen_socket = INVALID_SOCKET;
     SOCKET          m_client_socket = INVALID_SOCKET;
-    SOCKET          m_lobby_socket = INVALID_SOCKET;   // 로비와의 내부 통신
+    std::atomic<SOCKET> m_lobby_socket{ INVALID_SOCKET }; // 로비와의 내부 통신
     HANDLE          m_h_iocp = nullptr;
     OverllapedEXP   m_accept_over;
 

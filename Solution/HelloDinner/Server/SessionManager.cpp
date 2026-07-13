@@ -18,8 +18,10 @@ int SessionManager::GetNewClientId()
 // 로비 패킷 처리 — 로그인/로그아웃 + 수동 방 + 빠른 매칭
 void SessionManager::ProcessPacket(int c_id, char* packet)
 {
+    const int sz = static_cast<unsigned char>(packet[0]);
     switch (packet[1]) {
     case CS_LOGIN: {
+        if (sz < (int)sizeof(CS_LOGIN_PACKET)) break;
         CS_LOGIN_PACKET* p = reinterpret_cast<CS_LOGIN_PACKET*>(packet);
         strcpy_s(m_clients[c_id].m_player.name, p->name);
 
@@ -55,6 +57,7 @@ void SessionManager::ProcessPacket(int c_id, char* packet)
         break;
     }
     case CS_JOIN_ROOM_CODE: {
+        if (sz < (int)sizeof(CS_JOIN_ROOM_CODE_PACKET)) break;
         CS_JOIN_ROOM_CODE_PACKET* p = reinterpret_cast<CS_JOIN_ROOM_CODE_PACKET*>(packet);
         ROOM_JOIN_RESULT result = RoomManager::GetInstance()->JoinRoom(p->code, c_id);
 
@@ -75,11 +78,13 @@ void SessionManager::ProcessPacket(int c_id, char* packet)
         break;
     }
     case CS_SELECT_SEAT: {
+        if (sz < (int)sizeof(CS_SELECT_SEAT_PACKET)) break;
         CS_SELECT_SEAT_PACKET* p = reinterpret_cast<CS_SELECT_SEAT_PACKET*>(packet);
         RoomManager::GetInstance()->SelectSeat(c_id, p->team, p->slot);
         break;
     }
     case CS_PLAYER_READY: {
+        if (sz < (int)sizeof(CS_PLAYER_READY_PACKET)) break;
         CS_PLAYER_READY_PACKET* p = reinterpret_cast<CS_PLAYER_READY_PACKET*>(packet);
         RoomManager::GetInstance()->SetReady(c_id, p->ready != 0);
         break;
