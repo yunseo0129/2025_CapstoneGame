@@ -162,7 +162,7 @@ void CController::Predict_Local(_float fTimeDelta)
 {
     auto* pNet = NetworkClient::GetInstance();
     if (!pNet->IsInGame()) return;
-    if (m_pPlayer == nullptr || m_pPlayer->IsDead()) return;
+    if (m_pPlayer == nullptr || m_pPlayer->IsDead() || m_pPlayer->Get_Die()) return;
 
     unsigned short keyFlags = Build_KeyBitFlags();
 
@@ -194,7 +194,7 @@ void CController::Send_InputPacket(_float fTimeDelta)
     if (m_fSendTimer < m_fSendInterval) return;
     m_fSendTimer = 0.f;
 
-    if (m_pPlayer == nullptr || m_pPlayer->IsDead()) return;
+    if (m_pPlayer == nullptr || m_pPlayer->IsDead() || m_pPlayer->Get_Die()) return;
 
     unsigned short keyFlags = Build_KeyBitFlags();
     pNet->Send_Move(keyFlags, m_fAccumMouseYaw,
@@ -343,7 +343,7 @@ void CController::Kill_OtherPlayer(int id)
 {
     auto it = m_otherPlayers.find(id);
     if (it == m_otherPlayers.end()) return;
-    if (!it->second->IsDead())
+    if (!it->second->Get_Die())   // 이미 사망 중이면 중복 트리거 방지
         it->second->Die(0.f);
 }
 
@@ -351,7 +351,22 @@ void CController::Move_OtherPlayer(int id, const float* worldMatrix, unsigned sh
 {
     auto it = m_otherPlayers.find(id);
     if (it == m_otherPlayers.end()) return;
+    if (it->second->Get_Die()) return;  // 사망 중 이동 패킷 무시
     it->second->Apply_NetworkMatrix(worldMatrix, keyInput);
+}
+
+void CController::Revive_AllPlayers()
+{
+    // 로컬 플레이어 부활
+    if (m_pPlayer)
+        m_pPlayer->Revive();
+
+    // 원격 플레이어 전원 부활
+    for (auto& pair : m_otherPlayers)
+    {
+        if (pair.second)
+            pair.second->Revive();
+    }
 }
 
 void CController::Clear_OtherPlayers()

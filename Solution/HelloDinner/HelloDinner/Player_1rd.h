@@ -44,7 +44,7 @@ public:					// 플레이어 조종에 관련한 함수 구현
     void Reload(_float _val);
     _bool Shoot(_float _val);
     void Die(_float _val);
-    _bool Get_Die() { return m_isDie; }
+    virtual void Revive() override;
 
 
     // 무기 교체

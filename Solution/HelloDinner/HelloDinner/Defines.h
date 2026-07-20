@@ -47,32 +47,40 @@ struct MATCH_SETUP
         return atan2f(dx, dz);
     }
 
-    // ── 싱크대 위 스테이징 좌표 (CHARSELECT / SCOREBOARD 단계 배치용) ──────────
-    // Washbasin OBB 윗면 월드 (MapData.json에서 확인):
-    //   중심 XZ = (-53.04, 9.85),  윗면 Y = 33.2
-    //   반치수 x=11.9  z=20.0  (footprint x∈[-65,-41] z∈[-10,30])
-    // 팀A(0) → z = +24.85 (싱크 +z 끝), 팀B(1) → z = -5.15 (싱크 -z 끝)
-    // 슬롯 번호(1~3) → x = SINK_X + (number-2)*8   (8 단위 1열 정렬)
+    // ── 테이블 스테이징 좌표 (CHARSELECT / SCOREBOARD 단계 배치용) ──────────
+    // 원형테이블(Table_1, 중심 world x≈16 z≈-9) 기준 양 옆 두 테이블:
+    //   RED (팀0)  = Bar      앞쪽  world center x=4.50  윗면 Y=23.15  Z=-65.14
+    //                        footprint x∈[-22,31]  → 3명 8단위 정렬 가능
+    //   BLUE(팀1)  = Shelf_floor_4  뒤쪽  world center x=8.10  윗면 Y=22.52  Z=53.87
+    //                        footprint x∈[-11,27]  → 3명 8단위 정렬 가능
+    // 슬롯 번호(1~3) → x = BASE_X[team] + (number-2)*8  (8 단위 1열 정렬)
     // 서버 RoomPhaseManager::ApplyTeamSpawnPositions 와 수치 완전 일치 유지 필요.
-    XMFLOAT3 Get_SinkSpot() const
+    XMFLOAT3 Get_TableSpot() const
     {
-        constexpr float SINK_X         = -53.04f;
-        constexpr float SINK_TOP_Y     =  33.2f;
-        constexpr float SINK_Z         =   9.85f;
-        constexpr float SLOT_SPACING_X =   8.0f;
-        constexpr float TEAM_Z_OFFSET  =  15.0f;
+        constexpr float SLOT_SPACING_X = 8.0f;
 
-        const float x = SINK_X + (iNumber - 2) * SLOT_SPACING_X;
-        const float y = SINK_TOP_Y;
-        const float z = SINK_Z + (iTeam == 0 ? +TEAM_Z_OFFSET : -TEAM_Z_OFFSET);
+        // RED(0)=Bar 앞, BLUE(1)=Shelf_floor_4 뒤
+        const float BASE_X[2] = { 4.50f,  8.10f };
+        const float TOP_Y[2]  = { 23.15f, 22.52f };
+        const float BASE_Z[2] = { -65.14f, 53.87f };
+
+        const int team = (iTeam == 1) ? 1 : 0;
+        int num = iNumber;
+        if (num < 1) num = 1;
+        if (num > 3) num = 3;
+
+        const float x = BASE_X[team] + (num - 2) * SLOT_SPACING_X;
+        const float y = TOP_Y[team];
+        const float z = BASE_Z[team];
         return XMFLOAT3(x, y, z);
     }
 
-    // 싱크대 위에서 바라볼 방향: 팀A → 상대(−z) 방향, 팀B → 상대(+z) 방향
-    float Get_SinkYaw() const
+    // 테이블 위에서 바라볼 방향: RED(앞) → +z(뒤쪽), BLUE(뒤) → -z(앞쪽)
+    // 두 팀이 원형테이블을 사이에 두고 서로 마주봄
+    float Get_TableYaw() const
     {
-        // 팀A: dz=-1(-z를 바라봄), 팀B: dz=+1(+z를 바라봄)
-        const float dz = (iTeam == 0) ? -1.f : +1.f;
+        // RED: +z 방향(atan2(0,+1)=0), BLUE: -z 방향(atan2(0,-1)=π)
+        const float dz = (iTeam == 0) ? +1.f : -1.f;
         return atan2f(0.f, dz);
     }
 };

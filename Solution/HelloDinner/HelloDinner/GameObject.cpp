@@ -75,6 +75,12 @@ void    CGameObject::Die(_float _val)
     m_isDie = true;
 }
 
+void    CGameObject::Revive()
+{
+    m_isDie   = false;
+    m_ihealth = 500;
+}
+
 void CGameObject::Render(ID3D12GraphicsCommandList* _commandList)
 {
 }

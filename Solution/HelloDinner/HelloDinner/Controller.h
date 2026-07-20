@@ -31,6 +31,8 @@ public:
     void Teleport_OtherPlayer(int id, const _float3& vPos);
     // 원격 플레이어 사망 처리 (SC_DEATH 수신 시 호출)
     void Kill_OtherPlayer(int id);
+    // 라운드 시작 시 전원 부활 (OnEnter_Playing에서 호출)
+    void Revive_AllPlayers();
 
 private:
     void Update_Input();

@@ -152,6 +152,9 @@ private:
     void     Refresh_HUD();                 // 점수/타이머 텍스트 + 생존 박스 색 갱신
     _wstring Make_TimerString() const;      // 남은 라운드 시간 "m:ss"
 
+    // ---- UI: 라운드 결과 배너 (화면 정중앙 WIN/LOSE/DRAW, 5초 표시) ----
+    HRESULT  Ready_ResultBanner();          // 배너 패널+텍스트 생성 (최초 1회, 숨긴 상태)
+
     // ---- UI: 하단 HUD (내 HP / 남은 탄약) ----
     //  화면 좌하단에 HP, 우하단에 탄약을 텍스트로 표시(이후 텍스처로 교체).
     HRESULT  Ready_PlayerHUD();             // HP/탄약 텍스트 생성 + 포인터 보관
@@ -253,6 +256,11 @@ private:
     // ---- 맵 선택 창 ----
     //  상점 대신 띄우는 맵 정보/스폰 선택 창. (Level_Gameplay 에서 생성)
     class CMapSelect* m_pMapSelect = nullptr;
+
+    // ---- 라운드 결과 배너 (Layer_UI_Result, Apply_PhaseVisibility 미관리) ----
+    class CUI_Panel* m_pResultPanel = nullptr;  // 반투명 배경 박스
+    class CUI_Text*  m_pResultText  = nullptr;  // "YOU WIN" / "YOU LOSE" / "DRAW"
+    _float           m_fResultBannerTimer = 0.f; // 배너 남은 표시 시간 (0=숨김)
 
     // 아무 곳도 클릭 안 하고 시간이 끝났을 때 사용할 기본 스폰 위치(코드에서 지정).
     _float3          m_vDefaultSpawn = _float3(0.f, 0.f, 0.f);

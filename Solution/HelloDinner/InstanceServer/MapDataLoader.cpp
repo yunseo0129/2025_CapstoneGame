@@ -11,7 +11,7 @@
 using json = nlohmann::json;
 
 // =============================================================================
-// 좌표 변환 상수 (Loader_Map.cpp:241-277 와 동일)
+// 좌표 변환 상수
 // =============================================================================
 static constexpr float MAP_SCALE = 50.f;
 static constexpr float RAD_SCALE = 100.f; // Sphere radius

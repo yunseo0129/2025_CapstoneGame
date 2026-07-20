@@ -39,6 +39,8 @@ public:
     void            SetOnOff(bool _is) { m_bOnOff = _is; }
     void            TakeDamage(_uint _val);
     virtual void    Die(_float _val);
+    virtual void    Revive();           // 사망 상태 초기화 (다음 라운드 부활)
+    _bool           Get_Die() const { return m_isDie; }
     void            Set_Health(_int hp) { m_ihealth = hp; }
     virtual int     Get_NetworkId() const { return -1; }
 

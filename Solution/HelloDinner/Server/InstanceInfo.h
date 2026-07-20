@@ -20,7 +20,7 @@ struct InstanceInfo
     // 부하 점수 (낮을수록 여유)
     float GetLoadScore() const
     {
-        // 가중치: 플레이어 수 60%, CPU 사용률 40%
+        //가중치(플레이어 수 60% + CPU 사용률 40%)를 계산하여 부하의 여유가 있는 서버를 선택함
         float playerLoad = static_cast<float>(current_players) / MAX_USER;
         float cpuLoad = cpu_usage / 100.f;
         return playerLoad * 0.6f + cpuLoad * 0.4f;

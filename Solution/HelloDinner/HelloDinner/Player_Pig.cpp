@@ -420,6 +420,9 @@ HRESULT CPlayer_Pig::Ready_Components()
 
 void CPlayer_Pig::Drive_Animation()
 {
+    // 사망 중에는 이동 애니메이션 상태머신을 동작시키지 않는다 (사망 클립 덮어쓰기 방지)
+    if (m_isDie) return;
+
     // 사격 (Player_1rd::Shoot 동일 — 상체 전용, 이동·점프와 독립)
     if (m_bShootPending)
     {
@@ -568,6 +571,18 @@ void CPlayer_Pig::Die(_float _val)
     m_isDie = true;
     m_pModelCom->Change_Animation(9, 5.f, false, true);
     m_pModelCom->Change_Animation(9, 5.f, false, false);
+}
+
+void CPlayer_Pig::Revive()
+{
+    __super::Revive();   // m_isDie=false, m_ihealth=500
+    m_isReloading    = false;
+    m_bShootPending  = false;
+    m_bReloadPending = false;
+    m_bIsJumping     = false;
+    // 상·하체 idle 애니메이션으로 복귀
+    m_pModelCom->Change_Animation(0, 0.f, true, true);
+    m_pModelCom->Change_Animation(0, 0.f, true, false);
 }
 
 void CPlayer_Pig::Apply_NetworkMatrix(const float* pMatrix, unsigned short keyInput)

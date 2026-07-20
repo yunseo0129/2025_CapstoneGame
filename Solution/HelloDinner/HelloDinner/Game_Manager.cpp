@@ -102,6 +102,9 @@ void CGame_Manager::Start_Match()
     // 맵 선택 창 포인터 확보(상점 대신 사용). Level_Gameplay 가 미리 생성해 둠.
     Cache_MapSelect();
 
+    // 라운드 결과 배너 (화면 정중앙 WIN/LOSE/DRAW, 숨긴 상태로 생성)
+    Ready_ResultBanner();
+
     Ready_Timer();
 
     m_fSelectTimer   = 0.f;     // 서버 SC_TIMER_SYNC 수신 시 세팅
@@ -201,6 +204,17 @@ void CGame_Manager::Update(_float fTimeDelta)
         break;
     }
 
+    // 라운드 결과 배너 타이머 카운트다운 (SC_ROUND_END 수신 시 m_fResultBannerTimer=5.f)
+    if (m_fResultBannerTimer > 0.f)
+    {
+        m_fResultBannerTimer -= fTimeDelta;
+        if (m_fResultBannerTimer <= 0.f)
+        {
+            m_fResultBannerTimer = 0.f;
+            Set_LayerVisible(L"Layer_UI_Result", false);
+        }
+    }
+
     Refresh_Timer();
 }
 
@@ -288,6 +302,14 @@ void CGame_Manager::OnEnter_Shop()
     if (!USE_SHOP && m_pMapSelect != nullptr)
         m_pMapSelect->Clear_Selection();   // 이전 라운드 선택 초기화
 
+    // 라운드 종료 후 재진입 시 WIN/LOSE 배너가 남아 있을 수 있으므로 확실히 숨긴다.
+    // (자체 5초 타이머로 사라지는 경우도 있지만, 타이밍 경계값 보호용 안전장치)
+    if (m_fResultBannerTimer > 0.f)
+    {
+        m_fResultBannerTimer = 0.f;
+        Set_LayerVisible(L"Layer_UI_Result", false);
+    }
+
     GM_Log(L"Round %d - SPAWN SELECT | %.0f초", m_iRound, SHOP_DURATION);
 
     // 상점에서는 클릭을 위해 커서를 보이게 하고, 플레이어 입력을 막는다.
@@ -297,17 +319,17 @@ void CGame_Manager::OnEnter_Shop()
 void CGame_Manager::OnEnter_Playing()
 {
     m_bShopOpen = false;
-    m_fRoundTimer = ROUND_DURATION;   // 라운드 제한 시간 시작
+    m_fRoundTimer = ROUND_DURATION;   // 서버 SC_ROUND_START 수신 시 정확한 값으로 보정됨
 
     GM_Log(L"Round %d - PLAYING", m_iRound);
 
     // 플레이 중에는 커서를 숨기고(조준 모드) 입력을 허용한다.
     Set_ShopUIMode(false);
 
-    // 맵 선택 창을 썼다면, 선택(또는 기본) 위치로 플레이어를 포물선 발사.
-    //  (요구사항: 창이 닫히고 PLAYING 진입 시 날아간다. 비행 중에도 타이머/게임은 진행)
-    if (!USE_SHOP)
-        Apply_SpawnLaunch();
+    // 부활/포물선 발사는 SC_ROUND_START(Apply_RoundStart) 수신 시 처리한다.
+    // 이유: 전멸 후 다음 라운드는 PHASE_PLAYING 유지 상태에서 SC_ROUND_START만 다시 오므로,
+    //       OnEnter_Playing이 다시 호출되지 않는다. Apply_RoundStart에서 일괄 처리해야 한다.
+    // (첫 라운드도 SC_ROUND_START가 항상 도착하므로 중복 발사 없음)
 
     // 라운드 점수/생존 박스 최신화
     Refresh_HUD();
@@ -399,12 +421,16 @@ void CGame_Manager::Update_Shop(_float fTimeDelta)
 
 void CGame_Manager::Update_Playing(_float fTimeDelta)
 {
-    // 남은 라운드 시간 카운트다운 (HUD 표시 전용 — 실제 종료는 서버 SC_ROUND_END로 제어)
-    if (m_fRoundTimer > 0.f)
+    // 결과 배너 표시 중에는 라운드 타이머를 멈춰 HUD 시계 튐 방지
+    if (m_fResultBannerTimer <= 0.f)
     {
-        m_fRoundTimer -= fTimeDelta;
-        if (m_fRoundTimer < 0.f)
-            m_fRoundTimer = 0.f;
+        // 남은 라운드 시간 카운트다운 (HUD 표시 전용 — 실제 종료는 서버 SC_ROUND_END로 제어)
+        if (m_fRoundTimer > 0.f)
+        {
+            m_fRoundTimer -= fTimeDelta;
+            if (m_fRoundTimer < 0.f)
+                m_fRoundTimer = 0.f;
+        }
     }
     Refresh_HUD();
     // 라운드 종료는 서버 SC_ROUND_END 수신으로만 처리
@@ -459,6 +485,24 @@ void CGame_Manager::Apply_RoundStart(unsigned char round, unsigned int duration_
     m_iRound      = static_cast<_int>(round);
     m_fRoundTimer = static_cast<_float>(duration_ms) / 1000.f;
     GM_Log(L"Round %d 시작 | 타이머 %.0fs", m_iRound, m_fRoundTimer);
+
+    // 결과 배너가 떠 있으면 즉시 숨김 (서버가 다음 라운드를 열었으므로)
+    if (m_fResultBannerTimer > 0.f)
+    {
+        m_fResultBannerTimer = 0.f;
+        Set_LayerVisible(L"Layer_UI_Result", false);
+    }
+
+    // 전원 부활 (사망 상태·애니메이션 초기화, HP 500 복구)
+    CController* pController = m_pGameInstance->Get_Controller();
+    if (pController)
+        pController->Revive_AllPlayers();
+
+    // 선택한(또는 기본) 위치로 포물선 발사 (싱크대 → 식탁 연출)
+    if (m_ePhase == GAME_PHASE::PHASE_PLAYING && !USE_SHOP)
+        Apply_SpawnLaunch();
+
+    Refresh_HUD();
 }
 
 void CGame_Manager::Apply_RoundEnd(unsigned char winner_team,
@@ -468,6 +512,28 @@ void CGame_Manager::Apply_RoundEnd(unsigned char winner_team,
     m_iTeamScore[1]    = static_cast<_int>(score_b);
     m_iLastRoundWinner = static_cast<_int>(winner_team);
     GM_Log(L"서버 라운드 종료 | winner=%d  score %d:%d", winner_team, score_a, score_b);
+    Refresh_HUD();  // 인게임 HUD 상단 승점 즉시 갱신
+
+    // 화면 정중앙 WIN/LOSE/DRAW 배너 표시
+    if (m_pResultText != nullptr)
+    {
+        const _wstring strResult =
+            (winner_team == 2u)             ? L"DRAW"
+          : (static_cast<_int>(winner_team) == m_iMyTeam) ? L"YOU WIN"
+          :                                   L"YOU LOSE";
+
+        const _float4 vColor =
+            (strResult == L"YOU WIN") ? _float4(0.3f, 1.f, 0.3f, 1.f)   // 초록
+          : (strResult == L"YOU LOSE") ? _float4(1.f, 0.3f, 0.3f, 1.f)  // 빨강
+          :                              _float4(1.f, 1.f, 1.f, 1.f);    // 흰색(DRAW)
+
+        m_pResultText->Set_Text(strResult);
+        m_pResultText->Set_Color(vColor);
+        Set_LayerVisible(L"Layer_UI_Result", true);
+        m_fResultBannerTimer = 5.f;
+
+        GM_Log(L"결과 배너: %s (내 팀=%d, 승리팀=%d)", strResult.c_str(), m_iMyTeam, winner_team);
+    }
 }
 
 void CGame_Manager::Apply_TimerSync(unsigned int time_ms)
@@ -543,6 +609,17 @@ void CGame_Manager::Apply_RosterInfo(unsigned char count, const RosterEntry* ent
         if (e.player_id == myId)
         {
             m_vStats[iSlot].strName = L"Me";
+
+            // 서버가 확정한 팀/슬롯으로 내 팀 정보를 권위적으로 갱신
+            // (방 팀선택이 정상이면 기존 Set_MySpot_From_Setup 값과 일치;
+            //  0xFF 폴백 배정 시에도 배너 WIN/LOSE 판정이 올바르게 동작)
+            if (e.team <= 1)
+            {
+                m_iMyTeam   = static_cast<_int>(e.team);
+                if (e.slot >= 1 && e.slot <= 3)
+                    m_iMyNumber = static_cast<_int>(e.slot);
+                GM_Log(L"Apply_RosterInfo: 내 팀=%d 슬롯=%d 확정", m_iMyTeam, m_iMyNumber);
+            }
         }
         else
         {
@@ -1189,6 +1266,57 @@ _wstring CGame_Manager::Make_TimerString() const
 }
 
 // =====================================================================
+//  라운드 결과 배너 (화면 정중앙 WIN/LOSE/DRAW)
+//   - Layer_UI_Result (Apply_PhaseVisibility 대상 아님 — 수동 토글)
+//   - 반투명 배경 패널 + 중앙 정렬 텍스트 1개
+//   - Apply_RoundEnd 수신 시 표시, 5초 후(또는 SC_ROUND_START 수신 시) 숨김
+// =====================================================================
+HRESULT CGame_Manager::Ready_ResultBanner()
+{
+    const _uint PROTO = LEVEL_STATIC;
+    const _uint LV    = LEVEL_GAMEPLAY;
+    const _wstring LAYER = L"Layer_UI_Result";
+
+    const _float fCX = 640.f;   // 화면 중앙 X
+    const _float fCY = 360.f;   // 화면 중앙 Y
+
+    // ── 반투명 배경 패널 (가로 400, 세로 120) ──────────────────────
+    {
+        CUI_Panel::UI_PANEL_DESC d;
+        d.fX     = fCX - 200.f;   // 좌상단 X
+        d.fY     = fCY - 60.f;    // 좌상단 Y
+        d.fSizeX = 400.f;
+        d.fSizeY = 120.f;
+        d.fDepth = 0.5f;           // HUD보다 앞(depth 낮을수록 앞)
+        d.vColor = _float4(0.f, 0.f, 0.f, 0.65f);   // 반투명 검정
+        m_pResultPanel = static_cast<CUI_Panel*>(
+            m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
+                PROTO, L"Prototype_GameObject_UI_Panel", LV, LAYER, &d));
+    }
+
+    // ── 중앙 정렬 결과 텍스트 ──────────────────────────────────────
+    {
+        CUI_Text::UI_TEXT_DESC d;
+        d.fX         = fCX;
+        d.fY         = fCY - 20.f;  // 패널 세로 중앙 근처
+        d.fDepth     = 0.45f;
+        d.strText    = L"YOU WIN";
+        d.strFontTag = L"Font_Default";
+        d.vColor     = _float4(0.3f, 1.f, 0.3f, 1.f);   // 초록(기본)
+        d.fTextScale = 1.6f;
+        d.bCentered  = true;
+        m_pResultText = static_cast<CUI_Text*>(
+            m_pGameInstance->Add_GameObject_ToLayer_Return_Obj(
+                PROTO, L"Prototype_GameObject_UI_Text", LV, LAYER, &d));
+    }
+
+    // 생성 직후 숨김
+    Set_LayerVisible(LAYER, false);
+
+    return S_OK;
+}
+
+// =====================================================================
 //  하단 HUD (내 HP / 남은 탄약)
 //   - 좌하단 HP, 우하단 탄약을 텍스트로 표시. (이후 텍스처로 교체 예정)
 //   - 상단 HUD와 같은 Layer_UI_HUD 에 올려 PLAYING 단계에서만 보이게 한다.
@@ -1446,14 +1574,6 @@ void CGame_Manager::Cache_MapSelect()
 
 void CGame_Manager::Apply_SpawnLaunch()
 {
-    // 싱크대(Washbasin) 윗면 중심 — 포물선 발사 시작 위치 (고정)
-    // MapData.json Washbasin 콜라이더 world: center(-53.04, 16.6, 9.85), top Y ≈ 33.2
-    static constexpr _float SINK_X = -53.04f;
-    static constexpr _float SINK_Y =  33.2f;
-    static constexpr _float SINK_Z =   9.85f;
-
-    const _float3 vSinkPos = { SINK_X, SINK_Y, SINK_Z };
-
     // 컨트롤러에서 내 플레이어를 받는다.
     CController* pController = m_pGameInstance->Get_Controller();
     CPlayer_1rd* pPlayer = pController ? pController->Get_Player() : nullptr;
@@ -1467,31 +1587,42 @@ void CGame_Manager::Apply_SpawnLaunch()
     else if (m_pMapSelect != nullptr)
         vTarget.y = m_pMapSelect->Get_TableTopY(); // 식탁 윗면에 맞게 y 보정
 
-    // 로컬 플레이어: 싱크대 위치로 순간이동 후 선택 지점까지 포물선 발사
-    pPlayer->Set_Position(vSinkPos);
+    // 로컬 플레이어: 팀 테이블 위치(m_vMySpot)에서 선택 지점까지 포물선 발사
+    // (싱크대 하드코딩 제거 — CHARSELECT 스테이징과 동일한 테이블에서 출발)
+    pPlayer->Set_Position(m_vMySpot);
     pPlayer->Launch_To(vTarget, SPAWN_ARC_HEIGHT);
 
-    GM_Log(L"Spawn launch: sink(%.1f,%.1f,%.1f) → target(%.1f,%.1f,%.1f) %s",
-        SINK_X, SINK_Y, SINK_Z,
+    GM_Log(L"Spawn launch: table(%.1f,%.1f,%.1f) → target(%.1f,%.1f,%.1f) %s",
+        m_vMySpot.x, m_vMySpot.y, m_vMySpot.z,
         vTarget.x, vTarget.y, vTarget.z,
         (m_pMapSelect && m_pMapSelect->Has_Selection()) ? L"[선택]" : L"[기본]");
 
-    // 원격 플레이어: 싱크대에 세운 후 각자 선택 지점으로 발사
+    // 원격 플레이어: 각자 팀 테이블에서 각자 선택 지점으로 발사
+    // stat.iSlot = 전역 0..5, 팀 내 번호 = iSlot - team*3 + 1
     CController* pCtrl = m_pGameInstance->Get_Controller();
     int myId = NetworkClient::GetInstance()->GetMyId();
     for (auto& stat : m_vStats)
     {
         if (stat.iPlayerId < 0 || stat.iPlayerId == myId) continue;
+
+        // 이 플레이어의 팀 테이블 스테이징 좌표를 계산
+        MATCH_SETUP setup;
+        setup.iTeam   = (stat.iTeam == 1) ? 1 : 0;
+        setup.iNumber = stat.iSlot - stat.iTeam * 3 + 1; // 전역 0..5 → 팀 내 1..3
+        XMFLOAT3 s   = setup.Get_TableSpot();
+        _float3 vStart = { s.x, s.y, s.z };
+
         _float3 tgt = stat.bSpawnSet ? stat.vSpawnPos : m_vDefaultSpawn;
         if (!stat.bSpawnSet && m_pMapSelect != nullptr)
             tgt.y = m_pMapSelect->Get_TableTopY();
         if (pCtrl)
         {
-            pCtrl->Teleport_OtherPlayer(stat.iPlayerId, vSinkPos);
+            pCtrl->Teleport_OtherPlayer(stat.iPlayerId, vStart);
             pCtrl->Launch_OtherPlayer(stat.iPlayerId, tgt, SPAWN_ARC_HEIGHT);
         }
-        GM_Log(L"Remote spawn launch [id=%d]: sink → (%.1f, %.1f, %.1f) %s",
-            stat.iPlayerId, tgt.x, tgt.y, tgt.z,
+        GM_Log(L"Remote spawn launch [id=%d]: table(%.1f,%.1f,%.1f) → (%.1f, %.1f, %.1f) %s",
+            stat.iPlayerId, vStart.x, vStart.y, vStart.z,
+            tgt.x, tgt.y, tgt.z,
             stat.bSpawnSet ? L"[선택]" : L"[기본]");
     }
 }
@@ -1507,12 +1638,13 @@ void CGame_Manager::Set_MySpot_From_Setup()
     if (m_iMyNumber < 1) m_iMyNumber = 1;
     if (m_iMyNumber > 3) m_iMyNumber = 3;
 
-    // ── 스테이징 지점: 싱크대(Washbasin) 윗면 팀/슬롯 정렬 ──────────────────
+    // ── 스테이징 지점: 원형테이블 양 옆 팀/슬롯 정렬 ─────────────────────────
+    //   RED(0)=Bar 앞쪽, BLUE(1)=Shelf_floor_4 뒤쪽 — 원형테이블을 사이에 두고 마주봄
     //   CHARSELECT/SCOREBOARD 단계에서 플레이어가 서 있을 위치.
     //   서버 RoomPhaseManager::ApplyTeamSpawnPositions 와 동일한 수치 사용.
-    XMFLOAT3 sink = g_MatchSetup.Get_SinkSpot();
-    m_vMySpot = _float3(sink.x, sink.y, sink.z);
-    m_fMyYaw  = g_MatchSetup.Get_SinkYaw();   // 상대 팀 방향을 바라봄
+    XMFLOAT3 table = g_MatchSetup.Get_TableSpot();
+    m_vMySpot = _float3(table.x, table.y, table.z);
+    m_fMyYaw  = g_MatchSetup.Get_TableYaw();  // 상대 팀 방향을 바라봄
 
     // ── launch fallback: PLAYING 진입 시 스폰 선택 안 했을 때 날아갈 바닥 위치 ──
     //   SHOP 종료 시 항상 Send_SpawnSelect 를 전송하므로 실제로는 이 값이
@@ -1520,7 +1652,7 @@ void CGame_Manager::Set_MySpot_From_Setup()
     XMFLOAT3 floor = g_MatchSetup.Get_SpawnSpot();
     m_vDefaultSpawn = _float3(floor.x, floor.y, floor.z);
 
-    GM_Log(L"MatchSetup → Team %s, No.%d | Sink(%.1f,%.1f,%.1f) Yaw %.2f | Floor(%.1f,%.1f,%.1f)",
+    GM_Log(L"MatchSetup → Team %s, No.%d | Table(%.1f,%.1f,%.1f) Yaw %.2f | Floor(%.1f,%.1f,%.1f)",
         (m_iMyTeam == 0) ? L"RED" : L"BLUE", m_iMyNumber,
         m_vMySpot.x, m_vMySpot.y, m_vMySpot.z, m_fMyYaw,
         m_vDefaultSpawn.x, m_vDefaultSpawn.y, m_vDefaultSpawn.z);

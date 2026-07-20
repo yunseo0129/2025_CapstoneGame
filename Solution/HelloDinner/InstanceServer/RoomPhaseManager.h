@@ -29,6 +29,9 @@ struct RoomPhaseState {
     int         expected          = 0;       // 입장 예정 인원 (IS_ROOM_NOTIFY.player_count)
     int         joined            = 0;       // CS_JOIN_ROOM 완료 인원
     bool        active            = false;
+    // ── 라운드 결과 대기 (전멸 감지 후 5초간 PLAYING 페이즈 유지) ──
+    bool        in_result         = false;   // 결과 대기 중 플래그
+    float       result_timer      = 0.f;     // 결과 대기 남은 시간
     int         roster_count      = 0;
     PlayerRosterEntry roster[ROOM_MAX_PLAYER];
 };
@@ -49,6 +52,7 @@ public:
     void OnPlayerJoined(int room_id);
     void OnPlayerLeft(int room_id);
     void OnRoundEnd(int room_id, int winner_team);       // Phase 3: 서버 히트 판정 후 호출
+    void OnPlayerDied(int room_id);                      // 사망 발생 시 팀 전멸 여부 검사
     void OnPlayerPhaseReady(int room_id, unsigned char phase); // 클라 타이머 만료 알림
     void OnMapLoaded(int room_id, unsigned char slot);         // 클라 맵 로드 완료 알림
 
@@ -85,6 +89,7 @@ private:
     static constexpr float SCOREBOARD_DURATION  = 8.f;
     static constexpr float SHOP_DURATION        = 15.f;
     static constexpr float ROUND_DURATION       = 100.f;
+    static constexpr float RESULT_DURATION      = 5.f;  // 전멸 후 결과 대기 시간(초)
     static constexpr int   MAX_ROUND_COUNT      = 10;
     static constexpr float SYNC_INTERVAL        = 1.f;  // SC_TIMER_SYNC 전송 주기(초)
 };

@@ -278,6 +278,7 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
         if (room_id != -1) {
             auto* room = GetRoom(room_id);
             if (room && room->IsActive()) {
+                // SC_SPAWN_SELECT 에코: 방 전원에게 선택 좌표 브로드캐스트
                 SC_SPAWN_SELECT_PACKET pkt{};
                 pkt.size      = sizeof(SC_SPAWN_SELECT_PACKET);
                 pkt.type      = SC_SPAWN_SELECT;
@@ -286,6 +287,35 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
                 for (int pid : room->GetPlayerIds()) {
                     if (m_clients[pid].m_state != ST_INGAME) continue;
                     m_clients[pid].Send(&pkt);
+                }
+
+                // ── IOCP 레이스 패치 ─────────────────────────────────────────
+                // CS_SPAWN_SELECT / CS_PHASE_READY 는 같은 TCP 스트림에서 순서대로 전송되지만,
+                // 다중 IOCP 워커 스레드가 각각 다른 recv 완료를 처리할 때 순서가 뒤바뀔 수 있다.
+                // ready 가 먼저 처리돼 PLAYING 으로 전환된 뒤 select 가 뒤늦게 도착하면
+                // ApplySpawnPositions 는 이미 m_spawnPos==(0,0,0) 폴백으로 위치를 세팅한 상태.
+                // 이 경우 선택 좌표를 즉시 권위 위치에 반영하고 전원에게 브로드캐스트해
+                // 클라 착지 수렴(Apply_ServerCorrection)이 올바른 지점을 향하도록 정정한다.
+                ROOM_PHASE cur_phase = RoomPhaseManager::GetInstance()->GetRoomPhase(room_id);
+                if (cur_phase == ROOM_PHASE::PLAYING)
+                {
+                    {
+                        lock_guard<mutex> lk(m_clients[c_id].m_s_lock);
+                        float px = p->world_pos[0];
+                        float py = p->world_pos[1];
+                        if (py < WorldMatrixInfo::GROUND_HEIGHT)
+                            py = WorldMatrixInfo::GROUND_HEIGHT;
+                        float pz = p->world_pos[2];
+                        m_clients[c_id].m_worldMatrix.SetPosition(px, py, pz);
+                        m_clients[c_id].m_player.fVerticalVelocity = 0.f;
+                        m_clients[c_id].m_player.bIsGrounded       = true;
+                    }
+                    // 갱신된 권위 위치를 방 전원에게 즉시 전파
+                    for (int pid : room->GetPlayerIds()) {
+                        if (m_clients[pid].m_state != ST_INGAME) continue;
+                        m_clients[pid].Send_Move_Packet(c_id, this);
+                    }
+                    cout << "[Instance] Client [" << c_id << "] spawn pos race-patched mid-PLAYING" << endl;
                 }
             }
         }
@@ -384,6 +414,9 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
             }
             cout << "[Hit] Player " << shooter.m_lobby_player_id
                  << " killed player " << p->victim_id << endl;
+
+            // 팀 전멸 여부 확인 → 전멸 시 라운드 종료
+            RoomPhaseManager::GetInstance()->OnPlayerDied(room_id);
         }
         break;
     }

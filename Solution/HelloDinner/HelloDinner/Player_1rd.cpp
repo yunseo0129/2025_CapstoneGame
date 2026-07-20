@@ -349,6 +349,9 @@ void CPlayer_1rd::Resolve_Movement(_float fTimeDelta)
 
 void CPlayer_1rd::Anima()
 {
+    // 사망 중에는 이동 애니메이션 상태머신을 동작시키지 않는다 (사망 클립 덮어쓰기 방지)
+    if (m_isDie) return;
+
     _uint anim = m_pModelCom->Get_LowerAnimNum();
     if (anim != 11)
     {
@@ -703,6 +706,15 @@ void CPlayer_1rd::Die(_float _val)
     m_isDie = true;
     m_pModelCom->Change_Animation(9, 10.f, false, true);
     m_pModelCom->Change_Animation(9, 10.f, false, false);
+}
+
+void CPlayer_1rd::Revive()
+{
+    __super::Revive();   // m_isDie=false, m_ihealth=500
+    m_isReloading = false;
+    // 상·하체 idle 애니메이션으로 복귀
+    m_pModelCom->Change_Animation(0, 0.f, true, true);
+    m_pModelCom->Change_Animation(0, 0.f, true, false);
 }
 
 void CPlayer_1rd::Set_Weapon(_int iIndex)
