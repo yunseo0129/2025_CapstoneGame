@@ -51,8 +51,12 @@ public:
 
     // 부서지는 벽
     // 부서지는 벽인지 확인
-    _bool Is_Breakable() const { return m_bBreakable; }
-    _bool Is_Broken()    const { return m_bBroken; }
+    _bool Is_Breakable()      const { return m_bBreakable; }
+    _bool Is_Broken()         const { return m_bBroken; }
+    _uint Get_WallId()        const { return m_iWallId; }
+    // 서버 왕복 중 중복 CS_WALL_HIT 전송 방지
+    _bool Is_BreakRequested() const { return m_bBreakRequested; }
+    void  Mark_BreakRequested() { m_bBreakRequested = true; }
     void  Break();
     void  Restore();
     // 이웃 벽이 사라졌을 때 면 노출 구현
@@ -86,6 +90,7 @@ private:
     _uint m_iWallId = 0;            // [Fracture] 안정적 식별자(MAP_DESC 에서 전달)
     _int  m_iFractureSlot = -1;    // Register 반환 슬롯(-1=미등록)
     _bool m_bBroken = false;
+    _bool m_bBreakRequested = false; // 서버에 CS_WALL_HIT 전송했는지 (중복 전송 방지)
     CMap* m_pLeftNeighbor = nullptr;
     CMap* m_pRightNeighbor = nullptr;
     _bool m_bLeftExposed = false;

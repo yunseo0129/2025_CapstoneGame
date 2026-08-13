@@ -426,6 +426,31 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
         Disconnect(c_id);
         break;
     }
+
+    case CS_WALL_HIT: {
+        if (sz < (int)sizeof(CS_WALL_HIT_PACKET)) break;
+        CS_WALL_HIT_PACKET* p = reinterpret_cast<CS_WALL_HIT_PACKET*>(packet);
+
+        GameSession& s = m_clients[c_id];
+        if (s.m_state != ST_INGAME) break;
+        int room_id = s.m_room_id;
+        auto* room = GetRoom(room_id);
+        if (!room || !room->IsActive()) break;
+        if (RoomPhaseManager::GetInstance()->GetRoomPhase(room_id) != ROOM_PHASE::PLAYING) break;
+
+        cout << "[WallHit] Player " << s.m_lobby_player_id
+             << " hit wall_id=" << p->wall_id << endl;
+
+        SC_WALL_BREAK_PACKET wb{};
+        wb.size       = sizeof(SC_WALL_BREAK_PACKET);
+        wb.type       = SC_WALL_BREAK;
+        wb.wall_id    = p->wall_id;
+        wb.breaker_id = s.m_lobby_player_id;
+        for (int pid : room->GetPlayerIds())
+            if (m_clients[pid].m_state == ST_INGAME)
+                m_clients[pid].Send(&wb);
+        break;
+    }
     }
 }
 

@@ -302,6 +302,20 @@ void NetworkClient::Send_Hit(int victim_id, unsigned char part_num, const float 
 }
 
 // ─────────────────────────────────────────────
+// 벽 충돌 신고 → 인스턴스 서버로 전송
+// ─────────────────────────────────────────────
+void NetworkClient::Send_WallHit(int wall_id)
+{
+    if (m_instanceSocket == INVALID_SOCKET) return;
+
+    CS_WALL_HIT_PACKET p{};
+    p.size    = sizeof(CS_WALL_HIT_PACKET);
+    p.type    = CS_WALL_HIT;
+    p.wall_id = wall_id;
+    SendToInstance(&p, sizeof(p));
+}
+
+// ─────────────────────────────────────────────
 // 이동 패킷 → 인스턴스 서버로 전송
 // ─────────────────────────────────────────────
 void NetworkClient::Send_Move(unsigned short keyInput, float mouseYaw, const float* worldMatrix)
@@ -659,6 +673,16 @@ void NetworkClient::ProcessInstancePacket(char* packet)
         evt.type           = NetEventType::DEATH;
         evt.hit_victim_id  = p->victim_id;
         evt.death_killer_id = p->killer_id;
+        std::lock_guard<std::mutex> lk(m_matchEventLock);
+        m_pendingMatchEvents.push_back(evt);
+        break;
+    }
+    case SC_WALL_BREAK: {
+        if (sz < (int)sizeof(SC_WALL_BREAK_PACKET)) break;
+        SC_WALL_BREAK_PACKET* p = reinterpret_cast<SC_WALL_BREAK_PACKET*>(packet);
+        NetEvent evt{};
+        evt.type         = NetEventType::WALL_BREAK;
+        evt.wall_break_id = p->wall_id;
         std::lock_guard<std::mutex> lk(m_matchEventLock);
         m_pendingMatchEvents.push_back(evt);
         break;

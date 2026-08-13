@@ -239,7 +239,7 @@ HRESULT CMap::Ready_Components()
 
 void CMap::Break()
 {
-    if (m_bDead) return;
+    if (m_bDead || m_bBroken) return;   // 멱등 가드: 중복 Break 방지
 
     if (CParticle_System* pPS = m_pGameInstance->Get_ParticleSystem())
     {
@@ -310,6 +310,7 @@ void CMap::Restore()
         m_iFractureSlot = pFS->Reset_Wall(m_pModelCom, m_iWallId, m_xmf4x4CachedWorld, 0, m_pColliderCom);
 
     m_bBroken = false;
+    m_bBreakRequested = false;  // 다음 라운드에 다시 부술 수 있도록 리셋
     m_bLeftExposed = false;
     m_bRightExposed = false;
 

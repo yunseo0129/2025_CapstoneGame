@@ -28,6 +28,8 @@ public:
         // Phase 3: 히트 판정
         HIT,
         DEATH,
+        // 벽 파괴 동기화
+        WALL_BREAK,
     };
 
     struct NetEvent {
@@ -76,6 +78,9 @@ public:
         unsigned char   hit_part_num     = 0;
         float           hit_pos[3]       = {};
         int             death_killer_id  = -1;
+
+        // WALL_BREAK
+        int             wall_break_id    = -1;
     };
 
 public:
@@ -100,6 +105,8 @@ public:
     void Send_MapLoaded(unsigned char slot);
     // 히트 신고 → 인스턴스 서버로 전송 (서버가 LOS 검증 후 SC_HIT 브로드캐스트)
     void Send_Hit(int victim_id, unsigned char part_num, const float hit_pos[3]);
+    // 벽 충돌 신고 → 인스턴스 서버로 전송 (서버가 SC_WALL_BREAK 브로드캐스트)
+    void Send_WallHit(int wall_id);
 
     // ── 수동 방 관련 송신 (로비 소켓) ──────────────────────────────────
     void Send_CreateRoom();

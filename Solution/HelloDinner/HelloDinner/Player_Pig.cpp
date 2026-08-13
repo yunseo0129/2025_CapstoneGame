@@ -9,6 +9,7 @@
 #include "../Server/protocol.h"
 #include "Map.h"
 #include "Collider.h"
+#include "NetworkClient.h"
 
 namespace {
     constexpr float PIG_GRAVITY      = -9.8f;  // 중력 가속도 (units/s^2, Player_1rd와 동일)
@@ -719,13 +720,16 @@ void CPlayer_Pig::Update_Launch(_float fTimeDelta)
         XMStoreFloat3(&vMove, vMoveVec);
     }
 
-    // 충돌한 부서지는 맵 처리
+    // 충돌한 부서지는 맵 처리 (서버 권위: 직접 Break 아닌 서버에 신고)
     for (CCollider* pHit : vHitColliders)
     {
         if (pHit == nullptr) continue;
         CMap* pMap = dynamic_cast<CMap*>(pHit->Get_Owner());
-        if (pMap && pMap->Is_Breakable())
-            pMap->Break();
+        if (pMap && pMap->Is_Breakable() && !pMap->Is_Broken() && !pMap->Is_BreakRequested())
+        {
+            pMap->Mark_BreakRequested();   // 프레임마다 재전송 방지
+            NetworkClient::GetInstance()->Send_WallHit((_int)pMap->Get_WallId());
+        }
     }
 
     // 비행(아치) 도중 처음으로 막히면 → 그 자리에서 수직 추락으로 전환

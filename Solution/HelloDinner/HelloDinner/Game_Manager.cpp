@@ -13,6 +13,7 @@
 #include "CharSelect_Fish.h"
 #include "MapSelect.h"
 #include "Particle_System.h"
+#include "Map.h"
 
 IMPLEMENT_SINGLETON(CGame_Manager)
 
@@ -163,6 +164,9 @@ void CGame_Manager::Update(_float fTimeDelta)
                 break;
             case NetworkClient::NetEventType::DEATH:
                 Apply_Death(evt.hit_victim_id, evt.death_killer_id);
+                break;
+            case NetworkClient::NetEventType::WALL_BREAK:
+                Apply_WallBreak(evt.wall_break_id);
                 break;
             default:
                 break;
@@ -1767,6 +1771,22 @@ void CGame_Manager::Apply_Death(int victim_id, int /*killer_id*/)
     else
     {
         pCtrl->Kill_OtherPlayer(victim_id);
+    }
+}
+
+void CGame_Manager::Apply_WallBreak(int wall_id)
+{
+    // SC_WALL_BREAK 수신 시 호출 — Layer_Map 을 순회해 wall_id 가 일치하는 벽을 찾아 Break()
+    // Break() 내부에 m_bBroken 멱등 가드가 있어 중복 호출해도 안전하다.
+    list<CGameObject*> objs = m_pGameInstance->Get_List(LEVEL_GAMEPLAY, L"Layer_Map");
+    for (auto* pObj : objs)
+    {
+        CMap* pMap = dynamic_cast<CMap*>(pObj);
+        if (pMap && pMap->Is_Breakable() && pMap->Get_WallId() == (_uint)wall_id)
+        {
+            pMap->Break();
+            break;
+        }
     }
 }
 

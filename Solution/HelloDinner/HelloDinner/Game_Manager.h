@@ -98,6 +98,7 @@ public:
     void    Apply_Hit(int shooter_id, int victim_id, short victim_hp,
                       unsigned char part_num, const float hit_pos[3]);       // SC_HIT 수신 → 파티클 + HP 반영
     void    Apply_Death(int victim_id, int killer_id);                       // SC_DEATH 수신 → 사망 처리
+    void    Apply_WallBreak(int wall_id);                                    // SC_WALL_BREAK 수신 → 벽 파괴 처리
 
 private:
     // ---- 단계 진입(한 번) ----

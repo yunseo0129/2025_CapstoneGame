@@ -233,9 +233,13 @@ constexpr char SC_CHAR_SELECT  = 39;   // 캐릭터 선택 릴레이 (인스턴�
 constexpr char SC_SPAWN_SELECT = 40;   // 스폰 위치 선택 릴레이 (인스턴스 → 클라 전체)
 
 // Phase 3: 히트 판정
-constexpr char CS_HIT   = 16;  // 클라 → 인스턴스: 히트 신고
-constexpr char SC_HIT   = 23;  // 인스턴스 → 클라: 피격 확인 + 이펙트
-constexpr char SC_DEATH = 24;  // 인스턴스 → 클라: 사망 알림
+constexpr char CS_HIT      = 16;  // 클라 → 인스턴스: 히트 신고
+constexpr char SC_HIT      = 23;  // 인스턴스 → 클라: 피격 확인 + 이펙트
+constexpr char SC_DEATH    = 24;  // 인스턴스 → 클라: 사망 알림
+
+// 벽 파괴 동기화
+constexpr char CS_WALL_HIT   = 17;  // 클라 → 인스턴스: 벽 충돌 신고
+constexpr char SC_WALL_BREAK = 25;  // 인스턴스 → 클라: 벽 파괴 브로드캐스트
 
 struct SC_PHASE_CHANGE_PACKET {
     unsigned char size;
@@ -369,6 +373,21 @@ struct SC_DEATH_PACKET {
     char          type;          // SC_DEATH
     int           victim_id;
     int           killer_id;
+};  // 2+4+4 = 10B
+
+// 벽 충돌 신고 (클라 → 인스턴스 서버)
+struct CS_WALL_HIT_PACKET {
+    unsigned char size;
+    char          type;     // CS_WALL_HIT
+    int           wall_id;  // CMap::m_iWallId (로더 부여 안정적 식별자)
+};  // 2+4 = 6B
+
+// 벽 파괴 브로드캐스트 (인스턴스 → 클라 전체)
+struct SC_WALL_BREAK_PACKET {
+    unsigned char size;
+    char          type;        // SC_WALL_BREAK
+    int           wall_id;     // 부서진 벽의 식별자
+    int           breaker_id;  // 충돌한 플레이어 로비 ID
 };  // 2+4+4 = 10B
 
 #pragma pack (pop)
