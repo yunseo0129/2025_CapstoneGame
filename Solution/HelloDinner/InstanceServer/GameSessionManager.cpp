@@ -126,12 +126,21 @@ void GameSessionManager::ProcessPacket(int c_id, char* packet)
         session.m_player.prevKeyInput = session.m_player.keyInput;
         session.m_player.keyInput     = p->keyInput;
 
-        // 클라이언트 회전(Right/Up/Look, m[0..11])만 복사 — 위치는 서버가 계산
+        // 클라이언트 회전(Right/Up/Look, m[0..11])은 항상 복사 — 위치는 페이즈별 처리
         memcpy(session.m_worldMatrix.m, p->worldMatrix, sizeof(float) * 12);
 
+        ROOM_PHASE curPhase = RoomPhaseManager::GetInstance()->GetRoomPhase(session.m_room_id);
+
+        // CHARSELECT 페이즈: 자유 이동 허용 — 위치도 클라 권위로 복사
+        if (curPhase == ROOM_PHASE::CHARSELECT) {
+            session.m_worldMatrix.m[12] = p->worldMatrix[12];
+            session.m_worldMatrix.m[13] = p->worldMatrix[13];
+            session.m_worldMatrix.m[14] = p->worldMatrix[14];
+        }
+
         // PLAYING 페이즈에서만 물리+충돌 적용
-        // 그 외 페이즈는 동결 (ApplyTeamSpawnPositions 위치가 GROUND_HEIGHT 클램프에 끌리지 않도록)
-        if (RoomPhaseManager::GetInstance()->GetRoomPhase(session.m_room_id) == ROOM_PHASE::PLAYING) {
+        // 그 외(SCOREBOARD/SHOP) 페이즈는 동결 (ApplyTeamSpawnPositions 위치 유지)
+        if (curPhase == ROOM_PHASE::PLAYING) {
 
             // ─────────────────────────────────────────────────────────────────
             // 서버 권위 물리 + 맵 이동 충돌

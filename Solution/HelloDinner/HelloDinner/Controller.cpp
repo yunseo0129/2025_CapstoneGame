@@ -5,6 +5,7 @@
 #include "NetworkClient.h"
 #include "Defines.h"
 #include "UI_Crosshair.h"
+#include "Game_Manager.h"
 
 IMPLEMENT_SINGLETON(CController)
 
@@ -162,7 +163,17 @@ void CController::Predict_Local(_float fTimeDelta)
 {
     auto* pNet = NetworkClient::GetInstance();
     if (!pNet->IsInGame()) return;
+    if (m_bBlockInput) return;   // 상점창 열림 등 런타임 차단
     if (m_pPlayer == nullptr || m_pPlayer->IsDead() || m_pPlayer->Get_Die()) return;
+
+    // 마우스 시점 회전은 페이즈 무관하게 항상 적용
+    if (m_fMouseYawThisFrame != 0.f)
+        m_pPlayer->TurnYaw(m_fMouseYawThisFrame * fTimeDelta * 2.2f);
+    m_pPlayer->TurnPitch(m_fMousePitchThisFrame * fTimeDelta * 2.2f);
+
+    // WASD 이동/점프는 PLAYING 페이즈에서만 허용
+    // (CHARSELECT/SCOREBOARD/SHOP/GAMEOVER는 차단, 발사 중에는 Player_1rd::Move가 자체 무시)
+    if (CGame_Manager::GetInstance()->Get_Phase() != GAME_PHASE::PHASE_PLAYING) return;
 
     unsigned short keyFlags = Build_KeyBitFlags();
 
@@ -177,17 +188,15 @@ void CController::Predict_Local(_float fTimeDelta)
     if (keyFlags & KEY_SPACE) m_pPlayer->Jump(fTimeDelta);
     if (keyFlags & KEY_CTRL)  m_pPlayer->Crouch(fTimeDelta);
     if (keyFlags & KEY_SHIFT) m_pPlayer->Run(fTimeDelta);
-
-    if (m_fMouseYawThisFrame != 0.f)
-        m_pPlayer->TurnYaw(m_fMouseYawThisFrame * fTimeDelta * 2.2f);
-
-    m_pPlayer->TurnPitch(m_fMousePitchThisFrame * fTimeDelta * 2.2f);
 }
 
 void CController::Send_InputPacket(_float fTimeDelta)
 {
     auto* pNet = NetworkClient::GetInstance();
     if (!pNet->IsInGame()) return;
+    if (m_bBlockInput) return;   // 상점창 열림 등 런타임 차단
+    // PLAYING 페이즈가 아니면 CS_MOVE 미전송 → 서버/타 클라에도 정지 상태 유지
+    if (CGame_Manager::GetInstance()->Get_Phase() != GAME_PHASE::PHASE_PLAYING) return;
 
     // 전송 주기 제한 (초당 20회)
     m_fSendTimer += fTimeDelta;
@@ -245,8 +254,14 @@ void CController::Apply_ServerEvents(_float fTimeDelta)
                 }
 
                 // 위치 보정은 가장 최신 에코 한 번만 적용
+                // CHARSELECT 페이즈는 서버 권위 물리 없음 → 에코가 항상 50ms 과거 위치
+                // → 보정하면 계속 뒤로 당겨짐(롤백). 해당 페이즈에서는 스킵.
                 if (&evt == pLastMyMoved)
-                    m_pPlayer->Apply_ServerCorrection(evt.worldMatrix, fTimeDelta);
+                {
+                    bool bCharSelect = (CGame_Manager::GetInstance()->Get_Phase() == GAME_PHASE::PHASE_CHARSELECT);
+                    if (!bCharSelect)
+                        m_pPlayer->Apply_ServerCorrection(evt.worldMatrix, fTimeDelta);
+                }
             }
             continue;
         }

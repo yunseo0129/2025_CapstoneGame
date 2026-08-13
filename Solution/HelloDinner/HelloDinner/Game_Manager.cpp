@@ -359,9 +359,9 @@ void CGame_Manager::Update_CharSelect(_float fTimeDelta)
 {
     if (m_bCSReady)
     {
+        // 커서는 UI 표시용으로 계속 보여두되, 이동 차단은 풀지 않는다.
+        // (포물선 발사 직전 PLAYING 진입 시 Set_ShopUIMode(false)가 차단을 해제함)
         Set_MouseCaptured(false);
-        if (CController* p = m_pGameInstance->Get_Controller())
-            p->Set_BlockInput(false);
 
         // Ready 클릭 시 서버에 CS_CHAR_SELECT + CS_PHASE_READY(0) 즉시 전송 (중복 방지)
         if (!m_bSelectExpired)
