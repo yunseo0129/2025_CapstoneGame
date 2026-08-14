@@ -248,8 +248,14 @@ HRESULT CRenderer::Render_InstancedQueue(ID3D12GraphicsCommandList* cmd, INSTANC
         for (CGameObject* p : objs) {
             if (instanceCount >= MAX_INSTANCES_PER_GROUP) break;
             CMap* pMap = static_cast<CMap*>(p);
+            if (pMap->Is_FractureRegistered()) continue;
             pSlot->pMapped[instanceCount] = pMap->Get_CachedWorldMatrix();
             ++instanceCount;
+        }
+        if (0 == instanceCount) {   // 그룹 전체가 fracture 벽이면 드로우 생략
+            for (auto* p : objs) Safe_Release(p);
+            objs.clear();
+            continue;
         }
 
         m_pGameInstance->Set_PipelineState(cmd, pso);

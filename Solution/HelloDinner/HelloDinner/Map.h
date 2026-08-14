@@ -57,6 +57,9 @@ public:
     // 서버 왕복 중 중복 CS_WALL_HIT 전송 방지
     _bool Is_BreakRequested() const { return m_bBreakRequested; }
     void  Mark_BreakRequested() { m_bBreakRequested = true; }
+    // Fracture_System 전담 렌더 대상인지 (인스턴싱 이중 드로우 방지)
+    _bool Is_FractureRegistered() const { return m_iFractureSlot >= 0; }
+
     void  Break();
     void  Restore();
     // 이웃 벽이 사라졌을 때 면 노출 구현
